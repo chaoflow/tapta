@@ -29,15 +29,15 @@
         // model related operations
 		model: {
 			// activity model element types
-		    INITIAL_NODE    : 0,
-		    FORK_NODE       : 1,
-		    JOIN_NODE       : 2,
-		    DECISION_NODE   : 3,
-		    MERGE_NODE      : 4,
-		    FLOW_FINAL_NODE : 5,
-		    FINAL_NODE      : 6,
-		    ACTION          : 7,
-		    EDGE            : 8
+		    INITIAL    : 0,
+		    FORK       : 1,
+		    JOIN       : 2,
+		    DECISION   : 3,
+		    MERGE      : 4,
+		    FLOW_FINAL : 5,
+		    FINAL      : 6,
+		    ACTION     : 7,
+		    EDGE       : 8
 		},
 		
 		// rendering elements
@@ -46,6 +46,7 @@
             // constructors
             
             // Diagram element
+			// refers to activity model
             Diagram: function(selector) {
                 this.canvas = $(selector).get(0);
                 this.context = this.canvas.getContext("2d");
@@ -55,6 +56,7 @@
             },
             
             // Action element
+			// refers to activity action, initial node, final node
             Action: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
@@ -176,34 +178,54 @@
 	var test_activity_model = {
 		children: {
 			start: {
-				type: activities.model.INITIAL_NODE
+				type: activities.model.INITIAL,
+				incoming_edges: [],
+				outgoing_edges: ['edge_1']
 			},
 			fork: {
-				type: activities.model.FORK_NODE
+				type: activities.model.FORK,
+                incoming_edges: ['edge_1'],
+                outgoing_edges: ['edge_2', 'edge_3']
 			},
 			join: {
-				type: activities.model.JOIN_NODE
+				type: activities.model.JOIN,
+                incoming_edges: ['edge_5', 'edge_7'],
+                outgoing_edges: ['edge_10']
 			},
 			decision: {
-				type: activities.model.DECISION_NODE
+				type: activities.model.DECISION,
+                incoming_edges: ['edge_6'],
+                outgoing_edges: ['edge_8', 'edge_9']
 			},
 			merge: {
-				type: activities.model.MERGE_NODE
+				type: activities.model.MERGE,
+                incoming_edges: ['edge_9', 'edge_10'],
+                outgoing_edges: ['edge_11']
 			},
 			action_1: {
-				type: activities.model.ACTION
+				type: activities.model.ACTION,
+                incoming_edges: ['edge_2'],
+                outgoing_edges: ['edge_4']
 			},
 			action_2: {
-				type: activities.model.ACTION
+				type: activities.model.ACTION,
+                incoming_edges: ['edge_3'],
+                outgoing_edges: ['edge_5']
 			},
 			action_3: {
-				type: activities.model.ACTION
+				type: activities.model.ACTION,
+                incoming_edges: ['edge_4'],
+                outgoing_edges: ['edge_6', 'edge_7']
 			},
 			flow_end: {
-				type: activities.model.FLOW_FINAL_NODE
+				type: activities.model.FLOW_FINAL,
+                incoming_edges: ['edge_8'],
+                outgoing_edges: []
 			},
 			end: {
-				type: activities.model.FINAL_NODE
+				type: activities.model.FINAL,
+                incoming_edges: ['edge_11'],
+                outgoing_edges: []
 			},
 			edge_1: {
 				type: activities.model.EDGE,
