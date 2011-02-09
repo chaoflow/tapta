@@ -1,16 +1,16 @@
 (function($) {
-    
+	
     $(document).ready(function() {
         var diagram = new activities.ui.Diagram('#diagram_level_0');
-        var activity = new activities.ui.Activity(diagram);
-        activity.x = 60;
-        activity.y = 100;
+        var action = new activities.ui.Action(diagram);
+        action.x = 60;
+        action.y = 100;
         
-        var activity = new activities.ui.Activity(diagram);
-        activity.x = 220;
-        activity.y = 40;
-        activity.selected = true;
-        activity.label = 'Fooooo';
+        var action = new activities.ui.Action(diagram);
+        action.x = 220;
+        action.y = 40;
+        action.selected = true;
+        action.label = 'Fooooo';
         
         var decision = new activities.ui.Decision(diagram);
         decision.x = 60;
@@ -26,7 +26,21 @@
     // activities namespace
     activities = {
         
-        // rendering elements
+        // model related operations
+		model: {
+			// activity model element types
+		    INITIAL_NODE    : 0,
+		    FORK_NODE       : 1,
+		    JOIN_NODE       : 2,
+		    DECISION_NODE   : 3,
+		    MERGE_NODE      : 4,
+		    FLOW_FINAL_NODE : 5,
+		    FINAL_NODE      : 6,
+		    ACTION          : 7,
+		    EDGE            : 8
+		},
+		
+		// rendering elements
         ui: {
             
             // constructors
@@ -40,8 +54,8 @@
                 this.elements = new Array();
             },
             
-            // Activity element
-            Activity: function(diagram) {
+            // Action element
+            Action: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
                 this.x = 0;
@@ -51,7 +65,7 @@
                 this.fillColor = '#3ce654';
                 this.borderColor = '#ffc000';
                 this.borderWidth = 3;
-                this.label = 'Activity';
+                this.label = 'Action';
                 this.selected = false;
             },
             
@@ -104,10 +118,10 @@
         
     });
     
-    // activities.ui.Activity member functions
-    $.extend(activities.ui.Activity.prototype, {
+    // activities.ui.Action member functions
+    $.extend(activities.ui.Action.prototype, {
         
-        // render activity
+        // render action
         render: function() {
             var context = this.diagram.context;
             context.save();
@@ -155,5 +169,98 @@
         }
         
     });
+	
+	// test model
+	// supposed to be serialized/deserialized by JSON later
+	// server side model > node.ext.uml.activities
+	var test_activity_model = {
+		children: {
+			start: {
+				type: activities.model.INITIAL_NODE
+			},
+			fork: {
+				type: activities.model.FORK_NODE
+			},
+			join: {
+				type: activities.model.JOIN_NODE
+			},
+			decision: {
+				type: activities.model.DECISION_NODE
+			},
+			merge: {
+				type: activities.model.MERGE_NODE
+			},
+			action_1: {
+				type: activities.model.ACTION
+			},
+			action_2: {
+				type: activities.model.ACTION
+			},
+			action_3: {
+				type: activities.model.ACTION
+			},
+			flow_end: {
+				type: activities.model.FLOW_FINAL_NODE
+			},
+			end: {
+				type: activities.model.FINAL_NODE
+			},
+			edge_1: {
+				type: activities.model.EDGE,
+				source: 'start',
+				target: 'fork'
+			},
+			edge_2: {
+				type: activities.model.EDGE,
+				source: 'fork',
+				target: 'action_1'
+			},
+			edge_3: {
+				type: activities.model.EDGE,
+				source: 'fork',
+				target: 'action_2'
+			},
+			edge_4: {
+				type: activities.model.EDGE,
+				source: 'action_1',
+				target: 'action_3'
+			},
+			edge_5: {
+				type: activities.model.EDGE,
+				source: 'action_2',
+				target: 'join'
+			},
+			edge_6: {
+				type: activities.model.EDGE,
+				source: 'action_3',
+				target: 'decision'
+			},
+			edge_7: {
+				type: activities.model.EDGE,
+				source: 'action_3',
+				target: 'join'
+			},
+			edge_8: {
+				type: activities.model.EDGE,
+				source: 'decision',
+				target: 'flow_end'
+			},
+			edge_9: {
+				type: activities.model.EDGE,
+				source: 'decision',
+				target: 'merge'
+			},
+			edge_10: {
+				type: activities.model.EDGE,
+				source: 'join',
+				target: 'merge'
+			},
+			edge_11: {
+				type: activities.model.EDGE,
+				source: 'merge',
+				target: 'end'
+			}
+		}
+    }
 
 })(jQuery);
