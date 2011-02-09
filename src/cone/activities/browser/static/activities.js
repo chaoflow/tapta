@@ -1,5 +1,5 @@
 (function($) {
-	
+    
     $(document).ready(function() {
         var diagram = new activities.ui.Diagram('#diagram_level_0');
         var action = new activities.ui.Action(diagram);
@@ -26,27 +26,39 @@
     // activities namespace
     activities = {
         
-        // model related operations
-		model: {
-			// activity model element types
-		    INITIAL    : 0,
-		    FORK       : 1,
-		    JOIN       : 2,
-		    DECISION   : 3,
-		    MERGE      : 4,
-		    FLOW_FINAL : 5,
-		    FINAL      : 6,
-		    ACTION     : 7,
-		    EDGE       : 8
-		},
-		
-		// rendering elements
+        // model related
+        model: {
+            
+            // activity model element types
+            types: {
+                ACTIVITY   : 0,
+                INITIAL    : 1,
+                FORK       : 2,
+                JOIN       : 3,
+                DECISION   : 4,
+                MERGE      : 5,
+                FLOW_FINAL : 6,
+                FINAL      : 7,
+                ACTION     : 8,
+                EDGE       : 9
+            },
+            
+            // constructors
+            
+            // the model.
+            // expects JSON response as context
+            Model: function(context) {
+                this.context = context;
+            }
+        },
+        
+        // rendering elements
         ui: {
             
             // constructors
             
             // Diagram element
-			// refers to activity model
+            // refers to activity model
             Diagram: function(selector) {
                 this.canvas = $(selector).get(0);
                 this.context = this.canvas.getContext("2d");
@@ -56,7 +68,7 @@
             },
             
             // Action element
-			// refers to activity action, initial node, final node
+            // refers to activity action, initial node, final node
             Action: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
@@ -103,13 +115,78 @@
         }
     }
     
+    // activities.model.Model member functions
+    $.extend(activities.model.Model.prototype, {
+    
+        // search context for child objects providing given model element type.
+        // optional node for searching could be given, otherwise self.context
+        // is used. an object named 'children' is expected which gets searched
+        // for child nodes.
+        filtered: function(type, node) {
+            var context;
+            if (node) {
+                context = node;
+            } else {
+                context = self.context;
+            }
+            var ret = new Array();
+            if (!context.children) {
+                return ret;
+            }
+            for (var key in context.children) {
+                if (context.children[key].type == type) {
+                    ret.push(context.children[key]);
+                }
+            }
+            return ret;
+        },
+        
+        // return array of incoming edges for given node
+        incoming: function(node) {
+            ret = new Array();
+            if (!node || !node.incoming_edges) {
+                return ret;
+            }
+            for (var idx in node.incoming_edges) {
+                // XXX: traversal by dottedpath
+                var edge = this.context[node.incoming_edges[idx]];
+                ret.push(edge)
+            }
+            return ret;
+        },
+        
+        // return array of outgoing edges for given node
+        outgoing: function(node) {
+            ret = new Array();
+            if (!node || !node.outgoing_edges) {
+                return ret;
+            }
+            for (var idx in node.outgoing_edges) {
+                // XXX: traversal by dottedpath
+                var edge = this.context[node.outgoing_edges[idx]];
+                ret.push(edge)
+            }
+            return ret;
+        },
+        
+        // return source node for given edge
+        source: function(edge) {
+            
+        },
+        
+        // return target node for given edge
+        targret: function(edge) {
+            
+        }
+    });
+    
     // activities.ui.Diagram member functions
     $.extend(activities.ui.Diagram.prototype, {
         
         // iterate over elements of diagram and call render function
         render: function() {
-            for(var pt in this.elements) {
-                this.elements[pt].render();
+            for(var idx in this.elements) {
+                this.elements[idx].render();
             }
         },
         
@@ -171,118 +248,126 @@
         }
         
     });
-	
-	// test model
-	// supposed to be serialized/deserialized by JSON later
-	// server side model > node.ext.uml.activities
-	var test_activity_model = {
-		children: {
-			start: {
-				type: activities.model.INITIAL,
-				incoming_edges: [],
-				outgoing_edges: ['edge_1']
-			},
-			fork: {
-				type: activities.model.FORK,
-                incoming_edges: ['edge_1'],
-                outgoing_edges: ['edge_2', 'edge_3']
-			},
-			join: {
-				type: activities.model.JOIN,
-                incoming_edges: ['edge_5', 'edge_7'],
-                outgoing_edges: ['edge_10']
-			},
-			decision: {
-				type: activities.model.DECISION,
-                incoming_edges: ['edge_6'],
-                outgoing_edges: ['edge_8', 'edge_9']
-			},
-			merge: {
-				type: activities.model.MERGE,
-                incoming_edges: ['edge_9', 'edge_10'],
-                outgoing_edges: ['edge_11']
-			},
-			action_1: {
-				type: activities.model.ACTION,
-                incoming_edges: ['edge_2'],
-                outgoing_edges: ['edge_4']
-			},
-			action_2: {
-				type: activities.model.ACTION,
-                incoming_edges: ['edge_3'],
-                outgoing_edges: ['edge_5']
-			},
-			action_3: {
-				type: activities.model.ACTION,
-                incoming_edges: ['edge_4'],
-                outgoing_edges: ['edge_6', 'edge_7']
-			},
-			flow_end: {
-				type: activities.model.FLOW_FINAL,
-                incoming_edges: ['edge_8'],
-                outgoing_edges: []
-			},
-			end: {
-				type: activities.model.FINAL,
-                incoming_edges: ['edge_11'],
-                outgoing_edges: []
-			},
-			edge_1: {
-				type: activities.model.EDGE,
-				source: 'start',
-				target: 'fork'
-			},
-			edge_2: {
-				type: activities.model.EDGE,
-				source: 'fork',
-				target: 'action_1'
-			},
-			edge_3: {
-				type: activities.model.EDGE,
-				source: 'fork',
-				target: 'action_2'
-			},
-			edge_4: {
-				type: activities.model.EDGE,
-				source: 'action_1',
-				target: 'action_3'
-			},
-			edge_5: {
-				type: activities.model.EDGE,
-				source: 'action_2',
-				target: 'join'
-			},
-			edge_6: {
-				type: activities.model.EDGE,
-				source: 'action_3',
-				target: 'decision'
-			},
-			edge_7: {
-				type: activities.model.EDGE,
-				source: 'action_3',
-				target: 'join'
-			},
-			edge_8: {
-				type: activities.model.EDGE,
-				source: 'decision',
-				target: 'flow_end'
-			},
-			edge_9: {
-				type: activities.model.EDGE,
-				source: 'decision',
-				target: 'merge'
-			},
-			edge_10: {
-				type: activities.model.EDGE,
-				source: 'join',
-				target: 'merge'
-			},
-			edge_11: {
-				type: activities.model.EDGE,
-				source: 'merge',
-				target: 'end'
-			}
-		}
-    }
+    
+    // extend activities with tests
+    $.extend(activities, {
+        
+        tests: {
+            
+            // test model
+            // supposed to be serialized/deserialized by JSON later
+            // server side model > node.ext.uml.activities
+            model: {
+                type: activities.model.types.ACTIVITY,
+                children: {
+                    start: {
+                        type: activities.model.types.INITIAL,
+                        incoming_edges: [],
+                        outgoing_edges: ['edge_1']
+                    },
+                    fork: {
+                        type: activities.model.types.FORK,
+                        incoming_edges: ['edge_1'],
+                        outgoing_edges: ['edge_2', 'edge_3']
+                    },
+                    join: {
+                        type: activities.model.types.JOIN,
+                        incoming_edges: ['edge_5', 'edge_7'],
+                        outgoing_edges: ['edge_10']
+                    },
+                    decision: {
+                        type: activities.model.types.DECISION,
+                        incoming_edges: ['edge_6'],
+                        outgoing_edges: ['edge_8', 'edge_9']
+                    },
+                    merge: {
+                        type: activities.model.types.MERGE,
+                        incoming_edges: ['edge_9', 'edge_10'],
+                        outgoing_edges: ['edge_11']
+                    },
+                    action_1: {
+                        type: activities.model.types.ACTION,
+                        incoming_edges: ['edge_2'],
+                        outgoing_edges: ['edge_4']
+                    },
+                    action_2: {
+                        type: activities.model.types.ACTION,
+                        incoming_edges: ['edge_3'],
+                        outgoing_edges: ['edge_5']
+                    },
+                    action_3: {
+                        type: activities.model.types.ACTION,
+                        incoming_edges: ['edge_4'],
+                        outgoing_edges: ['edge_6', 'edge_7']
+                    },
+                    flow_end: {
+                        type: activities.model.types.FLOW_FINAL,
+                        incoming_edges: ['edge_8'],
+                        outgoing_edges: []
+                    },
+                    end: {
+                        type: activities.model.types.FINAL,
+                        incoming_edges: ['edge_11'],
+                        outgoing_edges: []
+                    },
+                    edge_1: {
+                        type: activities.model.types.EDGE,
+                        source: 'start',
+                        target: 'fork'
+                    },
+                    edge_2: {
+                        type: activities.model.types.EDGE,
+                        source: 'fork',
+                        target: 'action_1'
+                    },
+                    edge_3: {
+                        type: activities.model.types.EDGE,
+                        source: 'fork',
+                        target: 'action_2'
+                    },
+                    edge_4: {
+                        type: activities.model.types.EDGE,
+                        source: 'action_1',
+                        target: 'action_3'
+                    },
+                    edge_5: {
+                        type: activities.model.types.EDGE,
+                        source: 'action_2',
+                        target: 'join'
+                    },
+                    edge_6: {
+                        type: activities.model.types.EDGE,
+                        source: 'action_3',
+                        target: 'decision'
+                    },
+                    edge_7: {
+                        type: activities.model.types.EDGE,
+                        source: 'action_3',
+                        target: 'join'
+                    },
+                    edge_8: {
+                        type: activities.model.types.EDGE,
+                        source: 'decision',
+                        target: 'flow_end'
+                    },
+                    edge_9: {
+                        type: activities.model.types.EDGE,
+                        source: 'decision',
+                        target: 'merge'
+                    },
+                    edge_10: {
+                        type: activities.model.types.EDGE,
+                        source: 'join',
+                        target: 'merge'
+                    },
+                    edge_11: {
+                        type: activities.model.types.EDGE,
+                        source: 'merge',
+                        target: 'end'
+                    }
+                }
+            } // model
+        } // tests
+    });
 
 })(jQuery);
