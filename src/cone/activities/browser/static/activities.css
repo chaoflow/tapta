@@ -1,3 +1,9 @@
 .activity_editor canvas {
 	border:#aaa 1px solid;
 }
+.activity_editor {
+	margin-bottom:1em;
+}
+.activity_editor_test_out {
+	padding-top:1em;
+}

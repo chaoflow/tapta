@@ -171,12 +171,20 @@
         
         // return source node for given edge
         source: function(edge) {
-            
+            if (!edge || !edge.source) {
+				return;
+			}
+			// XXX: traversal by dottedpath
+            return this.context[edge.source];
         },
         
         // return target node for given edge
         targret: function(edge) {
-            
+            if (!edge || !edge.target) {
+                return;
+            }
+			// XXX: traversal by dottedpath
+            return this.context[edge.target];
         }
     });
     
@@ -366,7 +374,54 @@
                         target: 'end'
                     }
                 }
-            } // model
+            }, // model
+            
+			// run tests for activities using out dom element for test outputs.
+			run: function(selector) {
+				var model = activities.model.Model(activities.tests.model);
+				activities.tests._out = $(selector);
+				activities.tests._out.empty();
+				activities.tests._success = 0;
+                activities.tests._errors = 0;
+				var total =
+				    activities.tests._success + activities.tests._errors;
+				var msg = 'Run ' + total + ' tests with ';
+                msg += activities.tests._errors + ' errors.';
+				if (activities.tests._errors > 0) {
+					activities.tests.error(msg);
+				} else {
+                    activities.tests.success(msg);
+				}
+			},
+			
+			// write sucess message
+			success: function(msg) {
+				var html = '<span style="color:green;font-weight:bold;">';
+				html += msg + '</span><br />';
+				activities.tests._out.append(html);
+				activities.tests._success += 1;
+			},
+			
+			// write error message
+			error: function(msg) {
+				var html = '<span style="color:red;font-weight:bold;">';
+                html += msg + '</span><br />';
+				activities.tests._out.append(html);
+				activities.tests._errors += 1;
+			},
+			
+			// output container for test results
+            _out: null,
+            
+            // success count
+            _success: 0,
+            
+            // error count
+            _errors: 0,
+			
+			_test_activities_model_Model: function(model) {
+				
+			}
         } // tests
     });
 
