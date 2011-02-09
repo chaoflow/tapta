@@ -3,7 +3,7 @@
 	$(document).ready(function() {
 		var diagram = new activities.ui.Diagram('#diagram_level_0');
 		var activity = new activities.ui.Activity(diagram);
-		activity.x = 20;
+		activity.x = 60;
 		activity.y = 100;
 		
 		var activity = new activities.ui.Activity(diagram);
@@ -11,6 +11,10 @@
         activity.y = 40;
 		activity.selected = true;
 		activity.label = 'Fooooo';
+		
+		var decision = new activities.ui.Decision(diagram);
+		decision.x = 60
+		decision.y = 200;
 		
 		diagram.render();
 	});
@@ -51,6 +55,12 @@
 	        Decision: function(diagram) {
 	            this.diagram = diagram;
                 this.diagram.add(this);
+				this.x = 0;
+                this.y = 0;
+				this.sideLength = 40;
+				this.fillColor = '#c6c6c6';
+                this.borderColor = '#000';
+                this.borderWidth = 2;
 	        },
 	        
 	        // Join element
@@ -102,19 +112,44 @@
 			if (this.selected) {
 				context.strokeStyle = this.borderColor;
 				context.lineWidth = this.borderWidth;
-				context.strokeRect(0, 0, this.width, this.height);
+				context.strokeRect((this.width / 2) * -1,
+				                   (this.height / 2) * -1,
+								   this.width,
+								   this.height);
 			}
-			context.fillRect(0, 0, this.width, this.height);
+			context.fillRect((this.width / 2) * -1,
+                             (this.height / 2) * -1,
+                             this.width,
+                             this.height);
 			context.fillStyle = '#000';
 			context.textAlign = 'center';
+			context.textBaseline = 'middle';
 			context.font = '12px sans-serif';
-			context.fillText(this.label,
-			                 this.width / 2,
-							 this.height / 2,
-							 this.width);
+			context.fillText(this.label, 0, 0, this.width);
 			context.restore();
         }
 		
 	});
+	
+	// activities.ui.Decision member functions
+    $.extend(activities.ui.Decision.prototype, {
+        
+        // render decision
+        render: function() {
+			var context = this.diagram.context;
+            context.save();
+            context.translate(this.x, this.y);
+			context.rotate(45 * Math.PI / 180);
+			context.fillStyle = this.fillColor;
+			context.strokeStyle = this.borderColor;
+			context.lineWidth = this.borderWidth;
+			context.strokeRect((this.sideLength / 2) * -1,
+                               (this.sideLength / 2) * -1,
+                               this.sideLength,
+                               this.sideLength);
+			context.restore();
+		}
+        
+    });
 
 })(jQuery);
