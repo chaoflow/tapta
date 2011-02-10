@@ -85,13 +85,19 @@
                 var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
                 var context = dispatcher.diagram.layers.control.context;
-                var imgData = context.getImageData(x, y, 1, 1);
+                var imgData = context.getImageData(x, y, 1, 1).data;
+                var r = imgData[0];
+                var g = imgData[1];
+                var b = imgData[2];
+                var a = imgData[3];
                 $('.status').html(event.type + 
                                   ' x: ' + x + 
-                                  ' y: ' + y + ' ' + imgData);
+                                  ' y: ' + y +
+                                  ' r: ' + r +
+                                  ' g: ' + g +
+                                  ' b: ' + b +
+                                  ' a: ' + a);
             }
-            
-            
         },
         
         // rendering elements
