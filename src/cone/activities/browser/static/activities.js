@@ -265,8 +265,8 @@
             // test model
             // supposed to be serialized/deserialized by JSON later
             // server side model > node.ext.uml.activities
-			// XXX: incoming_edges and outgoing_edges should be computed on
-			//      model init
+            // XXX: incoming_edges and outgoing_edges should be computed on
+            //      model init
             model: {
                 type: activities.model.types.ACTIVITY,
                 children: {
@@ -432,9 +432,9 @@
             // error count
             _errors: 0,
             
-			// XXX: beautify below
-			
-			// run single test
+            // XXX: beautify below
+            
+            // run single test
             _run_test: function(func, model, name) {
                 try {
                     if (func(model)) {
@@ -451,7 +451,7 @@
                     }
                 } catch (err) {
                     var msg = 'failed: "' + name + '" in line ' 
-					msg += err.lineNumber + '<br />' + err + '<br />';
+                    msg += err.lineNumber + '<br />' + err + '<br />';
                     //msg += '<pre style="color:black">' + func;
                     //msg += '</pre>';
                     activities.tests.error(msg);
@@ -460,40 +460,40 @@
             
             _test_activities_model_Model_filtered: function(model) {
                 if (model.filtered(activities.model.types.EDGE).length != 11) {
-				    throw 'filtered(activities.model.types.EDGE).length != 11';
-				}
-				if (model.filtered(activities.model.types.ACTION).length != 3) {
+                    throw 'filtered(activities.model.types.EDGE).length != 11';
+                }
+                if (model.filtered(activities.model.types.ACTION).length != 3) {
                     throw 'filtered(activities.model.types.ACTION).length != 3';
                 }
-				var res = model.filtered(
-				    activities.model.types.EDGE,
-					activities.tests.model.children.action_1);
-				if (res.length != 0) {
+                var res = model.filtered(
+                    activities.model.types.EDGE,
+                    activities.tests.model.children.action_1);
+                if (res.length != 0) {
                     throw 'filtered(activities.model.types.ACTION, ' +
-					    'activities.tests.model.children.action_1).length != 0';
+                        'activities.tests.model.children.action_1).length != 0';
                 }
                 return true;
             },
             
             _test_activities_model_Model_incoming: function(model) {
                 var res = model.incoming(model.context.children['decision']);
-				if (res.length != 1) {
-					throw "model.incoming(model.context.children" +
-					      "['decision']).length != 1";
-				}
-				res = model.incoming(model.context.children['merge']);
-				if (res.length != 2) {
+                if (res.length != 1) {
+                    throw "model.incoming(model.context.children" +
+                          "['decision']).length != 1";
+                }
+                res = model.incoming(model.context.children['merge']);
+                if (res.length != 2) {
                     throw "model.incoming(model.context.children" +
                           "['merge']).length != 2";
                 }
-				if (!res[0].source || !res[0].target) {
-					throw "!res[0].source || !res[0].target";
-				}
-				return true;
+                if (!res[0].source || !res[0].target) {
+                    throw "!res[0].source || !res[0].target";
+                }
+                return true;
             },
             
             _test_activities_model_Model_outgoing: function(model) {
-				var res = model.outgoing(model.context.children['decision']);
+                var res = model.outgoing(model.context.children['decision']);
                 if (res.length != 2) {
                     throw "model.outgoing(model.context.children" +
                           "['decision']).length != 2";
@@ -503,22 +503,22 @@
                     throw "model.outgoing(model.context.children" +
                           "['merge']).length != 1";
                 }
-				if (!res[0].source || !res[0].target) {
+                if (!res[0].source || !res[0].target) {
                     throw "!res[0].source || !res[0].target";
                 }
                 return true;
             },
             
             _test_activities_model_Model_source: function(model) {
-				var source = model.source(model.context.children['edge_1']);
-				if (source.type != activities.model.types.INITIAL) {
-					throw 'source.type != activities.model.types.INITIAL';
-				}
+                var source = model.source(model.context.children['edge_1']);
+                if (source.type != activities.model.types.INITIAL) {
+                    throw 'source.type != activities.model.types.INITIAL';
+                }
                 return true;
             },
             
             _test_activities_model_Model_target: function(model) {
-				var target = model.target(model.context.children['edge_1']);
+                var target = model.target(model.context.children['edge_1']);
                 if (target.type != activities.model.types.FORK) {
                     throw 'target.type != activities.model.types.FORK';
                 }
