@@ -8,110 +8,110 @@
         // XXX: incoming_edges and outgoing_edges should be computed on
         //      model init
         model: {
-            type: activities.model.types.ACTIVITY,
+            type: activities.model.ACTIVITY,
             children: {
                 start: {
-                    type: activities.model.types.INITIAL,
+                    type: activities.model.INITIAL,
                     incoming_edges: [],
                     outgoing_edges: ['edge_1']
                 },
                 fork: {
-                    type: activities.model.types.FORK,
+                    type: activities.model.FORK,
                     incoming_edges: ['edge_1'],
                     outgoing_edges: ['edge_2', 'edge_3']
                 },
                 join: {
-                    type: activities.model.types.JOIN,
+                    type: activities.model.JOIN,
                     incoming_edges: ['edge_5', 'edge_7'],
                     outgoing_edges: ['edge_10']
                 },
                 decision: {
-                    type: activities.model.types.DECISION,
+                    type: activities.model.DECISION,
                     incoming_edges: ['edge_6'],
                     outgoing_edges: ['edge_8', 'edge_9']
                 },
                 merge: {
-                    type: activities.model.types.MERGE,
+                    type: activities.model.MERGE,
                     incoming_edges: ['edge_9', 'edge_10'],
                     outgoing_edges: ['edge_11']
                 },
                 action_1: {
-                    type: activities.model.types.ACTION,
+                    type: activities.model.ACTION,
                     incoming_edges: ['edge_2'],
                     outgoing_edges: ['edge_4']
                 },
                 action_2: {
-                    type: activities.model.types.ACTION,
+                    type: activities.model.ACTION,
                     incoming_edges: ['edge_3'],
                     outgoing_edges: ['edge_5']
                 },
                 action_3: {
-                    type: activities.model.types.ACTION,
+                    type: activities.model.ACTION,
                     incoming_edges: ['edge_4'],
                     outgoing_edges: ['edge_6', 'edge_7']
                 },
                 flow_end: {
-                    type: activities.model.types.FLOW_FINAL,
+                    type: activities.model.FLOW_FINAL,
                     incoming_edges: ['edge_8'],
                     outgoing_edges: []
                 },
                 end: {
-                    type: activities.model.types.FINAL,
+                    type: activities.model.FINAL,
                     incoming_edges: ['edge_11'],
                     outgoing_edges: []
                 },
                 edge_1: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'start',
                     target: 'fork'
                 },
                 edge_2: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'fork',
                     target: 'action_1'
                 },
                 edge_3: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'fork',
                     target: 'action_2'
                 },
                 edge_4: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'action_1',
                     target: 'action_3'
                 },
                 edge_5: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'action_2',
                     target: 'join'
                 },
                 edge_6: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'action_3',
                     target: 'decision'
                 },
                 edge_7: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'action_3',
                     target: 'join'
                 },
                 edge_8: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'decision',
                     target: 'flow_end'
                 },
                 edge_9: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'decision',
                     target: 'merge'
                 },
                 edge_10: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'join',
                     target: 'merge'
                 },
                 edge_11: {
-                    type: activities.model.types.EDGE,
+                    type: activities.model.EDGE,
                     source: 'merge',
                     target: 'end'
                 }
@@ -125,17 +125,17 @@
             
             test("activities.model.Model.filtered", function() {
                 equals(11,
-                       model.filtered(activities.model.types.EDGE).length,
-                       "model.filtered(activities.model.types.EDGE)");
+                       model.filtered(activities.model.EDGE).length,
+                       "model.filtered(activities.model.EDGE)");
                 equals(3,
-                       model.filtered(activities.model.types.ACTION).length,
-                       "filtered(activities.model.types.ACTION)");
+                       model.filtered(activities.model.ACTION).length,
+                       "filtered(activities.model.ACTION)");
                 var res = model.filtered(
-                    activities.model.types.EDGE,
+                    activities.model.EDGE,
                     tests.model.children.action_1);
                 equals(0,
                        res,
-                       "filtered(activities.model.types.ACTION, " +
+                       "filtered(activities.model.ACTION, " +
                        "tests.model.children.action_1)");
             });
             
@@ -170,15 +170,15 @@
             test("activities.model.Model.source", function() {
                 var source = model.source(model.context.children.edge_1);
                 equals(true,
-                       source.type == activities.model.types.INITIAL,
-                       "source.type == activities.model.types.INITIAL");
+                       source.type == activities.model.INITIAL,
+                       "source.type == activities.model.INITIAL");
             });
             
             test("activities.model.Model.target", function() {
                 var target = model.target(model.context.children.edge_1);
                 equals(true,
-                       target.type == activities.model.types.FORK,
-                       "target.type == activities.model.types.FORK");
+                       target.type == activities.model.FORK,
+                       "target.type == activities.model.FORK");
             });
         }
     }

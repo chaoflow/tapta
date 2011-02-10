@@ -12,19 +12,28 @@
 	
 	<body>
 		
-		<div class="activity_editor" id="level_0">
+		<div class="activity_editor"
+		     id="level_0"
+			 style="height:450px;">
 			
 			<!-- toolbar goes here -->
 			
 			<!-- a single diagram -->
-			<canvas id="diagram_level_0" width="800" height="450"></canvas>
+			<canvas class="flow" id="flow_level_0" width="800" height="450"></canvas>
+			<canvas class="diagram" id="diagram_level_0" width="800" height="450"></canvas>
 			
 		</div>
 		
-		<a href="javascript:jQuery('.qunit').show(); tests.run()"
-		   class="runtests">
+		<div class="status"></div>
+		
+		<a href="javascript:jQuery('.qunit').show(); tests.run()">
 			Run tests
 		</a>
+		<br />
+		<a href="javascript:activities.ui.toggleCanvas('level_0')">
+            toggle to hidden flow information
+        </a>
+		<br />
 		
 		<!-- qunit related -->
 		<div class="qunit">
