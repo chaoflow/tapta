@@ -3,24 +3,24 @@
     $(document).ready(function() {
         var diagram = new activities.ui.Diagram('level_0');
         var action = new activities.ui.Action(diagram);
-        action.flowColor = '#000';
+        action.triggerColor = '#000';
         action.x = 60;
         action.y = 100;
         
         var action = new activities.ui.Action(diagram);
-        action.flowColor = '#111';
+        action.triggerColor = '#111';
         action.x = 220;
         action.y = 40;
         action.selected = true;
         action.label = 'Fooooo';
         
         var decision = new activities.ui.Decision(diagram);
-        decision.flowColor = '#222';
+        decision.triggerColor = '#222';
         decision.x = 60;
         decision.y = 200;
         
         var decision = new activities.ui.Decision(diagram);
-        decision.flowColor = '#333';
+        decision.triggerColor = '#333';
         decision.x = 200;
         decision.y = 150;
         
@@ -73,17 +73,19 @@
                             activities.events.notify);
             },
             
+            // utils
+            
             // event notification
             notify: function(event) {
                 event.preventDefault();
                 var canvas = $(this);
-                var position = canvas.position();
-                var x = event.pageX + position.left;
-                var y = event.pageY + position.top;
+                var offset = canvas.offset();
+                var x = event.pageX - offset.left;
+                var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
                 $('.status').html(event.type + 
-                                  ' X: ' + x + 
-                                  ' Y: ' + y);
+                                  ' x: ' + x + 
+                                  ' y: ' + y);
                 //event.type
                 //event.pageX
                 //event.pageY
@@ -96,16 +98,16 @@
         ui: {
             
             // debugging helper
-            // toggles flow canvas with diagram canvas
+            // toggles control canvas with diagram canvas
             toggleCanvas: function(name) {
                 var canvas = $('#diagram_' + name);
-                var flow = $('#flow_' + name);
+                var control = $('#control_' + name);
                 if (canvas.css('z-index') == '1') {
                     canvas.css('z-index', '0');
-                    flow.css('z-index', '1');
+                    control.css('z-index', '1');
                 } else {
                     canvas.css('z-index', '1');
-                    flow.css('z-index', '0');
+                    control.css('z-index', '0');
                 }
             },
             
@@ -116,8 +118,8 @@
             Diagram: function(name) {
                 this.canvas = $('#diagram_' + name).get(0);
                 this.context = this.canvas.getContext("2d");
-                this.flow = $('#flow_' + name).get(0);
-                this.hidden = this.flow.getContext("2d");
+                this.control = $('#control_' + name).get(0);
+                this.hidden = this.control.getContext("2d");
                 this.width = this.canvas.width;
                 this.height = this.canvas.height;
                 this.elements = new Array();
@@ -129,7 +131,7 @@
             Action: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.flowColor = null;
+                this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
                 this.width = 100;
@@ -145,7 +147,7 @@
             Decision: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.flowColor = null;
+                this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
                 this.sideLength = 40;
@@ -158,21 +160,21 @@
             Join: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.flowColor = null;
+                this.triggerColor = null;
             },
             
             // Fork element
             Fork: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.flowColor = null;
+                this.triggerColor = null;
             },
             
             // Connection element
             Connection: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.flowColor = null;
+                this.triggerColor = null;
             }
         }
     }
@@ -286,7 +288,7 @@
             var hidden = this.diagram.hidden;
             hidden.save();
             hidden.translate(this.x, this.y);
-            hidden.fillStyle = this.flowColor;
+            hidden.fillStyle = this.triggerColor;
             hidden.fillRect((this.width / 2) * -1,
                             (this.height / 2) * -1,
                             this.width,
@@ -328,7 +330,7 @@
             hidden.save();
             hidden.translate(this.x, this.y);
             hidden.rotate(45 * Math.PI / 180);
-            hidden.fillStyle = this.flowColor;
+            hidden.fillStyle = this.triggerColor;
             hidden.fillRect((this.sideLength / 2) * -1,
                             (this.sideLength / 2) * -1,
                             this.sideLength,

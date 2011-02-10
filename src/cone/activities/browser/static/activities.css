@@ -1,8 +1,13 @@
+body {
+	background-color:#eee;
+}
 .activity_editor {
 	position:relative;
+	top:20;
+	left:20;
     margin-bottom:1em;
 }
-.activity_editor .flow {
+.activity_editor .control {
     position: absolute;
     left:1px;
     top:1px;
