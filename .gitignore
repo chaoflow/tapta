@@ -4,3 +4,4 @@
 bin
 eggs
 parts
+src/cone/activities/browser/static/.tmp_*
