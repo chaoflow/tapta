@@ -58,8 +58,9 @@
         events: {
             
             // event types
-            CLICK: 0,
-            HOVER: 1,
+            MOUSE_DOWN: 0,
+            MOUSE_UP: 1,
+            MOUSE_HOVER: 2,
             
             // constructors
             
@@ -67,7 +68,7 @@
             // expects diagram
             Dispatcher: function(diagram) {
                 this.diagram = diagram;
-                var canvas = $(diagram.canvas);
+                var canvas = $(diagram.layers.diagram.canvas);
                 canvas.data('dispatcher', this);
                 canvas.bind('mousedown mousemove mouseup',
                             activities.events.notify);
@@ -83,12 +84,11 @@
                 var x = event.pageX - offset.left;
                 var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
+                var context = dispatcher.diagram.layers.control.context;
+                var imgData = context.getImageData(x, y, 1, 1);
                 $('.status').html(event.type + 
                                   ' x: ' + x + 
-                                  ' y: ' + y);
-                //event.type
-                //event.pageX
-                //event.pageY
+                                  ' y: ' + y + ' ' + imgData);
             }
             
             
@@ -102,26 +102,36 @@
             toggleCanvas: function(name) {
                 var canvas = $('#diagram_' + name);
                 var control = $('#control_' + name);
-                if (canvas.css('z-index') == '1') {
-                    canvas.css('z-index', '0');
-                    control.css('z-index', '1');
+                if (canvas.css('z-index') == 1) {
+                    canvas.css('z-index', 0);
+                    control.css('z-index', 1);
                 } else {
-                    canvas.css('z-index', '1');
-                    control.css('z-index', '0');
+                    canvas.css('z-index', 1);
+                    control.css('z-index', 0);
                 }
             },
             
             // constructors
             
+            // Layer element
+            // a layer is represented by a canvas, z index is defined by
+            // css z-index property
+            Layer: function(canvas) {
+                this.canvas = canvas;
+                this.context = canvas.getContext("2d");
+            },
+            
             // Diagram element
             // refers to activity model
             Diagram: function(name) {
-                this.canvas = $('#diagram_' + name).get(0);
-                this.context = this.canvas.getContext("2d");
-                this.control = $('#control_' + name).get(0);
-                this.hidden = this.control.getContext("2d");
-                this.width = this.canvas.width;
-                this.height = this.canvas.height;
+                this.layers = {
+                    control:
+                        new activities.ui.Layer($('#control_' + name).get(0)),
+                    diagram:
+                        new activities.ui.Layer($('#diagram_' + name).get(0))
+                };
+                this.width = this.layers.diagram.canvas.width;
+                this.height = this.layers.diagram.canvas.height;
                 this.elements = new Array();
                 this.dispatcher = new activities.events.Dispatcher(this);
             },
@@ -262,7 +272,7 @@
         
         // iterate over elements of diagram and call render function
         render: function() {
-            var context = this.context;
+            var context = this.layers.diagram.context;
             context.save();
             context.fillStyle = '#fff'; // global diagram bg color
             context.fillRect(0, 0, this.width, this.height);
@@ -285,17 +295,20 @@
         
         // render action
         render: function() {
-            var hidden = this.diagram.hidden;
-            hidden.save();
-            hidden.translate(this.x, this.y);
-            hidden.fillStyle = this.triggerColor;
-            hidden.fillRect((this.width / 2) * -1,
-                            (this.height / 2) * -1,
-                            this.width,
-                            this.height);
-            hidden.restore();
             
-            var context = this.diagram.context;
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.fillStyle = this.triggerColor;
+            context.fillRect((this.width / 2) * -1,
+                             (this.height / 2) * -1,
+                             this.width,
+                             this.height);
+            context.restore();
+            
+            // diagram layer
+            context = this.diagram.layers.diagram.context;
             context.save();
             context.translate(this.x, this.y);
             context.fillStyle = this.fillColor;
@@ -326,18 +339,21 @@
         
         // render decision
         render: function() {
-            var hidden = this.diagram.hidden;
-            hidden.save();
-            hidden.translate(this.x, this.y);
-            hidden.rotate(45 * Math.PI / 180);
-            hidden.fillStyle = this.triggerColor;
-            hidden.fillRect((this.sideLength / 2) * -1,
+            
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.rotate(45 * Math.PI / 180);
+            context.fillStyle = this.triggerColor;
+            context.fillRect((this.sideLength / 2) * -1,
                             (this.sideLength / 2) * -1,
                             this.sideLength,
                             this.sideLength);
-            hidden.restore();
+            context.restore();
             
-            var context = this.diagram.context;
+            // diagram layer
+            context = this.diagram.layers.diagram.context;
             context.save();
             context.translate(this.x, this.y);
             context.rotate(45 * Math.PI / 180);
