@@ -3,24 +3,24 @@
     $(document).ready(function() {
         var diagram = new activities.ui.Diagram('level_0');
         var action = new activities.ui.Action(diagram);
-        action.triggerColor = '#000';
+        action.triggerColor = '#111111';
         action.x = 60;
         action.y = 100;
         
         var action = new activities.ui.Action(diagram);
-        action.triggerColor = '#111';
+        action.triggerColor = '#222222';
         action.x = 220;
         action.y = 40;
         action.selected = true;
         action.label = 'Fooooo';
         
         var decision = new activities.ui.Decision(diagram);
-        decision.triggerColor = '#222';
+        decision.triggerColor = '#333333';
         decision.x = 60;
         decision.y = 200;
         
         var decision = new activities.ui.Decision(diagram);
-        decision.triggerColor = '#333';
+        decision.triggerColor = '#444444';
         decision.x = 200;
         decision.y = 150;
         
@@ -67,6 +67,9 @@
             // the event dispatcher
             // expects diagram
             Dispatcher: function(diagram) {
+                
+                // len array depends on available events
+                this.subscriber = new Array(3);
                 this.diagram = diagram;
                 var canvas = $(diagram.layers.diagram.canvas);
                 canvas.data('dispatcher', this);
@@ -86,17 +89,26 @@
                 var dispatcher = canvas.data('dispatcher');
                 var context = dispatcher.diagram.layers.control.context;
                 var imgData = context.getImageData(x, y, 1, 1).data;
-                var r = imgData[0];
-                var g = imgData[1];
-                var b = imgData[2];
-                var a = imgData[3];
                 $('.status').html(event.type + 
                                   ' x: ' + x + 
                                   ' y: ' + y +
-                                  ' r: ' + r +
-                                  ' g: ' + g +
-                                  ' b: ' + b +
-                                  ' a: ' + a);
+                                  ' hex: ' +
+                                  activities.events.rgb2hex(imgData));
+            },
+            
+            // convert array containing rgb to hex string
+            rgb2hex: function(color) {
+                return '#' +
+                    activities.events.dec2hex(color[0]) + 
+                    activities.events.dec2hex(color[1]) +
+                    activities.events.dec2hex(color[2]);
+            },
+            
+            // convert decimal to hex string
+            dec2hex: function(dec) {
+                var c = '0123456789ABCDEF';
+                return String(c.charAt(Math.floor(dec / 16)))
+                     + String(c.charAt(dec - (Math.floor(dec / 16) * 16)));
             }
         },
         
@@ -270,6 +282,15 @@
     
     // activities.events.Dispatcher member functions
     $.extend(activities.events.Dispatcher.prototype, {
+        
+        // subscribe to event with handler
+        // XXX: next step > colors
+        subscribe: function(event, handler) {
+            if (!this.subscriber[event]) {
+                this.subscriber[event] = new Array();
+            }
+            this.subscriber[event].push(handler);
+        }
         
     });
     
