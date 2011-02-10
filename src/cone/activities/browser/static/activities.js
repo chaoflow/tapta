@@ -383,17 +383,17 @@
                 activities.tests._out.empty();
                 activities.tests._success = 0;
                 activities.tests._errors = 0;
-				var tests = [
-				    '_test_activities_model_Model_filtered',
-					'_test_activities_model_Model_incoming',
-					'_test_activities_model_Model_outgoing',
-					'_test_activities_model_Model_source',
-					'_test_activities_model_Model_target',
-				];
-				for (var idx in tests) {
-					var func = activities.tests[tests[idx]];
-					activities.tests._run_test(func, model, tests[idx]);
-				}
+                var tests = [
+                    '_test_activities_model_Model_filtered',
+                    '_test_activities_model_Model_incoming',
+                    '_test_activities_model_Model_outgoing',
+                    '_test_activities_model_Model_source',
+                    '_test_activities_model_Model_target',
+                ];
+                for (var idx in tests) {
+                    var func = activities.tests[tests[idx]];
+                    activities.tests._run_test(func, model, tests[idx]);
+                }
                 var total =
                     activities.tests._success + activities.tests._errors;
                 var msg = 'Run ' + total + ' tests with ';
@@ -429,49 +429,49 @@
             
             // error count
             _errors: 0,
-			
-			// run single test
-			_run_test: function(func, model, name) {
-				try {
-					if (func(model)) {
-						var msg = 'success: "' + name;
-						msg += '"<pre style="color:black">' + func;
-						msg += '</pre>';
-						activities.tests.success(msg);
-					}
-					else {
-						var msg = 'failed: "' + name;
-						msg += '"<pre style="color:black">' + func;
-						msg += '</pre>';
-						activities.tests.error(msg);
-					}
-				} catch (err) {
-					var msg = 'failed: "' + name;
-					msg += '"<pre style="color:black">' + func;
-					msg += '</pre>';
-					activities.tests.error(msg);
-				}
-			},
-			
-			_test_activities_model_Model_filtered: function(model) {
-				alert(model.filtered(activities.model.types.EDGE));
-				return true;
-			},
-			
-			_test_activities_model_Model_incoming: function(model) {
-				return true;
+            
+            // run single test
+            _run_test: function(func, model, name) {
+                try {
+                    if (func(model)) {
+                        var msg = 'success: "' + name;
+                        msg += '"<pre style="color:black">' + func;
+                        msg += '</pre>';
+                        activities.tests.success(msg);
+                    }
+                    else {
+                        var msg = 'failed: "' + name;
+                        msg += '"<pre style="color:black">' + func;
+                        msg += '</pre>';
+                        activities.tests.error(msg);
+                    }
+                } catch (err) {
+                    var msg = 'failed: "' + name;
+                    msg += '"<pre style="color:black">' + func;
+                    msg += '</pre>';
+                    activities.tests.error(msg);
+                }
             },
-			
-			_test_activities_model_Model_outgoing: function(model) {
-				return true;
+            
+            _test_activities_model_Model_filtered: function(model) {
+                alert(model.filtered(activities.model.types.EDGE));
+                return true;
             },
-			
-			_test_activities_model_Model_source: function(model) {
-				return true;
+            
+            _test_activities_model_Model_incoming: function(model) {
+                return true;
             },
-			
-			_test_activities_model_Model_target: function(model) {
-				return true;
+            
+            _test_activities_model_Model_outgoing: function(model) {
+                return true;
+            },
+            
+            _test_activities_model_Model_source: function(model) {
+                return true;
+            },
+            
+            _test_activities_model_Model_target: function(model) {
+                return true;
             },
         } // tests
     });
