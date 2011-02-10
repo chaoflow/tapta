@@ -4,23 +4,23 @@
         var diagram = new activities.ui.Diagram('level_0');
         var action = new activities.ui.Action(diagram);
         action.flowColor = '#000';
-		action.x = 60;
+        action.x = 60;
         action.y = 100;
         
         var action = new activities.ui.Action(diagram);
-		action.flowColor = '#111';
+        action.flowColor = '#111';
         action.x = 220;
         action.y = 40;
         action.selected = true;
         action.label = 'Fooooo';
         
         var decision = new activities.ui.Decision(diagram);
-		decision.flowColor = '#222';
+        decision.flowColor = '#222';
         decision.x = 60;
         decision.y = 200;
         
         var decision = new activities.ui.Decision(diagram);
-		decision.flowColor = '#333';
+        decision.flowColor = '#333';
         decision.x = 200;
         decision.y = 150;
         
@@ -53,41 +53,41 @@
                 this.context = context;
             }
         },
-		
-		// interaction related
-		events: {
-			
-			// event types
-			CLICK: 0,
-			HOVER: 1,
-			
-			// constructors
-			
-			// the event dispatcher
-			// expects diagram
-			Dispatcher: function(diagram) {
-				this.diagram = diagram;
-				var canvas = $(diagram.canvas);
-				canvas.bind('mousedown mousemove mouseup', this.notify);
-			}
-		},
+        
+        // interaction related
+        events: {
+            
+            // event types
+            CLICK: 0,
+            HOVER: 1,
+            
+            // constructors
+            
+            // the event dispatcher
+            // expects diagram
+            Dispatcher: function(diagram) {
+                this.diagram = diagram;
+                var canvas = $(diagram.canvas);
+                canvas.bind('mousedown mousemove mouseup', this.notify);
+            }
+        },
         
         // rendering elements
         ui: {
-			
-			// debugging helper
-			// toggles flow canvas with diagram canvas
-			toggleCanvas: function(name) {
-				var canvas = $('#diagram_' + name);
-				var flow = $('#flow_' + name);
-				if (canvas.css('z-index') == '1') {
-					canvas.css('z-index', '0');
-					flow.css('z-index', '1');
-				} else {
-					canvas.css('z-index', '1');
+            
+            // debugging helper
+            // toggles flow canvas with diagram canvas
+            toggleCanvas: function(name) {
+                var canvas = $('#diagram_' + name);
+                var flow = $('#flow_' + name);
+                if (canvas.css('z-index') == '1') {
+                    canvas.css('z-index', '0');
+                    flow.css('z-index', '1');
+                } else {
+                    canvas.css('z-index', '1');
                     flow.css('z-index', '0');
-				}
-			},
+                }
+            },
             
             // constructors
             
@@ -95,13 +95,13 @@
             // refers to activity model
             Diagram: function(name) {
                 this.canvas = $('#diagram_' + name).get(0);
-				this.context = this.canvas.getContext("2d");
-				this.flow = $('#flow_' + name).get(0);
-				this.hidden = this.flow.getContext("2d");
+                this.context = this.canvas.getContext("2d");
+                this.flow = $('#flow_' + name).get(0);
+                this.hidden = this.flow.getContext("2d");
                 this.width = this.canvas.width;
                 this.height = this.canvas.height;
                 this.elements = new Array();
-				this.dispatcher = new activities.events.Dispatcher(this);
+                this.dispatcher = new activities.events.Dispatcher(this);
             },
             
             // Action element
@@ -110,7 +110,7 @@
                 this.diagram = diagram;
                 this.diagram.add(this);
                 this.flowColor = null;
-				this.x = 0;
+                this.x = 0;
                 this.y = 0;
                 this.width = 100;
                 this.height = 70;
@@ -125,7 +125,7 @@
             Decision: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-				this.flowColor = null;
+                this.flowColor = null;
                 this.x = 0;
                 this.y = 0;
                 this.sideLength = 40;
@@ -138,21 +138,21 @@
             Join: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-				this.flowColor = null;
+                this.flowColor = null;
             },
             
             // Fork element
             Fork: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-				this.flowColor = null;
+                this.flowColor = null;
             },
             
             // Connection element
             Connection: function(diagram) {
                 this.diagram = diagram;
                 this.diagram.add(this);
-				this.flowColor = null;
+                this.flowColor = null;
             }
         }
     }
@@ -229,21 +229,21 @@
             return this.context.children[edge.target];
         }
     });
-	
-	// activities.events.Dispatcher member functions
+    
+    // activities.events.Dispatcher member functions
     $.extend(activities.events.Dispatcher.prototype, {
-		
-		// event notification
-		notify: function(event) {
-			event.preventDefault();
-			$('.status').html(event.type + 
-			                  ' X: ' + event.pageX + 
-							  ' Y: ' + event.pageY);
-			//event.type
-			//event.pageX
-			//event.pageY
-		}
-		
+        
+        // event notification
+        notify: function(event) {
+            event.preventDefault();
+            $('.status').html(event.type + 
+                              ' X: ' + event.pageX + 
+                              ' Y: ' + event.pageY);
+            //event.type
+            //event.pageX
+            //event.pageY
+        }
+        
     });
     
     // activities.ui.Diagram member functions
@@ -251,7 +251,7 @@
         
         // iterate over elements of diagram and call render function
         render: function() {
-			var context = this.context;
+            var context = this.context;
             context.save();
             context.fillStyle = '#fff'; // global diagram bg color
             context.fillRect(0, 0, this.width, this.height);
@@ -273,16 +273,16 @@
         
         // render action
         render: function() {
-			var hidden = this.diagram.hidden;
-			hidden.save();
-			hidden.translate(this.x, this.y);
-			hidden.fillStyle = this.flowColor;
-			hidden.fillRect((this.width / 2) * -1,
+            var hidden = this.diagram.hidden;
+            hidden.save();
+            hidden.translate(this.x, this.y);
+            hidden.fillStyle = this.flowColor;
+            hidden.fillRect((this.width / 2) * -1,
                             (this.height / 2) * -1,
                             this.width,
                             this.height);
-			hidden.restore();
-			
+            hidden.restore();
+            
             var context = this.diagram.context;
             context.save();
             context.translate(this.x, this.y);
@@ -314,17 +314,17 @@
         
         // render decision
         render: function() {
-			var hidden = this.diagram.hidden;
-			hidden.save();
-			hidden.translate(this.x, this.y);
-			hidden.rotate(45 * Math.PI / 180);
-			hidden.fillStyle = this.flowColor;
-			hidden.fillRect((this.sideLength / 2) * -1,
+            var hidden = this.diagram.hidden;
+            hidden.save();
+            hidden.translate(this.x, this.y);
+            hidden.rotate(45 * Math.PI / 180);
+            hidden.fillStyle = this.flowColor;
+            hidden.fillRect((this.sideLength / 2) * -1,
                             (this.sideLength / 2) * -1,
                             this.sideLength,
                             this.sideLength);
-			hidden.restore();
-			
+            hidden.restore();
+            
             var context = this.diagram.context;
             context.save();
             context.translate(this.x, this.y);
