@@ -68,8 +68,28 @@
             Dispatcher: function(diagram) {
                 this.diagram = diagram;
                 var canvas = $(diagram.canvas);
-                canvas.bind('mousedown mousemove mouseup', this.notify);
+                canvas.data('dispatcher', this);
+                canvas.bind('mousedown mousemove mouseup',
+                            activities.events.notify);
+            },
+            
+            // event notification
+            notify: function(event) {
+                event.preventDefault();
+                var canvas = $(this);
+                var position = canvas.position();
+                var x = event.pageX + position.left;
+                var y = event.pageY + position.top;
+                var dispatcher = canvas.data('dispatcher');
+                $('.status').html(event.type + 
+                                  ' X: ' + x + 
+                                  ' Y: ' + y);
+                //event.type
+                //event.pageX
+                //event.pageY
             }
+            
+            
         },
         
         // rendering elements
@@ -233,17 +253,6 @@
     // activities.events.Dispatcher member functions
     $.extend(activities.events.Dispatcher.prototype, {
         
-        // event notification
-        notify: function(event) {
-            event.preventDefault();
-            $('.status').html(event.type + 
-                              ' X: ' + event.pageX + 
-                              ' Y: ' + event.pageY);
-            //event.type
-            //event.pageX
-            //event.pageY
-        }
-        
     });
     
     // activities.ui.Diagram member functions
@@ -256,6 +265,7 @@
             context.fillStyle = '#fff'; // global diagram bg color
             context.fillRect(0, 0, this.width, this.height);
             context.restore();
+            
             for(var idx in this.elements) {
                 this.elements[idx].render();
             }
