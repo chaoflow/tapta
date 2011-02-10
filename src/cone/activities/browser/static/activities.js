@@ -378,152 +378,69 @@
                 }
             }, // model
             
-            // run tests for activities using out dom element for test outputs.
-            run: function(selector) {
+            run: function() {
                 var model = new activities.model.Model(activities.tests.model);
-                activities.tests._out = $(selector);
-                activities.tests._out.empty();
-                activities.tests._success = 0;
-                activities.tests._errors = 0;
-                var tests = [
-                    '_test_activities_model_Model_filtered',
-                    '_test_activities_model_Model_incoming',
-                    '_test_activities_model_Model_outgoing',
-                    '_test_activities_model_Model_source',
-                    '_test_activities_model_Model_target',
-                ];
-                for (var idx in tests) {
-                    var func = activities.tests[tests[idx]];
-                    activities.tests._run_test(func, model, tests[idx]);
-                }
-                var total =
-                    activities.tests._success + activities.tests._errors;
-                var msg = 'Run ' + total + ' tests with ';
-                msg += activities.tests._errors + ' errors.';
-                if (activities.tests._errors > 0) {
-                    activities.tests.error(msg);
-                } else {
-                    activities.tests.success(msg);
-                }
-            },
-            
-            // write sucess message
-            success: function(msg) {
-                var html = '<span style="color:green">';
-                html += msg + '</span>';
-                activities.tests._out.append(html);
-                activities.tests._success += 1;
-            },
-            
-            // write error message
-            error: function(msg) {
-                var html = '<span style="color:red">';
-                html += msg + '</span>';
-                activities.tests._out.append(html);
-                activities.tests._errors += 1;
-            },
-            
-            // output container for test results
-            _out: null,
-            
-            // success count
-            _success: 0,
-            
-            // error count
-            _errors: 0,
-            
-            // XXX: beautify below
-            
-            // run single test
-            _run_test: function(func, model, name) {
-                try {
-                    if (func(model)) {
-                        var msg = 'success: "' + name + '<br />';
-                        //msg += '"<pre style="color:black">' + func;
-                        //msg += '</pre>';
-                        activities.tests.success(msg);
-                    }
-                    else {
-                        var msg = 'failed: "' + name + '<br />';
-                        //msg += '"<pre style="color:black">' + func;
-                        //msg += '</pre>';
-                        activities.tests.error(msg);
-                    }
-                } catch (err) {
-                    var msg = 'failed: "' + name + '" in line ' 
-                    msg += err.lineNumber + '<br />' + err + '<br />';
-                    //msg += '<pre style="color:black">' + func;
-                    //msg += '</pre>';
-                    activities.tests.error(msg);
-                }
-            },
-            
-            _test_activities_model_Model_filtered: function(model) {
-                if (model.filtered(activities.model.types.EDGE).length != 11) {
-                    throw 'filtered(activities.model.types.EDGE).length != 11';
-                }
-                if (model.filtered(activities.model.types.ACTION).length != 3) {
-                    throw 'filtered(activities.model.types.ACTION).length != 3';
-                }
-                var res = model.filtered(
-                    activities.model.types.EDGE,
-                    activities.tests.model.children.action_1);
-                if (res.length != 0) {
-                    throw 'filtered(activities.model.types.ACTION, ' +
-                        'activities.tests.model.children.action_1).length != 0';
-                }
-                return true;
-            },
-            
-            _test_activities_model_Model_incoming: function(model) {
-                var res = model.incoming(model.context.children['decision']);
-                if (res.length != 1) {
-                    throw "model.incoming(model.context.children" +
-                          "['decision']).length != 1";
-                }
-                res = model.incoming(model.context.children['merge']);
-                if (res.length != 2) {
-                    throw "model.incoming(model.context.children" +
-                          "['merge']).length != 2";
-                }
-                if (!res[0].source || !res[0].target) {
-                    throw "!res[0].source || !res[0].target";
-                }
-                return true;
-            },
-            
-            _test_activities_model_Model_outgoing: function(model) {
-                var res = model.outgoing(model.context.children['decision']);
-                if (res.length != 2) {
-                    throw "model.outgoing(model.context.children" +
-                          "['decision']).length != 2";
-                }
-                res = model.outgoing(model.context.children['merge']);
-                if (res.length != 1) {
-                    throw "model.outgoing(model.context.children" +
-                          "['merge']).length != 1";
-                }
-                if (!res[0].source || !res[0].target) {
-                    throw "!res[0].source || !res[0].target";
-                }
-                return true;
-            },
-            
-            _test_activities_model_Model_source: function(model) {
-                var source = model.source(model.context.children['edge_1']);
-                if (source.type != activities.model.types.INITIAL) {
-                    throw 'source.type != activities.model.types.INITIAL';
-                }
-                return true;
-            },
-            
-            _test_activities_model_Model_target: function(model) {
-                var target = model.target(model.context.children['edge_1']);
-                if (target.type != activities.model.types.FORK) {
-                    throw 'target.type != activities.model.types.FORK';
-                }
-                return true;
-            },
+                
+                module("activities.model.Model");
+                
+                test("activities.model.Model.filtered", function() {
+                    equals(11,
+                           model.filtered(activities.model.types.EDGE).length,
+                           "model.filtered(activities.model.types.EDGE)");
+                    equals(3,
+                           model.filtered(activities.model.types.ACTION).length,
+                           "filtered(activities.model.types.ACTION)");
+                    var res = model.filtered(
+                        activities.model.types.EDGE,
+                        activities.tests.model.children.action_1);
+                    equals(0,
+                           res,
+                           "filtered(activities.model.types.ACTION, " +
+                           "activities.tests.model.children.action_1)");
+                });
+                
+                test("activities.model.Model.incoming", function() {
+                    var res = model.incoming(model.context.children.decision);
+                    equals(1,
+                           res.length,
+                           "model.incoming(model.context.children.decision)");
+                    res = model.incoming(model.context.children.merge);
+                    equals(2,
+                           res.length,
+                           "model.incoming(model.context.children.merge)");
+                    equals(false,
+                           !res[0].source || !res[0].target,
+                           "res[0].source && res[0].target");
+                });
+                
+                test("activities.model.Model.outgoing", function() {
+                    var res = model.outgoing(model.context.children.decision);
+                    equals(2,
+                           res.length,
+                           "model.outgoing(model.context.children.decision)");
+                    res = model.outgoing(model.context.children.merge);
+                    equals(1,
+                           res.length,
+                           "model.outgoing(model.context.children.merge)");
+                    equals(false,
+                           !res[0].source || !res[0].target,
+                           "res[0].source && res[0].target");
+                });
+                
+                test("activities.model.Model.source", function() {
+                    var source = model.source(model.context.children.edge_1);
+                    equals(true,
+                           source.type == activities.model.types.INITIAL,
+                           "source.type == activities.model.types.INITIAL");
+                });
+                
+                test("activities.model.Model.target", function() {
+                    var target = model.target(model.context.children.edge_1);
+                    equals(true,
+                           target.type == activities.model.types.FORK,
+                           "target.type == activities.model.types.FORK");
+                });
+            }
         } // tests
     });
 

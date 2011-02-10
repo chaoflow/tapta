@@ -4,6 +4,11 @@
 .activity_editor {
 	margin-bottom:1em;
 }
-.activity_editor_test_out {
-	padding-top:1em;
+.runtests {
+	text-decoration:none;
+	color:red;
+	font-weight:bold;
+}
+.qunit {
+	display:none;
 }

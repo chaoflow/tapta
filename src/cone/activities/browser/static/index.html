@@ -3,7 +3,9 @@
 	<head>
 		<title>Activities</title>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script> 
+		<script src="http://code.jquery.com/qunit/git/qunit.js"></script>
 		<script src="activities.js"></script>
+		<link href="http://code.jquery.com/qunit/git/qunit.css" rel="stylesheet" type="text/css" media="screen" />
 		<link href="activities.css" rel="stylesheet" type="text/css" media="screen" />
 	</head>
 	
@@ -18,11 +20,20 @@
 			
 		</div>
 		
-		<a href="javascript:activities.tests.run('.activity_editor_test_out')">
+		<a href="javascript:jQuery('.qunit').show(); activities.tests.run()"
+		   class="runtests">
 			Run tests
 		</a>
 		
-		<div class="activity_editor_test_out"></div>
+		<!-- qunit related -->
+		<div class="qunit">
+			<h1 id="qunit-header">cone.activities QUnit</h1>
+	        <h2 id="qunit-banner"></h2>
+	        <div id="qunit-testrunner-toolbar"></div>
+	        <h2 id="qunit-userAgent"></h2>
+	        <ol id="qunit-tests"></ol>
+	        <div id="qunit-fixture"></div>
+		</div>
 		
 	</body>
 	
