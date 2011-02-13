@@ -73,20 +73,22 @@
         events: {
             
             // event types
-            MOUSE_DOWN: 0,
-            MOUSE_UP: 1,
-            MOUSE_HOVER: 2,
+            MOUSE_DOWN : 0,
+            MOUSE_UP   : 1,
+            MOUSE_MOVE : 2,
+            MOUSE_IN   : 3,
+            MOUSE_OUT  : 4,
             
             // constructors
             
             // the event dispatcher
             // expects diagram
             Dispatcher: function(diagram) {
-                // event mapping for notification
+                // events directly mapping to javascript events for notification
                 this.eventMapping = {
                     mousedown: activities.events.MOUSE_DOWN,
                     mouseup: activities.events.MOUSE_UP,
-                    mousemove: activities.events.MOUSE_HOVER,
+                    mousemove: activities.events.MOUSE_MOVE,
                 };
                 
                 // len array depends on available events
@@ -110,28 +112,48 @@
                 var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
                 var context = dispatcher.diagram.layers.control.context;
-                
+                // try to get pixel info, return if fails
                 try {
                     var imgData = context.getImageData(x, y, 1, 1).data;
                 } catch (err) {
                     return;
                 }
-                
+                // detect event scope object
                 var triggerColor = activities.utils.rgb2hex(imgData);
-                dispatcher.recent = dispatcher.diagram.elements[triggerColor];
-                if (!dispatcher.recent) {
-                    dispatcher.recent = dispatcher.diagram;
+                var recent = dispatcher.diagram.elements[triggerColor];
+                if (!recent) {
+                    recent = dispatcher.diagram;
                 }
-                
+                // trigger mousein/mouseout if necessary and return
+                if (dispatcher.recent && recent != dispatcher.recent) {
+                    var subscriber = dispatcher.subscriber[recent.triggerColor];
+                    if (subscriber) {
+                        var evt = activities.events.MOUSE_IN;
+                        for (var idx in subscriber[evt]) {
+                            subscriber[evt][idx](recent, event);
+                        }
+                    }
+                    // mouseout
+                    subscriber = dispatcher.subscriber[triggerColor];
+                    if (subscriber) {
+                        var evt = activities.events.MOUSE_OUT;
+                        for (var idx in subscriber[evt]) {
+                            subscriber[evt][idx](dispatcher.recent, event);
+                        }
+                    }
+                    dispatcher.recent = recent;
+                    return;
+                }
+                // trigger events directly mapped from javascript events        
+                dispatcher.recent = recent;
                 var subscriber = dispatcher.subscriber[triggerColor];
                 if (subscriber) {
                     var mapped = dispatcher.eventMapping[event.type];
                     for (var idx in subscriber[mapped]) {
-                        subscriber[mapped][idx](event);
+                        subscriber[mapped][idx](recent, event);
                     }
                 }
-                
-                //activities.events.debug(event.type, x, y, triggerColor);
+                activities.events.debug(event.type, x, y, triggerColor);
             },
             
             // debug status message
@@ -187,9 +209,7 @@
                 
                 // event subscription
                 this.dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN, this, this.mousedown);
-                this.dispatcher.subscribe(
-                    activities.events.MOUSE_UP, this, this.mouseup);
+                    activities.events.MOUSE_IN, this, this.setCursor);
             },
             
             // Action element
@@ -210,9 +230,7 @@
                 
                 // event subscription
                 this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN, this, this.mousedown);
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_UP, this, this.mouseup);
+                    activities.events.MOUSE_IN, this, this.setCursor);
             },
             
             // Decision element
@@ -229,9 +247,7 @@
                 
                 // event subscription
                 this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN, this, this.mousedown);
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_UP, this, this.mouseup);
+                    activities.events.MOUSE_IN, this, this.setCursor);
             },
             
             // Join element
@@ -341,7 +357,9 @@
                 this.subscriber[obj.triggerColor] = [
                     [], // activities.events.MOUSE_DOWN
                     [], // activities.events.MOUSE_UP
-                    []  // activities.events.MOUSE_HOVER
+                    [], // activities.events.MOUSE_MOVE
+                    [], // activities.events.MOUSE_IN
+                    []  // activities.events.MOUSE_OUT
                 ];
             }
             this.subscriber[obj.triggerColor][evt].push(handler);
@@ -376,7 +394,7 @@
         nextTriggerColor: function() {
             var idx = 0;
             for (var i = 0; i < 3; i++) {
-                if (this._nextTriggerColor[idx] == 25) {
+                if (this._nextTriggerColor[idx] == 250) {
                     idx++;
                 }
             }
@@ -384,21 +402,16 @@
             if (idx == 3) {
                 throw "Maximum number of trigger colors reached";
             }
-            this._nextTriggerColor[idx]++;
+            this._nextTriggerColor[idx] += 10;
             return activities.utils.rgb2hex(this._nextTriggerColor);
         },
         
         // event handler
         
-        mousedown: function(event) {
-            // XXX
-            $('.status').html('Mousedown on diagram');
-        },
-        
-        mouseup: function(event) {
-            // XXX
-            $('.status').html('Mouseup on diagram');
-        },
+        // MOUSE_IN
+        setCursor: function(obj, event) {
+            $(obj.layers.diagram.canvas).css('cursor', 'default');
+        }
     });
     
     // activities.ui.Action member functions
@@ -445,15 +458,10 @@
         
         // event handler
         
-        mousedown: function(event) {
-            // XXX
-            $('.status').html('Mousedown on action');
-        },
-        
-        mouseup: function(event) {
-            // XXX
-            $('.status').html('Mouseup on action');
-        },
+        // MOUSE_IN
+        setCursor: function(obj, event) {
+            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+        }
     });
     
     // activities.ui.Decision member functions
@@ -491,15 +499,10 @@
         
         // event handler
         
-        mousedown: function(event) {
-            // XXX
-            $('.status').html('Mousedown on decision');
-        },
-        
-        mouseup: function(event) {
-            // XXX
-            $('.status').html('Mouseup on decision');
-        },
+        // MOUSE_IN
+        setCursor: function(obj, event) {
+            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+        }
     });
 
 })(jQuery);
