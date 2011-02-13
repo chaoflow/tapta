@@ -9,7 +9,6 @@
         var action = new activities.ui.Action(diagram);
         action.x = 220;
         action.y = 40;
-        action.selected = true;
         action.label = 'Fooooo';
         
         var decision = new activities.ui.Decision(diagram);
@@ -112,20 +111,25 @@
                 var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
                 var context = dispatcher.diagram.layers.control.context;
+                
                 // try to get pixel info, return if fails
                 try {
                     var imgData = context.getImageData(x, y, 1, 1).data;
                 } catch (err) {
                     return;
                 }
+                
                 // detect event scope object
                 var triggerColor = activities.utils.rgb2hex(imgData);
                 var recent = dispatcher.diagram.elements[triggerColor];
                 if (!recent) {
                     recent = dispatcher.diagram;
                 }
+                
                 // trigger mousein/mouseout if necessary and return
                 if (dispatcher.recent && recent != dispatcher.recent) {
+                    
+                    // mousein
                     var subscriber = dispatcher.subscriber[recent.triggerColor];
                     if (subscriber) {
                         var evt = activities.events.MOUSE_IN;
@@ -133,6 +137,7 @@
                             subscriber[evt][idx](recent, event);
                         }
                     }
+                    
                     // mouseout
                     subscriber = dispatcher.subscriber[triggerColor];
                     if (subscriber) {
@@ -144,6 +149,7 @@
                     dispatcher.recent = recent;
                     return;
                 }
+                
                 // trigger events directly mapped from javascript events        
                 dispatcher.recent = recent;
                 var subscriber = dispatcher.subscriber[triggerColor];
@@ -204,12 +210,15 @@
                 this.height = this.layers.diagram.canvas.height;
                 this.elements = new Object();
                 this.dispatcher = new activities.events.Dispatcher(this);
+                
                 // array for trigger color calculation for this diagram
                 this._nextTriggerColor = [0, 0, 0];
                 
                 // event subscription
                 this.dispatcher.subscribe(
                     activities.events.MOUSE_IN, this, this.setCursor);
+                this.dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN, this, this.unselectAll);
             },
             
             // Action element
@@ -221,16 +230,19 @@
                 this.width = 100;
                 this.height = 70;
                 this.fillColor = '#3ce654';
-                this.borderColor = '#ffc000';
-                this.borderWidth = 3;
-                this.label = 'Action';
+                this.selectedColor = '#ffc000';
+                this.selectedWidth = 2;
                 this.selected = false;
+                this.label = 'Action';
+                
                 this.diagram = diagram;
                 this.diagram.add(this);
                 
                 // event subscription
                 this.diagram.dispatcher.subscribe(
                     activities.events.MOUSE_IN, this, this.setCursor);
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN, this, this.setSelected);
             },
             
             // Decision element
@@ -240,14 +252,20 @@
                 this.y = 0;
                 this.sideLength = 40;
                 this.fillColor = '#c6c6c6';
-                this.borderColor = '#000';
+                this.borderColor = '#000000';
                 this.borderWidth = 2;
+                this.selectedColor = '#ffc000';
+                this.selectedWidth = 2;
+                this.selected = false;
+                
                 this.diagram = diagram;
                 this.diagram.add(this);
                 
                 // event subscription
                 this.diagram.dispatcher.subscribe(
                     activities.events.MOUSE_IN, this, this.setCursor);
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN, this, this.setSelected);
             },
             
             // Join element
@@ -411,6 +429,16 @@
         // MOUSE_IN
         setCursor: function(obj, event) {
             $(obj.layers.diagram.canvas).css('cursor', 'default');
+        },
+        
+        // MOUSE_DOWN
+        unselectAll: function(obj, event) {
+            for (var key in obj.elements) {
+                if (obj.elements[key].selected != "undefined") {
+                    obj.elements[key].selected = false;
+                }
+            }
+            obj.render();
         }
     });
     
@@ -432,27 +460,33 @@
             context.restore();
             
             // diagram layer
+            
+            // base element
             context = this.diagram.layers.diagram.context;
             context.save();
             context.translate(this.x, this.y);
             context.fillStyle = this.fillColor;
-            if (this.selected) {
-                context.strokeStyle = this.borderColor;
-                context.lineWidth = this.borderWidth;
-                context.strokeRect((this.width / 2) * -1,
-                                   (this.height / 2) * -1,
-                                   this.width,
-                                   this.height);
-            }
             context.fillRect((this.width / 2) * -1,
                              (this.height / 2) * -1,
                              this.width,
                              this.height);
+            
+            // label
             context.fillStyle = '#000';
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             context.font = '12px sans-serif';
             context.fillText(this.label, 0, 0, this.width);
+            
+            // selected border
+            if (this.selected) {
+                context.strokeStyle = this.selectedColor;
+                context.lineWidth = this.selectedWidth;
+                context.strokeRect((this.width / 2) * -1,
+                                   (this.height / 2) * -1,
+                                   this.width,
+                                   this.height);
+            }
             context.restore();
         },
         
@@ -461,6 +495,17 @@
         // MOUSE_IN
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+        },
+        
+        // MOUSE_DOWN
+        setSelected: function(obj, event) {
+            for (var key in obj.diagram.elements) {
+                if (obj.diagram.elements[key].selected != "undefined") {
+                    obj.diagram.elements[key].selected = false;
+                }
+            }
+            obj.selected = true;
+            obj.diagram.render();
         }
     });
     
@@ -483,17 +528,35 @@
             context.restore();
             
             // diagram layer
+            
+            // base element
             context = this.diagram.layers.diagram.context;
             context.save();
             context.translate(this.x, this.y);
             context.rotate(45 * Math.PI / 180);
             context.fillStyle = this.fillColor;
+            context.fillRect((this.sideLength / 2) * -1,
+                             (this.sideLength / 2) * -1,
+                             this.sideLength,
+                             this.sideLength);
+            
+            // default border
             context.strokeStyle = this.borderColor;
             context.lineWidth = this.borderWidth;
             context.strokeRect((this.sideLength / 2) * -1,
                                (this.sideLength / 2) * -1,
                                this.sideLength,
                                this.sideLength);
+            
+            // selected border
+            if (this.selected) {
+                context.strokeStyle = this.selectedColor;
+                context.lineWidth = this.selectedWidth;
+                context.strokeRect((this.sideLength / 2) * -1,
+                                   (this.sideLength / 2) * -1,
+                                   this.sideLength,
+                                   this.sideLength);
+            }
             context.restore();
         },
         
@@ -502,6 +565,17 @@
         // MOUSE_IN
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+        },
+        
+        // MOUSE_DOWN
+        setSelected: function(obj, event) {
+            for (var key in obj.diagram.elements) {
+                if (obj.diagram.elements[key].selected != "undefined") {
+                    obj.diagram.elements[key].selected = false;
+                }
+            }
+            obj.selected = true;
+            obj.diagram.render();
         }
     });
 
