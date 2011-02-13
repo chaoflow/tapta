@@ -211,6 +211,9 @@
                 this.elements = new Object();
                 this.dispatcher = new activities.events.Dispatcher(this);
                 
+                // current focused diagram element
+                this.focused = null;
+                
                 // array for trigger color calculation for this diagram
                 this._nextTriggerColor = [0, 0, 0];
                 
@@ -433,12 +436,10 @@
         
         // MOUSE_DOWN
         unselectAll: function(obj, event) {
-            for (var key in obj.elements) {
-                if (obj.elements[key].selected != "undefined") {
-                    obj.elements[key].selected = false;
-                }
+            if (obj.focused) {
+                obj.focused.selected = false;
+                obj.focused.render();
             }
-            obj.render();
         }
     });
     
@@ -466,10 +467,10 @@
             context.save();
             context.translate(this.x, this.y);
             context.fillStyle = this.fillColor;
-            context.fillRect((this.width / 2) * -1,
-                             (this.height / 2) * -1,
-                             this.width,
-                             this.height);
+            context.fillRect(((this.width + this.selectedWidth) / 2) * -1,
+                             ((this.height + this.selectedWidth) / 2) * -1,
+                             this.width + this.selectedWidth,
+                             this.height + this.selectedWidth);
             
             // label
             context.fillStyle = '#000';
@@ -499,13 +500,13 @@
         
         // MOUSE_DOWN
         setSelected: function(obj, event) {
-            for (var key in obj.diagram.elements) {
-                if (obj.diagram.elements[key].selected != "undefined") {
-                    obj.diagram.elements[key].selected = false;
-                }
+            if (obj.diagram.focused) {
+                obj.diagram.focused.selected = false;
+                obj.diagram.focused.render();
             }
+            obj.diagram.focused = obj;
             obj.selected = true;
-            obj.diagram.render();
+            obj.render();
         }
     });
     
@@ -569,13 +570,13 @@
         
         // MOUSE_DOWN
         setSelected: function(obj, event) {
-            for (var key in obj.diagram.elements) {
-                if (obj.diagram.elements[key].selected != "undefined") {
-                    obj.diagram.elements[key].selected = false;
-                }
+            if (obj.diagram.focused) {
+                obj.diagram.focused.selected = false;
+                obj.diagram.focused.render();
             }
+            obj.diagram.focused = obj;
             obj.selected = true;
-            obj.diagram.render();
+            obj.render();
         }
     });
 
