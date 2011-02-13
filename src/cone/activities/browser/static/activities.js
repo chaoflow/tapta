@@ -1,27 +1,10 @@
 (function($) {
     
     $(document).ready(function() {
-        var grid = new activities.ui.Grid();
-        
-        var diagram = new activities.ui.Diagram('level_0');
-        var action = new activities.ui.Action(diagram);
-        action.x = 60;
-        action.y = 100;
-        
-        var action = new activities.ui.Action(diagram);
-        action.x = 220;
-        action.y = 40;
-        action.label = 'Fooooo';
-        
-        var decision = new activities.ui.Decision(diagram);
-        decision.x = 60;
-        decision.y = 200;
-        
-        var decision = new activities.ui.Decision(diagram);
-        decision.x = 200;
-        decision.y = 150;
-        
-        diagram.render();
+        var model = eval(uneval(tests.model));
+        var name = 'level_0';
+        var renderer = new activities.ui.SimpleGridRenderer(model, name);
+        renderer.render();
     });
     
     // activities namespace
@@ -239,6 +222,13 @@
             Grid: function() {
                 // this.data[x][y]
                 this.data = new Array();
+            },
+            
+            // SimpleGridRenderer
+            SimpleGridRenderer: function(model, name) {
+                this.model = new activities.model.Model(model);
+                this.diagram = new activities.ui.Diagram(name);
+                this.grid = new activities.ui.Grid();
             },
             
             // Diagram element
@@ -488,6 +478,32 @@
         }
     });
     
+    // activities.ui.SimpleGridRenderer member functions
+    $.extend(activities.ui.SimpleGridRenderer.prototype, {
+        
+        render: function() {
+            var diagram = this.diagram;
+            var action = new activities.ui.Action(diagram);
+            action.x = 60;
+            action.y = 100;
+            
+            var action = new activities.ui.Action(diagram);
+            action.x = 220;
+            action.y = 40;
+            action.label = 'Fooooo';
+            
+            var decision = new activities.ui.Decision(diagram);
+            decision.x = 60;
+            decision.y = 200;
+            
+            var decision = new activities.ui.Decision(diagram);
+            decision.x = 200;
+            decision.y = 150;
+            
+            diagram.render();
+        }
+    });
+    
     // activities.ui.Diagram member functions
     $.extend(activities.ui.Diagram.prototype, {
         
@@ -530,12 +546,12 @@
         
         // event handler
         
-        // MOUSE_IN
+        // activities.events.MOUSE_IN
         setCursor: function(obj, event) {
             $(obj.layers.diagram.canvas).css('cursor', 'default');
         },
         
-        // MOUSE_DOWN
+        // activities.events.MOUSE_DOWN
         unselectAll: function(obj, event) {
             if (obj.focused) {
                 obj.focused.selected = false;
@@ -594,12 +610,12 @@
         
         // event handler
         
-        // MOUSE_IN
+        // activities.events.MOUSE_IN
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
         },
         
-        // MOUSE_DOWN
+        // activities.events.MOUSE_DOWN
         setSelected: function(obj, event) {
             if (obj.diagram.focused) {
                 obj.diagram.focused.selected = false;
@@ -664,12 +680,12 @@
         
         // event handler
         
-        // MOUSE_IN
+        // activities.events.MOUSE_IN
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
         },
         
-        // MOUSE_DOWN
+        // activities.events.MOUSE_DOWN
         setSelected: function(obj, event) {
             if (obj.diagram.focused) {
                 obj.diagram.focused.selected = false;
@@ -734,12 +750,12 @@
         
         // event handler
         
-        // MOUSE_IN
+        // activities.events.MOUSE_IN
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
         },
         
-        // MOUSE_DOWN
+        // activities.events.MOUSE_DOWN
         setSelected: function(obj, event) {
             if (obj.diagram.focused) {
                 obj.diagram.focused.selected = false;

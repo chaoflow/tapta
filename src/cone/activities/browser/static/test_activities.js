@@ -96,9 +96,9 @@
         },
         
         run: function() {
-            var model = new activities.model.Model(tests.model);
-            
             module("activities.model.Model");
+            
+            var model = new activities.model.Model(eval(uneval(tests.model)));
             
             test("activities.model.Model.filtered", function() {
                 equals(11,
@@ -168,6 +168,25 @@
                 equals(true,
                        target.__parent == 'model',
                        "target.__parent == 'model'");
+            });
+            
+            module("activities.ui.Grid");
+            
+            var grid = new activities.ui.Grid();
+            
+            test("activities.ui.Grid", function() {
+                grid.set(0, 0, 10, 20);
+                grid.set(1, 0, 20, 20);
+                
+                equals(true,
+                       grid.get(0, 0)[0] == 10,
+                       "grid.get(0, 0)[0] == 10");
+                equals(true,
+                       grid.get(1, 0)[0] == 20,
+                       "grid.get(1, 0)[0] == 20");
+                equals(true,
+                       typeof(grid.get(1, 1)) == "undefined",
+                       'typeof(grid.get(1, 1)) == "undefined"');
             });
         }
     }
