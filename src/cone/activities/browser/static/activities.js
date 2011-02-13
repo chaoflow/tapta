@@ -123,7 +123,7 @@
                     dispatcher.recent = dispatcher.diagram;
                 }
                 
-                var subscriber = dispatcher.subscriber[dispatcher.recent];
+                var subscriber = dispatcher.subscriber[triggerColor];
                 if (subscriber) {
                     var mapped = dispatcher.eventMapping[event.type];
                     for (var idx in subscriber[mapped]) {
@@ -131,7 +131,7 @@
                     }
                 }
                 
-                activities.events.debug(event.type, x, y, triggerColor);
+                //activities.events.debug(event.type, x, y, triggerColor);
             },
             
             // debug status message
@@ -171,6 +171,7 @@
             // Diagram element
             // refers to activity model
             Diagram: function(name) {
+                this.triggerColor = '#000000';
                 this.layers = {
                     control:
                         new activities.ui.Layer($('#control_' + name).get(0)),
@@ -183,6 +184,12 @@
                 this.dispatcher = new activities.events.Dispatcher(this);
                 // array for trigger color calculation for this diagram
                 this._nextTriggerColor = [0, 0, 0];
+                
+                // event subscription
+                this.dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN, this, this.mousedown);
+                this.dispatcher.subscribe(
+                    activities.events.MOUSE_UP, this, this.mouseup);
             },
             
             // Action element
@@ -200,6 +207,12 @@
                 this.selected = false;
                 this.diagram = diagram;
                 this.diagram.add(this);
+                
+                // event subscription
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN, this, this.mousedown);
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_UP, this, this.mouseup);
             },
             
             // Decision element
@@ -213,6 +226,12 @@
                 this.borderWidth = 2;
                 this.diagram = diagram;
                 this.diagram.add(this);
+                
+                // event subscription
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN, this, this.mousedown);
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_UP, this, this.mouseup);
             },
             
             // Join element
@@ -315,15 +334,17 @@
     $.extend(activities.events.Dispatcher.prototype, {
         
         // subscribe object to event with handler
+        // make sure trigger color is set correctly on object before
+        // subscription
         subscribe: function(evt, obj, handler) {
-            if (!this.subscriber[obj]) {
-                this.subscriber[obj] = [
+            if (!this.subscriber[obj.triggerColor]) {
+                this.subscriber[obj.triggerColor] = [
                     [], // activities.events.MOUSE_DOWN
                     [], // activities.events.MOUSE_UP
                     []  // activities.events.MOUSE_HOVER
                 ];
             }
-            this.subscriber[obj][evt].push(handler);
+            this.subscriber[obj.triggerColor][evt].push(handler);
         }
     });
     
@@ -365,7 +386,19 @@
             }
             this._nextTriggerColor[idx]++;
             return activities.utils.rgb2hex(this._nextTriggerColor);
-        }
+        },
+        
+        // event handler
+        
+        mousedown: function(event) {
+            // XXX
+            $('.status').html('Mousedown on diagram');
+        },
+        
+        mouseup: function(event) {
+            // XXX
+            $('.status').html('Mouseup on diagram');
+        },
     });
     
     // activities.ui.Action member functions
@@ -408,7 +441,19 @@
             context.font = '12px sans-serif';
             context.fillText(this.label, 0, 0, this.width);
             context.restore();
-        }
+        },
+        
+        // event handler
+        
+        mousedown: function(event) {
+            // XXX
+            $('.status').html('Mousedown on action');
+        },
+        
+        mouseup: function(event) {
+            // XXX
+            $('.status').html('Mouseup on action');
+        },
     });
     
     // activities.ui.Decision member functions
@@ -442,7 +487,19 @@
                                this.sideLength,
                                this.sideLength);
             context.restore();
-        }
+        },
+        
+        // event handler
+        
+        mousedown: function(event) {
+            // XXX
+            $('.status').html('Mousedown on decision');
+        },
+        
+        mouseup: function(event) {
+            // XXX
+            $('.status').html('Mouseup on decision');
+        },
     });
 
 })(jQuery);
