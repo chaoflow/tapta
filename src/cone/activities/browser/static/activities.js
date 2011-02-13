@@ -1,6 +1,8 @@
 (function($) {
     
     $(document).ready(function() {
+        var grid = new activities.ui.Grid();
+        
         var diagram = new activities.ui.Diagram('level_0');
         var action = new activities.ui.Action(diagram);
         action.x = 60;
@@ -62,9 +64,46 @@
             // constructors
             
             // the model.
-            // expects JSON response as context
+            // expects JSON as context.
+            // * all object names starting with '__' are considered as non 
+            //   children.
+            // * __name, __parent are set on activities.model.Model init.
+            // * incoming_edges, outgoing_egdes are set on
+            //   activities.model.Model init for non edge children.
             Model: function(context) {
                 this.context = context;
+                this.context.__name = 'model';
+                this.context.__parent = '';
+                
+                // set __name__ and __parent__
+                for (var key in this.context) {
+                    // XXX: recursion
+                    if (!this._isChildKey(key)) {
+                        continue;
+                    }
+                    this.context[key].__name = key;
+                    this.context[key].__parent = this.context.__name;
+                }
+                
+                // set incoming_edges and outgoing_edges on model nodes
+                var edges = this.filtered(activities.model.EDGE);
+                var edge, source, target;
+                for (var idx in edges) {
+                    // XXX: traversal by dottedpath if necessary
+                    edge = edges[idx];
+                    
+                    source = this.context[edge.source];
+                    if (!source.outgoing_edges) {
+                        source.outgoing_edges = new Array();
+                    }
+                    source.outgoing_edges.push(edge.__name);
+                    
+                    target = this.context[edge.target];
+                    if (!target.incoming_edges) {
+                        target.incoming_edges = new Array();
+                    }
+                    target.incoming_edges.push(edge.__name);
+                }
             }
         },
         
@@ -196,6 +235,12 @@
                 this.context = canvas.getContext("2d");
             },
             
+            // x / y grid mapping 2 dimensional array positions to coordinates
+            Grid: function() {
+                // this.data[x][y]
+                this.data = new Array();
+            },
+            
             // Diagram element
             // refers to activity model
             Diagram: function(name) {
@@ -271,6 +316,29 @@
                     activities.events.MOUSE_DOWN, this, this.setSelected);
             },
             
+            // Merge element
+            Merge: function(diagram) {
+                this.triggerColor = null;
+                this.x = 0;
+                this.y = 0;
+                this.sideLength = 40;
+                this.fillColor = '#c6c6c6';
+                this.borderColor = '#000000';
+                this.borderWidth = 2;
+                this.selectedColor = '#ffc000';
+                this.selectedWidth = 2;
+                this.selected = false;
+                
+                this.diagram = diagram;
+                this.diagram.add(this);
+                
+                // event subscription
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_IN, this, this.setCursor);
+                this.diagram.dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN, this, this.setSelected);
+            },
+            
             // Join element
             Join: function(diagram) {
                 this.triggerColor = null;
@@ -286,7 +354,7 @@
             },
             
             // Connection element
-            Connection: function(diagram) {
+            Edge: function(diagram) {
                 this.triggerColor = null;
                 this.diagram = diagram;
                 this.diagram.add(this);
@@ -297,10 +365,13 @@
     // activities.model.Model member functions
     $.extend(activities.model.Model.prototype, {
     
+        _isChildKey: function(key) {
+            return key.substring(0, 2) != '__';
+        },
+        
         // search context for child objects providing given model element type.
         // optional node for searching could be given, otherwise this.context
-        // is used. an object named 'children' is expected which gets searched
-        // for child nodes.
+        // is used.
         filtered: function(type, node) {
             var context;
             if (node) {
@@ -309,12 +380,12 @@
                 context = this.context;
             }
             var ret = new Array();
-            if (!context.children) {
-                return ret;
-            }
-            for (var key in context.children) {
-                if (context.children[key].type == type) {
-                    ret.push(context.children[key]);
+            for (var key in context) {
+                if (!this._isChildKey(key)) {
+                    continue;
+                }
+                if (context[key].__type == type) {
+                    ret.push(context[key]);
                 }
             }
             return ret;
@@ -328,7 +399,7 @@
             }
             for (var idx in node.incoming_edges) {
                 // XXX: traversal by dottedpath
-                var edge = this.context.children[node.incoming_edges[idx]];
+                var edge = this.context[node.incoming_edges[idx]];
                 ret.push(edge)
             }
             return ret;
@@ -342,7 +413,7 @@
             }
             for (var idx in node.outgoing_edges) {
                 // XXX: traversal by dottedpath
-                var edge = this.context.children[node.outgoing_edges[idx]];
+                var edge = this.context[node.outgoing_edges[idx]];
                 ret.push(edge)
             }
             return ret;
@@ -354,7 +425,7 @@
                 return;
             }
             // XXX: traversal by dottedpath
-            return this.context.children[edge.source];
+            return this.context[edge.source];
         },
         
         // return target node for given edge
@@ -363,7 +434,7 @@
                 return;
             }
             // XXX: traversal by dottedpath
-            return this.context.children[edge.target];
+            return this.context[edge.target];
         }
     });
     
@@ -384,6 +455,36 @@
                 ];
             }
             this.subscriber[obj.triggerColor][evt].push(handler);
+        }
+    });
+    
+    // activities.ui.Grid member functions
+    $.extend(activities.ui.Grid.prototype, {
+    
+        // set grid position
+        // x - grid x position
+        // y - grid y position
+        // a - x coordinate
+        // b - y coordinate
+        set: function(x, y, a, b) {
+            if (!this.data[x]) {
+                this.data[x] = new Array();
+            }
+            if (!this.data[x][y]) {
+                this.data[x][y] = new Array();
+            }
+            this.data[x][y] = [a, b];
+        },
+        
+        // get grid coordinates for position
+        // x - grid x position
+        // y - grid y position
+        get: function(x, y) {
+            try {
+                return this.data[x][y];
+            } catch(err) {
+                throw "No coordinates found for position " + x + ',' + y;
+            }
         }
     });
     
@@ -512,6 +613,76 @@
     
     // activities.ui.Decision member functions
     $.extend(activities.ui.Decision.prototype, {
+        
+        // render decision
+        render: function() {
+            
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.rotate(45 * Math.PI / 180);
+            context.fillStyle = this.triggerColor;
+            context.fillRect((this.sideLength / 2) * -1,
+                            (this.sideLength / 2) * -1,
+                            this.sideLength,
+                            this.sideLength);
+            context.restore();
+            
+            // diagram layer
+            
+            // base element
+            context = this.diagram.layers.diagram.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.rotate(45 * Math.PI / 180);
+            context.fillStyle = this.fillColor;
+            context.fillRect((this.sideLength / 2) * -1,
+                             (this.sideLength / 2) * -1,
+                             this.sideLength,
+                             this.sideLength);
+            
+            // default border
+            context.strokeStyle = this.borderColor;
+            context.lineWidth = this.borderWidth;
+            context.strokeRect((this.sideLength / 2) * -1,
+                               (this.sideLength / 2) * -1,
+                               this.sideLength,
+                               this.sideLength);
+            
+            // selected border
+            if (this.selected) {
+                context.strokeStyle = this.selectedColor;
+                context.lineWidth = this.selectedWidth;
+                context.strokeRect((this.sideLength / 2) * -1,
+                                   (this.sideLength / 2) * -1,
+                                   this.sideLength,
+                                   this.sideLength);
+            }
+            context.restore();
+        },
+        
+        // event handler
+        
+        // MOUSE_IN
+        setCursor: function(obj, event) {
+            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+        },
+        
+        // MOUSE_DOWN
+        setSelected: function(obj, event) {
+            if (obj.diagram.focused) {
+                obj.diagram.focused.selected = false;
+                obj.diagram.focused.render();
+            }
+            obj.diagram.focused = obj;
+            obj.selected = true;
+            obj.render();
+        }
+    });
+    
+    // activities.ui.Merge member functions
+    $.extend(activities.ui.Merge.prototype, {
         
         // render decision
         render: function() {
