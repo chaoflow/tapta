@@ -3,24 +3,20 @@
     $(document).ready(function() {
         var diagram = new activities.ui.Diagram('level_0');
         var action = new activities.ui.Action(diagram);
-        action.triggerColor = '#111111';
         action.x = 60;
         action.y = 100;
         
         var action = new activities.ui.Action(diagram);
-        action.triggerColor = '#222222';
         action.x = 220;
         action.y = 40;
         action.selected = true;
         action.label = 'Fooooo';
         
         var decision = new activities.ui.Decision(diagram);
-        decision.triggerColor = '#333333';
         decision.x = 60;
         decision.y = 200;
         
         var decision = new activities.ui.Decision(diagram);
-        decision.triggerColor = '#444444';
         decision.x = 200;
         decision.y = 150;
         
@@ -29,6 +25,25 @@
     
     // activities namespace
     activities = {
+        
+        // helpers
+        utils: {
+            
+            // convert array containing rgb to hex string
+            rgb2hex: function(color) {
+                return '#' +
+                    activities.utils.dec2hex(color[0]) + 
+                    activities.utils.dec2hex(color[1]) +
+                    activities.utils.dec2hex(color[2]);
+            },
+            
+            // convert decimal to hex string
+            dec2hex: function(dec) {
+                var c = '0123456789ABCDEF';
+                return String(c.charAt(Math.floor(dec / 16)))
+                     + String(c.charAt(dec - (Math.floor(dec / 16) * 16)));
+            }
+        },
         
         // model related
         model: {
@@ -67,10 +82,17 @@
             // the event dispatcher
             // expects diagram
             Dispatcher: function(diagram) {
+                // event mapping for notification
+                this.eventMapping = {
+                    mousedown: activities.events.MOUSE_DOWN,
+                    mouseup: activities.events.MOUSE_UP,
+                    mousemove: activities.events.MOUSE_HOVER,
+                };
                 
                 // len array depends on available events
-                this.subscriber = new Array(3);
+                this.subscriber = new Object();
                 this.diagram = diagram;
+                this.recent = null;
                 var canvas = $(diagram.layers.diagram.canvas);
                 canvas.data('dispatcher', this);
                 canvas.bind('mousedown mousemove mouseup',
@@ -88,27 +110,34 @@
                 var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
                 var context = dispatcher.diagram.layers.control.context;
-                var imgData = context.getImageData(x, y, 1, 1).data;
-                $('.status').html(event.type + 
-                                  ' x: ' + x + 
-                                  ' y: ' + y +
-                                  ' hex: ' +
-                                  activities.events.rgb2hex(imgData));
+                
+                try {
+                    var imgData = context.getImageData(x, y, 1, 1).data;
+                } catch (err) {
+                    return;
+                }
+                
+                var triggerColor = activities.utils.rgb2hex(imgData);
+                dispatcher.recent = dispatcher.diagram.elements[triggerColor];
+                if (!dispatcher.recent) {
+                    dispatcher.recent = dispatcher.diagram;
+                }
+                
+                var subscriber = dispatcher.subscriber[dispatcher.recent];
+                if (subscriber) {
+                    var mapped = dispatcher.eventMapping[event.type];
+                    for (var idx in subscriber[mapped]) {
+                        subscriber[mapped][idx](event);
+                    }
+                }
+                
+                activities.events.debug(event.type, x, y, triggerColor);
             },
             
-            // convert array containing rgb to hex string
-            rgb2hex: function(color) {
-                return '#' +
-                    activities.events.dec2hex(color[0]) + 
-                    activities.events.dec2hex(color[1]) +
-                    activities.events.dec2hex(color[2]);
-            },
-            
-            // convert decimal to hex string
-            dec2hex: function(dec) {
-                var c = '0123456789ABCDEF';
-                return String(c.charAt(Math.floor(dec / 16)))
-                     + String(c.charAt(dec - (Math.floor(dec / 16) * 16)));
+            // debug status message
+            debug: function(evt, x, y, trigger) {
+                $('.status')
+                    .html(evt + ' X: ' + x + ' Y: ' + y + ' hex: ' + trigger);
             }
         },
         
@@ -150,15 +179,15 @@
                 };
                 this.width = this.layers.diagram.canvas.width;
                 this.height = this.layers.diagram.canvas.height;
-                this.elements = new Array();
+                this.elements = new Object();
                 this.dispatcher = new activities.events.Dispatcher(this);
+                // array for trigger color calculation for this diagram
+                this._nextTriggerColor = [0, 0, 0];
             },
             
             // Action element
             // refers to activity action, initial node, final node
             Action: function(diagram) {
-                this.diagram = diagram;
-                this.diagram.add(this);
                 this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
@@ -169,12 +198,12 @@
                 this.borderWidth = 3;
                 this.label = 'Action';
                 this.selected = false;
+                this.diagram = diagram;
+                this.diagram.add(this);
             },
             
             // Decision element
             Decision: function(diagram) {
-                this.diagram = diagram;
-                this.diagram.add(this);
                 this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
@@ -182,27 +211,29 @@
                 this.fillColor = '#c6c6c6';
                 this.borderColor = '#000';
                 this.borderWidth = 2;
+                this.diagram = diagram;
+                this.diagram.add(this);
             },
             
             // Join element
             Join: function(diagram) {
+                this.triggerColor = null;
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.triggerColor = null;
             },
             
             // Fork element
             Fork: function(diagram) {
+                this.triggerColor = null;
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.triggerColor = null;
             },
             
             // Connection element
             Connection: function(diagram) {
+                this.triggerColor = null;
                 this.diagram = diagram;
                 this.diagram.add(this);
-                this.triggerColor = null;
             }
         }
     }
@@ -283,15 +314,17 @@
     // activities.events.Dispatcher member functions
     $.extend(activities.events.Dispatcher.prototype, {
         
-        // subscribe to event with handler
-        // XXX: next step > colors
-        subscribe: function(event, handler) {
-            if (!this.subscriber[event]) {
-                this.subscriber[event] = new Array();
+        // subscribe object to event with handler
+        subscribe: function(evt, obj, handler) {
+            if (!this.subscriber[obj]) {
+                this.subscriber[obj] = [
+                    [], // activities.events.MOUSE_DOWN
+                    [], // activities.events.MOUSE_UP
+                    []  // activities.events.MOUSE_HOVER
+                ];
             }
-            this.subscriber[event].push(handler);
+            this.subscriber[obj][evt].push(handler);
         }
-        
     });
     
     // activities.ui.Diagram member functions
@@ -301,20 +334,38 @@
         render: function() {
             var context = this.layers.diagram.context;
             context.save();
-            context.fillStyle = '#fff'; // global diagram bg color
+            context.fillStyle = '#ffffff'; // global diagram bg color
             context.fillRect(0, 0, this.width, this.height);
             context.restore();
             
-            for(var idx in this.elements) {
-                this.elements[idx].render();
+            for(var key in this.elements) {
+                this.elements[key].render();
             }
         },
         
         // add element to this diagram
         add: function(elem) {
-            this.elements.push(elem);
-        }
+            var triggerColor = this.nextTriggerColor();
+            elem.triggerColor = triggerColor;
+            this.elements[triggerColor] = elem;
+        },
         
+        // calculate next trigger color for diagram element
+        // next color is calculated by step of 10 for r, g, b
+        nextTriggerColor: function() {
+            var idx = 0;
+            for (var i = 0; i < 3; i++) {
+                if (this._nextTriggerColor[idx] == 25) {
+                    idx++;
+                }
+            }
+            // happens if 25^3 colors are used (unlikely)
+            if (idx == 3) {
+                throw "Maximum number of trigger colors reached";
+            }
+            this._nextTriggerColor[idx]++;
+            return activities.utils.rgb2hex(this._nextTriggerColor);
+        }
     });
     
     // activities.ui.Action member functions
@@ -358,7 +409,6 @@
             context.fillText(this.label, 0, 0, this.width);
             context.restore();
         }
-        
     });
     
     // activities.ui.Decision member functions
@@ -393,7 +443,6 @@
                                this.sideLength);
             context.restore();
         }
-        
     });
 
 })(jQuery);
