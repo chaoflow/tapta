@@ -493,6 +493,26 @@
                 }
             }
             return [x, y];
+        },
+        
+        // debug helper
+        debug: function() {
+            var size = this.size();
+            var ret = '';
+            var elem;
+            for (var i = 0; i < size[0]; i++) {
+                for (var j = 0; j < size[1]; j++) {
+                    elem = this.get(i, j);
+                    elem = i + ',' + j + ':' +
+                        elem[0] + ',' + elem[1] + ':' + elem[2];
+                    while(elem.length < 25) {
+                        elem += ' ';
+                    }
+                    ret += elem;
+                }
+                ret += '\n';
+            }
+            return ret;
         }
     });
     
@@ -581,24 +601,26 @@
                             action.x = grid_entry[0];
                             action.y = grid_entry[1];
                             action.label = node.__name;
+                            break;
                         }
                         case activities.model.ACTION: {
                             var action = new activities.ui.Action(diagram);
                             action.x = grid_entry[0];
                             action.y = grid_entry[1];
                             action.label = node.__name;
+                            break;
                         }
                         case activities.model.DECISION: {
-                            alert('decision');
                             var decision = new activities.ui.Decision(diagram);
                             decision.x = grid_entry[0];
                             decision.y = grid_entry[1];
+                            break;
                         }
                         case activities.model.MERGE: {
-                            alert('merge');
                             var merge = new activities.ui.Merge(diagram);
                             merge.x = grid_entry[0];
                             merge.y = grid_entry[1];
+                            break;
                         }
                         // XXX remaining
                     }
