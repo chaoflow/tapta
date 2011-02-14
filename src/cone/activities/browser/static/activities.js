@@ -7,13 +7,21 @@
         renderer.render();
     });
     
+    
+    // ************************************************************************
     // activities namespace
+    // ************************************************************************
+    
     activities = {
         
-        // helpers
+        /*
+         * activity utils.
+         */
         utils: {
             
-            // convert array containing rgb to hex string
+            /*
+             * convert array containing rgb to hex string
+             */
             rgb2hex: function(color) {
                 return '#' +
                     activities.utils.dec2hex(color[0]) + 
@@ -21,7 +29,9 @@
                     activities.utils.dec2hex(color[2]);
             },
             
-            // convert decimal to hex string
+            /*
+             * convert decimal to hex string
+             */
             dec2hex: function(dec) {
                 var c = '0123456789ABCDEF';
                 return String(c.charAt(Math.floor(dec / 16)))
@@ -29,10 +39,11 @@
             }
         },
         
-        // model related
+        /*
+         * activity model namespace and element types
+         */
         model: {
             
-            // activity model element types
             ACTIVITY   : 0,
             INITIAL    : 1,
             FORK       : 2,
@@ -42,89 +53,23 @@
             FLOW_FINAL : 6,
             FINAL      : 7,
             ACTION     : 8,
-            EDGE       : 9,
-            
-            // constructors
-            
-            // the model.
-            // expects JSON as context.
-            // * all object names starting with '__' are considered as non 
-            //   children.
-            // * __name, __parent are set on activities.model.Model init.
-            // * incoming_edges, outgoing_egdes are set on
-            //   activities.model.Model init for non edge children.
-            Model: function(context) {
-                this.context = context;
-                this.context.__name = 'model';
-                this.context.__parent = '';
-                
-                // set __name__ and __parent__
-                for (var key in this.context) {
-                    // XXX: recursion
-                    if (!this._isChildKey(key)) {
-                        continue;
-                    }
-                    this.context[key].__name = key;
-                    this.context[key].__parent = this.context.__name;
-                }
-                
-                // set incoming_edges and outgoing_edges on model nodes
-                var edges = this.filtered(activities.model.EDGE);
-                var edge, source, target;
-                for (var idx in edges) {
-                    // XXX: traversal by dottedpath if necessary
-                    edge = edges[idx];
-                    
-                    source = this.context[edge.source];
-                    if (!source.outgoing_edges) {
-                        source.outgoing_edges = new Array();
-                    }
-                    source.outgoing_edges.push(edge.__name);
-                    
-                    target = this.context[edge.target];
-                    if (!target.incoming_edges) {
-                        target.incoming_edges = new Array();
-                    }
-                    target.incoming_edges.push(edge.__name);
-                }
-            }
+            EDGE       : 9
         },
         
-        // interaction related
+        /*
+         * activity events namespace and event types
+         */
         events: {
             
-            // event types
             MOUSE_DOWN : 0,
             MOUSE_UP   : 1,
             MOUSE_MOVE : 2,
             MOUSE_IN   : 3,
             MOUSE_OUT  : 4,
             
-            // constructors
-            
-            // the event dispatcher
-            // expects diagram
-            Dispatcher: function(diagram) {
-                // events directly mapping to javascript events for notification
-                this.eventMapping = {
-                    mousedown: activities.events.MOUSE_DOWN,
-                    mouseup: activities.events.MOUSE_UP,
-                    mousemove: activities.events.MOUSE_MOVE,
-                };
-                
-                // len array depends on available events
-                this.subscriber = new Object();
-                this.diagram = diagram;
-                this.recent = null;
-                var canvas = $(diagram.layers.diagram.canvas);
-                canvas.data('dispatcher', this);
-                canvas.bind('mousedown mousemove mouseup',
-                            activities.events.notify);
-            },
-            
-            // utils
-            
-            // event notification
+            /*
+             * event notification
+             */
             notify: function(event) {
                 event.preventDefault();
                 var canvas = $(this);
@@ -191,11 +136,15 @@
             }
         },
         
-        // rendering elements
+        /*
+         * activities ui namespace and helpers
+         */
         ui: {
             
-            // debugging helper
-            // toggles control canvas with diagram canvas
+            /*
+             * debugging helper
+             * toggles control canvas with diagram canvas
+             */
             toggleCanvas: function(name) {
                 var canvas = $('#diagram_' + name);
                 var control = $('#control_' + name);
@@ -206,163 +155,70 @@
                     canvas.css('z-index', 1);
                     control.css('z-index', 0);
                 }
-            },
-            
-            // constructors
-            
-            // Layer element
-            // a layer is represented by a canvas, z index is defined by
-            // css z-index property
-            Layer: function(canvas) {
-                this.canvas = canvas;
-                this.context = canvas.getContext("2d");
-            },
-            
-            // x / y grid mapping 2 dimensional array positions to coordinates
-            Grid: function() {
-                // this.data[x][y]
-                this.data = new Array();
-            },
-            
-            // SimpleGridRenderer
-            SimpleGridRenderer: function(model, name) {
-                this.model = new activities.model.Model(model);
-                this.diagram = new activities.ui.Diagram(name);
-                this.grid = new activities.ui.Grid();
-            },
-            
-            // Diagram element
-            // refers to activity model
-            Diagram: function(name) {
-                this.triggerColor = '#000000';
-                this.layers = {
-                    control:
-                        new activities.ui.Layer($('#control_' + name).get(0)),
-                    diagram:
-                        new activities.ui.Layer($('#diagram_' + name).get(0))
-                };
-                this.width = this.layers.diagram.canvas.width;
-                this.height = this.layers.diagram.canvas.height;
-                // XXX: hash mapping dottedpath2triggerColor
-                this.elements = new Object();
-                this.dispatcher = new activities.events.Dispatcher(this);
-                
-                // current focused diagram element
-                this.focused = null;
-                
-                // array for trigger color calculation for this diagram
-                this._nextTriggerColor = [0, 0, 0];
-                
-                // event subscription
-                this.dispatcher.subscribe(
-                    activities.events.MOUSE_IN, this, this.setCursor);
-                this.dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN, this, this.unselectAll);
-            },
-            
-            // Action element
-            // refers to activity action, initial node, final node
-            Action: function(diagram) {
-                this.triggerColor = null;
-                this.x = 0;
-                this.y = 0;
-                this.width = 100;
-                this.height = 70;
-                this.fillColor = '#3ce654';
-                this.selectedColor = '#ffc000';
-                this.selectedWidth = 2;
-                this.selected = false;
-                this.label = 'Action';
-                
-                this.diagram = diagram;
-                this.diagram.add(this);
-                
-                // event subscription
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_IN, this, this.setCursor);
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN, this, this.setSelected);
-            },
-            
-            // Decision element
-            Decision: function(diagram) {
-                this.triggerColor = null;
-                this.x = 0;
-                this.y = 0;
-                this.sideLength = 40;
-                this.fillColor = '#c6c6c6';
-                this.borderColor = '#000000';
-                this.borderWidth = 2;
-                this.selectedColor = '#ffc000';
-                this.selectedWidth = 2;
-                this.selected = false;
-                
-                this.diagram = diagram;
-                this.diagram.add(this);
-                
-                // event subscription
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_IN, this, this.setCursor);
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN, this, this.setSelected);
-            },
-            
-            // Merge element
-            Merge: function(diagram) {
-                this.triggerColor = null;
-                this.x = 0;
-                this.y = 0;
-                this.sideLength = 40;
-                this.fillColor = '#c6c6c6';
-                this.borderColor = '#000000';
-                this.borderWidth = 2;
-                this.selectedColor = '#ffc000';
-                this.selectedWidth = 2;
-                this.selected = false;
-                
-                this.diagram = diagram;
-                this.diagram.add(this);
-                
-                // event subscription
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_IN, this, this.setCursor);
-                this.diagram.dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN, this, this.setSelected);
-            },
-            
-            // Join element
-            Join: function(diagram) {
-                this.triggerColor = null;
-                this.diagram = diagram;
-                this.diagram.add(this);
-            },
-            
-            // Fork element
-            Fork: function(diagram) {
-                this.triggerColor = null;
-                this.diagram = diagram;
-                this.diagram.add(this);
-            },
-            
-            // Connection element
-            Edge: function(diagram) {
-                this.triggerColor = null;
-                this.diagram = diagram;
-                this.diagram.add(this);
             }
         }
     }
     
-    // activities.model.Model member functions
-    $.extend(activities.model.Model.prototype, {
+    
+    // ************************************************************************
+    // activities.model.Model
+    // ************************************************************************
+    
+    /* 
+     * expects JSON as context.
+     * 
+     * - all object names starting with '__' are considered as non children.
+     * - __name, __parent are set on activities.model.Model init.
+     * - incoming_edges, outgoing_egdes are set on, activities.model.Model
+     *   init for non edge children.
+     */
+    activities.model.Model = function(context) {
+        this.context = context;
+        this.context.__name = 'model';
+        this.context.__parent = '';
+        
+        // set __name__ and __parent__
+        for (var key in this.context) {
+            // XXX: recursion
+            if (!this._isChildKey(key)) {
+                continue;
+            }
+            this.context[key].__name = key;
+            this.context[key].__parent = this.context.__name;
+        }
+        
+        // set incoming_edges and outgoing_edges on model nodes
+        var edges = this.filtered(activities.model.EDGE);
+        var edge, source, target;
+        for (var idx in edges) {
+            // XXX: traversal by dottedpath if necessary
+            edge = edges[idx];
+            
+            source = this.context[edge.source];
+            if (!source.outgoing_edges) {
+                source.outgoing_edges = new Array();
+            }
+            source.outgoing_edges.push(edge.__name);
+            
+            target = this.context[edge.target];
+            if (!target.incoming_edges) {
+                target.incoming_edges = new Array();
+            }
+            target.incoming_edges.push(edge.__name);
+        }
+    }
+    
+    activities.model.Model.prototype = {
     
         _isChildKey: function(key) {
             return key.substring(0, 2) != '__';
         },
         
-        // search context for child objects providing given model element type.
-        // optional node for searching could be given, otherwise this.context
-        // is used.
+        /*
+         * search context for child objects providing given model element type.
+         * optional node for searching could be given, otherwise this.context
+         * is used.
+         */
         filtered: function(type, node) {
             var context;
             if (node) {
@@ -382,7 +238,9 @@
             return ret;
         },
         
-        // return array of incoming edges for given node
+        /*
+         * return array of incoming edges for given node
+         */
         incoming: function(node) {
             ret = new Array();
             if (!node || !node.incoming_edges) {
@@ -395,7 +253,9 @@
             return ret;
         },
         
-        // return array of outgoing edges for given node
+        /*
+         * return array of outgoing edges for given node
+         */
         outgoing: function(node) {
             ret = new Array();
             if (!node || !node.outgoing_edges) {
@@ -408,7 +268,9 @@
             return ret;
         },
         
-        // return source node for given edge
+        /*
+         * return source node for given edge
+         */
         source: function(edge) {
             if (!edge || !edge.source) {
                 return;
@@ -416,7 +278,9 @@
             return this.node(edge.source);
         },
         
-        // return target node for given edge
+        /*
+         * return target node for given edge
+         */
         target: function(edge) {
             if (!edge || !edge.target) {
                 return;
@@ -424,19 +288,49 @@
             return this.node(edge.target);
         },
         
-        // return node by path
+        /*
+         * return node by path
+         */
         node: function(path) {
             // XXX: traversal by dottedpath
             return this.context[path];
         }
-    });
+    }
     
-    // activities.events.Dispatcher member functions
-    $.extend(activities.events.Dispatcher.prototype, {
+    
+    // ************************************************************************
+    // activities.events.Dispatcher
+    // ************************************************************************
+    
+    /*
+     * expects diagram
+     */
+    activities.events.Dispatcher = function(diagram) {
+        // events directly mapping to javascript events for notification
+        this.eventMapping = {
+            mousedown: activities.events.MOUSE_DOWN,
+            mouseup: activities.events.MOUSE_UP,
+            mousemove: activities.events.MOUSE_MOVE,
+        };
         
-        // subscribe object to event with handler
-        // make sure trigger color is set correctly on object before
-        // subscription
+        // len array depends on available events
+        this.subscriber = new Object();
+        this.diagram = diagram;
+        this.recent = null;
+        var canvas = $(diagram.layers.diagram.canvas);
+        canvas.data('dispatcher', this);
+        canvas.bind('mousedown mousemove mouseup',
+                    activities.events.notify);
+    }
+    
+    activities.events.Dispatcher.prototype = {
+        
+        /*
+         * subscribe object to event with handler
+         * 
+         * make sure trigger color is set correctly on object before
+         * subscription
+         */
         subscribe: function(evt, obj, handler) {
             if (!this.subscriber[obj.triggerColor]) {
                 this.subscriber[obj.triggerColor] = [
@@ -449,17 +343,45 @@
             }
             this.subscriber[obj.triggerColor][evt].push(handler);
         }
-    });
+    }
     
-    // activities.ui.Grid member functions
-    $.extend(activities.ui.Grid.prototype, {
     
-        // set grid position
-        // x - grid x position
-        // y - grid y position
-        // a - x coordinate
-        // b - y coordinate
-        // path - model element dottedpath
+    // ************************************************************************
+    // activities.ui.Layer
+    // ************************************************************************
+    
+    /*
+     * a layer is represented by a canvas, z index is defined by
+     * css z-index property
+     */
+    activities.ui.Layer = function(canvas) {
+        this.canvas = canvas;
+        this.context = canvas.getContext("2d");
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Grid
+    // ************************************************************************
+    
+    /*
+     * x / y grid mapping 2 dimensional array positions to coordinates
+     */
+    activities.ui.Grid = function() {
+        // this.data[x][y]
+        this.data = new Array();
+    }
+    
+    activities.ui.Grid.prototype = {
+    
+        /*
+         * set grid position
+         * x - grid x position
+         * y - grid y position
+         * a - x coordinate
+         * b - y coordinate
+         * path - model element dottedpath
+         */
         set: function(x, y, a, b, path) {
             if (!this.data[x]) {
                 this.data[x] = new Array();
@@ -470,9 +392,11 @@
             this.data[x][y] = [a, b, path];
         },
         
-        // get grid coordinates for position
-        // x - grid x position
-        // y - grid y position
+        /*
+         * get grid coordinates for position
+         * x - grid x position
+         * y - grid y position
+         */
         get: function(x, y) {
             try {
                 return this.data[x][y];
@@ -481,7 +405,9 @@
             }
         },
         
-        // return grid size
+        /*
+         * return grid size
+         */
         size: function() {
             var x = this.data.length;
             var y = 0;
@@ -495,7 +421,9 @@
             return [x, y];
         },
         
-        // debug helper
+        /*
+         * debug helper
+         */
         debug: function() {
             var size = this.size();
             var ret = '';
@@ -514,10 +442,20 @@
             }
             return ret;
         }
-    });
+    }
     
-    // activities.ui.SimpleGridRenderer member functions
-    $.extend(activities.ui.SimpleGridRenderer.prototype, {
+    
+    // ************************************************************************
+    // activities.ui.SimpleGridRenderer
+    // ************************************************************************
+    
+    activities.ui.SimpleGridRenderer = function(model, name) {
+        this.model = new activities.model.Model(model);
+        this.diagram = new activities.ui.Diagram(name);
+        this.grid = new activities.ui.Grid();
+    }
+    
+    activities.ui.SimpleGridRenderer.prototype = {
         
         render: function() {
             // grid for filling
@@ -628,12 +566,48 @@
             }
             diagram.render();
         }
-    });
+    }
     
-    // activities.ui.Diagram member functions
-    $.extend(activities.ui.Diagram.prototype, {
+    
+    // ************************************************************************
+    // activities.ui.Diagram
+    // ************************************************************************
+    
+    /*
+     * refers to activity model
+     */
+    activities.ui.Diagram = function(name) {
+        this.triggerColor = '#000000';
+        this.layers = {
+            control:
+                new activities.ui.Layer($('#control_' + name).get(0)),
+            diagram:
+                new activities.ui.Layer($('#diagram_' + name).get(0))
+        };
+        this.width = this.layers.diagram.canvas.width;
+        this.height = this.layers.diagram.canvas.height;
+        // XXX: hash mapping dottedpath2triggerColor
+        this.elements = new Object();
+        this.dispatcher = new activities.events.Dispatcher(this);
         
-        // iterate over elements of diagram and call render function
+        // current focused diagram element
+        this.focused = null;
+        
+        // array for trigger color calculation for this diagram
+        this._nextTriggerColor = [0, 0, 0];
+        
+        // event subscription
+        this.dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, this.setCursor);
+        this.dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, this.unselectAll);
+    }
+    
+    activities.ui.Diagram.prototype = {
+        
+        /*
+         * iterate over elements of diagram and call render function
+         */
         render: function() {
             var context = this.layers.diagram.context;
             context.save();
@@ -646,15 +620,19 @@
             }
         },
         
-        // add element to this diagram
+        /*
+         * add element to this diagram
+         */
         add: function(elem) {
             var triggerColor = this.nextTriggerColor();
             elem.triggerColor = triggerColor;
             this.elements[triggerColor] = elem;
         },
         
-        // calculate next trigger color for diagram element
-        // next color is calculated by step of 10 for r, g, b
+        /*
+         * calculate next trigger color for diagram element
+         * next color is calculated by step of 10 for r, g, b
+         */
         nextTriggerColor: function() {
             var idx = 0;
             for (var i = 0; i < 3; i++) {
@@ -672,24 +650,59 @@
         
         // event handler
         
-        // activities.events.MOUSE_IN
+        /*
+         * activities.events.MOUSE_IN
+         */
         setCursor: function(obj, event) {
             $(obj.layers.diagram.canvas).css('cursor', 'default');
         },
         
-        // activities.events.MOUSE_DOWN
+        /*
+         * activities.events.MOUSE_DOWN
+         */
         unselectAll: function(obj, event) {
             if (obj.focused) {
                 obj.focused.selected = false;
                 obj.focused.render();
             }
         }
-    });
+    }
     
-    // activities.ui.Action member functions
-    $.extend(activities.ui.Action.prototype, {
+    
+    // ************************************************************************
+    // activities.ui.Action
+    // ************************************************************************
+    
+    /*
+     * refers to activity action, initial node, final node
+     */
+    activities.ui.Action = function(diagram) {
+        this.triggerColor = null;
+        this.x = 0;
+        this.y = 0;
+        this.width = 100;
+        this.height = 70;
+        this.fillColor = '#3ce654';
+        this.selectedColor = '#ffc000';
+        this.selectedWidth = 2;
+        this.selected = false;
+        this.label = 'Action';
         
-        // render action
+        this.diagram = diagram;
+        this.diagram.add(this);
+        
+        // event subscription
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, this.setCursor);
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, this.setSelected);
+    }
+    
+    activities.ui.Action.prototype = {
+        
+        /*
+         * render action
+         */
         render: function() {
             
             // control layer
@@ -736,12 +749,16 @@
         
         // event handler
         
-        // activities.events.MOUSE_IN
+        /*
+         * activities.events.MOUSE_IN
+         */
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
         },
         
-        // activities.events.MOUSE_DOWN
+        /*
+         * activities.events.MOUSE_DOWN
+         */
         setSelected: function(obj, event) {
             if (obj.diagram.focused) {
                 obj.diagram.focused.selected = false;
@@ -751,12 +768,40 @@
             obj.selected = true;
             obj.render();
         }
-    });
+    }
     
-    // activities.ui.Decision member functions
-    $.extend(activities.ui.Decision.prototype, {
+    
+    // ************************************************************************
+    // activities.ui.Decision
+    // ************************************************************************
+    
+    activities.ui.Decision = function(diagram) {
+        this.triggerColor = null;
+        this.x = 0;
+        this.y = 0;
+        this.sideLength = 40;
+        this.fillColor = '#c6c6c6';
+        this.borderColor = '#000000';
+        this.borderWidth = 2;
+        this.selectedColor = '#ffc000';
+        this.selectedWidth = 2;
+        this.selected = false;
         
-        // render decision
+        this.diagram = diagram;
+        this.diagram.add(this);
+        
+        // event subscription
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, this.setCursor);
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, this.setSelected);
+    }
+    
+    activities.ui.Decision.prototype = {
+        
+        /*
+         * render decision
+         */
         render: function() {
             
             // control layer
@@ -806,12 +851,16 @@
         
         // event handler
         
-        // activities.events.MOUSE_IN
+        /*
+         * activities.events.MOUSE_IN
+         */
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
         },
         
-        // activities.events.MOUSE_DOWN
+        /*
+         * activities.events.MOUSE_DOWN
+         */
         setSelected: function(obj, event) {
             if (obj.diagram.focused) {
                 obj.diagram.focused.selected = false;
@@ -821,12 +870,40 @@
             obj.selected = true;
             obj.render();
         }
-    });
+    }
     
-    // activities.ui.Merge member functions
-    $.extend(activities.ui.Merge.prototype, {
+    
+    // ************************************************************************
+    // activities.ui.Merge
+    // ************************************************************************
+    
+    activities.ui.Merge = function(diagram) {
+        this.triggerColor = null;
+        this.x = 0;
+        this.y = 0;
+        this.sideLength = 40;
+        this.fillColor = '#c6c6c6';
+        this.borderColor = '#000000';
+        this.borderWidth = 2;
+        this.selectedColor = '#ffc000';
+        this.selectedWidth = 2;
+        this.selected = false;
         
-        // render decision
+        this.diagram = diagram;
+        this.diagram.add(this);
+        
+        // event subscription
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, this.setCursor);
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, this.setSelected);
+    }
+    
+    activities.ui.Merge.prototype = {
+        
+        /*
+         * render decision
+         */
         render: function() {
             
             // control layer
@@ -876,12 +953,16 @@
         
         // event handler
         
-        // activities.events.MOUSE_IN
+        /*
+         * activities.events.MOUSE_IN
+         */
         setCursor: function(obj, event) {
             $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
         },
         
-        // activities.events.MOUSE_DOWN
+        /*
+         * activities.events.MOUSE_DOWN
+         */
         setSelected: function(obj, event) {
             if (obj.diagram.focused) {
                 obj.diagram.focused.selected = false;
@@ -891,6 +972,39 @@
             obj.selected = true;
             obj.render();
         }
-    });
-
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Join
+    // ************************************************************************
+    
+    activities.ui.Join = function(diagram) {
+        this.triggerColor = null;
+        this.diagram = diagram;
+        this.diagram.add(this);
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Fork
+    // ************************************************************************
+    
+    activities.ui.Fork = function(diagram) {
+        this.triggerColor = null;
+        this.diagram = diagram;
+        this.diagram.add(this);
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Edge
+    // ************************************************************************
+    
+    activities.ui.Edge = function(diagram) {
+        this.triggerColor = null;
+        this.diagram = diagram;
+        this.diagram.add(this);
+    }
+    
 })(jQuery);
