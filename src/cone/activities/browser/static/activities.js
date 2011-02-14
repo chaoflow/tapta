@@ -243,6 +243,7 @@
                 };
                 this.width = this.layers.diagram.canvas.width;
                 this.height = this.layers.diagram.canvas.height;
+                // XXX: hash mapping dottedpath2triggerColor
                 this.elements = new Object();
                 this.dispatcher = new activities.events.Dispatcher(this);
                 
@@ -388,8 +389,7 @@
                 return ret;
             }
             for (var idx in node.incoming_edges) {
-                // XXX: traversal by dottedpath
-                var edge = this.context[node.incoming_edges[idx]];
+                var edge = this.node(node.incoming_edges[idx]);
                 ret.push(edge)
             }
             return ret;
@@ -402,8 +402,7 @@
                 return ret;
             }
             for (var idx in node.outgoing_edges) {
-                // XXX: traversal by dottedpath
-                var edge = this.context[node.outgoing_edges[idx]];
+                var edge = this.node(node.outgoing_edges[idx]);
                 ret.push(edge)
             }
             return ret;
@@ -414,8 +413,7 @@
             if (!edge || !edge.source) {
                 return;
             }
-            // XXX: traversal by dottedpath
-            return this.context[edge.source];
+            return this.node(edge.source);
         },
         
         // return target node for given edge
@@ -423,8 +421,13 @@
             if (!edge || !edge.target) {
                 return;
             }
+            return this.node(edge.target);
+        },
+        
+        // return node by path
+        node: function(path) {
             // XXX: traversal by dottedpath
-            return this.context[edge.target];
+            return this.context[path];
         }
     });
     
@@ -456,14 +459,15 @@
         // y - grid y position
         // a - x coordinate
         // b - y coordinate
-        set: function(x, y, a, b) {
+        // path - model element dottedpath
+        set: function(x, y, a, b, path) {
             if (!this.data[x]) {
                 this.data[x] = new Array();
             }
             if (!this.data[x][y]) {
                 this.data[x][y] = new Array();
             }
-            this.data[x][y] = [a, b];
+            this.data[x][y] = [a, b, path];
         },
         
         // get grid coordinates for position
@@ -475,6 +479,20 @@
             } catch(err) {
                 throw "No coordinates found for position " + x + ',' + y;
             }
+        },
+        
+        // return grid size
+        size: function() {
+            var x = this.data.length;
+            var y = 0;
+            var next_y;
+            for(var idx in this.data) {
+                next_y = this.data[idx].length;
+                if (next_y > y) {
+                    y = next_y;
+                }
+            }
+            return [x, y];
         }
     });
     
@@ -482,24 +500,110 @@
     $.extend(activities.ui.SimpleGridRenderer.prototype, {
         
         render: function() {
+            // grid for filling
+            var grid = this.grid;
+            
+            // current grid position
+            var grid_x = 0;
+            var grid_y = 0;
+            
+            // incremental coordinates
+            var step_x = 140;
+            var step_y = 120;
+            
+            // absolute coordinates
+            var x = step_x;
+            var y = step_y;
+            
+            // get the model
+            var model = this.model;
+            
+            // search initial node
+            var initial = model.filtered(activities.model.INITIAL);
+            if (initial.length == 0) {
+                throw "Could not find initial node. Abort.";
+            }
+            if (initial.length > 1) {
+                throw "Invalid model. More than one initial node found";
+            }
+            
+            // graph start node
+            var node = initial[0];
+            
+            // set initial element coordinates
+            grid.set(grid_x, grid_y, x, y, node.__name);
+            grid_x++;
+            
+            // helper
+            // return array with next level nodes
+            var next = function(node) {
+                var ret = new Array();
+                var outgoing = model.outgoing(node);
+                var edge, target;
+                for (var idx in outgoing) {
+                    edge = outgoing[idx];
+                    target = model.target(edge);
+                    ret.push(target);
+                }
+                return ret;
+            }
+            
+            // fill grid with graph data and coordinates
+            var nodes = next(node);
+            while (nodes.length > 0) {
+                node = nodes[0];
+                x = x + step_x;
+                grid.set(grid_x, grid_y, x, y, node.__name);
+                grid_x++;
+                nodes = next(node);
+            }
+            
+            // XXX: hash mapping dottedpath2triggerColor
             var diagram = this.diagram;
-            var action = new activities.ui.Action(diagram);
-            action.x = 60;
-            action.y = 100;
             
-            var action = new activities.ui.Action(diagram);
-            action.x = 220;
-            action.y = 40;
-            action.label = 'Fooooo';
-            
-            var decision = new activities.ui.Decision(diagram);
-            decision.x = 60;
-            decision.y = 200;
-            
-            var decision = new activities.ui.Decision(diagram);
-            decision.x = 200;
-            decision.y = 150;
-            
+            // iterate grid and set diagram data
+            var grid_size = grid.size();
+            var grid_entry;
+            for (var i = 0; i < grid_size[0]; i++) {
+                for(var j = 0; j < grid_size[1]; j++) {
+                    grid_entry = grid.get(i, j);
+                    if (!grid_entry) {
+                        continue;
+                    }
+                    
+                    // get node by dottedpath from model
+                    node = model.node(grid_entry[2]);
+                    
+                    // build diagram
+                    switch (node.__type) {
+                        case activities.model.INITIAL: {
+                            var action = new activities.ui.Action(diagram);
+                            action.x = grid_entry[0];
+                            action.y = grid_entry[1];
+                            action.label = node.__name;
+                        }
+                        case activities.model.ACTION: {
+                            var action = new activities.ui.Action(diagram);
+                            action.x = grid_entry[0];
+                            action.y = grid_entry[1];
+                            action.label = node.__name;
+                        }
+                        case activities.model.DECISION: {
+                            alert('decision');
+                            var decision = new activities.ui.Decision(diagram);
+                            decision.x = grid_entry[0];
+                            decision.y = grid_entry[1];
+                        }
+                        case activities.model.MERGE: {
+                            alert('merge');
+                            var merge = new activities.ui.Merge(diagram);
+                            merge.x = grid_entry[0];
+                            merge.y = grid_entry[1];
+                        }
+                        // XXX remaining
+                    }
+                }
+            }
             diagram.render();
         }
     });

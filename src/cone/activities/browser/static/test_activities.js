@@ -175,8 +175,8 @@
             var grid = new activities.ui.Grid();
             
             test("activities.ui.Grid", function() {
-                grid.set(0, 0, 10, 20);
-                grid.set(1, 0, 20, 20);
+                grid.set(0, 0, 10, 20, 'a');
+                grid.set(1, 0, 20, 20, 'b');
                 
                 equals(true,
                        grid.get(0, 0)[0] == 10,
