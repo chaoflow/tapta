@@ -612,10 +612,22 @@
                     merge.y = entry[2];
                     break;
                 }
-                case activities.model.FLOW_END: {
+                case activities.model.FLOW_FINAL: {
                     var merge = new activities.ui.Merge(diagram);
                     merge.x = entry[1];
                     merge.y = entry[2];
+                    break;
+                }
+                case activities.model.FORK: {
+                    var fork = new activities.ui.Fork(diagram);
+                    fork.x = entry[1];
+                    fork.y = entry[2];
+                    break;
+                }
+                case activities.model.JOIN: {
+                    var join = new activities.ui.Join(diagram);
+                    join.x = entry[1];
+                    join.y = entry[2];
                     break;
                 }
                 // XXX remaining
@@ -659,6 +671,7 @@
      */
     activities.ui.Diagram = function(name) {
         this.triggerColor = '#000000';
+        
         this.layers = {
             control:
                 new activities.ui.Layer($('#control_' + name).get(0)),
@@ -760,6 +773,7 @@
      */
     activities.ui.Action = function(diagram) {
         this.triggerColor = null;
+        
         this.x = 0;
         this.y = 0;
         this.width = 100;
@@ -859,6 +873,7 @@
     
     activities.ui.Decision = function(diagram) {
         this.triggerColor = null;
+        
         this.x = 0;
         this.y = 0;
         this.sideLength = 40;
@@ -961,6 +976,7 @@
     
     activities.ui.Merge = function(diagram) {
         this.triggerColor = null;
+        
         this.x = 0;
         this.y = 0;
         this.sideLength = 40;
@@ -1063,8 +1079,89 @@
     
     activities.ui.Join = function(diagram) {
         this.triggerColor = null;
+        
+        this.x = 0;
+        this.y = 0;
+        this.width = 10;
+        this.height = 80;
+        this.fillColor = '#b954ff';
+        this.selectedColor = '#ffc000';
+        this.selectedWidth = 2;
+        this.selected = false;
+        
         this.diagram = diagram;
         this.diagram.add(this);
+        
+        // event subscription
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, this.setCursor);
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, this.setSelected);
+    }
+    
+    activities.ui.Join.prototype = {
+    
+        /*
+         * render join
+         */
+        render: function() {
+            
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.fillStyle = this.triggerColor;
+            context.fillRect((this.width / 2) * -1,
+                             (this.height / 2) * -1,
+                             this.width,
+                             this.height);
+            context.restore();
+            
+            // diagram layer
+            
+            // base element
+            context = this.diagram.layers.diagram.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.fillStyle = this.fillColor;
+            context.fillRect(((this.width + this.selectedWidth) / 2) * -1,
+                             ((this.height + this.selectedWidth) / 2) * -1,
+                             this.width + this.selectedWidth,
+                             this.height + this.selectedWidth);
+            
+            // selected border
+            if (this.selected) {
+                context.strokeStyle = this.selectedColor;
+                context.lineWidth = this.selectedWidth;
+                context.strokeRect((this.width / 2) * -1,
+                                   (this.height / 2) * -1,
+                                   this.width,
+                                   this.height);
+            }
+            context.restore();
+        },
+        
+        // event handler
+        
+        /*
+         * activities.events.MOUSE_IN
+         */
+        setCursor: function(obj, event) {
+            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+        },
+        
+        /*
+         * activities.events.MOUSE_DOWN
+         */
+        setSelected: function(obj, event) {
+            if (obj.diagram.focused) {
+                obj.diagram.focused.selected = false;
+                obj.diagram.focused.render();
+            }
+            obj.diagram.focused = obj;
+            obj.selected = true;
+            obj.render();
+        }
     }
     
     
@@ -1074,8 +1171,89 @@
     
     activities.ui.Fork = function(diagram) {
         this.triggerColor = null;
+        
+        this.x = 0;
+        this.y = 0;
+        this.width = 10;
+        this.height = 80;
+        this.fillColor = '#b954ff';
+        this.selectedColor = '#ffc000';
+        this.selectedWidth = 2;
+        this.selected = false;
+        
         this.diagram = diagram;
         this.diagram.add(this);
+        
+        // event subscription
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, this.setCursor);
+        this.diagram.dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, this.setSelected);
+    }
+    
+    activities.ui.Fork.prototype = {
+    
+        /*
+         * render fork
+         */
+        render: function() {
+            
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.fillStyle = this.triggerColor;
+            context.fillRect((this.width / 2) * -1,
+                             (this.height / 2) * -1,
+                             this.width,
+                             this.height);
+            context.restore();
+            
+            // diagram layer
+            
+            // base element
+            context = this.diagram.layers.diagram.context;
+            context.save();
+            context.translate(this.x, this.y);
+            context.fillStyle = this.fillColor;
+            context.fillRect(((this.width + this.selectedWidth) / 2) * -1,
+                             ((this.height + this.selectedWidth) / 2) * -1,
+                             this.width + this.selectedWidth,
+                             this.height + this.selectedWidth);
+            
+            // selected border
+            if (this.selected) {
+                context.strokeStyle = this.selectedColor;
+                context.lineWidth = this.selectedWidth;
+                context.strokeRect((this.width / 2) * -1,
+                                   (this.height / 2) * -1,
+                                   this.width,
+                                   this.height);
+            }
+            context.restore();
+        },
+        
+        // event handler
+        
+        /*
+         * activities.events.MOUSE_IN
+         */
+        setCursor: function(obj, event) {
+            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+        },
+        
+        /*
+         * activities.events.MOUSE_DOWN
+         */
+        setSelected: function(obj, event) {
+            if (obj.diagram.focused) {
+                obj.diagram.focused.selected = false;
+                obj.diagram.focused.render();
+            }
+            obj.diagram.focused = obj;
+            obj.selected = true;
+            obj.render();
+        }
     }
     
     
@@ -1087,6 +1265,15 @@
         this.triggerColor = null;
         this.diagram = diagram;
         this.diagram.add(this);
+    }
+    
+    activities.ui.Edge.prototype = {
+    
+        /*
+         * render edge
+         */
+        render: function() {
+        }
     }
     
 })(jQuery);
