@@ -155,9 +155,9 @@
                 obj.render();
             },
             
-			/*
-			 * events status message
-			 */
+            /*
+             * events status message
+             */
             status: function(evt, x, y, trigger) {
                 $('.events_status')
                     .html(evt + ' X: ' + x + ' Y: ' + y + ' hex: ' + trigger);
@@ -183,6 +183,40 @@
                     canvas.css('z-index', 1);
                     control.css('z-index', 0);
                 }
+            },
+            
+            /*
+             * draw filled rect
+             */
+            fillRect: function(context, color, width, height) {
+                context.fillStyle = color;
+                context.fillRect((width / 2) * -1,
+                                 (height / 2) * -1,
+                                 width,
+                                 height);
+            },
+            
+            /*
+             * draw stroke rect
+             */
+            strokeRect: function(context, color, lineWidth, width, height) {
+                context.strokeStyle = color;
+                context.lineWidth = lineWidth;
+                context.strokeRect((width / 2) * -1,
+                                   (height / 2) * -1,
+                                   width,
+                                   height);
+            },
+            
+            /*
+             * draw label
+             */
+            label: function(context, label, width) {
+                context.fillStyle = '#000';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.font = '12px sans-serif';
+                context.fillText(label, 0, 0, width);
             }
         }
     }
@@ -824,16 +858,14 @@
          * render action
          */
         render: function() {
-            
             // control layer
             var context = this.diagram.layers.control.context;
             context.save();
             context.translate(this.x, this.y);
-            context.fillStyle = this.triggerColor;
-            context.fillRect((this.width / 2) * -1,
-                             (this.height / 2) * -1,
-                             this.width,
-                             this.height);
+            activities.ui.fillRect(context,
+                                   this.triggerColor,
+                                   this.width,
+                                   this.height);
             context.restore();
             
             // diagram layer
@@ -842,27 +874,21 @@
             context = this.diagram.layers.diagram.context;
             context.save();
             context.translate(this.x, this.y);
-            context.fillStyle = this.fillColor;
-            context.fillRect(((this.width + this.selectedWidth) / 2) * -1,
-                             ((this.height + this.selectedWidth) / 2) * -1,
-                             this.width + this.selectedWidth,
-                             this.height + this.selectedWidth);
+            activities.ui.fillRect(context,
+                                   this.fillColor,
+                                   this.width + this.selectedWidth,
+                                   this.height + this.selectedWidth);
             
             // label
-            context.fillStyle = '#000';
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-            context.font = '12px sans-serif';
-            context.fillText(this.label, 0, 0, this.width);
+            activities.ui.label(context, this.label, this.width);
             
             // selected border
             if (this.selected) {
-                context.strokeStyle = this.selectedColor;
-                context.lineWidth = this.selectedWidth;
-                context.strokeRect((this.width / 2) * -1,
-                                   (this.height / 2) * -1,
-                                   this.width,
-                                   this.height);
+                activities.ui.strokeRect(context,
+                                         this.selectedColor,
+                                         this.selectedWidth,
+                                         this.width,
+                                         this.height);
             }
             context.restore();
         }
@@ -908,11 +934,10 @@
             context.save();
             context.translate(this.x, this.y);
             context.rotate(45 * Math.PI / 180);
-            context.fillStyle = this.triggerColor;
-            context.fillRect((this.sideLength / 2) * -1,
-                            (this.sideLength / 2) * -1,
-                            this.sideLength,
-                            this.sideLength);
+            activities.ui.fillRect(context,
+                                   this.triggerColor,
+                                   this.sideLength,
+                                   this.sideLength);
             context.restore();
             
             // diagram layer
@@ -922,28 +947,25 @@
             context.save();
             context.translate(this.x, this.y);
             context.rotate(45 * Math.PI / 180);
-            context.fillStyle = this.fillColor;
-            context.fillRect((this.sideLength / 2) * -1,
-                             (this.sideLength / 2) * -1,
-                             this.sideLength,
-                             this.sideLength);
+            activities.ui.fillRect(context,
+                                   this.fillColor,
+                                   this.sideLength,
+                                   this.sideLength);
             
             // default border
-            context.strokeStyle = this.borderColor;
-            context.lineWidth = this.borderWidth;
-            context.strokeRect((this.sideLength / 2) * -1,
-                               (this.sideLength / 2) * -1,
-                               this.sideLength,
-                               this.sideLength);
+            activities.ui.strokeRect(context,
+                                     this.borderColor,
+                                     this.borderWidth,
+                                     this.sideLength,
+                                     this.sideLength);
             
             // selected border
             if (this.selected) {
-                context.strokeStyle = this.selectedColor;
-                context.lineWidth = this.selectedWidth;
-                context.strokeRect((this.sideLength / 2) * -1,
-                                   (this.sideLength / 2) * -1,
-                                   this.sideLength,
-                                   this.sideLength);
+                activities.ui.strokeRect(context,
+                                         this.selectedColor,
+                                         this.selectedWidth,
+                                         this.sideLength,
+                                         this.sideLength);
             }
             context.restore();
         }
@@ -977,58 +999,8 @@
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
-    activities.ui.Merge.prototype = {
-        
-        /*
-         * render decision
-         */
-        render: function() {
-            
-            // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.translate(this.x, this.y);
-            context.rotate(45 * Math.PI / 180);
-            context.fillStyle = this.triggerColor;
-            context.fillRect((this.sideLength / 2) * -1,
-                            (this.sideLength / 2) * -1,
-                            this.sideLength,
-                            this.sideLength);
-            context.restore();
-            
-            // diagram layer
-            
-            // base element
-            context = this.diagram.layers.diagram.context;
-            context.save();
-            context.translate(this.x, this.y);
-            context.rotate(45 * Math.PI / 180);
-            context.fillStyle = this.fillColor;
-            context.fillRect((this.sideLength / 2) * -1,
-                             (this.sideLength / 2) * -1,
-                             this.sideLength,
-                             this.sideLength);
-            
-            // default border
-            context.strokeStyle = this.borderColor;
-            context.lineWidth = this.borderWidth;
-            context.strokeRect((this.sideLength / 2) * -1,
-                               (this.sideLength / 2) * -1,
-                               this.sideLength,
-                               this.sideLength);
-            
-            // selected border
-            if (this.selected) {
-                context.strokeStyle = this.selectedColor;
-                context.lineWidth = this.selectedWidth;
-                context.strokeRect((this.sideLength / 2) * -1,
-                                   (this.sideLength / 2) * -1,
-                                   this.sideLength,
-                                   this.sideLength);
-            }
-            context.restore();
-        }
-    }
+    activities.ui.Merge.prototype.render = 
+        activities.ui.Decision.prototype.render;
     
     
     // ************************************************************************
@@ -1068,11 +1040,10 @@
             var context = this.diagram.layers.control.context;
             context.save();
             context.translate(this.x, this.y);
-            context.fillStyle = this.triggerColor;
-            context.fillRect((this.width / 2) * -1,
-                             (this.height / 2) * -1,
-                             this.width,
-                             this.height);
+            activities.ui.fillRect(context,
+                                   this.triggerColor,
+                                   this.width,
+                                   this.height);
             context.restore();
             
             // diagram layer
@@ -1081,20 +1052,18 @@
             context = this.diagram.layers.diagram.context;
             context.save();
             context.translate(this.x, this.y);
-            context.fillStyle = this.fillColor;
-            context.fillRect(((this.width + this.selectedWidth) / 2) * -1,
-                             ((this.height + this.selectedWidth) / 2) * -1,
-                             this.width + this.selectedWidth,
-                             this.height + this.selectedWidth);
+            activities.ui.fillRect(context,
+                                   this.fillColor,
+                                   this.width + this.selectedWidth,
+                                   this.height + this.selectedWidth);
             
             // selected border
             if (this.selected) {
-                context.strokeStyle = this.selectedColor;
-                context.lineWidth = this.selectedWidth;
-                context.strokeRect((this.width / 2) * -1,
-                                   (this.height / 2) * -1,
-                                   this.width,
-                                   this.height);
+                activities.ui.strokeRect(context,
+                                         this.selectedColor,
+                                         this.selectedWidth,
+                                         this.width,
+                                         this.height);
             }
             context.restore();
         }
@@ -1127,48 +1096,7 @@
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
-    activities.ui.Fork.prototype = {
-    
-        /*
-         * render fork
-         */
-        render: function() {
-            
-            // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.translate(this.x, this.y);
-            context.fillStyle = this.triggerColor;
-            context.fillRect((this.width / 2) * -1,
-                             (this.height / 2) * -1,
-                             this.width,
-                             this.height);
-            context.restore();
-            
-            // diagram layer
-            
-            // base element
-            context = this.diagram.layers.diagram.context;
-            context.save();
-            context.translate(this.x, this.y);
-            context.fillStyle = this.fillColor;
-            context.fillRect(((this.width + this.selectedWidth) / 2) * -1,
-                             ((this.height + this.selectedWidth) / 2) * -1,
-                             this.width + this.selectedWidth,
-                             this.height + this.selectedWidth);
-            
-            // selected border
-            if (this.selected) {
-                context.strokeStyle = this.selectedColor;
-                context.lineWidth = this.selectedWidth;
-                context.strokeRect((this.width / 2) * -1,
-                                   (this.height / 2) * -1,
-                                   this.width,
-                                   this.height);
-            }
-            context.restore();
-        }
-    }
+    activities.ui.Fork.prototype.render = activities.ui.Join.prototype.render;
     
     
     // ************************************************************************
