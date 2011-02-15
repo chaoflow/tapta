@@ -133,6 +133,28 @@
                 activities.events.debug(event.type, x, y, triggerColor);
             },
             
+            // global event handler for diagram children
+        
+            /*
+             * activities.events.MOUSE_IN
+             */
+            setCursor: function(obj, event) {
+                $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+            },
+            
+            /*
+             * activities.events.MOUSE_DOWN
+             */
+            setSelected: function(obj, event) {
+                if (obj.diagram.focused) {
+                    obj.diagram.focused.selected = false;
+                    obj.diagram.focused.render();
+                }
+                obj.diagram.focused = obj;
+                obj.selected = true;
+                obj.render();
+            },
+            
             // debug status message
             debug: function(evt, x, y, trigger) {
                 $('.status')
@@ -789,9 +811,9 @@
         
         // event subscription
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, this.setCursor);
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, this.setSelected);
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
     activities.ui.Action.prototype = {
@@ -841,28 +863,6 @@
                                    this.height);
             }
             context.restore();
-        },
-        
-        // event handler
-        
-        /*
-         * activities.events.MOUSE_IN
-         */
-        setCursor: function(obj, event) {
-            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
-        },
-        
-        /*
-         * activities.events.MOUSE_DOWN
-         */
-        setSelected: function(obj, event) {
-            if (obj.diagram.focused) {
-                obj.diagram.focused.selected = false;
-                obj.diagram.focused.render();
-            }
-            obj.diagram.focused = obj;
-            obj.selected = true;
-            obj.render();
         }
     }
     
@@ -889,9 +889,9 @@
         
         // event subscription
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, this.setCursor);
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, this.setSelected);
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
     activities.ui.Decision.prototype = {
@@ -944,28 +944,6 @@
                                    this.sideLength);
             }
             context.restore();
-        },
-        
-        // event handler
-        
-        /*
-         * activities.events.MOUSE_IN
-         */
-        setCursor: function(obj, event) {
-            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
-        },
-        
-        /*
-         * activities.events.MOUSE_DOWN
-         */
-        setSelected: function(obj, event) {
-            if (obj.diagram.focused) {
-                obj.diagram.focused.selected = false;
-                obj.diagram.focused.render();
-            }
-            obj.diagram.focused = obj;
-            obj.selected = true;
-            obj.render();
         }
     }
     
@@ -992,9 +970,9 @@
         
         // event subscription
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, this.setCursor);
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, this.setSelected);
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
     activities.ui.Merge.prototype = {
@@ -1047,28 +1025,6 @@
                                    this.sideLength);
             }
             context.restore();
-        },
-        
-        // event handler
-        
-        /*
-         * activities.events.MOUSE_IN
-         */
-        setCursor: function(obj, event) {
-            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
-        },
-        
-        /*
-         * activities.events.MOUSE_DOWN
-         */
-        setSelected: function(obj, event) {
-            if (obj.diagram.focused) {
-                obj.diagram.focused.selected = false;
-                obj.diagram.focused.render();
-            }
-            obj.diagram.focused = obj;
-            obj.selected = true;
-            obj.render();
         }
     }
     
@@ -1094,9 +1050,9 @@
         
         // event subscription
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, this.setCursor);
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, this.setSelected);
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
     activities.ui.Join.prototype = {
@@ -1139,28 +1095,6 @@
                                    this.height);
             }
             context.restore();
-        },
-        
-        // event handler
-        
-        /*
-         * activities.events.MOUSE_IN
-         */
-        setCursor: function(obj, event) {
-            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
-        },
-        
-        /*
-         * activities.events.MOUSE_DOWN
-         */
-        setSelected: function(obj, event) {
-            if (obj.diagram.focused) {
-                obj.diagram.focused.selected = false;
-                obj.diagram.focused.render();
-            }
-            obj.diagram.focused = obj;
-            obj.selected = true;
-            obj.render();
         }
     }
     
@@ -1186,9 +1120,9 @@
         
         // event subscription
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, this.setCursor);
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
         this.diagram.dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, this.setSelected);
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
     activities.ui.Fork.prototype = {
@@ -1231,28 +1165,6 @@
                                    this.height);
             }
             context.restore();
-        },
-        
-        // event handler
-        
-        /*
-         * activities.events.MOUSE_IN
-         */
-        setCursor: function(obj, event) {
-            $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
-        },
-        
-        /*
-         * activities.events.MOUSE_DOWN
-         */
-        setSelected: function(obj, event) {
-            if (obj.diagram.focused) {
-                obj.diagram.focused.selected = false;
-                obj.diagram.focused.render();
-            }
-            obj.diagram.focused = obj;
-            obj.selected = true;
-            obj.render();
         }
     }
     
