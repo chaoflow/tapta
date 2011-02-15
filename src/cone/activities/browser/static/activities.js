@@ -5,6 +5,10 @@
         var name = 'level_0';
         var renderer = new activities.ui.SimpleGridRenderer(model, name);
         renderer.render();
+        
+        //alert(renderer._debugNode2tier());
+        //alert(renderer._debugTiers());
+        //alert(renderer._debugGrid());
     });
     
     
@@ -452,43 +456,16 @@
     activities.ui.SimpleGridRenderer = function(model, name) {
         this.name = name;
         this.model = new activities.model.Model(model);
-        //this.diagram = new activities.ui.Diagram(name);
-        //this.grid = new activities.ui.Grid();
+        this.diagram = new activities.ui.Diagram(name);
+        this.grid = new activities.ui.Grid();
     }
     
     activities.ui.SimpleGridRenderer.prototype = {
         
-        // return initial node
-        initial: function() {
-            var model = this.model;
-            var initial = model.filtered(activities.model.INITIAL);
-            if (initial.length == 0) {
-                throw "Could not find initial node. Abort.";
-            }
-            if (initial.length > 1) {
-                throw "Invalid model. More than one initial node found";
-            }
-            return initial[0];
-        },
-        
-        // detect tiers
-        detectTiers: function(tier, node) {
-            if (typeof(this.node2tier[node.__name]) == "undefined") {
-                this.node2tier[node.__name] = tier;
-            } else if (tier > this.node2tier[node.__name]) {
-                this.node2tier[node.__name] = tier;
-            }
-            var outgoing = this.model.outgoing(node);
-            var edge, target;
-            for (var idx in outgoing) {
-                edge = outgoing[idx];
-                target = this.model.target(edge);
-                this.detectTiers(tier + 1, target);
-            }
-        },
-        
-        // this.node2tier debug
-        debugNode2tier: function() {
+        /*
+         * this.node2tier debug
+         */
+        _debugNode2tier: function() {
             var ret = '';
             for (var key in this.node2tier) {
                 ret += key + ': ' + this.node2tier[key] + '\n';
@@ -496,19 +473,10 @@
             return ret;
         },
         
-        // fill tiers
-        fillTiers: function() {
-            for (var key in this.node2tier) {
-                tier = this.node2tier[key]
-                if (typeof(this.tiers[tier]) == "undefined") {
-                    this.tiers[tier] = new Array();
-                }
-                this.tiers[tier].push(key);
-            }
-        },
-        
-        // this.tiers debug out
-        debugTiers: function() {
+        /*
+         * this.tiers debug out
+         */
+        _debugTiers: function() {
             var ret = '';
             for (var i in this.tiers) {
                 ret += 'tier: ' + i + '\n';
@@ -519,24 +487,10 @@
             return ret;
         },
         
-        // fill grid with elements from this.tiers
-        fillGrid: function() {
-            var step_x = 140;
-            var step_y = 120;
-            var x = step_x;
-            var y = step_y;
-            for (var i in this.tiers) {
-                for (var j in this.tiers[i]) {
-                    this.grid.set(i, j, this.tiers[i][j], x, y);
-                    y += step_y;
-                }
-                x += step_x;
-                y = step_y;
-            }
-        },
-        
-        // debug grid
-        debugGrid: function() {
+        /*
+         * debug grid
+         */
+        _debugGrid: function() {
             var ret = '';
             var size = this.grid.size();
             var entry;
@@ -555,7 +509,73 @@
             return ret;
         },
         
-        // draw single element
+        /*
+         * return initial node
+         */
+        initial: function() {
+            var model = this.model;
+            var initial = model.filtered(activities.model.INITIAL);
+            if (initial.length == 0) {
+                throw "Could not find initial node. Abort.";
+            }
+            if (initial.length > 1) {
+                throw "Invalid model. More than one initial node found";
+            }
+            return initial[0];
+        },
+        
+        /*
+         * detect tiers
+         */
+        detectTiers: function(tier, node) {
+            if (typeof(this.node2tier[node.__name]) == "undefined") {
+                this.node2tier[node.__name] = tier;
+            } else if (tier > this.node2tier[node.__name]) {
+                this.node2tier[node.__name] = tier;
+            }
+            var outgoing = this.model.outgoing(node);
+            var edge, target;
+            for (var idx in outgoing) {
+                edge = outgoing[idx];
+                target = this.model.target(edge);
+                this.detectTiers(tier + 1, target);
+            }
+        },
+        
+        /*
+         * fill tiers
+         */
+        fillTiers: function() {
+            for (var key in this.node2tier) {
+                tier = this.node2tier[key]
+                if (typeof(this.tiers[tier]) == "undefined") {
+                    this.tiers[tier] = new Array();
+                }
+                this.tiers[tier].push(key);
+            }
+        },
+        
+        /*
+         * fill grid with elements from this.tiers
+         */
+        fillGrid: function() {
+            var step_x = 140;
+            var step_y = 120;
+            var x = step_x;
+            var y = step_y;
+            for (var i in this.tiers) {
+                for (var j in this.tiers[i]) {
+                    this.grid.set(i, j, this.tiers[i][j], x, y);
+                    y += step_y;
+                }
+                x += step_x;
+                y = step_y;
+            }
+        },
+        
+        /*
+         * draw single element
+         */
         drawElement: function(node, entry) {
             var diagram = this.diagram;
             switch (node.__type) {
@@ -602,7 +622,9 @@
             }
         },
         
-        // render diagram
+        /*
+         * render diagram
+         */
         render: function() {
             this.diagram = new activities.ui.Diagram(this.name);
             this.grid = new activities.ui.Grid();
@@ -611,26 +633,15 @@
             this.detectTiers(0, this.initial());
             this.fillTiers();
             this.fillGrid();
-            
-            //alert(this.debugNode2tier());
-            //alert(this.debugTiers());
-            //alert(this.debugGrid());
-            
-            // XXX: hash mapping dottedpath2triggerColor
-            
-            var grid = this.grid;
-            var model = this.model;
-            
-            // iterate grid and set diagram data
-            var size = grid.size();
+            var size = this.grid.size();
             var entry;
             for (var i = 0; i < size[0]; i++) {
                 for (var j = 0; j < size[1]; j++) {
-                    entry = grid.get(i, j);
+                    entry = this.grid.get(i, j);
                     if (!entry) {
                         continue;
                     }
-                    node = model.node(entry[0]);
+                    node = this.model.node(entry[0]);
                     this.drawElement(node, entry);
                 }
             }
@@ -656,6 +667,7 @@
         };
         this.width = this.layers.diagram.canvas.width;
         this.height = this.layers.diagram.canvas.height;
+        
         // XXX: hash mapping dottedpath2triggerColor
         this.elements = new Object();
         this.dispatcher = new activities.events.Dispatcher(this);
