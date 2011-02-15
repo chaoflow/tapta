@@ -378,18 +378,18 @@
          * set grid position
          * x - grid x position
          * y - grid y position
+         * path - model element dottedpath
          * a - x coordinate
          * b - y coordinate
-         * path - model element dottedpath
          */
-        set: function(x, y, a, b, path) {
+        set: function(x, y, path, a, b) {
             if (!this.data[x]) {
                 this.data[x] = new Array();
             }
             if (!this.data[x][y]) {
                 this.data[x][y] = new Array();
             }
-            this.data[x][y] = [a, b, path];
+            this.data[x][y] = [path, a, b];
         },
         
         /*
@@ -432,10 +432,7 @@
                 for (var j = 0; j < size[1]; j++) {
                     elem = this.get(i, j);
                     elem = i + ',' + j + ':' +
-                        elem[0] + ',' + elem[1] + ':' + elem[2];
-                    while(elem.length < 25) {
-                        elem += ' ';
-                    }
+                        elem[1] + ',' + elem[2] + ':' + elem[0];
                     ret += elem;
                 }
                 ret += '\n';
@@ -453,9 +450,10 @@
      * http://ls11-www.cs.uni-dortmund.de/people/gutweng/AE-07/schichten.pdf
      */
     activities.ui.SimpleGridRenderer = function(model, name) {
+        this.name = name;
         this.model = new activities.model.Model(model);
-        this.diagram = new activities.ui.Diagram(name);
-        this.grid = new activities.ui.Grid();
+        //this.diagram = new activities.ui.Diagram(name);
+        //this.grid = new activities.ui.Grid();
     }
     
     activities.ui.SimpleGridRenderer.prototype = {
@@ -521,97 +519,122 @@
             return ret;
         },
         
+        // fill grid with elements from this.tiers
+        fillGrid: function() {
+            var step_x = 140;
+            var step_y = 120;
+            var x = step_x;
+            var y = step_y;
+            for (var i in this.tiers) {
+                for (var j in this.tiers[i]) {
+                    this.grid.set(i, j, this.tiers[i][j], x, y);
+                    y += step_y;
+                }
+                x += step_x;
+                y = step_y;
+            }
+        },
+        
+        // debug grid
+        debugGrid: function() {
+            var ret = '';
+            var size = this.grid.size();
+            var entry;
+            for (var i = 0; i < size[0]; i++) {
+                for (var j = 0; j < size[1]; j++) {
+                    entry = this.grid.get(i, j);
+                    if (!entry) {
+                        continue;
+                    }
+                    ret += 'x: ' + i + ', y: ' + j + 
+                           ', path: ' + entry[0] + 
+                           ', a: ' + entry[1] + 
+                           ', b: ' + entry[2] + '\n';
+                }
+            }
+            return ret;
+        },
+        
+        // draw single element
+        drawElement: function(node, entry) {
+            var diagram = this.diagram;
+            switch (node.__type) {
+                case activities.model.INITIAL: {
+                    var action = new activities.ui.Action(diagram);
+                    action.x = entry[1];
+                    action.y = entry[2];
+                    action.label = node.__name;
+                    break;
+                }
+                case activities.model.ACTION: {
+                    var action = new activities.ui.Action(diagram);
+                    action.x = entry[1];
+                    action.y = entry[2];
+                    action.label = node.__name;
+                    break;
+                }
+                case activities.model.FINAL: {
+                    var action = new activities.ui.Action(diagram);
+                    action.x = entry[1];
+                    action.y = entry[2];
+                    action.label = node.__name;
+                    break;
+                }
+                case activities.model.DECISION: {
+                    var decision = new activities.ui.Decision(diagram);
+                    decision.x = entry[1];
+                    decision.y = entry[2];
+                    break;
+                }
+                case activities.model.MERGE: {
+                    var merge = new activities.ui.Merge(diagram);
+                    merge.x = entry[1];
+                    merge.y = entry[2];
+                    break;
+                }
+                case activities.model.FLOW_END: {
+                    var merge = new activities.ui.Merge(diagram);
+                    merge.x = entry[1];
+                    merge.y = entry[2];
+                    break;
+                }
+                // XXX remaining
+            }
+        },
+        
         // render diagram
         render: function() {
+            this.diagram = new activities.ui.Diagram(this.name);
+            this.grid = new activities.ui.Grid();
             this.node2tier = new Object();
             this.tiers = new Array();
-            var node = this.initial();
-            this.detectTiers(0, node);
+            this.detectTiers(0, this.initial());
             this.fillTiers();
+            this.fillGrid();
             
             //alert(this.debugNode2tier());
             //alert(this.debugTiers());
-            
-            // grid for filling
-            var grid = this.grid;
-            
-            // current grid position
-            var grid_x = 0;
-            var grid_y = 0;
-            
-            // incremental coordinates
-            var step_x = 140;
-            var step_y = 120;
-            
-            // absolute coordinates
-            var x = step_x;
-            var y = step_y;
-            
-            // set initial element coordinates
-            grid.set(grid_x, grid_y, x, y, node.__name);
-            grid_x++;
-            
-            
-            
-            // fill grid with graph data and coordinates
-            var nodes = next(node);
-            while (nodes.length > 0) {
-                node = nodes[0];
-                x = x + step_x;
-                grid.set(grid_x, grid_y, x, y, node.__name);
-                grid_x++;
-                nodes = next(node);
-            }
+            //alert(this.debugGrid());
             
             // XXX: hash mapping dottedpath2triggerColor
-            var diagram = this.diagram;
+            
+            var grid = this.grid;
+            var model = this.model;
             
             // iterate grid and set diagram data
-            var grid_size = grid.size();
-            var grid_entry;
-            for (var i = 0; i < grid_size[0]; i++) {
-                for(var j = 0; j < grid_size[1]; j++) {
-                    grid_entry = grid.get(i, j);
-                    if (!grid_entry) {
+            var size = grid.size();
+            var entry;
+            for (var i = 0; i < size[0]; i++) {
+                for (var j = 0; j < size[1]; j++) {
+                    entry = grid.get(i, j);
+                    if (!entry) {
                         continue;
                     }
-                    
-                    // get node by dottedpath from model
-                    node = model.node(grid_entry[2]);
-                    
-                    // build diagram
-                    switch (node.__type) {
-                        case activities.model.INITIAL: {
-                            var action = new activities.ui.Action(diagram);
-                            action.x = grid_entry[0];
-                            action.y = grid_entry[1];
-                            action.label = node.__name;
-                            break;
-                        }
-                        case activities.model.ACTION: {
-                            var action = new activities.ui.Action(diagram);
-                            action.x = grid_entry[0];
-                            action.y = grid_entry[1];
-                            action.label = node.__name;
-                            break;
-                        }
-                        case activities.model.DECISION: {
-                            var decision = new activities.ui.Decision(diagram);
-                            decision.x = grid_entry[0];
-                            decision.y = grid_entry[1];
-                            break;
-                        }
-                        case activities.model.MERGE: {
-                            var merge = new activities.ui.Merge(diagram);
-                            merge.x = grid_entry[0];
-                            merge.y = grid_entry[1];
-                            break;
-                        }
-                        // XXX remaining
-                    }
+                    node = model.node(entry[0]);
+                    this.drawElement(node, entry);
                 }
             }
-            diagram.render();
+            this.diagram.render();
         }
     }
     

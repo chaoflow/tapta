@@ -175,15 +175,15 @@
             var grid = new activities.ui.Grid();
             
             test("activities.ui.Grid", function() {
-                grid.set(0, 0, 10, 20, 'a');
-                grid.set(1, 0, 20, 20, 'b');
+                grid.set(0, 0, 'a', 10, 20);
+                grid.set(1, 0, 'b', 20, 20);
                 
                 equals(true,
-                       grid.get(0, 0)[0] == 10,
-                       "grid.get(0, 0)[0] == 10");
+                       grid.get(0, 0)[1] == 10,
+                       "grid.get(0, 0)[1] == 10");
                 equals(true,
-                       grid.get(1, 0)[0] == 20,
-                       "grid.get(1, 0)[0] == 20");
+                       grid.get(1, 0)[1] == 20,
+                       "grid.get(1, 0)[1] == 20");
                 equals(true,
                        typeof(grid.get(1, 1)) == "undefined",
                        'typeof(grid.get(1, 1)) == "undefined"');
