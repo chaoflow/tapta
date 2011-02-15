@@ -177,7 +177,7 @@
         this.context.__name = 'model';
         this.context.__parent = '';
         
-        // set __name__ and __parent__
+        // set __name and __parent
         for (var key in this.context) {
             // XXX: recursion
             if (!this._isChildKey(key)) {
@@ -449,6 +449,9 @@
     // activities.ui.SimpleGridRenderer
     // ************************************************************************
     
+    /*
+     * http://ls11-www.cs.uni-dortmund.de/people/gutweng/AE-07/schichten.pdf
+     */
     activities.ui.SimpleGridRenderer = function(model, name) {
         this.model = new activities.model.Model(model);
         this.diagram = new activities.ui.Diagram(name);
@@ -457,7 +460,78 @@
     
     activities.ui.SimpleGridRenderer.prototype = {
         
+        // return initial node
+        initial: function() {
+            var model = this.model;
+            var initial = model.filtered(activities.model.INITIAL);
+            if (initial.length == 0) {
+                throw "Could not find initial node. Abort.";
+            }
+            if (initial.length > 1) {
+                throw "Invalid model. More than one initial node found";
+            }
+            return initial[0];
+        },
+        
+        // detect tiers
+        detectTiers: function(tier, node) {
+            if (typeof(this.node2tier[node.__name]) == "undefined") {
+                this.node2tier[node.__name] = tier;
+            } else if (tier > this.node2tier[node.__name]) {
+                this.node2tier[node.__name] = tier;
+            }
+            var outgoing = this.model.outgoing(node);
+            var edge, target;
+            for (var idx in outgoing) {
+                edge = outgoing[idx];
+                target = this.model.target(edge);
+                this.detectTiers(tier + 1, target);
+            }
+        },
+        
+        // this.node2tier debug
+        debugNode2tier: function() {
+            var ret = '';
+            for (var key in this.node2tier) {
+                ret += key + ': ' + this.node2tier[key] + '\n';
+            }
+            return ret;
+        },
+        
+        // fill tiers
+        fillTiers: function() {
+            for (var key in this.node2tier) {
+                tier = this.node2tier[key]
+                if (typeof(this.tiers[tier]) == "undefined") {
+                    this.tiers[tier] = new Array();
+                }
+                this.tiers[tier].push(key);
+            }
+        },
+        
+        // this.tiers debug out
+        debugTiers: function() {
+            var ret = '';
+            for (var i in this.tiers) {
+                ret += 'tier: ' + i + '\n';
+                for (var j in this.tiers[i]) {
+                    ret += '    ' + j + ': ' + this.tiers[i][j] + '\n';
+                }
+            }
+            return ret;
+        },
+        
+        // render diagram
         render: function() {
+            this.node2tier = new Object();
+            this.tiers = new Array();
+            var node = this.initial();
+            this.detectTiers(0, node);
+            this.fillTiers();
+            
+            //alert(this.debugNode2tier());
+            //alert(this.debugTiers());
+            
             // grid for filling
             var grid = this.grid;
             
@@ -473,38 +547,11 @@
             var x = step_x;
             var y = step_y;
             
-            // get the model
-            var model = this.model;
-            
-            // search initial node
-            var initial = model.filtered(activities.model.INITIAL);
-            if (initial.length == 0) {
-                throw "Could not find initial node. Abort.";
-            }
-            if (initial.length > 1) {
-                throw "Invalid model. More than one initial node found";
-            }
-            
-            // graph start node
-            var node = initial[0];
-            
             // set initial element coordinates
             grid.set(grid_x, grid_y, x, y, node.__name);
             grid_x++;
             
-            // helper
-            // return array with next level nodes
-            var next = function(node) {
-                var ret = new Array();
-                var outgoing = model.outgoing(node);
-                var edge, target;
-                for (var idx in outgoing) {
-                    edge = outgoing[idx];
-                    target = model.target(edge);
-                    ret.push(target);
-                }
-                return ret;
-            }
+            
             
             // fill grid with graph data and coordinates
             var nodes = next(node);
