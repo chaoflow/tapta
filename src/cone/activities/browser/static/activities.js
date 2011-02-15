@@ -130,7 +130,7 @@
                         subscriber[mapped][idx](recent, event);
                     }
                 }
-                activities.events.debug(event.type, x, y, triggerColor);
+                activities.events.status(event.type, x, y, triggerColor);
             },
             
             // global event handler for diagram children
@@ -155,9 +155,11 @@
                 obj.render();
             },
             
-            // debug status message
-            debug: function(evt, x, y, trigger) {
-                $('.status')
+			/*
+			 * events status message
+			 */
+            status: function(evt, x, y, trigger) {
+                $('.events_status')
                     .html(evt + ' X: ' + x + ' Y: ' + y + ' hex: ' + trigger);
             }
         },

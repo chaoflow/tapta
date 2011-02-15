@@ -12,26 +12,35 @@
 	
 	<body>
 		
-		<div class="activity_editor"
-		     id="level_0"
-			 style="height:480px;">
-			
-			<!-- single diagram layers -->
-			<canvas class="control" id="control_level_0" width="1400" height="450"></canvas>
-			<canvas class="diagram" id="diagram_level_0" width="1400" height="450"></canvas>
-			
-		</div>
-		
-		<div class="status"></div>
-		<br />
-		<a href="javascript:jQuery('.qunit').show(); tests.run()">
-			Run tests
-		</a>
-		<br />
-		<a href="javascript:activities.ui.toggleCanvas('level_0')">
-            toggle to hidden flow information
-        </a>
-		<br />
+		<!-- activity editor markup -->
+		<div class="activity_editor">
+			<div class="element_properties">
+                props
+            </div>
+			<div class="actions">
+				<a href="javascript:tests.run()">
+                    Run tests
+                </a>
+				|
+				<a href="javascript:activities.ui.toggleCanvas('level_0')">
+                    toggle layer
+                </a>
+			</div>
+			<div class="activity_diagram"
+			     id="level_0"
+				 style="height:480px;">
+				<!-- single diagram layers -->
+				<canvas class="control"
+				        id="control_level_0"
+						width="1200"
+						height="450"></canvas>
+				<canvas class="diagram"
+				        id="diagram_level_0"
+						width="1200"
+						height="450"></canvas>
+			</div>
+			<div class="events_status"></div>
+	    </div>
 		
 		<!-- qunit related -->
 		<div class="qunit">

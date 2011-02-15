@@ -1,18 +1,48 @@
 body {
-	background-color:#eee;
+	background-color:#fff;
+	font-size:12px;
+	font-family:verdana;
 }
 .activity_editor {
 	position:relative;
-	top:20;
-	left:20;
+}
+.activity_editor .element_properties {
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:200px;
+	height:472px;
+	background-color:#efefef;
+	border:#aaa 1px solid;
+	border-right:none;
+}
+.activity_editor .actions {
+	position:absolute;
+	top:0;
+    left:200px;
+	width:1200px;
+	height:22px;
+	background-color:#efefef;
+	border:#aaa 1px solid;
+}
+.activity_editor .events_status {
+	position:absolute;
+	top:477px;
+	left:200px;
+	height:22px;
+}
+.activity_diagram {
+	position:absolute;
+	top:22px;
+	left:200px;
     margin-bottom:1em;
 }
-.activity_editor .control {
+.activity_diagram .control {
     position: absolute;
     left:1px;
     top:1px;
 }
-.activity_editor .diagram {
+.activity_diagram .diagram {
 	position: absolute;
 	left:0;
 	top:0;
@@ -20,6 +50,7 @@ body {
 	border:#aaa 1px solid;
 }
 .qunit {
-	margin-top:1em;
-	display:none;
+	position:relative;
+	top:500px;
+	width:1400px;
 }
