@@ -10,11 +10,21 @@ body {
 	position:absolute;
 	top:0px;
 	left:0px;
-	width:200px;
-	height:472px;
+	width:190px; /* 10px total padding */
+	height:462px; /* 10px total padding */
 	background-color:#efefef;
 	border:#aaa 1px solid;
 	border-right:none;
+	padding:5px;
+}
+.activity_editor .element_properties .props .field {
+	margin-bottom:5px;
+}
+.activity_editor .element_properties .props .field label {
+	font-weight:bold;
+}
+.activity_editor .element_properties .props input {
+	width:188px;
 }
 .activity_editor .actions {
 	position:absolute;

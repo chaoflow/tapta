@@ -4,10 +4,6 @@
         var name = 'level_0';
         var model = eval(uneval(tests.model));
         var editor = new activities.ui.Editor('level_0', model);
-        
-        //alert(renderer._debugNode2tier());
-        //alert(renderer._debugTiers());
-        //alert(renderer._debugGrid());
     });
     
     
@@ -145,14 +141,15 @@
              * activities.events.MOUSE_DOWN
              */
             setSelected: function(obj, event) {
-                if (obj.diagram.focused) {
-                    obj.diagram.focused.selected = false;
-                    obj.diagram.focused.render();
+                var diagram = obj.diagram;
+                if (diagram.focused) {
+                    diagram.focused.selected = false;
+                    diagram.focused.render();
                 }
-                obj.diagram.focused = obj;
+                diagram.focused = obj;
                 obj.selected = true;
                 obj.render();
-                obj.diagram.editor.properties.display(obj);
+                diagram.editor.properties.display(obj);
             },
             
             /*
@@ -417,16 +414,14 @@
      */
     activities.ui.Editor = function(name, model) {
         this.name = name;
-        this.grid = new activities.ui.Grid();
         this.model = new activities.model.Model(model);
-        this.properties = new activities.ui.Properties(this);
         this.dispatcher = new activities.events.Dispatcher(this);
+        this.properties = new activities.ui.Properties(this);
         this.diagram = new activities.ui.Diagram(this);
-        
-        this.dispatcher.bind();
-        this.diagram.bindHandler();
-        
         this.renderer = new activities.ui.SimpleGridRenderer(this);
+        this.grid = new activities.ui.Grid();
+        this.dispatcher.bind();
+        this.diagram.bind();
         this.renderer.render();
     }
     
@@ -447,6 +442,21 @@
     activities.ui.Properties = function(editor) {
         this.editor = editor;
         this.container = $('#' + editor.name + ' .element_properties');
+        this.recent = null;
+        
+        var typenames = new Array();
+        var model = activities.model;
+        typenames[model.ACTIVITY] = 'Activity';
+        typenames[model.INITIAL] = 'Initial Node';
+        typenames[model.FORK] = 'Fork';
+        typenames[model.JOIN] = 'Join';
+        typenames[model.DECISION] = 'Decision';
+        typenames[model.MERGE] = 'Merge';
+        typenames[model.FLOW_FINAL] = 'Flow final Node';
+        typenames[model.FINAL] = 'Final Node';
+        typenames[model.ACTION] = 'Action';
+        typenames[model.EDGE] = 'Edge';
+        this.typenames = typenames;
     }
     
     activities.ui.Properties.prototype = {
@@ -455,13 +465,75 @@
          * display properties for diagram element
          */
         display: function(elem) {
-            
+            this.clear();
+            var node;
+            if (typeof(elem.diagram) == 'undefined') {
+                node = this.editor.model.context;
+            } else {
+                var path = elem.diagram.mapping[elem.triggerColor];
+                node = this.editor.model.node(path);
+            }
+            this.recent = node;
+            this.prop({
+                type: 'string',
+                name: 'type',
+                value: this.typenames[node.__type],
+                title: 'Type:',
+                readonly: true
+            });
+            this.prop({
+                type: 'string',
+                name: 'label',
+                value: elem.label || node.__name,
+                title: 'Label:'
+            });
+            this.prop({
+                type: 'text',
+                name: 'description',
+                value: elem.description || '',
+                title: 'Description:'
+            });
         },
         
-        heading: function(label) {
-            $('head', this.container).text(label);
-        }
+        clear: function() {
+            $('.props', this.container).empty();
+        },
         
+        /*
+         * opts = {
+         *     type: [string|text],
+         *     name: 'foo',
+         *     value: 'bar',
+         *     title: 'Baz',
+         *     readonly: false,
+         * }
+         */
+        prop: function(opts) {
+            var type = opts.type;
+            var name = opts.name;
+            var value = opts.value;
+            var title = opts.title;
+            var readonly = opts.readonly;
+            var prop = '<div class="field">';
+            prop += '<label for="' + name + '">' + opts.title + '</label>';
+            prop += '<br />';
+            if (type == 'string') {
+                prop += '<input type="text" name="' + name +
+                        '" value="' + value + '"';
+                if (readonly) {
+                    prop += ' disabled="disabled"';
+                }
+                prop += ' />';
+            } else {
+                prop += '<textarea name="' + name + '" rows="6" cols="23"';
+                if (readonly) {
+                    prop += ' disabled="disabled"';
+                }
+                prop += '>' + value + '</textarea>';
+            }
+            prop += '</div>';
+            $('.props', this.container).append(prop);
+        }
     }
     
     
@@ -572,12 +644,6 @@
         this.editor = editor;
         this.node2tier = new Object();
         this.tiers = new Array();
-        
-        // get rid
-        this.name = editor.name;
-        this.model = editor.model;
-        this.diagram = editor.diagram;
-        this.grid = editor.grid;
     }
     
     activities.ui.SimpleGridRenderer.prototype = {
@@ -697,9 +763,10 @@
         },
         
         /*
-         * draw single element
+         * create UI element by node type, set x / y position by grid entry
+         * definition and map model element to diagram element
          */
-        drawElement: function(node, entry) {
+        createElement: function(node, entry) {
             var diagram = this.editor.diagram;
             switch (node.__type) {
                 case activities.model.INITIAL: {
@@ -784,7 +851,7 @@
                         continue;
                     }
                     node = model.node(entry[0]);
-                    this.drawElement(node, entry);
+                    this.createElement(node, entry);
                 }
             }
             this.editor.diagram.render();
@@ -801,9 +868,7 @@
      */
     activities.ui.Diagram = function(editor) {
         this.editor = editor;
-        
         this.triggerColor = '#000000';
-        
         this.layers = {
             control:
                 new activities.ui.Layer($('#control_' + editor.name).get(0)),
@@ -812,6 +877,9 @@
         };
         this.width = this.layers.diagram.canvas.width;
         this.height = this.layers.diagram.canvas.height;
+        
+        this.label = null;
+        this.description = null;
         
         // trigger color to diagram element
         this.elements = new Object();
@@ -831,11 +899,12 @@
         /*
          * bind event handler
          */
-        bindHandler: function() {
+        bind: function() {
             // event subscription
-            this.editor.dispatcher.subscribe(
+            var dispatcher = this.editor.dispatcher;
+            dispatcher.subscribe(
                 activities.events.MOUSE_IN, this, this.setCursor);
-            this.editor.dispatcher.subscribe(
+            dispatcher.subscribe(
                 activities.events.MOUSE_DOWN, this, this.unselectAll);
         },
         
@@ -867,7 +936,7 @@
          * map model element path to trigger color
          */
         map: function(node, elem) {
-            this.mapping[node.__name] = elem.triggerColor;
+            this.mapping[elem.triggerColor] = node.__name;
         },
         
         /*
@@ -906,6 +975,7 @@
                 obj.focused.selected = false;
                 obj.focused.render();
             }
+            obj.editor.properties.display(obj);
         }
     }
     
@@ -919,7 +989,6 @@
      */
     activities.ui.Action = function(diagram) {
         this.triggerColor = null;
-        
         this.x = 0;
         this.y = 0;
         this.width = 100;
@@ -928,7 +997,9 @@
         this.selectedColor = '#ffc000';
         this.selectedWidth = 2;
         this.selected = false;
-        this.label = 'Action';
+        
+        this.label = null;
+        this.description = null;
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -990,7 +1061,6 @@
     
     activities.ui.Decision = function(diagram) {
         this.triggerColor = null;
-        
         this.x = 0;
         this.y = 0;
         this.sideLength = 40;
@@ -1000,6 +1070,9 @@
         this.selectedColor = '#ffc000';
         this.selectedWidth = 2;
         this.selected = false;
+        
+        this.label = null;
+        this.description = null;
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1068,7 +1141,6 @@
     
     activities.ui.Merge = function(diagram) {
         this.triggerColor = null;
-        
         this.x = 0;
         this.y = 0;
         this.sideLength = 40;
@@ -1078,6 +1150,9 @@
         this.selectedColor = '#ffc000';
         this.selectedWidth = 2;
         this.selected = false;
+        
+        this.label = null;
+        this.description = null;
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1100,7 +1175,6 @@
     
     activities.ui.Join = function(diagram) {
         this.triggerColor = null;
-        
         this.x = 0;
         this.y = 0;
         this.width = 10;
@@ -1109,6 +1183,9 @@
         this.selectedColor = '#ffc000';
         this.selectedWidth = 2;
         this.selected = false;
+        
+        this.label = null;
+        this.description = null;
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1168,7 +1245,6 @@
     
     activities.ui.Fork = function(diagram) {
         this.triggerColor = null;
-        
         this.x = 0;
         this.y = 0;
         this.width = 10;
@@ -1177,6 +1253,9 @@
         this.selectedColor = '#ffc000';
         this.selectedWidth = 2;
         this.selected = false;
+        
+        this.label = null;
+        this.description = null;
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1198,6 +1277,7 @@
     
     activities.ui.Edge = function(diagram) {
         this.triggerColor = null;
+        
         this.diagram = diagram;
         this.diagram.add(this);
     }
