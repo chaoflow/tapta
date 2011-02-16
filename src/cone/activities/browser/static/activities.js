@@ -642,6 +642,7 @@
                     action.x = entry[1];
                     action.y = entry[2];
                     action.label = node.__name;
+                    diagram.map(node, action);
                     break;
                 }
                 case activities.model.ACTION: {
@@ -649,6 +650,7 @@
                     action.x = entry[1];
                     action.y = entry[2];
                     action.label = node.__name;
+                    diagram.map(node, action);
                     break;
                 }
                 case activities.model.FINAL: {
@@ -656,39 +658,44 @@
                     action.x = entry[1];
                     action.y = entry[2];
                     action.label = node.__name;
+                    diagram.map(node, action);
                     break;
                 }
                 case activities.model.DECISION: {
                     var decision = new activities.ui.Decision(diagram);
                     decision.x = entry[1];
                     decision.y = entry[2];
+                    diagram.map(node, decision);
                     break;
                 }
                 case activities.model.MERGE: {
                     var merge = new activities.ui.Merge(diagram);
                     merge.x = entry[1];
                     merge.y = entry[2];
+                    diagram.map(node, merge);
                     break;
                 }
                 case activities.model.FLOW_FINAL: {
                     var merge = new activities.ui.Merge(diagram);
                     merge.x = entry[1];
                     merge.y = entry[2];
+                    diagram.map(node, merge);
                     break;
                 }
                 case activities.model.FORK: {
                     var fork = new activities.ui.Fork(diagram);
                     fork.x = entry[1];
                     fork.y = entry[2];
+                    diagram.map(node, fork);
                     break;
                 }
                 case activities.model.JOIN: {
                     var join = new activities.ui.Join(diagram);
                     join.x = entry[1];
                     join.y = entry[2];
+                    diagram.map(node, join);
                     break;
                 }
-                // XXX remaining
             }
         },
         
@@ -739,8 +746,12 @@
         this.width = this.layers.diagram.canvas.width;
         this.height = this.layers.diagram.canvas.height;
         
-        // XXX: hash mapping dottedpath2triggerColor
+        // trigger color to diagram element
         this.elements = new Object();
+        
+        // model element dotted path to trigger color
+        this.mapping = new Object();
+        
         this.dispatcher = new activities.events.Dispatcher(this);
         
         // current focused diagram element
@@ -780,6 +791,13 @@
             var triggerColor = this.nextTriggerColor();
             elem.triggerColor = triggerColor;
             this.elements[triggerColor] = elem;
+        },
+        
+        /*
+         * map model element path to trigger color
+         */
+        map: function(node, elem) {
+            this.mapping[node.__name] = elem.triggerColor;
         },
         
         /*
