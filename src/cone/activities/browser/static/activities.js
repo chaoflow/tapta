@@ -186,14 +186,43 @@
             },
             
             /*
+             * draw rounded rect
+             */
+            roundedRect: function(context, x1, y1, x2, y2, r) {
+                var r2d = Math.PI/180;
+                //ensure that the radius isn't too large for x
+                if ((x2 - x1) - (2 * r) < 0) {
+                    r = ((x2 - x1) / 2);
+                }
+                //ensure that the radius isn't too large for y
+                if((y2 - y1) - (2 * r) < 0 ) {
+                    r = ((y2 - y1) / 2);
+                }
+                context.beginPath();
+                context.moveTo(x1 + r, y1);
+                context.lineTo(x2 - r, y1);
+                context.arc(x2 - r, y1 + r, r, r2d * 270, r2d * 360, false);
+                context.lineTo(x2, y2 - r);
+                context.arc(x2 - r, y2 - r, r, r2d * 0, r2d * 90, false);
+                context.lineTo(x1 + r, y2);
+                context.arc(x1 + r, y2 - r, r, r2d * 90, r2d * 180, false);
+                context.lineTo(x1, y1 + r);
+                context.arc(x1 + r, y1 + r, r, r2d * 180, r2d * 270, false);
+            },
+
+            
+            /*
              * draw filled rect
              */
             fillRect: function(context, color, width, height) {
                 context.fillStyle = color;
-                context.fillRect((width / 2) * -1,
-                                 (height / 2) * -1,
-                                 width,
-                                 height);
+                context.shadowBlur = 1.5;
+                context.shadowColor = 'black';
+                var w_2 = width / 2;
+                var h_2 = height / 2;
+                activities.ui.roundedRect(
+                    context, w_2 * -1, h_2 * -1, w_2, h_2, 3);
+                context.fill();
             },
             
             /*
@@ -202,16 +231,18 @@
             strokeRect: function(context, color, lineWidth, width, height) {
                 context.strokeStyle = color;
                 context.lineWidth = lineWidth;
-                context.strokeRect((width / 2) * -1,
-                                   (height / 2) * -1,
-                                   width,
-                                   height);
+                var w_2 = width / 2;
+                var h_2 = height / 2;
+                activities.ui.roundedRect(
+                    context, w_2 * -1, h_2 * -1, w_2, h_2, 3);
+                context.stroke();
             },
             
             /*
              * draw label
              */
             label: function(context, label, width) {
+                context.shadowBlur = 0.0;
                 context.fillStyle = '#000';
                 context.textAlign = 'center';
                 context.textBaseline = 'middle';
