@@ -240,13 +240,10 @@
         this.context.__parent = '';
         
         // set __name and __parent
-        for (var key in this.context) {
+        for (var key in this.context.children) {
             // XXX: recursion
-            if (!this._isChildKey(key)) {
-                continue;
-            }
-            this.context[key].__name = key;
-            this.context[key].__parent = this.context.__name;
+            this.context.children[key].__name = key;
+            this.context.children[key].__parent = this.context.__name;
         }
         
         // set incoming_edges and outgoing_edges on model nodes
@@ -256,13 +253,13 @@
             // XXX: traversal by dottedpath if necessary
             edge = edges[idx];
             
-            source = this.context[edge.source];
+            source = this.context.children[edge.source];
             if (!source.outgoing_edges) {
                 source.outgoing_edges = new Array();
             }
             source.outgoing_edges.push(edge.__name);
             
-            target = this.context[edge.target];
+            target = this.context.children[edge.target];
             if (!target.incoming_edges) {
                 target.incoming_edges = new Array();
             }
@@ -271,10 +268,6 @@
     }
     
     activities.model.Model.prototype = {
-    
-        _isChildKey: function(key) {
-            return key.substring(0, 2) != '__';
-        },
         
         /*
          * search context for child objects providing given model element type.
@@ -289,12 +282,9 @@
                 context = this.context;
             }
             var ret = new Array();
-            for (var key in context) {
-                if (!this._isChildKey(key)) {
-                    continue;
-                }
-                if (context[key].__type == type) {
-                    ret.push(context[key]);
+            for (var key in context.children) {
+                if (context.children[key].__type == type) {
+                    ret.push(context.children[key]);
                 }
             }
             return ret;
@@ -355,7 +345,7 @@
          */
         node: function(path) {
             // XXX: traversal by dottedpath
-            return this.context[path];
+            return this.context.children[path];
         }
     }
     

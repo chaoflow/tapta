@@ -8,90 +8,92 @@
         // read activities.model.Model doc.
         model: {
             __type: activities.model.ACTIVITY,
-            start: {
-                __type: activities.model.INITIAL
-            },
-            fork: {
-                __type: activities.model.FORK
-            },
-            join: {
-                __type: activities.model.JOIN
-            },
-            decision: {
-                __type: activities.model.DECISION
-            },
-            merge: {
-                __type: activities.model.MERGE
-            },
-            action_1: {
-                __type: activities.model.ACTION
-            },
-            action_2: {
-                __type: activities.model.ACTION
-            },
-            action_3: {
-                __type: activities.model.ACTION
-            },
-            flow_end: {
-                __type: activities.model.FLOW_FINAL
-            },
-            end: {
-                __type: activities.model.FINAL
-            },
-            edge_1: {
-                __type: activities.model.EDGE,
-                source: 'start',
-                target: 'fork'
-            },
-            edge_2: {
-                __type: activities.model.EDGE,
-                source: 'fork',
-                target: 'action_1'
-            },
-            edge_3: {
-                __type: activities.model.EDGE,
-                source: 'fork',
-                target: 'action_2'
-            },
-            edge_4: {
-                __type: activities.model.EDGE,
-                source: 'action_1',
-                target: 'action_3'
-            },
-            edge_5: {
-                __type: activities.model.EDGE,
-                source: 'action_2',
-                target: 'join'
-            },
-            edge_6: {
-                __type: activities.model.EDGE,
-                source: 'action_3',
-                target: 'decision'
-            },
-            edge_7: {
-                __type: activities.model.EDGE,
-                source: 'action_3',
-                target: 'join'
-            },
-            edge_8: {
-                __type: activities.model.EDGE,
-                source: 'decision',
-                target: 'flow_end'
-            },
-            edge_9: {
-                __type: activities.model.EDGE,
-                source: 'decision',
-                target: 'merge'
-            },
-            edge_10: {
-                __type: activities.model.EDGE,
-                source: 'join',
-                target: 'merge'
-            },
-            edge_11: {
-                __type: activities.model.EDGE,
-                source: 'merge',
-                target: 'end'
+            children: {
+                start: {
+                    __type: activities.model.INITIAL
+                },
+                fork: {
+                    __type: activities.model.FORK
+                },
+                join: {
+                    __type: activities.model.JOIN
+                },
+                decision: {
+                    __type: activities.model.DECISION
+                },
+                merge: {
+                    __type: activities.model.MERGE
+                },
+                action_1: {
+                    __type: activities.model.ACTION
+                },
+                action_2: {
+                    __type: activities.model.ACTION
+                },
+                action_3: {
+                    __type: activities.model.ACTION
+                },
+                flow_end: {
+                    __type: activities.model.FLOW_FINAL
+                },
+                end: {
+                    __type: activities.model.FINAL
+                },
+                edge_1: {
+                    __type: activities.model.EDGE,
+                    source: 'start',
+                    target: 'fork'
+                },
+                edge_2: {
+                    __type: activities.model.EDGE,
+                    source: 'fork',
+                    target: 'action_1'
+                },
+                edge_3: {
+                    __type: activities.model.EDGE,
+                    source: 'fork',
+                    target: 'action_2'
+                },
+                edge_4: {
+                    __type: activities.model.EDGE,
+                    source: 'action_1',
+                    target: 'action_3'
+                },
+                edge_5: {
+                    __type: activities.model.EDGE,
+                    source: 'action_2',
+                    target: 'join'
+                },
+                edge_6: {
+                    __type: activities.model.EDGE,
+                    source: 'action_3',
+                    target: 'decision'
+                },
+                edge_7: {
+                    __type: activities.model.EDGE,
+                    source: 'action_3',
+                    target: 'join'
+                },
+                edge_8: {
+                    __type: activities.model.EDGE,
+                    source: 'decision',
+                    target: 'flow_end'
+                },
+                edge_9: {
+                    __type: activities.model.EDGE,
+                    source: 'decision',
+                    target: 'merge'
+                },
+                edge_10: {
+                    __type: activities.model.EDGE,
+                    source: 'join',
+                    target: 'merge'
+                },
+                edge_11: {
+                    __type: activities.model.EDGE,
+                    source: 'merge',
+                    target: 'end'
+                }
             }
         },
         
@@ -109,43 +111,43 @@
                        "filtered(activities.model.ACTION)");
                 var res = model.filtered(
                     activities.model.EDGE,
-                    tests.model.action_1);
+                    model.node('action_1'));
                 equals(0,
                        res,
                        "filtered(activities.model.ACTION, " +
-                       "tests.model.action_1)");
+                       "model.node('action_1'))");
             });
             
             test("activities.model.Model.incoming", function() {
-                var res = model.incoming(model.context.decision);
+                var res = model.incoming(model.node('decision'));
                 equals(1,
                        res.length,
-                       "model.incoming(model.context.decision)");
-                res = model.incoming(model.context.merge);
+                       "model.incoming(model.node('decision'))");
+                res = model.incoming(model.node('merge'));
                 equals(2,
                        res.length,
-                       "model.incoming(model.context.merge)");
+                       "model.incoming(model.node('merge'))");
                 equals(false,
                        !res[0].source || !res[0].target,
                        "res[0].source && res[0].target");
             });
             
             test("activities.model.Model.outgoing", function() {
-                var res = model.outgoing(model.context.decision);
+                var res = model.outgoing(model.node('decision'));
                 equals(2,
                        res.length,
-                       "model.outgoing(model.context.decision)");
-                res = model.outgoing(model.context.merge);
+                       "model.outgoing(model.node('decision'))");
+                res = model.outgoing(model.node('merge'));
                 equals(1,
                        res.length,
-                       "model.outgoing(model.context.merge)");
+                       "model.outgoing(model.node('merge'))");
                 equals(false,
                        !res[0].source || !res[0].target,
                        "res[0].source && res[0].target");
             });
             
             test("activities.model.Model.source", function() {
-                var source = model.source(model.context.edge_1);
+                var source = model.source(model.node('edge_1'));
                 equals(true,
                        source.__type == activities.model.INITIAL,
                        "source.__type == activities.model.INITIAL");
@@ -158,7 +160,7 @@
             });
             
             test("activities.model.Model.target", function() {
-                var target = model.target(model.context.edge_1);
+                var target = model.target(model.node('edge_1'));
                 equals(true,
                        target.__type == activities.model.FORK,
                        "target.__type == activities.model.FORK");
