@@ -156,8 +156,11 @@
              * events status message
              */
             status: function(evt, x, y, trigger) {
-                $('.events_status')
-                    .html(evt + ' X: ' + x + ' Y: ' + y + ' hex: ' + trigger);
+                var status = 'Evt: ' + evt + '<br />' +
+                             'X: ' + x + '<br />' +
+                             'Y: ' + y + '<br />' +
+                             'T: ' + trigger;
+                $('.status').html(status);
             }
         },
         
@@ -409,8 +412,7 @@
     /*
      * A single diagram editor.
      * 
-     * expects diagram name mapping to editor dom id and a
-     * activities.model.Model instance.
+     * expects diagram name mapping to editor dom id and a raw model.
      */
     activities.ui.Editor = function(name, model) {
         this.name = name;

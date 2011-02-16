@@ -12,37 +12,89 @@
 	
 	<body>
 		
-		<!-- activity editor markup -->
+		<!-- activity editor -->
 		<div class="activity_editor"
 		     id="level_0">
+		    
+			<!-- properties -->
 			<div class="element_properties">
 				<strong>Properties</strong>
-				<hr />
 				<div class="props">
 				</div>
+				<div class="status">
+				</div>
             </div>
+			
+			<!-- actions -->
 			<div class="actions">
-				<a href="javascript:tests.run()">
-                    Run tests
-                </a>
-				|
-				<a href="javascript:activities.ui.toggleCanvas('level_0')">
-                    toggle layer
-                </a>
+				
+				<!-- activity related -->
+				<div class="section">
+					<a href="#"
+                       title="New"
+                       class="new">&nbsp;</a>
+				    <a href="#"
+                       title="Open"
+                       class="open">&nbsp;</a>
+                    <a href="#"
+                       title="Save"
+                       class="save">&nbsp;</a>
+				</div>
+				
+				<!-- diagram related -->
+				<div class="section">
+                    <a href="#"
+                       title="Initial Node"
+                       class="initial">&nbsp;</a>
+                    <a href="#"
+                       title="Final Node"
+                       class="final">&nbsp;</a>
+                    <a href="#"
+                       title="Action"
+                       class="action">&nbsp;</a>
+					<a href="#"
+                       title="Join"
+                       class="join">&nbsp;</a>
+					<a href="#"
+                       title="Fork"
+                       class="fork">&nbsp;</a>
+                    <a href="#"
+                       title="Merge"
+                       class="merge">&nbsp;</a>
+                    <a href="#"
+                       title="Decision"
+                       class="decision">&nbsp;</a>
+				    <a href="#"
+                       title="Edge"
+                       class="edge">&nbsp;</a>
+                </div>
+				
+				<!-- development related -->
+				<div class="section">
+                    <a href="javascript:tests.run()"
+                       title="Run Tests"
+                       class="run_tests">&nbsp;</a>
+                    <a href="javascript:activities.ui.toggleCanvas('level_0')"
+                       title="Flip Layers"
+                       class="flip_layers">&nbsp;</a>
+                </div>
 			</div>
+			
+			<!-- diagram -->
 			<div class="activity_diagram"
 				 style="height:480px;">
-				<!-- single diagram layers -->
+				
+				<!-- control layers -->
 				<canvas class="control"
 				        id="control_level_0"
 						width="1200"
 						height="450"></canvas>
+				<!-- visual layer -->
 				<canvas class="diagram"
 				        id="diagram_level_0"
 						width="1200"
 						height="450"></canvas>
 			</div>
-			<div class="events_status"></div>
 	    </div>
 		
 		<!-- qunit related -->

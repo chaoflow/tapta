@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://www.eclipse.org/uml2/3.0.0/UML" xmi:id="_O1KNoTnYEeCat6tW3tFELQ" name="model">
+  <packagedElement xmi:type="uml:Collaboration" xmi:id="_Uv_NUDnYEeCat6tW3tFELQ" name="collaboration0" classifierBehavior="_Uv_NUTnYEeCat6tW3tFELQ">
+    <ownedBehavior xmi:type="uml:Activity" xmi:id="_Uv_NUTnYEeCat6tW3tFELQ" name="activity0"/>
+  </packagedElement>
+</uml:Model>

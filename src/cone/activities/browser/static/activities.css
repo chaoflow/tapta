@@ -1,21 +1,30 @@
+/*  general */
 body {
-	background-color:#fff;
 	font-size:12px;
 	font-family:verdana;
 }
+
+/* editor */
 .activity_editor {
 	position:relative;
 }
+
+/* properties */
 .activity_editor .element_properties {
 	position:absolute;
-	top:0px;
+	top:22px;
 	left:0px;
 	width:190px; /* 10px total padding */
-	height:462px; /* 10px total padding */
-	background-color:#efefef;
+	height:440px; /* 10px total padding */
+	background-color:#ffffee;
 	border:#aaa 1px solid;
 	border-right:none;
 	padding:5px;
+}
+.activity_editor .element_properties .props {
+	border-top:#ccc 1px solid;
+	margin-top:5px;
+	padding-top:5px;
 }
 .activity_editor .element_properties .props .field {
 	margin-bottom:5px;
@@ -26,21 +35,16 @@ body {
 .activity_editor .element_properties .props input {
 	width:188px;
 }
-.activity_editor .actions {
+.activity_editor .element_properties .status {
 	position:absolute;
-	top:0;
-    left:200px;
-	width:1200px;
-	height:22px;
-	background-color:#efefef;
-	border:#aaa 1px solid;
+	bottom:0px;
+	padding-top:2px;
+	border-top:#ccc 1px solid;
+	width:190px;
+	height:70px;
 }
-.activity_editor .events_status {
-	position:absolute;
-	top:477px;
-	left:200px;
-	height:22px;
-}
+
+/* diagram */
 .activity_diagram {
 	position:absolute;
 	top:22px;
@@ -59,8 +63,71 @@ body {
 	z-index:1;
 	border:#aaa 1px solid;
 }
+
+/* actions */
+.activity_editor .actions {
+    position:absolute;
+    top:0;
+    left:200px;
+    width:1200px;
+    height:22px;
+}
+.activity_editor .actions .section {
+	float:left;
+	padding-left:22px;
+	padding-right:22px;
+	padding-top:2px;
+	border-right:#ccc 1px solid;
+}
+.activity_editor .actions a {
+	line-height:16px;
+    padding-left:16px;
+	cursor:pointer;
+	text-decoration:none;
+}
+.activity_editor .actions a.run_tests {
+	background:url('icons/run.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.flip_layers {
+    background:url('icons/flip.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.new {
+    background:url('icons/new.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.open {
+    background:url('icons/open.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.save {
+    background:url('icons/save.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.initial {
+    background:url('icons/initial.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.final {
+    background:url('icons/activity_final.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.action {
+    background:url('icons/action.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.join {
+    background:url('icons/join.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.fork {
+    background:url('icons/fork.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.merge {
+    background:url('icons/merge.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.decision {
+    background:url('icons/decision.png') 50% 50% no-repeat;
+}
+.activity_editor .actions a.edge {
+    background:url('icons/edge.png') 50% 50% no-repeat;
+}
+
+/* tests */
 .qunit {
 	position:relative;
-	top:500px;
+	top:480px;
 	width:1400px;
 }
