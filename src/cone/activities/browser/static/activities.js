@@ -431,6 +431,16 @@
     
     activities.ui.Actions = function() {
         
+    },
+    
+    activities.ui.Actions.prototype = {
+        enable: function(id) {
+            
+        },
+        
+        disable: function(id) {
+            
+        }
     }
     
     
