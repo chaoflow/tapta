@@ -1,10 +1,9 @@
 (function($) {
     
     $(document).ready(function() {
-        var model = eval(uneval(tests.model));
         var name = 'level_0';
-        var renderer = new activities.ui.SimpleGridRenderer(model, name);
-        renderer.render();
+        var model = eval(uneval(tests.model));
+        var editor = new activities.ui.Editor('level_0', model);
         
         //alert(renderer._debugNode2tier());
         //alert(renderer._debugTiers());
@@ -81,8 +80,8 @@
                 var x = event.pageX - offset.left;
                 var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
-                var context = dispatcher.diagram.layers.control.context;
-                
+                var diagram = dispatcher.editor.diagram;
+                var context = diagram.layers.control.context;
                 // try to get pixel info, return if fails
                 try {
                     var imgData = context.getImageData(x, y, 1, 1).data;
@@ -92,9 +91,9 @@
                 
                 // detect event scope object
                 var triggerColor = activities.utils.rgb2hex(imgData);
-                var recent = dispatcher.diagram.elements[triggerColor];
+                var recent = diagram.elements[triggerColor];
                 if (!recent) {
-                    recent = dispatcher.diagram;
+                    recent = diagram;
                 }
                 
                 // trigger mousein/mouseout if necessary and return
@@ -153,6 +152,7 @@
                 obj.diagram.focused = obj;
                 obj.selected = true;
                 obj.render();
+                obj.diagram.editor.properties.display(obj);
             },
             
             /*
@@ -357,7 +357,9 @@
     /*
      * expects diagram
      */
-    activities.events.Dispatcher = function(diagram) {
+    activities.events.Dispatcher = function(editor) {
+        this.editor = editor;
+        
         // events directly mapping to javascript events for notification
         this.eventMapping = {
             mousedown: activities.events.MOUSE_DOWN,
@@ -367,15 +369,20 @@
         
         // len array depends on available events
         this.subscriber = new Object();
-        this.diagram = diagram;
         this.recent = null;
-        var canvas = $(diagram.layers.diagram.canvas);
-        canvas.data('dispatcher', this);
-        canvas.bind('mousedown mousemove mouseup',
-                    activities.events.notify);
     }
     
     activities.events.Dispatcher.prototype = {
+        
+        /*
+         * bind JS events to activity element notification
+         */
+        bind: function() {
+            var canvas = $(this.editor.diagram.layers.diagram.canvas);
+            canvas.data('dispatcher', this);
+            canvas.bind('mousedown mousemove mouseup',
+                        activities.events.notify);
+        },
         
         /*
          * subscribe object to event with handler
@@ -395,6 +402,66 @@
             }
             this.subscriber[obj.triggerColor][evt].push(handler);
         }
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Editor
+    // ************************************************************************
+    
+    /*
+     * A single diagram editor.
+     * 
+     * expects diagram name mapping to editor dom id and a
+     * activities.model.Model instance.
+     */
+    activities.ui.Editor = function(name, model) {
+        this.name = name;
+        this.grid = new activities.ui.Grid();
+        this.model = new activities.model.Model(model);
+        this.properties = new activities.ui.Properties(this);
+        this.dispatcher = new activities.events.Dispatcher(this);
+        this.diagram = new activities.ui.Diagram(this);
+        
+        this.dispatcher.bind();
+        this.diagram.bindHandler();
+        
+        this.renderer = new activities.ui.SimpleGridRenderer(this);
+        this.renderer.render();
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Actions
+    // ************************************************************************
+    
+    activities.ui.Actions = function() {
+        
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Properties
+    // ************************************************************************
+    
+    activities.ui.Properties = function(editor) {
+        this.editor = editor;
+        this.container = $('#' + editor.name + ' .element_properties');
+    }
+    
+    activities.ui.Properties.prototype = {
+        
+        /*
+         * display properties for diagram element
+         */
+        display: function(elem) {
+            
+        },
+        
+        heading: function(label) {
+            $('head', this.container).text(label);
+        }
+        
     }
     
     
@@ -501,11 +568,16 @@
     /*
      * http://ls11-www.cs.uni-dortmund.de/people/gutweng/AE-07/schichten.pdf
      */
-    activities.ui.SimpleGridRenderer = function(model, name) {
-        this.name = name;
-        this.model = new activities.model.Model(model);
-        this.diagram = new activities.ui.Diagram(name);
-        this.grid = new activities.ui.Grid();
+    activities.ui.SimpleGridRenderer = function(editor) {
+        this.editor = editor;
+        this.node2tier = new Object();
+        this.tiers = new Array();
+        
+        // get rid
+        this.name = editor.name;
+        this.model = editor.model;
+        this.diagram = editor.diagram;
+        this.grid = editor.grid;
     }
     
     activities.ui.SimpleGridRenderer.prototype = {
@@ -540,11 +612,12 @@
          */
         _debugGrid: function() {
             var ret = '';
-            var size = this.grid.size();
+            var grid = this.editor.grid;
+            var size = grid.size();
             var entry;
             for (var i = 0; i < size[0]; i++) {
                 for (var j = 0; j < size[1]; j++) {
-                    entry = this.grid.get(i, j);
+                    entry = grid.get(i, j);
                     if (!entry) {
                         continue;
                     }
@@ -561,7 +634,7 @@
          * return initial node
          */
         initial: function() {
-            var model = this.model;
+            var model = this.editor.model;
             var initial = model.filtered(activities.model.INITIAL);
             if (initial.length == 0) {
                 throw "Could not find initial node. Abort.";
@@ -581,11 +654,12 @@
             } else if (tier > this.node2tier[node.__name]) {
                 this.node2tier[node.__name] = tier;
             }
-            var outgoing = this.model.outgoing(node);
+            var model = this.editor.model;
+            var outgoing = model.outgoing(node);
             var edge, target;
             for (var idx in outgoing) {
                 edge = outgoing[idx];
-                target = this.model.target(edge);
+                target = model.target(edge);
                 this.detectTiers(tier + 1, target);
             }
         },
@@ -607,13 +681,14 @@
          * fill grid with elements from this.tiers
          */
         fillGrid: function() {
+            var grid = this.editor.grid;
             var step_x = 140;
             var step_y = 120;
             var x = step_x;
             var y = step_y;
             for (var i in this.tiers) {
                 for (var j in this.tiers[i]) {
-                    this.grid.set(i, j, this.tiers[i][j], x, y);
+                    grid.set(i, j, this.tiers[i][j], x, y);
                     y += step_y;
                 }
                 x += step_x;
@@ -625,7 +700,7 @@
          * draw single element
          */
         drawElement: function(node, entry) {
-            var diagram = this.diagram;
+            var diagram = this.editor.diagram;
             switch (node.__type) {
                 case activities.model.INITIAL: {
                     var action = new activities.ui.Action(diagram);
@@ -693,26 +768,26 @@
          * render diagram
          */
         render: function() {
-            this.diagram = new activities.ui.Diagram(this.name);
-            this.grid = new activities.ui.Grid();
             this.node2tier = new Object();
             this.tiers = new Array();
             this.detectTiers(0, this.initial());
             this.fillTiers();
             this.fillGrid();
-            var size = this.grid.size();
+            var model = this.editor.model;
+            var grid = this.editor.grid;
+            var size = grid.size();
             var entry;
             for (var i = 0; i < size[0]; i++) {
                 for (var j = 0; j < size[1]; j++) {
-                    entry = this.grid.get(i, j);
+                    entry = grid.get(i, j);
                     if (!entry) {
                         continue;
                     }
-                    node = this.model.node(entry[0]);
+                    node = model.node(entry[0]);
                     this.drawElement(node, entry);
                 }
             }
-            this.diagram.render();
+            this.editor.diagram.render();
         }
     }
     
@@ -724,14 +799,16 @@
     /*
      * refers to activity model
      */
-    activities.ui.Diagram = function(name) {
+    activities.ui.Diagram = function(editor) {
+        this.editor = editor;
+        
         this.triggerColor = '#000000';
         
         this.layers = {
             control:
-                new activities.ui.Layer($('#control_' + name).get(0)),
+                new activities.ui.Layer($('#control_' + editor.name).get(0)),
             diagram:
-                new activities.ui.Layer($('#diagram_' + name).get(0))
+                new activities.ui.Layer($('#diagram_' + editor.name).get(0))
         };
         this.width = this.layers.diagram.canvas.width;
         this.height = this.layers.diagram.canvas.height;
@@ -742,22 +819,25 @@
         // model element dotted path to trigger color
         this.mapping = new Object();
         
-        this.dispatcher = new activities.events.Dispatcher(this);
-        
         // current focused diagram element
         this.focused = null;
         
         // array for trigger color calculation for this diagram
         this._nextTriggerColor = [0, 0, 0];
-        
-        // event subscription
-        this.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, this.setCursor);
-        this.dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, this.unselectAll);
     }
     
     activities.ui.Diagram.prototype = {
+        
+        /*
+         * bind event handler
+         */
+        bindHandler: function() {
+            // event subscription
+            this.editor.dispatcher.subscribe(
+                activities.events.MOUSE_IN, this, this.setCursor);
+            this.editor.dispatcher.subscribe(
+                activities.events.MOUSE_DOWN, this, this.unselectAll);
+        },
         
         /*
          * iterate over elements of diagram and call render function
@@ -854,9 +934,10 @@
         this.diagram.add(this);
         
         // event subscription
-        this.diagram.dispatcher.subscribe(
+        var dispatcher = this.diagram.editor.dispatcher;
+        dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
-        this.diagram.dispatcher.subscribe(
+        dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
@@ -924,9 +1005,10 @@
         this.diagram.add(this);
         
         // event subscription
-        this.diagram.dispatcher.subscribe(
+        var dispatcher = this.diagram.editor.dispatcher;
+        dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
-        this.diagram.dispatcher.subscribe(
+        dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
@@ -1001,9 +1083,10 @@
         this.diagram.add(this);
         
         // event subscription
-        this.diagram.dispatcher.subscribe(
+        var dispatcher = this.diagram.editor.dispatcher;
+        dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
-        this.diagram.dispatcher.subscribe(
+        dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
@@ -1031,9 +1114,10 @@
         this.diagram.add(this);
         
         // event subscription
-        this.diagram.dispatcher.subscribe(
+        var dispatcher = this.diagram.editor.dispatcher;
+        dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
-        this.diagram.dispatcher.subscribe(
+        dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
@@ -1098,9 +1182,10 @@
         this.diagram.add(this);
         
         // event subscription
-        this.diagram.dispatcher.subscribe(
+        var dispatcher = this.diagram.editor.dispatcher;
+        dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
-        this.diagram.dispatcher.subscribe(
+        dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
