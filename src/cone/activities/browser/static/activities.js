@@ -227,12 +227,7 @@
     // ************************************************************************
     
     /* 
-     * expects JSON as context.
-     * 
-     * - all object names starting with '__' are considered as non children.
-     * - __name, __parent are set on activities.model.Model init.
-     * - incoming_edges, outgoing_egdes are set on, activities.model.Model
-     *   init for non edge children.
+     * expects JSON serialized model as context.
      */
     activities.model.Model = function(context) {
         this.context = context;
@@ -240,10 +235,11 @@
         this.context.__parent = '';
         
         // set __name and __parent
+        // XXX: recursion
         for (var key in this.context.children) {
-            // XXX: recursion
-            this.context.children[key].__name = key;
-            this.context.children[key].__parent = this.context.__name;
+            var node = this.node(key);
+            node.__name = key;
+            node.__parent = this.context.__name;
         }
         
         // set incoming_edges and outgoing_edges on model nodes
@@ -253,13 +249,13 @@
             // XXX: traversal by dottedpath if necessary
             edge = edges[idx];
             
-            source = this.context.children[edge.source];
+            source = this.node(edge.source);
             if (!source.outgoing_edges) {
                 source.outgoing_edges = new Array();
             }
             source.outgoing_edges.push(edge.__name);
             
-            target = this.context.children[edge.target];
+            target = this.node(edge.target);
             if (!target.incoming_edges) {
                 target.incoming_edges = new Array();
             }
@@ -425,6 +421,7 @@
         this.dispatcher.bind();
         this.diagram.bind();
         this.renderer.render();
+        this.properties.display(this.diagram);
     }
     
     
@@ -444,7 +441,8 @@
     activities.ui.Properties = function(editor) {
         this.editor = editor;
         this.container = $('#' + editor.name + ' .element_properties');
-        this.recent = null;
+        this.recent_node = null;
+        this.recent_element = null;
         
         var typenames = new Array();
         var model = activities.model;
@@ -475,7 +473,9 @@
                 var path = elem.diagram.mapping[elem.triggerColor];
                 node = this.editor.model.node(path);
             }
-            this.recent = node;
+            this.recent_node = node;
+            this.recent_element = elem;
+            // generic
             this.prop({
                 type: 'string',
                 name: 'type',
@@ -495,8 +495,70 @@
                 value: elem.description || '',
                 title: 'Description:'
             });
+            if (node.__type == activities.model.EDGE) {
+                this.prop({
+                    type: 'string',
+                    name: 'source',
+                    value: node.source || '',
+                    title: 'Source:',
+                    readonly: true
+                });
+                this.prop({
+                    type: 'string',
+                    name: 'target',
+                    value: node.target || '',
+                    title: 'Target:',
+                    readonly: true
+                });
+            } else if (node.__type != activities.model.ACTIVITY) {
+                var value =
+                    node.incoming_edges ? node.incoming_edges.join(',') : '';
+                this.prop({
+                    type: 'string',
+                    name: 'incoming',
+                    value: value,
+                    title: 'Incoming Edges:',
+                    readonly: true
+                });
+                value =
+                    node.outgoing_edges ? node.outgoing_edges.join(',') : '';
+                this.prop({
+                    type: 'string',
+                    name: 'outgoing',
+                    value: value,
+                    title: 'Outgoing Edges:',
+                    readonly: true
+                });
+            }
+            var properties = this;
+            $('.update', this.container)
+                .unbind()
+                .bind('click', function(evt) {
+                    evt.preventDefault();
+                    properties.update();
+                });
         },
         
+        /*
+         * update props on node and diagram element
+         */
+        update: function() {
+            var node = this.recent_node;
+            var elem = this.recent_element;
+            var label = $('input[name="label"]',
+                          this.container).attr('value');
+            var description = $('textarea[name="description"]',
+                                this.container).attr('value');
+            node.label = label;
+            node.description = description;
+            elem.label = label;
+            elem.description = description;
+            elem.render();
+        },
+        
+        /*
+         * clear props
+         */
         clear: function() {
             $('.props', this.container).empty();
         },
@@ -527,7 +589,7 @@
                 }
                 prop += ' />';
             } else {
-                prop += '<textarea name="' + name + '" rows="6" cols="23"';
+                prop += '<textarea name="' + name + '" rows="6" cols="27"';
                 if (readonly) {
                     prop += ' disabled="disabled"';
                 }
