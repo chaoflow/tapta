@@ -87,7 +87,7 @@ var demo_editor = null;
                 var x = event.pageX - offset.left;
                 var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
-                var diagram = dispatcher.editor.diagram;
+                var diagram = dispatcher.diagram;
                 var context = diagram.layers.control.context;
                 // try to get pixel info, return if fails
                 try {
@@ -632,8 +632,8 @@ var demo_editor = null;
     /*
      * expects diagram
      */
-    activities.events.Dispatcher = function(editor) {
-        this.editor = editor;
+    activities.events.Dispatcher = function(diagram) {
+        this.diagram = diagram;
         
         // events directly mapping to javascript events for notification
         this.eventMapping = {
@@ -653,7 +653,7 @@ var demo_editor = null;
          * bind JS events to activity element notification
          */
         bind: function() {
-            var canvas = $(this.editor.diagram.layers.diagram.canvas);
+            var canvas = $(this.diagram.layers.diagram.canvas);
             canvas.data('dispatcher', this);
             canvas.unbind().bind('mousedown mousemove mouseup',
                                  activities.events.notify);
@@ -691,6 +691,10 @@ var demo_editor = null;
      */
     activities.ui.Editor = function(name) {
         this.name = name;
+        this.actions = null;
+        this.properties = null;
+        this.model = null;
+        this.diagram = null;
     }
     
     activities.ui.Editor.prototype.init = function() {
@@ -698,23 +702,14 @@ var demo_editor = null;
             var canvas = $(this.diagram.layers.diagram.canvas);
             canvas.data('dispatcher', null);
         } catch (err) {}
-        this.dispatcher = null;
-        this.actions = null;
-        this.properties = null;
-        this.diagram = null;
-        this.renderer = null;
-        this.grid = null;
         
-        this.dispatcher = new activities.events.Dispatcher(this);
         this.actions = new activities.ui.Actions(this);
         this.properties = new activities.ui.Properties(this);
-        this.diagram = new activities.ui.Diagram(this);
-        this.renderer = new activities.ui.TierRenderer(this);
-        this.grid = new activities.ui.Grid();
+        this.diagram = new activities.ui.Diagram(
+            this, activities.ui.TierRenderer);
         
-        this.dispatcher.bind();
         this.diagram.bind();
-        this.renderer.render();
+        this.diagram.render();
         this.properties.display(this.diagram);
     }
     
@@ -1037,6 +1032,8 @@ var demo_editor = null;
      */
     activities.ui.TierRenderer = function(editor) {
         this.editor = editor;
+        this.grid = new activities.ui.Grid();
+        this.model = editor.model;
         this.node2tier = new Object();
         this.tiers = new Array();
     }
@@ -1073,7 +1070,7 @@ var demo_editor = null;
          */
         _debugGrid: function() {
             var ret = '';
-            var grid = this.editor.grid;
+            var grid = this.grid;
             var size = grid.size();
             var entry;
             for (var i = 0; i < size[0]; i++) {
@@ -1095,7 +1092,7 @@ var demo_editor = null;
          * return initial node
          */
         initial: function() {
-            var model = this.editor.model;
+            var model = this.model;
             var initial = model.filtered(activities.model.INITIAL);
             if (initial.length == 0) {
                 throw "Could not find initial node. Abort.";
@@ -1115,7 +1112,7 @@ var demo_editor = null;
             } else if (tier > this.node2tier[node.__name]) {
                 this.node2tier[node.__name] = tier;
             }
-            var model = this.editor.model;
+            var model = this.model;
             var outgoing = model.outgoing(node);
             var edge, target;
             for (var idx in outgoing) {
@@ -1142,7 +1139,7 @@ var demo_editor = null;
          * detect and fill kinks
          */
         fillKinks: function(tier, node) {
-            var model = this.editor.model;
+            var model = this.model;
             var outgoing = model.outgoing(node);
             var edge, target, diff;
             for (var idx in outgoing) {
@@ -1163,7 +1160,7 @@ var demo_editor = null;
          * fill grid with elements from this.tiers
          */
         fillGrid: function() {
-            var grid = this.editor.grid;
+            var grid = this.grid;
             var step_x = 140;
             var step_y = 120;
             var x = step_x;
@@ -1183,7 +1180,7 @@ var demo_editor = null;
          */
         createEdges: function() {
             var diagram = this.editor.diagram;
-            var model = this.editor.model;
+            var model = this.model;
             var edges = model.filtered(activities.model.EDGE);
             for (var idx in edges) {
                 var edge = edges[idx];
@@ -1281,7 +1278,12 @@ var demo_editor = null;
             try {
                 initial = this.initial();
             } catch (err) {
-                this.editor.diagram.render();
+                // XXX
+                // this.editor.diagram.render();
+                // render diagram elements
+                for(var key in this.editor.diagram.elements) {
+                    this.editor.diagram.elements[key].render();
+                }
                 return;
             }
             this.detectTiers(0, initial);
@@ -1289,8 +1291,8 @@ var demo_editor = null;
             this.fillKinks(0, initial);
             this.fillGrid();
             this.createEdges();
-            var model = this.editor.model;
-            var grid = this.editor.grid;
+            var model = this.model;
+            var grid = this.grid;
             var size = grid.size();
             var entry;
             for (var i = 0; i < size[0]; i++) {
@@ -1303,7 +1305,11 @@ var demo_editor = null;
                     this.createElement(node, entry);
                 }
             }
-            this.editor.diagram.render();
+            
+            // render diagram elements
+            for(var key in this.editor.diagram.elements) {
+                this.editor.diagram.elements[key].render();
+            }
         }
     }
     
@@ -1315,20 +1321,9 @@ var demo_editor = null;
     /*
      * refers to activity model
      */
-    activities.ui.Diagram = function(editor) {
+    activities.ui.Diagram = function(editor, renderer) {
         this.editor = editor;
-        this.triggerColor = '#000000';
-        this.layers = {
-            control:
-                new activities.ui.Layer($('#control_' + editor.name).get(0)),
-            diagram:
-                new activities.ui.Layer($('#diagram_' + editor.name).get(0))
-        };
-        this.width = this.layers.diagram.canvas.width;
-        this.height = this.layers.diagram.canvas.height;
-        
-        this.label = null;
-        this.description = null;
+        this.renderer = new renderer(editor);
         
         // trigger color to diagram element
         this.elements = new Object();
@@ -1342,8 +1337,24 @@ var demo_editor = null;
         // current focused diagram element
         this.focused = null;
         
+        this.triggerColor = '#000000';
+        this.layers = {
+            control:
+                new activities.ui.Layer($('#control_' + editor.name).get(0)),
+            diagram:
+                new activities.ui.Layer($('#diagram_' + editor.name).get(0))
+        };
+        this.width = this.layers.diagram.canvas.width;
+        this.height = this.layers.diagram.canvas.height;
+        
+        this.label = null;
+        this.description = null;
+        
         // array for trigger color calculation for this diagram
         this._nextTriggerColor = [0, 0, 0];
+        
+        this.dispatcher = new activities.events.Dispatcher(this);
+        this.dispatcher.bind();
     }
     
     activities.ui.Diagram.prototype = {
@@ -1353,7 +1364,7 @@ var demo_editor = null;
          */
         bind: function() {
             // event subscription
-            var dispatcher = this.editor.dispatcher;
+            var dispatcher = this.dispatcher;
             dispatcher.subscribe(
                 activities.events.MOUSE_IN, this, this.setCursor);
             dispatcher.subscribe(
@@ -1376,10 +1387,7 @@ var demo_editor = null;
             context.clearRect(0, 0, this.width, this.height);
             context.restore();
             
-            // render diagram elements
-            for(var key in this.elements) {
-                this.elements[key].render();
-            }
+            this.renderer.render();
         },
         
         /*
@@ -1451,7 +1459,7 @@ var demo_editor = null;
         this.diagram.add(this);
         
         // event subscription
-        var dispatcher = this.diagram.editor.dispatcher;
+        var dispatcher = diagram.dispatcher;
         dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
         dispatcher.subscribe(
@@ -1505,7 +1513,7 @@ var demo_editor = null;
         this.diagram.add(this);
         
         // event subscription
-        var dispatcher = this.diagram.editor.dispatcher;
+        var dispatcher = diagram.dispatcher;
         dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
         dispatcher.subscribe(
@@ -1562,7 +1570,7 @@ var demo_editor = null;
         this.diagram.add(this);
         
         // event subscription
-        var dispatcher = this.diagram.editor.dispatcher;
+        var dispatcher = diagram.dispatcher;
         dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
         dispatcher.subscribe(
@@ -1585,7 +1593,7 @@ var demo_editor = null;
         this.diagram.add(this);
         
         // event subscription
-        var dispatcher = this.diagram.editor.dispatcher;
+        var dispatcher = diagram.dispatcher;
         dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
         dispatcher.subscribe(
@@ -1608,7 +1616,7 @@ var demo_editor = null;
         this.diagram.add(this);
         
         // event subscription
-        var dispatcher = this.diagram.editor.dispatcher;
+        var dispatcher = diagram.dispatcher;
         dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
         dispatcher.subscribe(
@@ -1631,7 +1639,7 @@ var demo_editor = null;
         this.diagram.add(this);
         
         // event subscription
-        var dispatcher = this.diagram.editor.dispatcher;
+        var dispatcher = diagram.dispatcher;
         dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
         dispatcher.subscribe(
@@ -1654,7 +1662,7 @@ var demo_editor = null;
         this.diagram.add(this);
         
         // event subscription
-        var dispatcher = this.diagram.editor.dispatcher;
+        var dispatcher = diagram.dispatcher;
         dispatcher.subscribe(
             activities.events.MOUSE_IN, this, activities.events.setCursor);
         dispatcher.subscribe(
@@ -1716,7 +1724,7 @@ var demo_editor = null;
         context.restore();
     }
     
-	
+    
     // ************************************************************************
     // activities.ui.Kink
     // ************************************************************************
