@@ -695,6 +695,7 @@ var demo_editor = null;
         this.properties = null;
         this.model = null;
         this.diagram = null;
+        this.rendererClass = activities.ui.TierRenderer;
     }
     
     activities.ui.Editor.prototype.init = function() {
@@ -706,11 +707,12 @@ var demo_editor = null;
         this.actions = new activities.ui.Actions(this);
         this.properties = new activities.ui.Properties(this);
         this.diagram = new activities.ui.Diagram(
-            this, activities.ui.TierRenderer);
+            this, this.rendererClass);
         
-        this.diagram.bind();
-        this.diagram.render();
-        this.properties.display(this.diagram);
+        var diagram = this.diagram
+        diagram.bind();
+        diagram.render();
+        this.properties.display(diagram);
     }
     
     activities.ui.Editor.prototype.newDiagram = function() {
@@ -1030,10 +1032,10 @@ var demo_editor = null;
     /*
      * http://ls11-www.cs.uni-dortmund.de/people/gutweng/AE-07/schichten.pdf
      */
-    activities.ui.TierRenderer = function(editor) {
-        this.editor = editor;
+    activities.ui.TierRenderer = function(diagram, model) {
+        this.diagram = diagram;
+        this.model = model;
         this.grid = new activities.ui.Grid();
-        this.model = editor.model;
         this.node2tier = new Object();
         this.tiers = new Array();
     }
@@ -1179,7 +1181,7 @@ var demo_editor = null;
          * create edges
          */
         createEdges: function() {
-            var diagram = this.editor.diagram;
+            var diagram = this.diagram;
             var model = this.model;
             var edges = model.filtered(activities.model.EDGE);
             for (var idx in edges) {
@@ -1196,7 +1198,7 @@ var demo_editor = null;
          * definition and map model element to diagram element
          */
         createElement: function(node, entry) {
-            var diagram = this.editor.diagram;
+            var diagram = this.diagram;
             switch (node.__type) {
                 case activities.model.EDGE: {
                     // this is an edge kink
@@ -1279,10 +1281,9 @@ var demo_editor = null;
                 initial = this.initial();
             } catch (err) {
                 // XXX
-                // this.editor.diagram.render();
                 // render diagram elements
-                for(var key in this.editor.diagram.elements) {
-                    this.editor.diagram.elements[key].render();
+                for(var key in this.diagram.elements) {
+                    this.diagram.elements[key].render();
                 }
                 return;
             }
@@ -1306,9 +1307,10 @@ var demo_editor = null;
                 }
             }
             
+            // XXX
             // render diagram elements
-            for(var key in this.editor.diagram.elements) {
-                this.editor.diagram.elements[key].render();
+            for(var key in this.diagram.elements) {
+                this.diagram.elements[key].render();
             }
         }
     }
@@ -1323,7 +1325,7 @@ var demo_editor = null;
      */
     activities.ui.Diagram = function(editor, renderer) {
         this.editor = editor;
-        this.renderer = new renderer(editor);
+        this.renderer = new renderer(this, editor.model);
         
         // trigger color to diagram element
         this.elements = new Object();
