@@ -4,10 +4,22 @@
         <title>Activities</title>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script> 
         <script src="http://code.jquery.com/qunit/git/qunit.js"></script>
+        <script src="http://cdn.jquerytools.org/1.2.5/jquery.tools.min.js"></script>
+        <script src="bdajax/bdajax.js"></script>
         <script src="activities.js"></script>
         <script src="test_activities.js"></script>
-        <link href="http://code.jquery.com/qunit/git/qunit.css" rel="stylesheet" type="text/css" media="screen" />
-        <link href="activities.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="http://code.jquery.com/qunit/git/qunit.css"
+              rel="stylesheet"
+              type="text/css"
+              media="screen" />
+        <link href="bdajax/bdajax.css"
+              rel="stylesheet"
+              type="text/css"
+              media="screen" />
+        <link href="activities.css"
+              rel="stylesheet"
+              type="text/css"
+              media="screen" />
     </head>
     
     <body>
@@ -112,6 +124,30 @@
             <h2 id="qunit-userAgent"></h2>
             <ol id="qunit-tests"></ol>
             <div id="qunit-fixture"></div>
+        </div>
+        
+        <!-- bdajax related -->
+        <!-- temporary while development -->
+        <div id="ajax-spinner">
+          <img src="spinner.gif" alt="" />
+        </div>
+        
+        <div class="ajax-overlay" id="ajax-overlay">
+          <div id="ajax-overlay-content"></div>
+        </div>
+        
+        <div class="ajax-message" id="ajax-message">
+          <div class="message">Message</div>
+          <button class="close allowMultiSubmit">OK</button>
+        </div>
+        
+        <div class="ajax-dialog" id="ajax-dialog">
+            <div class="text">
+            </div>
+            <div class="buttons">
+              <button class="submit allowMultiSubmit">OK</button> 
+              <button class="cancel allowMultiSubmit">Cancel</button> 
+            </div>
         </div>
         
     </body>

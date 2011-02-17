@@ -1,3 +1,13 @@
+/*
+ * activities.js
+ * 
+ * Author: Robert Niederreiter
+ * Requires:
+ *     - jQuery
+ *     - jQuery Tools
+ *     - bdajax
+ */
+
 (function($) {
     
     $(document).ready(function() {
