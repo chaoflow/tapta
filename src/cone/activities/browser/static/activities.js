@@ -550,7 +550,7 @@
         this.dispatcher = new activities.events.Dispatcher(this);
         this.properties = new activities.ui.Properties(this);
         this.diagram = new activities.ui.Diagram(this);
-        this.renderer = new activities.ui.SimpleGridRenderer(this);
+        this.renderer = new activities.ui.TierRenderer(this);
         this.grid = new activities.ui.Grid();
         this.dispatcher.bind();
         this.diagram.bind();
@@ -842,19 +842,19 @@
     
     
     // ************************************************************************
-    // activities.ui.SimpleGridRenderer
+    // activities.ui.TierRenderer
     // ************************************************************************
     
     /*
      * http://ls11-www.cs.uni-dortmund.de/people/gutweng/AE-07/schichten.pdf
      */
-    activities.ui.SimpleGridRenderer = function(editor) {
+    activities.ui.TierRenderer = function(editor) {
         this.editor = editor;
         this.node2tier = new Object();
         this.tiers = new Array();
     }
     
-    activities.ui.SimpleGridRenderer.prototype = {
+    activities.ui.TierRenderer.prototype = {
         
         /*
          * this.node2tier debug
