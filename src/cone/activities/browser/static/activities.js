@@ -185,6 +185,27 @@
                 }
             },
             
+            // rendering helpers
+            
+            /*
+             * turn shadow drawing on.
+             */
+            shadowOn: function(context) {
+                context.shadowOffsetX = 2.5;
+                context.shadowOffsetY = 2.5;
+                context.shadowBlur = 3.0;
+                context.shadowColor = '#aaa';
+            },
+            
+            /*
+             * turn shadow drawing off.
+             */
+            shadowOff: function(context) {
+                context.shadowOffsetX = 0.0;
+                context.shadowOffsetY = 0.0;
+                context.shadowBlur = 0.0;
+            },
+            
             /*
              * draw rounded rect
              */
@@ -209,20 +230,31 @@
                 context.lineTo(x1, y1 + r);
                 context.arc(x1 + r, y1 + r, r, r2d * 180, r2d * 270, false);
             },
-
             
             /*
              * draw filled rect
              */
-            fillRect: function(context, color, width, height) {
+            fillRect: function(context,
+                               color,
+                               width,
+                               height,
+                               shadow,
+                               radius) {
+                if (!radius && radius != 0) {
+                    radius = 3;
+                }
                 context.fillStyle = color;
-                context.shadowBlur = 1.5;
-                context.shadowColor = 'black';
+                if (shadow) {
+                    activities.ui.shadowOn(context);
+                }
                 var w_2 = width / 2;
                 var h_2 = height / 2;
                 activities.ui.roundedRect(
                     context, w_2 * -1, h_2 * -1, w_2, h_2, 3);
                 context.fill();
+                if (shadow) {
+                    activities.ui.shadowOff(context);
+                }
             },
             
             /*
@@ -242,12 +274,83 @@
              * draw label
              */
             label: function(context, label, width) {
-                context.shadowBlur = 0.0;
                 context.fillStyle = '#000';
                 context.textAlign = 'center';
                 context.textBaseline = 'middle';
                 context.font = '12px sans-serif';
                 context.fillText(label, 0, 0, width);
+            },
+            
+            // rect diagram element agnostic. must be set on element
+            
+            /*
+             * default rect diagram element initialization
+             */
+            initRectElem: function(width, height, rotation) {
+                this.triggerColor = null;
+                this.x = 0;
+                this.y = 0;
+                this.rotation = rotation;
+                this.width = width;
+                this.height = height;
+                this.borderWidth = 2;
+                this.fillColor = '#edf7ff';
+                this.borderColor = '#b5d9ea';
+                this.selectedFillColor = '#fff7ae';
+                this.selectedBorderColor = '#e3ca4b';
+                this.renderLabel = false;
+                this.selected = false;
+                this.label = null;
+                this.description = null;
+            },
+            
+            /*
+             * default rect diagram element rendering
+             */
+            renderRectElem: function() {
+                
+                // control layer
+                var context = this.diagram.layers.control.context;
+                context.save();
+                context.translate(this.x, this.y);
+                if (this.rotation) {
+                    context.rotate(this.rotation * Math.PI / 180);
+                }
+                activities.ui.fillRect(context,
+                                       this.triggerColor,
+                                       this.width,
+                                       this.height);
+                context.restore();
+                
+                // diagram layer
+                var fillColor, borderColor;
+                if (!this.selected) {
+                    fillColor = this.fillColor;
+                    borderColor = this.borderColor;
+                } else {
+                    fillColor = this.selectedFillColor;
+                    borderColor = this.selectedBorderColor;
+                }
+                context = this.diagram.layers.diagram.context;
+                context.save();
+                context.translate(this.x, this.y);
+                if (this.rotation) {
+                    context.rotate(this.rotation * Math.PI / 180);
+                }
+                activities.ui.fillRect(context,
+                                       fillColor,
+                                       this.width,
+                                       this.height,
+                                       true);
+                activities.ui.strokeRect(context,
+                                         borderColor,
+                                         this.borderWidth,
+                                         this.width,
+                                         this.height);
+                if (this.renderLabel) {
+                    activities.ui.label(context, this.label, this.width);
+                }
+                context.restore();
             }
         }
     }
@@ -1093,18 +1196,8 @@
      * refers to activity action, initial node, final node
      */
     activities.ui.Action = function(diagram) {
-        this.triggerColor = null;
-        this.x = 0;
-        this.y = 0;
-        this.width = 100;
-        this.height = 70;
-        this.fillColor = '#3ce654';
-        this.selectedColor = '#ffc000';
-        this.selectedWidth = 2;
-        this.selected = false;
-        
-        this.label = null;
-        this.description = null;
+        this.init(100, 70, 0);
+        this.renderLabel = true;
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1116,48 +1209,8 @@
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    
-    activities.ui.Action.prototype = {
-        
-        /*
-         * render action
-         */
-        render: function() {
-            // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillRect(context,
-                                   this.triggerColor,
-                                   this.width,
-                                   this.height);
-            context.restore();
-            
-            // diagram layer
-            
-            // base element
-            context = this.diagram.layers.diagram.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillRect(context,
-                                   this.fillColor,
-                                   this.width + this.selectedWidth,
-                                   this.height + this.selectedWidth);
-            
-            // label
-            activities.ui.label(context, this.label, this.width);
-            
-            // selected border
-            if (this.selected) {
-                activities.ui.strokeRect(context,
-                                         this.selectedColor,
-                                         this.selectedWidth,
-                                         this.width,
-                                         this.height);
-            }
-            context.restore();
-        }
-    }
+    activities.ui.Action.prototype.init = activities.ui.initRectElem;
+    activities.ui.Action.prototype.render = activities.ui.renderRectElem;
     
     
     // ************************************************************************
@@ -1165,19 +1218,7 @@
     // ************************************************************************
     
     activities.ui.Decision = function(diagram) {
-        this.triggerColor = null;
-        this.x = 0;
-        this.y = 0;
-        this.sideLength = 40;
-        this.fillColor = '#c6c6c6';
-        this.borderColor = '#000000';
-        this.borderWidth = 2;
-        this.selectedColor = '#ffc000';
-        this.selectedWidth = 2;
-        this.selected = false;
-        
-        this.label = null;
-        this.description = null;
+        this.init(40, 40, 45);
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1189,55 +1230,8 @@
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    
-    activities.ui.Decision.prototype = {
-        
-        /*
-         * render decision
-         */
-        render: function() {
-            
-            // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.translate(this.x, this.y);
-            context.rotate(45 * Math.PI / 180);
-            activities.ui.fillRect(context,
-                                   this.triggerColor,
-                                   this.sideLength,
-                                   this.sideLength);
-            context.restore();
-            
-            // diagram layer
-            
-            // base element
-            context = this.diagram.layers.diagram.context;
-            context.save();
-            context.translate(this.x, this.y);
-            context.rotate(45 * Math.PI / 180);
-            activities.ui.fillRect(context,
-                                   this.fillColor,
-                                   this.sideLength,
-                                   this.sideLength);
-            
-            // default border
-            activities.ui.strokeRect(context,
-                                     this.borderColor,
-                                     this.borderWidth,
-                                     this.sideLength,
-                                     this.sideLength);
-            
-            // selected border
-            if (this.selected) {
-                activities.ui.strokeRect(context,
-                                         this.selectedColor,
-                                         this.selectedWidth,
-                                         this.sideLength,
-                                         this.sideLength);
-            }
-            context.restore();
-        }
-    }
+    activities.ui.Decision.prototype.init = activities.ui.initRectElem;
+    activities.ui.Decision.prototype.render = activities.ui.renderRectElem;
     
     
     // ************************************************************************
@@ -1245,19 +1239,7 @@
     // ************************************************************************
     
     activities.ui.Merge = function(diagram) {
-        this.triggerColor = null;
-        this.x = 0;
-        this.y = 0;
-        this.sideLength = 40;
-        this.fillColor = '#c6c6c6';
-        this.borderColor = '#000000';
-        this.borderWidth = 2;
-        this.selectedColor = '#ffc000';
-        this.selectedWidth = 2;
-        this.selected = false;
-        
-        this.label = null;
-        this.description = null;
+        this.init(40, 40, 45);
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1269,9 +1251,8 @@
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    
-    activities.ui.Merge.prototype.render = 
-        activities.ui.Decision.prototype.render;
+    activities.ui.Merge.prototype.init = activities.ui.initRectElem;
+    activities.ui.Merge.prototype.render = activities.ui.renderRectElem;
     
     
     // ************************************************************************
@@ -1279,18 +1260,7 @@
     // ************************************************************************
     
     activities.ui.Join = function(diagram) {
-        this.triggerColor = null;
-        this.x = 0;
-        this.y = 0;
-        this.width = 10;
-        this.height = 80;
-        this.fillColor = '#b954ff';
-        this.selectedColor = '#ffc000';
-        this.selectedWidth = 2;
-        this.selected = false;
-        
-        this.label = null;
-        this.description = null;
+        this.init(10, 80, 0);
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1302,46 +1272,8 @@
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    
-    activities.ui.Join.prototype = {
-    
-        /*
-         * render join
-         */
-        render: function() {
-            
-            // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillRect(context,
-                                   this.triggerColor,
-                                   this.width,
-                                   this.height);
-            context.restore();
-            
-            // diagram layer
-            
-            // base element
-            context = this.diagram.layers.diagram.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillRect(context,
-                                   this.fillColor,
-                                   this.width + this.selectedWidth,
-                                   this.height + this.selectedWidth);
-            
-            // selected border
-            if (this.selected) {
-                activities.ui.strokeRect(context,
-                                         this.selectedColor,
-                                         this.selectedWidth,
-                                         this.width,
-                                         this.height);
-            }
-            context.restore();
-        }
-    }
+    activities.ui.Join.prototype.init = activities.ui.initRectElem;
+    activities.ui.Join.prototype.render = activities.ui.renderRectElem;
     
     
     // ************************************************************************
@@ -1349,18 +1281,7 @@
     // ************************************************************************
     
     activities.ui.Fork = function(diagram) {
-        this.triggerColor = null;
-        this.x = 0;
-        this.y = 0;
-        this.width = 10;
-        this.height = 80;
-        this.fillColor = '#b954ff';
-        this.selectedColor = '#ffc000';
-        this.selectedWidth = 2;
-        this.selected = false;
-        
-        this.label = null;
-        this.description = null;
+        this.init(10, 80, 0);
         
         this.diagram = diagram;
         this.diagram.add(this);
@@ -1372,8 +1293,8 @@
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    
-    activities.ui.Fork.prototype.render = activities.ui.Join.prototype.render;
+    activities.ui.Fork.prototype.init = activities.ui.initRectElem;
+    activities.ui.Fork.prototype.render = activities.ui.renderRectElem;
     
     
     // ************************************************************************
