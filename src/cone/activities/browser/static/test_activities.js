@@ -8,6 +8,7 @@
         // read activities.model.Model doc.
         model: {
             __type: activities.model.ACTIVITY,
+			__name: 'model',
             children: {
                 start: {
                     __type: activities.model.INITIAL
@@ -33,9 +34,9 @@
                 action_3: {
                     __type: activities.model.ACTION
                 },
-                flow_end: {
-                    __type: activities.model.FLOW_FINAL
-                },
+                //flow_end: {
+                //    __type: activities.model.FLOW_FINAL
+                //},
                 end: {
                     __type: activities.model.FINAL
                 },
@@ -74,11 +75,11 @@
                     source: 'action_3',
                     target: 'join'
                 },
-                edge_8: {
-                    __type: activities.model.EDGE,
-                    source: 'decision',
-                    target: 'flow_end'
-                },
+                //edge_8: {
+                //    __type: activities.model.EDGE,
+                //    source: 'decision',
+                //    target: 'flow_end'
+                //},
                 edge_9: {
                     __type: activities.model.EDGE,
                     source: 'decision',
@@ -97,13 +98,120 @@
             }
         },
         
+        // another test model
+        model_2: {
+            __type: activities.model.ACTIVITY,
+			__name: 'model_2',
+            children: {
+                act_a: {
+                    __type: activities.model.INITIAL
+                },
+                dec_a: {
+                    __type: activities.model.DECISION
+                },
+                act_b: {
+                    __type: activities.model.ACTION
+                },
+                act_c: {
+                    __type: activities.model.ACTION
+                },
+                mer_a: {
+                    __type: activities.model.MERGE
+                },
+                act_d: {
+                    __type: activities.model.ACTION
+                },
+                fork_a: {
+                    __type: activities.model.FORK
+                },
+                act_e: {
+                    __type: activities.model.ACTION
+                },
+                act_f: {
+                    __type: activities.model.ACTION
+                },
+                act_g: {
+                    __type: activities.model.ACTION
+                },
+                act_h: {
+                    __type: activities.model.FINAL
+                },
+                e_1: {
+                    __type: activities.model.EDGE,
+                    source: 'act_a',
+                    target: 'dec_a'
+                },
+                e_2: {
+                    __type: activities.model.EDGE,
+                    source: 'dec_a',
+                    target: 'act_b'
+                },
+                e_3: {
+                    __type: activities.model.EDGE,
+                    source: 'dec_a',
+                    target: 'act_c'
+                },
+                e_4: {
+                    __type: activities.model.EDGE,
+                    source: 'act_b',
+                    target: 'mer_a'
+                },
+                e_5: {
+                    __type: activities.model.EDGE,
+                    source: 'act_c',
+                    target: 'mer_a'
+                },
+                e_6: {
+                    __type: activities.model.EDGE,
+                    source: 'mer_a',
+                    target: 'act_d'
+                },
+                e_7: {
+                    __type: activities.model.EDGE,
+                    source: 'act_d',
+                    target: 'fork_a'
+                },
+                e_8: {
+                    __type: activities.model.EDGE,
+                    source: 'fork_a',
+                    target: 'act_e'
+                },
+                e_9: {
+                    __type: activities.model.EDGE,
+                    source: 'fork_a',
+                    target: 'act_f'
+                },
+                e_10: {
+                    __type: activities.model.EDGE,
+                    source: 'fork_a',
+                    target: 'act_g'
+                },
+                e_11: {
+                    __type: activities.model.EDGE,
+                    source: 'act_e',
+                    target: 'act_h'
+                },
+                e_12: {
+                    __type: activities.model.EDGE,
+                    source: 'act_f',
+                    target: 'act_h'
+                },
+                e_13: {
+                    __type: activities.model.EDGE,
+                    source: 'act_g',
+                    target: 'act_h'
+                },
+            }
+        },
+        
         run: function() {
             module("activities.model.Model");
             
             var model = new activities.model.Model(eval(uneval(tests.model)));
             
             test("activities.model.Model.filtered", function() {
-                equals(11,
+                // equals(11,
+                equals(10,
                        model.filtered(activities.model.EDGE).length,
                        "model.filtered(activities.model.EDGE)");
                 equals(3,
@@ -134,7 +242,8 @@
             
             test("activities.model.Model.outgoing", function() {
                 var res = model.outgoing(model.node('decision'));
-                equals(2,
+                // equals(2,
+                equals(1,
                        res.length,
                        "model.outgoing(model.node('decision'))");
                 res = model.outgoing(model.node('merge'));

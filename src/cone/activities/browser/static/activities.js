@@ -8,12 +8,13 @@
  *     - bdajax
  */
 
+var demo_editor = null;
+
 (function($) {
     
     $(document).ready(function() {
-        var name = 'level_0';
-        var model = eval(uneval(tests.model));
-        var editor = new activities.ui.Editor('level_0', model);
+        demo_editor = new activities.ui.Editor('level_0');
+        demo_editor.newDiagram();
     });
     
     
@@ -369,12 +370,24 @@
          */
         actions: {
             
+            // tmp. remove as soon as persistence widget is implemented
+            _open: 0,
+            
             new_activity: function(actions, element, event) {
-                bdajax.error('Not implemented');
+                demo_editor.newDiagram();
             },
             
             open_activity: function(actions, element, event) {
-                bdajax.error('Not implemented');
+				// tmp. alter with persistence widget code
+                var model;
+                if (activities.actions._open) {
+                    model = eval(uneval(tests.model));
+                    activities.actions._open = 0;
+                } else {
+                    model = eval(uneval(tests.model_2));
+                    activities.actions._open = 1;
+                }
+                demo_editor.openDiagram(model);
             },
             
             save_activity: function(actions, element, event) {
@@ -424,7 +437,7 @@
             },
             
             flip_layers: function(actions, element, event) {
-                activities.ui.toggleCanvas('level_0')
+                activities.ui.toggleCanvas(demo_editor.name);
             }
         }
     }
@@ -438,8 +451,16 @@
      * expects JSON serialized model as context.
      */
     activities.model.Model = function(context) {
+        if (!context) {
+            context = {
+                __type: activities.model.ACTIVITY,
+                __name: ''
+            }
+        }
         this.context = context;
-        this.context.__name = 'model';
+        if (!this.context.__name) {
+            this.context.__name = 'UNSET';
+        }
         this.context.__parent = '';
         
         // set __name and __parent
@@ -618,19 +639,43 @@
      * 
      * expects diagram name mapping to editor dom id and a raw model.
      */
-    activities.ui.Editor = function(name, model) {
+    activities.ui.Editor = function(name) {
         this.name = name;
-        this.model = new activities.model.Model(model);
+    }
+    
+    activities.ui.Editor.prototype.init = function() {
+        try {
+            var canvas = $(this.diagram.layers.diagram.canvas);
+            canvas.data('dispatcher', null);
+        } catch (err) {}
+        this.dispatcher = null;
+        this.actions = null;
+        this.properties = null;
+        this.diagram = null;
+        this.renderer = null;
+        this.grid = null;
+        
         this.dispatcher = new activities.events.Dispatcher(this);
         this.actions = new activities.ui.Actions(this);
         this.properties = new activities.ui.Properties(this);
         this.diagram = new activities.ui.Diagram(this);
         this.renderer = new activities.ui.TierRenderer(this);
         this.grid = new activities.ui.Grid();
+        
         this.dispatcher.bind();
         this.diagram.bind();
         this.renderer.render();
         this.properties.display(this.diagram);
+    }
+    
+    activities.ui.Editor.prototype.newDiagram = function() {
+        this.model = new activities.model.Model(null);
+        this.init();
+    }
+    
+    activities.ui.Editor.prototype.openDiagram = function(model){
+        this.model = new activities.model.Model(model);
+        this.init();
     }
     
     
@@ -650,7 +695,7 @@
             var action = elem.attr('class');
             activities.actions[action](actions, elem, event);
         });
-    },
+    }
     
     activities.ui.Actions.prototype = {
         
@@ -1184,7 +1229,13 @@
         render: function() {
             this.node2tier = new Object();
             this.tiers = new Array();
-            var initial = this.initial();
+            var initial;
+            try {
+                initial = this.initial();
+            } catch (err) {
+                this.editor.diagram.render();
+                return;
+            }
             this.detectTiers(0, initial);
             this.fillTiers();
             this.fillKinks(0, initial);
@@ -1265,12 +1316,19 @@
          * iterate over elements of diagram and call render function
          */
         render: function() {
-            var context = this.layers.diagram.context;
+            // clear control layer
+            var context = this.layers.control.context;
             context.save();
-            context.fillStyle = '#ffffff'; // global diagram bg color
-            context.fillRect(0, 0, this.width, this.height);
+            context.clearRect(0, 0, this.width, this.height);
             context.restore();
             
+            // clear diagram layer
+            var context = this.layers.diagram.context;
+            context.save();
+            context.clearRect(0, 0, this.width, this.height);
+            context.restore();
+            
+            // render diagram elements
             for(var key in this.elements) {
                 this.elements[key].render();
             }
