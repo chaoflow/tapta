@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <uml:Model xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://www.eclipse.org/uml2/3.0.0/UML" xmi:id="_O1KNoTnYEeCat6tW3tFELQ" name="model">
   <packagedElement xmi:type="uml:Collaboration" xmi:id="_Uv_NUDnYEeCat6tW3tFELQ" name="collaboration0" classifierBehavior="_Uv_NUTnYEeCat6tW3tFELQ">
-    <ownedBehavior xmi:type="uml:Activity" xmi:id="_Uv_NUTnYEeCat6tW3tFELQ" name="activity0"/>
+    <ownedBehavior xmi:type="uml:Activity" xmi:id="_Uv_NUTnYEeCat6tW3tFELQ" name="activity0">
+      <node xmi:type="uml:InitialNode" xmi:id="_9sG6kDqeEeCat6tW3tFELQ" name="InitialNode1"/>
+      <node xmi:type="uml:OpaqueAction" xmi:id="__S__4DqeEeCat6tW3tFELQ" name="OpaqueAction1">
+        <outputValue xmi:id="_Eznv0DqfEeCat6tW3tFELQ" name="data" outgoing="_Ez9HADqfEeCat6tW3tFELQ"/>
+      </node>
+      <node xmi:type="uml:ActivityFinalNode" xmi:id="_Aj7cQDqfEeCat6tW3tFELQ" name="ActivityFinalNode1"/>
+      <node xmi:type="uml:DecisionNode" xmi:id="_BmXwsDqfEeCat6tW3tFELQ" name="DecisionNode1"/>
+      <node xmi:type="uml:MergeNode" xmi:id="_CcKJMDqfEeCat6tW3tFELQ" name="MergeNode1"/>
+      <node xmi:type="uml:JoinNode" xmi:id="_Cwc-MDqfEeCat6tW3tFELQ" name="JoinNode1" incoming="_Ez9HADqfEeCat6tW3tFELQ"/>
+      <node xmi:type="uml:ForkNode" xmi:id="_DIttMDqfEeCat6tW3tFELQ" name="ForkNode1"/>
+      <edge xmi:type="uml:ObjectFlow" xmi:id="_Ez9HADqfEeCat6tW3tFELQ" name="ObjectFlow1" source="_Eznv0DqfEeCat6tW3tFELQ" target="_Cwc-MDqfEeCat6tW3tFELQ"/>
+    </ownedBehavior>
   </packagedElement>
 </uml:Model>

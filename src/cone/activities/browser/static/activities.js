@@ -221,7 +221,7 @@ var demo_editor = null;
              * draw rounded rect
              */
             roundedRect: function(context, x1, y1, x2, y2, r) {
-                var r2d = Math.PI/180;
+                var r2d = Math.PI / 180;
                 //ensure that the radius isn't too large for x
                 if ((x2 - x1) - (2 * r) < 0) {
                     r = ((x2 - x1) / 2);
@@ -240,6 +240,16 @@ var demo_editor = null;
                 context.arc(x1 + r, y2 - r, r, r2d * 90, r2d * 180, false);
                 context.lineTo(x1, y1 + r);
                 context.arc(x1 + r, y1 + r, r, r2d * 180, r2d * 270, false);
+                context.closePath();
+            },
+            
+            /*
+             * draw circle
+             */
+            circle: function(context, r) {
+                context.beginPath();
+                context.arc(0, 0, r, 0, Math.PI * 2, true);
+                context.closePath();
             },
             
             /*
@@ -271,13 +281,48 @@ var demo_editor = null;
             /*
              * draw stroke rect
              */
-            strokeRect: function(context, color, lineWidth, width, height) {
+            strokeRect: function(context,
+                                 color,
+                                 lineWidth,
+                                 width,
+                                 height) {
                 context.strokeStyle = color;
                 context.lineWidth = lineWidth;
                 var w_2 = width / 2;
                 var h_2 = height / 2;
                 activities.ui.roundedRect(
                     context, w_2 * -1, h_2 * -1, w_2, h_2, 3);
+                context.stroke();
+            },
+            
+            /*
+             * draw filled circle
+             */
+            fillCircle: function(context,
+                                 color,
+                                 radius,
+                                 shadow) {
+                context.fillStyle = color;
+                if (shadow) {
+                    activities.ui.shadowOn(context);
+                }
+                activities.ui.circle(context, radius);
+                context.fill();
+                if (shadow) {
+                    activities.ui.shadowOff(context);
+                }
+            },
+            
+            /*
+             * draw stroke circle 
+             */
+            strokeCircle: function(context,
+                                   color,
+                                   radius,
+                                   lineWidth) {
+                context.strokeStyle = color;
+                context.lineWidth = lineWidth;
+                activities.ui.circle(context, radius);
                 context.stroke();
             },
             
@@ -297,13 +342,19 @@ var demo_editor = null;
             /*
              * default rect diagram element initialization
              */
-            initRectElem: function(width, height, rotation) {
+            initDiagramElem: function(width_or_radius, height, rotation) {
                 this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
                 this.rotation = rotation;
-                this.width = width;
+                
+                // if circle
+                this.radius = width_or_radius;
+                
+                // if rect
+                this.width = width_or_radius;
                 this.height = height;
+                
                 this.borderWidth = 2;
                 this.fillColor = '#edf7ff';
                 this.borderColor = '#b5d9ea';
@@ -319,7 +370,6 @@ var demo_editor = null;
              * default rect diagram element rendering
              */
             renderRectElem: function() {
-                
                 // control layer
                 var context = this.diagram.layers.control.context;
                 context.save();
@@ -378,7 +428,7 @@ var demo_editor = null;
             },
             
             open_activity: function(actions, element, event) {
-				// tmp. alter with persistence widget code
+                // tmp. alter with persistence widget code
                 var model;
                 if (activities.actions._open) {
                     model = eval(uneval(tests.model));
@@ -1162,22 +1212,20 @@ var demo_editor = null;
                     break;
                 }
                 case activities.model.INITIAL: {
-                    var action = new activities.ui.Action(diagram);
-                    action.x = entry[1];
-                    action.y = entry[2];
-                    action.label = node.__name;
-                    diagram.map(node, action);
-                    break;
-                }
-                case activities.model.ACTION: {
-                    var action = new activities.ui.Action(diagram);
-                    action.x = entry[1];
-                    action.y = entry[2];
-                    action.label = node.__name;
-                    diagram.map(node, action);
+                    var initial = new activities.ui.Initial(diagram);
+                    initial.x = entry[1];
+                    initial.y = entry[2];
+                    diagram.map(node, initial);
                     break;
                 }
                 case activities.model.FINAL: {
+                    var final_node = new activities.ui.Final(diagram);
+                    final_node.x = entry[1];
+                    final_node.y = entry[2];
+                    diagram.map(node, final_node);
+                    break;
+                }
+                case activities.model.ACTION: {
                     var action = new activities.ui.Action(diagram);
                     action.x = entry[1];
                     action.y = entry[2];
@@ -1393,12 +1441,119 @@ var demo_editor = null;
     
     
     // ************************************************************************
+    // activities.ui.Initial
+    // ************************************************************************
+    
+    activities.ui.Initial = function(diagram) {
+        this.init(20, 0, 0);
+        
+        this.diagram = diagram;
+        this.diagram.add(this);
+        
+        // event subscription
+        var dispatcher = this.diagram.editor.dispatcher;
+        dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
+        dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+    }
+    
+    activities.ui.Initial.prototype.init = activities.ui.initDiagramElem;
+    
+    activities.ui.Initial.prototype.render = function() {
+        // control layer
+        var context = this.diagram.layers.control.context;
+        context.save();
+        context.translate(this.x, this.y);
+        activities.ui.fillCircle(context,
+                                 this.triggerColor,
+                                 this.radius);
+        context.restore();
+        
+        // diagram layer
+        var fillColor, borderColor;
+        if (!this.selected) {
+            fillColor = this.fillColor;
+            borderColor = this.borderColor;
+        } else {
+            fillColor = this.selectedFillColor;
+            borderColor = this.selectedBorderColor;
+        }
+        context = this.diagram.layers.diagram.context;
+        context.save();
+        context.translate(this.x, this.y);
+        activities.ui.fillCircle(context,
+                                 fillColor,
+                                 this.radius,
+                                 true);
+        activities.ui.strokeCircle(context,
+                                   borderColor,
+                                   this.radius,
+                                   this.borderWidth);
+        context.restore();
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Final
+    // ************************************************************************
+    
+    activities.ui.Final = function(diagram) {
+        this.init(20, 0, 0);
+        
+        this.diagram = diagram;
+        this.diagram.add(this);
+        
+        // event subscription
+        var dispatcher = this.diagram.editor.dispatcher;
+        dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
+        dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+    }
+    
+    activities.ui.Final.prototype.init = activities.ui.initDiagramElem;
+    
+    activities.ui.Final.prototype.render = function() {
+        // control layer
+        var context = this.diagram.layers.control.context;
+        context.save();
+        context.translate(this.x, this.y);
+        activities.ui.fillCircle(context,
+                                 this.triggerColor,
+                                 this.radius);
+        context.restore();
+        
+        // diagram layer
+        var fillColor, borderColor;
+        if (!this.selected) {
+            fillColor = this.fillColor;
+            borderColor = this.borderColor;
+        } else {
+            fillColor = this.selectedFillColor;
+            borderColor = this.selectedBorderColor;
+        }
+        context = this.diagram.layers.diagram.context;
+        context.save();
+        context.translate(this.x, this.y);
+        activities.ui.fillCircle(context,
+                                 borderColor,
+                                 this.radius,
+                                 true);
+        activities.ui.fillCircle(context,
+                                 fillColor,
+                                 this.radius - this.borderWidth);
+        activities.ui.fillCircle(context,
+                                 borderColor,
+                                 this.radius / 2);
+        context.restore();
+    }
+    
+    
+    // ************************************************************************
     // activities.ui.Action
     // ************************************************************************
     
-    /*
-     * refers to activity action, initial node, final node
-     */
     activities.ui.Action = function(diagram) {
         this.init(100, 70, 0);
         this.renderLabel = true;
@@ -1413,7 +1568,9 @@ var demo_editor = null;
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    activities.ui.Action.prototype.init = activities.ui.initRectElem;
+    
+    activities.ui.Action.prototype.init = activities.ui.initDiagramElem;
+    
     activities.ui.Action.prototype.render = activities.ui.renderRectElem;
     
     
@@ -1434,7 +1591,9 @@ var demo_editor = null;
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    activities.ui.Decision.prototype.init = activities.ui.initRectElem;
+    
+    activities.ui.Decision.prototype.init = activities.ui.initDiagramElem;
+    
     activities.ui.Decision.prototype.render = activities.ui.renderRectElem;
     
     
@@ -1455,7 +1614,9 @@ var demo_editor = null;
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    activities.ui.Merge.prototype.init = activities.ui.initRectElem;
+    
+    activities.ui.Merge.prototype.init = activities.ui.initDiagramElem;
+    
     activities.ui.Merge.prototype.render = activities.ui.renderRectElem;
     
     
@@ -1476,7 +1637,9 @@ var demo_editor = null;
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    activities.ui.Join.prototype.init = activities.ui.initRectElem;
+    
+    activities.ui.Join.prototype.init = activities.ui.initDiagramElem;
+    
     activities.ui.Join.prototype.render = activities.ui.renderRectElem;
     
     
@@ -1497,7 +1660,9 @@ var demo_editor = null;
         dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
-    activities.ui.Fork.prototype.init = activities.ui.initRectElem;
+    
+    activities.ui.Fork.prototype.init = activities.ui.initDiagramElem;
+    
     activities.ui.Fork.prototype.render = activities.ui.renderRectElem;
     
     
