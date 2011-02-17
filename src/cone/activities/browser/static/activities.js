@@ -655,8 +655,8 @@ var demo_editor = null;
         bind: function() {
             var canvas = $(this.editor.diagram.layers.diagram.canvas);
             canvas.data('dispatcher', this);
-            canvas.bind('mousedown mousemove mouseup',
-                        activities.events.notify);
+            canvas.unbind().bind('mousedown mousemove mouseup',
+                                 activities.events.notify);
         },
         
         /*
@@ -1716,6 +1716,7 @@ var demo_editor = null;
         context.restore();
     }
     
+	
     // ************************************************************************
     // activities.ui.Kink
     // ************************************************************************
