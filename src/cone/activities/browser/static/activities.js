@@ -362,6 +362,70 @@
                 }
                 context.restore();
             }
+        },
+        
+        /*
+         * action handler for activities
+         */
+        actions: {
+            
+            new_activity: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            open_activity: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            save_activity: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            initial_node: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            final_node: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            action_node: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            join_node: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            fork_node: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            merge_node: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            decision_node: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            edge: function(actions, element, event) {
+                bdajax.error('Not implemented');
+            },
+            
+            debug: function(actions, element, event) {
+                var status = $('.status');
+                status.toggleClass('hidden');
+            },
+            
+            run_tests: function(actions, element, event) {
+                $('.qunit').show();
+                tests.run();
+            },
+            
+            flip_layers: function(actions, element, event) {
+                activities.ui.toggleCanvas('level_0')
+            }
         }
     }
     
@@ -558,6 +622,7 @@
         this.name = name;
         this.model = new activities.model.Model(model);
         this.dispatcher = new activities.events.Dispatcher(this);
+        this.actions = new activities.ui.Actions(this);
         this.properties = new activities.ui.Properties(this);
         this.diagram = new activities.ui.Diagram(this);
         this.renderer = new activities.ui.TierRenderer(this);
@@ -573,15 +638,32 @@
     // activities.ui.Actions
     // ************************************************************************
     
-    activities.ui.Actions = function() {
-        
+    /*
+     * Actions
+     */
+    activities.ui.Actions = function(editor) {
+        this.editor = editor;
+        var actions = this;
+        var elements = $('#' + editor.name + ' div.actions a');
+        elements.unbind().bind('click', function(event) {
+            var elem = $(this);
+            var action = elem.attr('class');
+            activities.actions[action](actions, elem, event);
+        });
     },
     
     activities.ui.Actions.prototype = {
+        
+        /*
+         * enable action by id
+         */
         enable: function(id) {
             
         },
         
+        /*
+         * disable action by id
+         */
         disable: function(id) {
             
         }

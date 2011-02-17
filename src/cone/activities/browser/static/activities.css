@@ -3,6 +3,9 @@ body {
     font-size:12px;
     font-family:verdana;
 }
+.hidden {
+    display:none;
+}
 
 /* editor */
 .activity_editor {
@@ -45,7 +48,6 @@ body {
     width:90px;
 }
 .activity_editor .element_properties .status {
-    display:none;
     position:absolute;
     bottom:0px;
     padding-top:2px;
@@ -95,35 +97,34 @@ body {
     cursor:pointer;
     text-decoration:none;
 }
-.activity_editor .actions a.new {
+.activity_editor .actions a.new_activity {
     background:url('icons/new.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.open {
+.activity_editor .actions a.open_activity {
     background:url('icons/open.png') 50% 50% no-repeat;
-    display:none;
 }
-.activity_editor .actions a.save {
+.activity_editor .actions a.save_activity {
     background:url('icons/save.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.initial {
+.activity_editor .actions a.initial_node {
     background:url('icons/initial.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.final {
+.activity_editor .actions a.final_node {
     background:url('icons/activity_final.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.action {
+.activity_editor .actions a.action_node {
     background:url('icons/action.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.join {
+.activity_editor .actions a.join_node {
     background:url('icons/join.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.fork {
+.activity_editor .actions a.fork_node {
     background:url('icons/fork.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.merge {
+.activity_editor .actions a.merge_node {
     background:url('icons/merge.png') 50% 50% no-repeat;
 }
-.activity_editor .actions a.decision {
+.activity_editor .actions a.decision_node {
     background:url('icons/decision.png') 50% 50% no-repeat;
 }
 .activity_editor .actions a.edge {
