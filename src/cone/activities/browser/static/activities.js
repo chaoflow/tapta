@@ -952,6 +952,27 @@
         },
         
         /*
+         * detect and fill kinks
+         */
+        fillKinks: function(tier, node) {
+            var model = this.editor.model;
+            var outgoing = model.outgoing(node);
+            var edge, target, diff;
+            for (var idx in outgoing) {
+                edge = outgoing[idx];
+                target = model.target(edge);
+                diff = this.node2tier[target.__name] -
+                       this.node2tier[node.__name];
+                if (diff > 1) {
+                    for (var i = 1; i < diff; i++) {
+                        this.tiers[tier + i].push(edge.__name);
+                    }
+                }
+                this.fillKinks(tier + 1, target);
+            }
+        },
+        
+        /*
          * fill grid with elements from this.tiers
          */
         fillGrid: function() {
@@ -971,12 +992,38 @@
         },
         
         /*
+         * create edges
+         */
+        createEdges: function() {
+            var diagram = this.editor.diagram;
+            var model = this.editor.model;
+            var edges = model.filtered(activities.model.EDGE);
+            for (var idx in edges) {
+                var edge = edges[idx];
+                var elem = new activities.ui.Edge(diagram);
+                elem.source = edge.source;
+                elem.target = edge.target;
+                diagram.map(edge, elem);
+            }
+        },
+        
+        /*
          * create UI element by node type, set x / y position by grid entry
          * definition and map model element to diagram element
          */
         createElement: function(node, entry) {
             var diagram = this.editor.diagram;
             switch (node.__type) {
+                case activities.model.EDGE: {
+                    // this is an edge kink
+                    var kink = new activities.ui.Kink();
+                    kink.x = entry[1];
+                    kink.y = entry[2];
+                    var trigger = diagram.r_mapping[node.__name];
+                    var edge = diagram.elements[trigger];
+                    edge.kinks.push(kink);
+                    break;
+                }
                 case activities.model.INITIAL: {
                     var action = new activities.ui.Action(diagram);
                     action.x = entry[1];
@@ -1045,9 +1092,12 @@
         render: function() {
             this.node2tier = new Object();
             this.tiers = new Array();
-            this.detectTiers(0, this.initial());
+            var initial = this.initial();
+            this.detectTiers(0, initial);
             this.fillTiers();
+            this.fillKinks(0, initial);
             this.fillGrid();
+            this.createEdges();
             var model = this.editor.model;
             var grid = this.editor.grid;
             var size = grid.size();
@@ -1092,8 +1142,11 @@
         // trigger color to diagram element
         this.elements = new Object();
         
-        // model element dotted path to trigger color
+        // trigger color to model element dotted path
         this.mapping = new Object();
+        
+        // model element dotted path to trigger color
+        this.r_mapping = new Object();
         
         // current focused diagram element
         this.focused = null;
@@ -1145,6 +1198,7 @@
          */
         map: function(node, elem) {
             this.mapping[elem.triggerColor] = node.__name;
+            this.r_mapping[node.__name] = elem.triggerColor;
         },
         
         /*
@@ -1304,17 +1358,59 @@
     activities.ui.Edge = function(diagram) {
         this.triggerColor = null;
         
+        this.source = null;
+        this.target = null;
+        this.kinks = new Array();
+        
         this.diagram = diagram;
         this.diagram.add(this);
     }
     
-    activities.ui.Edge.prototype = {
-    
-        /*
-         * render edge
-         */
-        render: function() {
+    activities.ui.Edge.prototype.renderPath = function(context) {
+        var diagram = this.diagram;
+        var source = diagram.elements[diagram.r_mapping[this.source]];
+        var target = diagram.elements[diagram.r_mapping[this.target]];
+        
+        context.beginPath();
+        context.moveTo(source.x, source.y);
+        var kink;
+        for (var idx in this.kinks) {
+            kink = this.kinks[idx];
+            context.lineTo(kink.x, kink.y);
         }
+        context.lineTo(target.x, target.y);
+    }
+    
+    activities.ui.Edge.prototype.render = function() {
+        // control layer
+        var context = this.diagram.layers.control.context;
+        context.save();
+        context.strokeStyle = this.triggerColor;
+        context.lineWidth = 2;
+        this.renderPath(context);
+        context.stroke();
+        context.restore();
+        
+        // diagram layer
+        context = this.diagram.layers.diagram.context;
+        context.save();
+        context.strokeStyle = '#000000';
+        context.lineWidth = 2;
+        this.renderPath(context);
+        context.stroke();
+        context.restore();
+    }
+    
+    // ************************************************************************
+    // activities.ui.Kink
+    // ************************************************************************
+    
+    /*
+     * represent a kink of an edge.
+     */
+    activities.ui.Kink = function() {
+        this.x = null;
+        this.y = null;
     }
     
 })(jQuery);
