@@ -544,6 +544,20 @@ var demo_editor = null;
     activities.model.Model.prototype = {
         
         /*
+         * return initial node
+         */
+        initial: function() {
+            var initial = this.filtered(activities.model.INITIAL);
+            if (initial.length == 0) {
+                throw "Could not find initial node. Abort.";
+            }
+            if (initial.length > 1) {
+                throw "Invalid model. More than one initial node found";
+            }
+            return initial[0];
+        },
+        
+        /*
          * search context for child objects providing given model element type.
          * optional node for searching could be given, otherwise this.context
          * is used.
@@ -1083,21 +1097,6 @@ var demo_editor = null;
         },
         
         /*
-         * return initial node
-         */
-        initial: function() {
-            var model = this.model;
-            var initial = model.filtered(activities.model.INITIAL);
-            if (initial.length == 0) {
-                throw "Could not find initial node. Abort.";
-            }
-            if (initial.length > 1) {
-                throw "Invalid model. More than one initial node found";
-            }
-            return initial[0];
-        },
-        
-        /*
          * set tier for each node
          */
         setNodeTier: function(tier, node) {
@@ -1175,13 +1174,15 @@ var demo_editor = null;
             for (var i in this.tiers) {
                 for (var j in this.tiers[i]) {
                     node = this.model.node(this.tiers[i][j]);
-                    elem = this.getDiagramElement(node);
+                    elem = this.diagram.getElement(node);
                     this.grid.set(i, j, elem);
                 }
             }
         },
         
-        // Set x/y position for elements in grid
+        /*
+         * Set x/y position for elements in grid
+         */
         setElementPositions: function() {
             var step_x = 140;
             var step_y = 120;
@@ -1207,67 +1208,6 @@ var demo_editor = null;
         },
         
         /*
-         * lookup or create UI element by node definition.
-         */
-        getDiagramElement: function(node) {
-            var diagram = this.diagram;
-            
-            // check if element already exists
-            var trigger = diagram.r_mapping[node.__name];
-            if (trigger) {
-                return diagram.elements[trigger];
-            }
-            
-            // create new diagram element
-            switch (node.__type) {
-                case activities.model.EDGE: {
-                    // this is a kink
-                    var kink = new activities.ui.Kink();
-                    var trigger = diagram.r_mapping[node.__name];
-                    var edge = diagram.elements[trigger];
-                    edge.kinks.push(kink);
-                    return kink;
-                }
-                case activities.model.INITIAL: {
-                    var initial = new activities.ui.Initial(diagram);
-                    diagram.map(node, initial);
-                    return initial;
-                }
-                case activities.model.FINAL: {
-                    var final_node = new activities.ui.Final(diagram);
-                    diagram.map(node, final_node);
-                    return final_node;
-                }
-                case activities.model.ACTION: {
-                    var action = new activities.ui.Action(diagram);
-                    action.label = node.__name;
-                    diagram.map(node, action);
-                    return action;
-                }
-                case activities.model.DECISION: {
-                    var decision = new activities.ui.Decision(diagram);
-                    diagram.map(node, decision);
-                    return decision;
-                }
-                case activities.model.MERGE: {
-                    var merge = new activities.ui.Merge(diagram);
-                    diagram.map(node, merge);
-                    return merge;
-                }
-                case activities.model.FORK: {
-                    var fork = new activities.ui.Fork(diagram);
-                    diagram.map(node, fork);
-                    return fork;
-                }
-                case activities.model.JOIN: {
-                    var join = new activities.ui.Join(diagram);
-                    diagram.map(node, join);
-                    return join;
-                }
-            }
-        },
-        
-        /*
          * render diagram
          */
         render: function() {
@@ -1280,7 +1220,7 @@ var demo_editor = null;
             // get initial node, if no initial node render empty diagram
             var initial;
             try {
-                initial = this.initial();
+                initial = this.model.initial();
             } catch (err) {
                 this.diagram.render();
                 return;
@@ -1421,6 +1361,65 @@ var demo_editor = null;
             }
             this._nextTriggerColor[idx] += 10;
             return activities.utils.rgb2hex(this._nextTriggerColor);
+        },
+        
+        /*
+         * Lookup or create Diagram element by model node.
+         */
+        getElement: function(node) {
+            // check if element already exists
+            var trigger = this.r_mapping[node.__name];
+            if (trigger) {
+                return this.elements[trigger];
+            }
+            
+            // create new diagram element
+            switch (node.__type) {
+                case activities.model.EDGE: {
+                    // this is a kink
+                    var kink = new activities.ui.Kink();
+                    var trigger = this.r_mapping[node.__name];
+                    var edge = this.elements[trigger];
+                    edge.kinks.push(kink);
+                    return kink;
+                }
+                case activities.model.INITIAL: {
+                    var initial = new activities.ui.Initial(this);
+                    this.map(node, initial);
+                    return initial;
+                }
+                case activities.model.FINAL: {
+                    var final_node = new activities.ui.Final(this);
+                    this.map(node, final_node);
+                    return final_node;
+                }
+                case activities.model.ACTION: {
+                    var action = new activities.ui.Action(this);
+                    action.label = node.__name;
+                    this.map(node, action);
+                    return action;
+                }
+                case activities.model.DECISION: {
+                    var decision = new activities.ui.Decision(this);
+                    this.map(node, decision);
+                    return decision;
+                }
+                case activities.model.MERGE: {
+                    var merge = new activities.ui.Merge(this);
+                    this.map(node, merge);
+                    return merge;
+                }
+                case activities.model.FORK: {
+                    var fork = new activities.ui.Fork(this);
+                    this.map(node, fork);
+                    return fork;
+                }
+                case activities.model.JOIN: {
+                    var join = new activities.ui.Join(this);
+                    this.map(node, join);
+                    return join;
+                }
+            }
         },
         
         // event handler
