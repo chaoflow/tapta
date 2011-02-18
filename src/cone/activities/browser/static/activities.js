@@ -694,25 +694,21 @@ var demo_editor = null;
         this.actions = null;
         this.properties = null;
         this.model = null;
-        this.diagram = null;
-        this.rendererClass = activities.ui.TierRenderer;
+        this.renderer = null;
     }
     
     activities.ui.Editor.prototype.init = function() {
         try {
-            var canvas = $(this.diagram.layers.diagram.canvas);
+            var canvas = $(this.renderer.diagram.layers.diagram.canvas);
             canvas.data('dispatcher', null);
         } catch (err) {}
         
         this.actions = new activities.ui.Actions(this);
         this.properties = new activities.ui.Properties(this);
-        this.diagram = new activities.ui.Diagram(
-            this, this.rendererClass);
+        this.renderer = new activities.ui.TierRenderer(this);
         
-        var diagram = this.diagram
-        diagram.bind();
-        diagram.render();
-        this.properties.display(diagram);
+        this.renderer.render();
+        this.properties.display(this.renderer.diagram);
     }
     
     activities.ui.Editor.prototype.newDiagram = function() {
@@ -767,7 +763,7 @@ var demo_editor = null;
     // ************************************************************************
     
     activities.ui.Properties = function(editor) {
-        this.editor = editor;
+        this.model = editor.model;
         this.container = $('#' + editor.name + ' .element_properties');
         this.recent_node = null;
         this.recent_element = null;
@@ -796,10 +792,10 @@ var demo_editor = null;
             this.clear();
             var node;
             if (typeof(elem.diagram) == 'undefined') {
-                node = this.editor.model.context;
+                node = this.model.context;
             } else {
                 var path = elem.diagram.mapping[elem.triggerColor];
-                node = this.editor.model.node(path);
+                node = this.model.node(path);
             }
             this.recent_node = node;
             this.recent_element = elem;
@@ -1032,12 +1028,13 @@ var demo_editor = null;
     /*
      * http://ls11-www.cs.uni-dortmund.de/people/gutweng/AE-07/schichten.pdf
      */
-    activities.ui.TierRenderer = function(diagram, model) {
-        this.diagram = diagram;
-        this.model = model;
+    activities.ui.TierRenderer = function(editor) {
+        this.diagram = new activities.ui.Diagram(editor);
         this.grid = new activities.ui.Grid();
         this.node2tier = new Object();
         this.tiers = new Array();
+        this.model = editor.model;
+        this.diagram.bind();
     }
     
     activities.ui.TierRenderer.prototype = {
@@ -1280,11 +1277,7 @@ var demo_editor = null;
             try {
                 initial = this.initial();
             } catch (err) {
-                // XXX
-                // render diagram elements
-                for(var key in this.diagram.elements) {
-                    this.diagram.elements[key].render();
-                }
+                this.diagram.render();
                 return;
             }
             this.detectTiers(0, initial);
@@ -1306,12 +1299,7 @@ var demo_editor = null;
                     this.createElement(node, entry);
                 }
             }
-            
-            // XXX
-            // render diagram elements
-            for(var key in this.diagram.elements) {
-                this.diagram.elements[key].render();
-            }
+            this.diagram.render();
         }
     }
     
@@ -1323,9 +1311,8 @@ var demo_editor = null;
     /*
      * refers to activity model
      */
-    activities.ui.Diagram = function(editor, renderer) {
+    activities.ui.Diagram = function(editor) {
         this.editor = editor;
-        this.renderer = new renderer(this, editor.model);
         
         // trigger color to diagram element
         this.elements = new Object();
@@ -1389,7 +1376,9 @@ var demo_editor = null;
             context.clearRect(0, 0, this.width, this.height);
             context.restore();
             
-            this.renderer.render();
+            for(var key in this.elements) {
+                this.elements[key].render();
+            }
         },
         
         /*
