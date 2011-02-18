@@ -707,6 +707,7 @@ var demo_editor = null;
         this.actions = null;
         this.properties = null;
         this.model = null;
+        this.diagram = null;
         this.renderer = null;
     }
     
@@ -718,10 +719,14 @@ var demo_editor = null;
         
         this.actions = new activities.ui.Actions(this);
         this.properties = new activities.ui.Properties(this);
-        this.renderer = new activities.ui.TierRenderer(this);
         
+        this.diagram = new activities.ui.Diagram(this);
+        this.diagram.bind();
+        
+        this.renderer = new activities.ui.TierRenderer(this);
         this.renderer.render();
-        this.properties.display(this.renderer.diagram);
+        
+        this.properties.display(this.diagram);
     }
     
     activities.ui.Editor.prototype.newDiagram = function() {
@@ -959,7 +964,9 @@ var demo_editor = null;
     /*
      * x / y grid mapping 2 dimensional array positions to diagram elements
      */
-    activities.ui.Grid = function() {
+    activities.ui.Grid = function(model) {
+        this.model = model;
+        
         // this.data[x][y]
         this.data = new Array();
     }
@@ -1012,23 +1019,54 @@ var demo_editor = null;
         },
         
         /*
-         * debug helper
+         * Set x/y position for elements in grid
          */
-        debug: function() {
+        arrange: function() {
+            var step_x = 120;
+            var step_y = 50;
+            var x = 60;
+            var y = 70;
+            var step_x = 120;
+            var step_y = 50;
+            var model = this.model;
             var size = this.size();
-            var ret = '';
             var elem;
             for (var i = 0; i < size[0]; i++) {
                 for (var j = 0; j < size[1]; j++) {
                     elem = this.get(i, j);
-                    elem = i + ',' + j + ':' +
-                        elem.x + ',' + elem.y;
-                    ret += elem;
+                    if (elem) {
+                        elem.x = x;
+                        elem.y = y;
+                    }
+                    y += step_y;
                 }
-                ret += '\n';
+                x += step_x;
+                y = 70;
+            }
+        },
+        
+        /*
+         * debug output
+         */
+        debug: function() {
+            var ret = '';
+            var size = this.size();
+            var row, entry;
+            for (var i = 0; i < size[0]; i++) {
+                row = '|';
+                for (var j = 0; j < size[1]; j++) {
+                    entry = this.get(i, j);
+                    if (!entry) {
+                        row += '-x-|';
+                    } else {
+                        row += '-n-|';
+                    }
+                }
+                row += '\n';
+                ret += row;
             }
             return ret;
-        }
+        },
     }
     
     
@@ -1040,12 +1078,11 @@ var demo_editor = null;
      * http://ls11-www.cs.uni-dortmund.de/people/gutweng/AE-07/schichten.pdf
      */
     activities.ui.TierRenderer = function(editor) {
-        this.diagram = new activities.ui.Diagram(editor);
+        this.model = editor.model;
+        this.diagram = editor.diagram;
+        
         this.node2tier = new Object();
         this.tiers = new Array();
-        this.model = editor.model;
-        this.grid = null;
-        this.diagram.bind();
     }
     
     activities.ui.TierRenderer.prototype = {
@@ -1071,30 +1108,6 @@ var demo_editor = null;
                 for (var j in this.tiers[i]) {
                     ret += '    ' + j + ': ' + this.tiers[i][j] + '\n';
                 }
-            }
-            return ret;
-        },
-        
-        /*
-         * debug grid
-         */
-        _debugGrid: function() {
-            var ret = '';
-            var grid = this.grid;
-            var size = grid.size();
-            var row, entry;
-            for (var i = 0; i < size[0]; i++) {
-                row = '|';
-                for (var j = 0; j < size[1]; j++) {
-                    entry = grid.get(i, j);
-                    if (!entry) {
-                        row += '-x-|';
-                    } else {
-                        row += '-n-|';
-                    }
-                }
-                row += '\n';
-                ret += row;
             }
             return ret;
         },
@@ -1154,6 +1167,8 @@ var demo_editor = null;
         
         /*
          * create edges
+         * 
+         * XXX: maybe in diagram
          */
         createEdges: function() {
             var diagram = this.diagram;
@@ -1182,10 +1197,10 @@ var demo_editor = null;
         },
         
         /*
-         * Create grid
+         * fill grid
          */
-        createGrid: function() {
-            this.grid = new activities.ui.Grid();
+        fillGrid: function() {
+            grid = this.diagram.grid;
             var yMax = this.maxTierElements() * 2 - 1;
             if (yMax % 2 == 1) {
                 yMax += 1;
@@ -1196,36 +1211,8 @@ var demo_editor = null;
                 for (var j in this.tiers[i]) {
                     node = this.model.node(this.tiers[i][j]);
                     elem = this.diagram.getElement(node);
-                    this.grid.set(i, yStart + (j * 2), elem);
+                    this.diagram.grid.set(i, yStart + (j * 2), elem);
                 }
-            }
-        },
-        
-        /*
-         * Set x/y position for elements in grid
-         */
-        setElementPositions: function() {
-            var step_x = 120;
-            var step_y = 50;
-            var x = 60;
-            var y = 70;
-            var step_x = 120;
-            var step_y = 50;
-            var model = this.model;
-            var grid = this.grid;
-            var size = grid.size();
-            var elem;
-            for (var i = 0; i < size[0]; i++) {
-                for (var j = 0; j < size[1]; j++) {
-                    elem = grid.get(i, j);
-                    if (elem) {
-                        elem.x = x;
-                        elem.y = y;
-                    }
-                    y += step_y;
-                }
-                x += step_x;
-                y = 70;
             }
         },
         
@@ -1260,11 +1247,8 @@ var demo_editor = null;
             // create edges
             this.createEdges();
             
-            // create grid
-            this.createGrid();
-            
-            // set positions for diagram elements
-            this.setElementPositions();
+            // fill grid
+            this.fillGrid();
             
             // render diagram
             this.diagram.render();
@@ -1281,6 +1265,8 @@ var demo_editor = null;
      */
     activities.ui.Diagram = function(editor) {
         this.editor = editor;
+        
+        this.grid = new activities.ui.Grid(editor.model);
         
         // trigger color to diagram element
         this.elements = new Object();
@@ -1332,6 +1318,8 @@ var demo_editor = null;
          * iterate over elements of diagram and call render function
          */
         render: function() {
+            this.grid.arrange();
+            
             // clear control layer
             var context = this.layers.control.context;
             context.save();
