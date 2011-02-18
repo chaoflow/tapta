@@ -8,7 +8,7 @@
         // read activities.model.Model doc.
         model: {
             __type: activities.model.ACTIVITY,
-			__name: 'model',
+            __name: 'model',
             children: {
                 start: {
                     __type: activities.model.INITIAL
@@ -34,9 +34,6 @@
                 action_3: {
                     __type: activities.model.ACTION
                 },
-                //flow_end: {
-                //    __type: activities.model.FLOW_FINAL
-                //},
                 end: {
                     __type: activities.model.FINAL
                 },
@@ -75,22 +72,17 @@
                     source: 'action_3',
                     target: 'join'
                 },
-                //edge_8: {
-                //    __type: activities.model.EDGE,
-                //    source: 'decision',
-                //    target: 'flow_end'
-                //},
-                edge_9: {
+                edge_8: {
                     __type: activities.model.EDGE,
                     source: 'decision',
                     target: 'merge'
                 },
-                edge_10: {
+                edge_9: {
                     __type: activities.model.EDGE,
                     source: 'join',
                     target: 'merge'
                 },
-                edge_11: {
+                edge_10: {
                     __type: activities.model.EDGE,
                     source: 'merge',
                     target: 'end'
@@ -101,7 +93,7 @@
         // another test model
         model_2: {
             __type: activities.model.ACTIVITY,
-			__name: 'model_2',
+            __name: 'model_2',
             children: {
                 act_a: {
                     __type: activities.model.INITIAL
@@ -286,15 +278,15 @@
             var grid = new activities.ui.Grid();
             
             test("activities.ui.Grid", function() {
-                grid.set(0, 0, 'a', 10, 20);
-                grid.set(1, 0, 'b', 20, 20);
+                grid.set(0, 0, 'foo');
+                grid.set(1, 0, 'bar');
                 
                 equals(true,
-                       grid.get(0, 0)[1] == 10,
-                       "grid.get(0, 0)[1] == 10");
+                       grid.get(0, 0) == 'foo',
+                       "grid.get(0, 0) == foo");
                 equals(true,
-                       grid.get(1, 0)[1] == 20,
-                       "grid.get(1, 0)[1] == 20");
+                       grid.get(1, 0) == 'bar',
+                       "grid.get(1, 0) == bar");
                 equals(true,
                        typeof(grid.get(1, 1)) == "undefined",
                        'typeof(grid.get(1, 1)) == "undefined"');

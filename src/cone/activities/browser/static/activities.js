@@ -60,10 +60,9 @@ var demo_editor = null;
             JOIN       : 3,
             DECISION   : 4,
             MERGE      : 5,
-            FLOW_FINAL : 6,
-            FINAL      : 7,
-            ACTION     : 8,
-            EDGE       : 9
+            FINAL      : 6,
+            ACTION     : 7,
+            EDGE       : 8
         },
         
         /*
@@ -944,7 +943,7 @@ var demo_editor = null;
     // ************************************************************************
     
     /*
-     * x / y grid mapping 2 dimensional array positions to coordinates
+     * x / y grid mapping 2 dimensional array positions to diagram elements
      */
     activities.ui.Grid = function() {
         // this.data[x][y]
@@ -957,18 +956,16 @@ var demo_editor = null;
          * set grid position
          * x - grid x position
          * y - grid y position
-         * path - model element dottedpath
-         * a - x coordinate
-         * b - y coordinate
+         * elem - the diagram element
          */
-        set: function(x, y, path, a, b) {
+        set: function(x, y, elem) {
             if (!this.data[x]) {
                 this.data[x] = new Array();
             }
             if (!this.data[x][y]) {
                 this.data[x][y] = new Array();
             }
-            this.data[x][y] = [path, a, b];
+            this.data[x][y] = elem;
         },
         
         /*
@@ -1011,7 +1008,7 @@ var demo_editor = null;
                 for (var j = 0; j < size[1]; j++) {
                     elem = this.get(i, j);
                     elem = i + ',' + j + ':' +
-                        elem[1] + ',' + elem[2] + ':' + elem[0];
+                        elem.x + ',' + elem.y;
                     ret += elem;
                 }
                 ret += '\n';
@@ -1030,10 +1027,10 @@ var demo_editor = null;
      */
     activities.ui.TierRenderer = function(editor) {
         this.diagram = new activities.ui.Diagram(editor);
-        this.grid = new activities.ui.Grid();
         this.node2tier = new Object();
         this.tiers = new Array();
         this.model = editor.model;
+        this.grid = null;
         this.diagram.bind();
     }
     
@@ -1078,10 +1075,8 @@ var demo_editor = null;
                     if (!entry) {
                         continue;
                     }
-                    ret += 'x: ' + i + ', y: ' + j + 
-                           ', path: ' + entry[0] + 
-                           ', a: ' + entry[1] + 
-                           ', b: ' + entry[2] + '\n';
+                    // XXX: more info
+                    ret += 'x: ' + i + ', y: ' + j + '\n';
                 }
             }
             return ret;
@@ -1103,9 +1098,9 @@ var demo_editor = null;
         },
         
         /*
-         * detect tiers
+         * set tier for each node
          */
-        detectTiers: function(tier, node) {
+        setNodeTier: function(tier, node) {
             if (typeof(this.node2tier[node.__name]) == "undefined") {
                 this.node2tier[node.__name] = tier;
             } else if (tier > this.node2tier[node.__name]) {
@@ -1117,14 +1112,14 @@ var demo_editor = null;
             for (var idx in outgoing) {
                 edge = outgoing[idx];
                 target = model.target(edge);
-                this.detectTiers(tier + 1, target);
+                this.setNodeTier(tier + 1, target);
             }
         },
         
         /*
-         * fill tiers
+         * Set tier nodes
          */
-        fillTiers: function() {
+        setTierNodes: function() {
             for (var key in this.node2tier) {
                 tier = this.node2tier[key]
                 if (typeof(this.tiers[tier]) == "undefined") {
@@ -1135,9 +1130,9 @@ var demo_editor = null;
         },
         
         /*
-         * detect and fill kinks
+         * Set tier kinks
          */
-        fillKinks: function(tier, node) {
+        setTierKinks: function(tier, node) {
             var model = this.model;
             var outgoing = model.outgoing(node);
             var edge, target, diff;
@@ -1151,26 +1146,7 @@ var demo_editor = null;
                         this.tiers[tier + i].push(edge.__name);
                     }
                 }
-                this.fillKinks(tier + 1, target);
-            }
-        },
-        
-        /*
-         * fill grid with elements from this.tiers
-         */
-        fillGrid: function() {
-            var grid = this.grid;
-            var step_x = 140;
-            var step_y = 120;
-            var x = step_x;
-            var y = step_y;
-            for (var i in this.tiers) {
-                for (var j in this.tiers[i]) {
-                    grid.set(i, j, this.tiers[i][j], x, y);
-                    y += step_y;
-                }
-                x += step_x;
-                y = step_y;
+                this.setTierKinks(tier + 1, target);
             }
         },
         
@@ -1191,78 +1167,102 @@ var demo_editor = null;
         },
         
         /*
-         * create UI element by node type, set x / y position by grid entry
-         * definition and map model element to diagram element
+         * Create grid
          */
-        createElement: function(node, entry) {
+        createGrid: function() {
+            this.grid = new activities.ui.Grid();
+            var elem;
+            for (var i in this.tiers) {
+                for (var j in this.tiers[i]) {
+                    node = this.model.node(this.tiers[i][j]);
+                    elem = this.getDiagramElement(node);
+                    this.grid.set(i, j, elem);
+                }
+            }
+        },
+        
+        // Set x/y position for elements in grid
+        setElementPositions: function() {
+            var step_x = 140;
+            var step_y = 120;
+            var x = step_x;
+            var y = step_y;
+            var model = this.model;
+            var grid = this.grid;
+            var size = grid.size();
+            var elem;
+            for (var i = 0; i < size[0]; i++) {
+                for (var j = 0; j < size[1]; j++) {
+                    elem = grid.get(i, j);
+                    if (!elem) {
+                        continue;
+                    }
+                    elem.x = x;
+                    elem.y = y;
+                    y += step_y;
+                }
+                x += step_x;
+                y = step_y;
+            }
+        },
+        
+        /*
+         * lookup or create UI element by node definition.
+         */
+        getDiagramElement: function(node) {
             var diagram = this.diagram;
+            
+            // check if element already exists
+            var trigger = diagram.r_mapping[node.__name];
+            if (trigger) {
+                return diagram.elements[trigger];
+            }
+            
+            // create new diagram element
             switch (node.__type) {
                 case activities.model.EDGE: {
-                    // this is an edge kink
+                    // this is a kink
                     var kink = new activities.ui.Kink();
-                    kink.x = entry[1];
-                    kink.y = entry[2];
                     var trigger = diagram.r_mapping[node.__name];
                     var edge = diagram.elements[trigger];
                     edge.kinks.push(kink);
-                    break;
+                    return kink;
                 }
                 case activities.model.INITIAL: {
                     var initial = new activities.ui.Initial(diagram);
-                    initial.x = entry[1];
-                    initial.y = entry[2];
                     diagram.map(node, initial);
-                    break;
+                    return initial;
                 }
                 case activities.model.FINAL: {
                     var final_node = new activities.ui.Final(diagram);
-                    final_node.x = entry[1];
-                    final_node.y = entry[2];
                     diagram.map(node, final_node);
-                    break;
+                    return final_node;
                 }
                 case activities.model.ACTION: {
                     var action = new activities.ui.Action(diagram);
-                    action.x = entry[1];
-                    action.y = entry[2];
                     action.label = node.__name;
                     diagram.map(node, action);
-                    break;
+                    return action;
                 }
                 case activities.model.DECISION: {
                     var decision = new activities.ui.Decision(diagram);
-                    decision.x = entry[1];
-                    decision.y = entry[2];
                     diagram.map(node, decision);
-                    break;
+                    return decision;
                 }
                 case activities.model.MERGE: {
                     var merge = new activities.ui.Merge(diagram);
-                    merge.x = entry[1];
-                    merge.y = entry[2];
                     diagram.map(node, merge);
-                    break;
-                }
-                case activities.model.FLOW_FINAL: {
-                    var merge = new activities.ui.Merge(diagram);
-                    merge.x = entry[1];
-                    merge.y = entry[2];
-                    diagram.map(node, merge);
-                    break;
+                    return merge;
                 }
                 case activities.model.FORK: {
                     var fork = new activities.ui.Fork(diagram);
-                    fork.x = entry[1];
-                    fork.y = entry[2];
                     diagram.map(node, fork);
-                    break;
+                    return fork;
                 }
                 case activities.model.JOIN: {
                     var join = new activities.ui.Join(diagram);
-                    join.x = entry[1];
-                    join.y = entry[2];
                     diagram.map(node, join);
-                    break;
+                    return join;
                 }
             }
         },
@@ -1271,8 +1271,13 @@ var demo_editor = null;
          * render diagram
          */
         render: function() {
+            // mapping for node id to tier level
             this.node2tier = new Object();
+            
+            // mapping for tier level to contained node ids
             this.tiers = new Array();
+            
+            // get initial node, if no initial node render empty diagram
             var initial;
             try {
                 initial = this.initial();
@@ -1280,25 +1285,26 @@ var demo_editor = null;
                 this.diagram.render();
                 return;
             }
-            this.detectTiers(0, initial);
-            this.fillTiers();
-            this.fillKinks(0, initial);
-            this.fillGrid();
+            
+            // check tier for each node and write to this.node2tier
+            this.setNodeTier(0, initial);
+            
+            // set node ids for each tier
+            this.setTierNodes();
+            
+            // set kink ids (edge) for each tier
+            this.setTierKinks(0, initial);
+            
+            // create edges
             this.createEdges();
-            var model = this.model;
-            var grid = this.grid;
-            var size = grid.size();
-            var entry;
-            for (var i = 0; i < size[0]; i++) {
-                for (var j = 0; j < size[1]; j++) {
-                    entry = grid.get(i, j);
-                    if (!entry) {
-                        continue;
-                    }
-                    node = model.node(entry[0]);
-                    this.createElement(node, entry);
-                }
-            }
+            
+            // create grid
+            this.createGrid();
+            
+            // set positions for diagram elements
+            this.setElementPositions();
+            
+            // render diagram
             this.diagram.render();
         }
     }
