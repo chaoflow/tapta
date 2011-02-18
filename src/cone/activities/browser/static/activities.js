@@ -1186,11 +1186,13 @@ var demo_editor = null;
          */
         createGrid: function() {
             this.grid = new activities.ui.Grid();
-            var yMax = this.maxTierElements() * 2;
+            var yMax = this.maxTierElements() * 2 - 1;
+            if (yMax % 2 == 1) {
+                yMax += 1;
+            }
             var node, elem;
             for (var i in this.tiers) {
-                yStart = Math.floor((yMax / 2)) - 
-                         Math.floor((this.tiers[i].length / 2));
+                yStart = yMax / 2 - this.tiers[i].length;
                 for (var j in this.tiers[i]) {
                     node = this.model.node(this.tiers[i][j]);
                     elem = this.diagram.getElement(node);
@@ -1204,9 +1206,11 @@ var demo_editor = null;
          */
         setElementPositions: function() {
             var step_x = 120;
-            var step_y = 60;
-            var x = step_x;
-            var y = step_y;
+            var step_y = 50;
+            var x = 60;
+            var y = 70;
+            var step_x = 120;
+            var step_y = 50;
             var model = this.model;
             var grid = this.grid;
             var size = grid.size();
@@ -1221,7 +1225,7 @@ var demo_editor = null;
                     y += step_y;
                 }
                 x += step_x;
-                y = step_y;
+                y = 70;
             }
         },
         
@@ -1258,8 +1262,6 @@ var demo_editor = null;
             
             // create grid
             this.createGrid();
-            
-            // alert(this._debugGrid());
             
             // set positions for diagram elements
             this.setElementPositions();
