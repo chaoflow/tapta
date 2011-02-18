@@ -1073,7 +1073,7 @@ var demo_editor = null;
                 col[y] = elem;
                 this.data[x] = col;
             } else {
-                this.data[x][y] = elem;
+                this.data[x - 1][y] = elem;
             }
         },
         

@@ -323,6 +323,27 @@
                        'bar',
                        "grid.get(3, 0) == 'bar'")
             });
+            
+            test("Grid.before_X at none zero position, free position",
+                 function() {
+                     
+                grid.set(2, 0, null);
+                // expect ['baz', 'bam', null, 'bar']
+                grid.before_X(3, 0, 'foo');
+                
+                equals(grid.get(0, 0),
+                       'baz',
+                       "grid.get(0, 0) == 'baz'")
+                equals(grid.get(1, 0),
+                       'bam',
+                       "grid.get(1, 0) == 'bam'");
+                equals(grid.get(2, 0),
+                       'foo',
+                       "grid.get(2, 0) == 'foo'")
+                equals(grid.get(3, 0),
+                       'bar',
+                       "grid.get(3, 0) == 'bar'")
+            });
         }
     }
     
