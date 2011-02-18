@@ -201,75 +201,75 @@
             
             var model = new activities.model.Model(eval(uneval(tests.model)));
             
-            test("activities.model.Model.filtered", function() {
+            test("Model.filtered", function() {
                 // equals(11,
-                equals(10,
-                       model.filtered(activities.model.EDGE).length,
+                equals(model.filtered(activities.model.EDGE).length,
+                       10,
                        "model.filtered(activities.model.EDGE)");
-                equals(3,
-                       model.filtered(activities.model.ACTION).length,
+                equals(model.filtered(activities.model.ACTION).length,
+                       3,
                        "filtered(activities.model.ACTION)");
                 var res = model.filtered(
                     activities.model.EDGE,
                     model.node('action_1'));
-                equals(0,
-                       res,
+                equals(res,
+                       0,
                        "filtered(activities.model.ACTION, " +
                        "model.node('action_1'))");
             });
             
-            test("activities.model.Model.incoming", function() {
+            test("Model.incoming", function() {
                 var res = model.incoming(model.node('decision'));
-                equals(1,
-                       res.length,
+                equals(res.length,
+                       1,
                        "model.incoming(model.node('decision'))");
                 res = model.incoming(model.node('merge'));
-                equals(2,
-                       res.length,
+                equals(res.length,
+                       2,
                        "model.incoming(model.node('merge'))");
-                equals(false,
-                       !res[0].source || !res[0].target,
+                equals(!res[0].source || !res[0].target,
+                       false,
                        "res[0].source && res[0].target");
             });
             
-            test("activities.model.Model.outgoing", function() {
+            test("Model.outgoing", function() {
                 var res = model.outgoing(model.node('decision'));
                 // equals(2,
-                equals(1,
-                       res.length,
+                equals(res.length,
+                       1,
                        "model.outgoing(model.node('decision'))");
                 res = model.outgoing(model.node('merge'));
-                equals(1,
-                       res.length,
+                equals(res.length,
+                       1,
                        "model.outgoing(model.node('merge'))");
-                equals(false,
-                       !res[0].source || !res[0].target,
+                equals(!res[0].source || !res[0].target,
+                       false,
                        "res[0].source && res[0].target");
             });
             
-            test("activities.model.Model.source", function() {
+            test("Model.source", function() {
                 var source = model.source(model.node('edge_1'));
-                equals(true,
-                       source.__type == activities.model.INITIAL,
+                equals(source.__type == activities.model.INITIAL,
+                       true,
                        "source.__type == activities.model.INITIAL");
-                equals(true,
-                       source.__name == 'start',
+                equals(source.__name == 'start',
+                       true,
                        "source.__name == 'start'");
-                equals(true,
-                       source.__parent == 'model',
+                equals(source.__parent == 'model',
+                       true,
                        "source.__parent == 'model'");
             });
             
-            test("activities.model.Model.target", function() {
+            test("Model.target", function() {
                 var target = model.target(model.node('edge_1'));
-                equals(true,
-                       target.__type == activities.model.FORK,
+                equals(target.__type == activities.model.FORK,
+                       true,
                        "target.__type == activities.model.FORK");
-                equals(true,
-                       target.__name == 'fork',
+                equals(target.__name == 'fork',
+                       true,
                        "target.__name == 'fork'");
-                equals(true,
-                       target.__parent == 'model',
+                equals(target.__parent == 'model',
+                       true,
                        "target.__parent == 'model'");
             });
             
@@ -277,19 +277,51 @@
             
             var grid = new activities.ui.Grid();
             
-            test("activities.ui.Grid", function() {
+            test("Grid.[set|get]", function() {
                 grid.set(0, 0, 'foo');
                 grid.set(1, 0, 'bar');
                 
-                equals(true,
-                       grid.get(0, 0) == 'foo',
-                       "grid.get(0, 0) == foo");
-                equals(true,
-                       grid.get(1, 0) == 'bar',
-                       "grid.get(1, 0) == bar");
-                equals(true,
-                       typeof(grid.get(1, 1)) == "undefined",
+                equals(grid.get(0, 0),
+                       'foo',
+                       "grid.get(0, 0) == 'foo'");
+                equals(grid.get(1, 0),
+                       'bar',
+                       "grid.get(1, 0) == 'bar'");
+                equals(typeof(grid.get(1, 1)),
+                       "undefined",
                        'typeof(grid.get(1, 1)) == "undefined"');
+            });
+            
+            test("Grid.before_X at zero position", function() {
+                grid.before_X(0, 0, 'baz');
+                
+                equals(grid.get(0, 0),
+                       'baz',
+                       "grid.get(0, 0) == 'baz'");
+                equals(grid.get(1, 0),
+                       'foo',
+                       "grid.get(1, 0) == 'foo'");
+                equals(grid.get(2, 0),
+                       'bar',
+                       "grid.get(2, 0) == 'bar'");
+            });
+            
+            test("Grid.before_X at none zero position, new column", function() {
+                // expect ['baz', 'foo', 'bar']
+                grid.before_X(1, 0, 'bam');
+                
+                equals(grid.get(0, 0),
+                       'baz',
+                       "grid.get(0, 0) == 'baz'")
+                equals(grid.get(1, 0),
+                       'bam',
+                       "grid.get(1, 0) == 'bam'");
+                equals(grid.get(2, 0),
+                       'foo',
+                       "grid.get(2, 0) == 'foo'")
+                equals(grid.get(3, 0),
+                       'bar',
+                       "grid.get(3, 0) == 'bar'")
             });
         }
     }

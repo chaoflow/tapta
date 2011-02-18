@@ -969,6 +969,11 @@ var demo_editor = null;
         
         // this.data[x][y]
         this.data = new Array();
+        
+        this.orgin_x = 60;
+        this.orgin_y = 70;
+        this.step_x = 120;
+        this.step_y = 50;
     }
     
     activities.ui.Grid.prototype = {
@@ -1022,12 +1027,8 @@ var demo_editor = null;
          * Set x/y position for elements in grid
          */
         arrange: function() {
-            var step_x = 120;
-            var step_y = 50;
-            var x = 60;
-            var y = 70;
-            var step_x = 120;
-            var step_y = 50;
+            var x = this.orgin_x;
+            var y = this.orgin_y;
             var model = this.model;
             var size = this.size();
             var elem;
@@ -1038,11 +1039,63 @@ var demo_editor = null;
                         elem.x = x;
                         elem.y = y;
                     }
-                    y += step_y;
+                    y += this.step_y;
                 }
-                x += step_x;
-                y = 70;
+                x += this.step_x;
+                y = this.orgin_y;
             }
+        },
+        
+        /*
+         * insert element before x position at y position
+         */
+        before_X: function(x, y, elem) {
+            // if first
+            // always inserts new column
+            if (x == 0) {
+                for (var i = this.data.length; i > 0; i--) {
+                    this.data[i] = this.data[i - 1];
+                }
+                var col = new Array();
+                col[y] = elem;
+                this.data[0] = col;
+                return;
+            }
+            
+            // try to insert before, if coordinate already taken for another
+            // element, insert new column.
+            var col = this.data[x - 1];
+            if (col[y]) {
+                for (var i = this.data.length; i > x; i--) {
+                    this.data[i] = this.data[i - 1];
+                }
+                var col = new Array();
+                col[y] = elem;
+                this.data[x] = col;
+            } else {
+                this.data[x][y] = elem;
+            }
+        },
+        
+        /*
+         * insert element before y position at x position
+         */
+        before_Y: function(x, y, elem) {
+            
+        },
+        
+        /*
+         * insert element after x position at y position
+         */
+        after_X: function(x, y, elem) {
+            
+        },
+        
+        /*
+         * insert element after y position at x position
+         */
+        after_Y: function(x, y, elem) {
+            
         },
         
         /*
@@ -1211,7 +1264,7 @@ var demo_editor = null;
                 for (var j in this.tiers[i]) {
                     node = this.model.node(this.tiers[i][j]);
                     elem = this.diagram.getElement(node);
-                    this.diagram.grid.set(i, yStart + (j * 2), elem);
+                    grid.set(i, yStart + (j * 2), elem);
                 }
             }
         },
