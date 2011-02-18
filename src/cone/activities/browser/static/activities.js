@@ -1082,16 +1082,19 @@ var demo_editor = null;
             var ret = '';
             var grid = this.grid;
             var size = grid.size();
-            var entry;
+            var row, entry;
             for (var i = 0; i < size[0]; i++) {
+                row = '|';
                 for (var j = 0; j < size[1]; j++) {
                     entry = grid.get(i, j);
                     if (!entry) {
-                        continue;
+                        row += '-x-|';
+                    } else {
+                        row += '-n-|';
                     }
-                    // XXX: more info
-                    ret += 'x: ' + i + ', y: ' + j + '\n';
                 }
+                row += '\n';
+                ret += row;
             }
             return ret;
         },
@@ -1166,16 +1169,32 @@ var demo_editor = null;
         },
         
         /*
+         * count maximum number of tier elements
+         */
+        maxTierElements: function() {
+            var ret = 0;
+            for (var i in this.tiers) {
+                if (this.tiers[i].length > ret) {
+                    ret = this.tiers[i].length
+                }
+            }
+            return ret;
+        },
+        
+        /*
          * Create grid
          */
         createGrid: function() {
             this.grid = new activities.ui.Grid();
-            var elem;
+            var yMax = this.maxTierElements() * 2;
+            var node, elem;
             for (var i in this.tiers) {
+                yStart = Math.floor((yMax / 2)) - 
+                         Math.floor((this.tiers[i].length / 2));
                 for (var j in this.tiers[i]) {
                     node = this.model.node(this.tiers[i][j]);
                     elem = this.diagram.getElement(node);
-                    this.grid.set(i, j, elem);
+                    this.grid.set(i, yStart + (j * 2), elem);
                 }
             }
         },
@@ -1184,8 +1203,8 @@ var demo_editor = null;
          * Set x/y position for elements in grid
          */
         setElementPositions: function() {
-            var step_x = 140;
-            var step_y = 120;
+            var step_x = 120;
+            var step_y = 60;
             var x = step_x;
             var y = step_y;
             var model = this.model;
@@ -1195,11 +1214,10 @@ var demo_editor = null;
             for (var i = 0; i < size[0]; i++) {
                 for (var j = 0; j < size[1]; j++) {
                     elem = grid.get(i, j);
-                    if (!elem) {
-                        continue;
+                    if (elem) {
+                        elem.x = x;
+                        elem.y = y;
                     }
-                    elem.x = x;
-                    elem.y = y;
                     y += step_y;
                 }
                 x += step_x;
@@ -1240,6 +1258,8 @@ var demo_editor = null;
             
             // create grid
             this.createGrid();
+            
+            // alert(this._debugGrid());
             
             // set positions for diagram elements
             this.setElementPositions();
