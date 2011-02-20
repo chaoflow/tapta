@@ -1053,12 +1053,9 @@ var demo_editor = null;
             // if first
             // always inserts new column
             if (x == 0) {
-                for (var i = this.data.length; i > 0; i--) {
-                    this.data[i] = this.data[i - 1];
-                }
                 var col = new Array();
                 col[y] = elem;
-                this.data[0] = col;
+                this.data.splice(0, 0, col);
                 return;
             }
             
@@ -1066,14 +1063,11 @@ var demo_editor = null;
             // element, insert new column.
             var col = this.data[x - 1];
             if (col[y]) {
-                for (var i = this.data.length; i > x; i--) {
-                    this.data[i] = this.data[i - 1];
-                }
                 var col = new Array();
                 col[y] = elem;
-                this.data[x] = col;
+                this.data.splice(x, 0, col);
             } else {
-                this.data[x - 1][y] = elem;
+                col[y] = elem;
             }
         },
         
@@ -1081,7 +1075,7 @@ var demo_editor = null;
          * insert element before y position at x position
          */
         before_Y: function(x, y, elem) {
-            
+            this.data[x].splice(y, 0, elem);
         },
         
         /*
@@ -1243,7 +1237,7 @@ var demo_editor = null;
             var ret = 0;
             for (var i in this.tiers) {
                 if (this.tiers[i].length > ret) {
-                    ret = this.tiers[i].length
+                    ret = this.tiers[i].length;
                 }
             }
             return ret;

@@ -312,16 +312,16 @@
                 
                 equals(grid.get(0, 0),
                        'baz',
-                       "grid.get(0, 0) == 'baz'")
+                       "grid.get(0, 0) == 'baz'");
                 equals(grid.get(1, 0),
                        'bam',
                        "grid.get(1, 0) == 'bam'");
                 equals(grid.get(2, 0),
                        'foo',
-                       "grid.get(2, 0) == 'foo'")
+                       "grid.get(2, 0) == 'foo'");
                 equals(grid.get(3, 0),
                        'bar',
-                       "grid.get(3, 0) == 'bar'")
+                       "grid.get(3, 0) == 'bar'");
             });
             
             test("Grid.before_X at none zero position, free position",
@@ -333,16 +333,41 @@
                 
                 equals(grid.get(0, 0),
                        'baz',
-                       "grid.get(0, 0) == 'baz'")
+                       "grid.get(0, 0) == 'baz'");
                 equals(grid.get(1, 0),
                        'bam',
                        "grid.get(1, 0) == 'bam'");
                 equals(grid.get(2, 0),
                        'foo',
-                       "grid.get(2, 0) == 'foo'")
+                       "grid.get(2, 0) == 'foo'");
                 equals(grid.get(3, 0),
                        'bar',
-                       "grid.get(3, 0) == 'bar'")
+                       "grid.get(3, 0) == 'bar'");
+            });
+            
+            grid = new activities.ui.Grid();
+            
+            test("Grid.before_Y", function() {
+                grid.set(0, 0, 'foo');
+                grid.set(0, 1, null);
+                grid.set(0, 2, 'bar');
+                grid.set(0, 3, null);
+                
+                grid.before_Y(0, 0, 'baz');
+                equals(grid.get(0, 0),
+                       'baz',
+                       "grid.get(0, 0) == 'baz'");
+                equals(grid.get(0, 1),
+                       'foo',
+                       "grid.get(0, 1) == 'foo'");
+                
+                grid.before_Y(0, 2, 'bam');
+                equals(grid.get(0, 2),
+                       'bam',
+                       "grid.get(0, 2) == 'bam'");
+                equals(grid.get(0, 4),
+                       'bar',
+                       "grid.get(0, 4) == 'bar'");
             });
         }
     }
