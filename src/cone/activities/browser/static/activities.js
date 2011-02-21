@@ -1544,8 +1544,17 @@ var demo_editor = null;
             context.clearRect(0, 0, this.width, this.height);
             context.restore();
             
+            var elem, selected;
             for(var key in this.elements) {
-                this.elements[key].render();
+                var elem = this.elements[key];
+                if (elem.selected) {
+                    selected = elem;
+                    continue;
+                }
+                elem.render();
+            }
+            if (selected) {
+                selected.render();
             }
         },
         
