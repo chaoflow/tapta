@@ -160,7 +160,7 @@ var demo_editor = null;
                         subscriber[mapped][idx](recent, event);
                     }
                 }
-                activities.events.status(event.type, x, y, triggerColor);
+                //activities.events.status(event.type, x, y, triggerColor);
             },
             
             // global event handler for diagram children
@@ -391,7 +391,7 @@ var demo_editor = null;
                 context.fillText(label, 0, 0, width);
             },
             
-            // rect diagram element agnostic. must be set on element
+            // diagram element agnostic. must be set on element
             
             /*
              * default rect diagram element initialization
@@ -466,6 +466,35 @@ var demo_editor = null;
                     activities.ui.label(context, this.label, this.width);
                 }
                 context.restore();
+            },
+            
+            /*
+             * Translate element coordinate for edge source by given following
+             * point coordinate.
+             *
+             * Translate for circle element.
+             */
+            translateCircleEdge: function(x, y) {
+                var gk = y - this.y;
+                var ak = this.x - x;
+                var alpha = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+                var rad = this.radius;
+                var cos = Math.cos(Math.PI * alpha / 180.0)
+                var sin = Math.sin(Math.PI * alpha / 180.0)
+                var x_diff = rad * cos;
+                var y_diff = rad * sin;
+                if (x - this.x >= 0 && y - this.y >= 0) {
+                    return [this.x + x_diff, this.y + y_diff];
+                }
+                if (x - this.x >= 0 && y - this.y <= 0) {
+                    return [this.x + x_diff, this.y - y_diff];
+                }
+                if (x - this.x <= 0 && y - this.y <= 0) {
+                    return [this.x - x_diff, this.y - y_diff];
+                }
+                if (x - this.x <= 0 && y - this.y >= 0) {
+                    return [this.x - x_diff, this.y + y_diff];
+                }
             }
         },
         
@@ -1758,6 +1787,9 @@ var demo_editor = null;
         context.restore();
     }
     
+    activities.ui.Initial.prototype.translateEdge = 
+        activities.ui.translateCircleEdge;
+    
     
     // ************************************************************************
     // activities.ui.Final
@@ -1809,6 +1841,9 @@ var demo_editor = null;
         context.restore();
     }
     
+    activities.ui.Final.prototype.translateEdge = 
+        activities.ui.translateCircleEdge;
+    
     
     // ************************************************************************
     // activities.ui.Action
@@ -1828,6 +1863,10 @@ var demo_editor = null;
     
     activities.ui.Action.prototype.render = activities.ui.renderRectElem;
     
+    activities.ui.Action.prototype.translateEdge = function(x, y){
+        return [this.x, this.y];
+    }
+    
     
     // ************************************************************************
     // activities.ui.Decision
@@ -1845,6 +1884,10 @@ var demo_editor = null;
     activities.ui.Decision.prototype.init = activities.ui.initDiagramElem;
     
     activities.ui.Decision.prototype.render = activities.ui.renderRectElem;
+    
+    activities.ui.Decision.prototype.translateEdge = function(x, y){
+        return [this.x, this.y];
+    }
     
     
     // ************************************************************************
@@ -1864,6 +1907,10 @@ var demo_editor = null;
     
     activities.ui.Merge.prototype.render = activities.ui.renderRectElem;
     
+    activities.ui.Merge.prototype.translateEdge = function(x, y){
+        return [this.x, this.y];
+    }
+    
     
     // ************************************************************************
     // activities.ui.Join
@@ -1881,6 +1928,10 @@ var demo_editor = null;
     activities.ui.Join.prototype.init = activities.ui.initDiagramElem;
     
     activities.ui.Join.prototype.render = activities.ui.renderRectElem;
+    
+    activities.ui.Join.prototype.translateEdge = function(x, y){
+        return [this.x, this.y];
+    }
     
     
     // ************************************************************************
@@ -1900,6 +1951,10 @@ var demo_editor = null;
     
     activities.ui.Fork.prototype.render = activities.ui.renderRectElem;
     
+    activities.ui.Fork.prototype.translateEdge = function(x, y){
+        return [this.x, this.y];
+    }
+    
     
     // ************************************************************************
     // activities.ui.Edge
@@ -1908,6 +1963,7 @@ var demo_editor = null;
     activities.ui.Edge = function(diagram) {
         this.triggerColor = null;
         this.color = '#333333';
+        this.lineWidth = 3;
         this.selectedColor = '#bbbbbb';
         this.selected = false;
         this.label = null;
@@ -1931,13 +1987,31 @@ var demo_editor = null;
         var target = diagram.elements[diagram.r_mapping[this.target]];
         
         context.beginPath();
-        context.moveTo(source.x, source.y);
+        var t_x, t_y;
+        if (this.kinks.length != 0) {
+            t_x = this.kinks[0].x;
+            t_y = this.kinks[0].y;
+        } else {
+            t_x = target.x;
+            t_y = target.y;
+        }
+        var start = source.translateEdge(t_x, t_y);
+        context.moveTo(start[0], start[1]);
         var kink;
         for (var idx in this.kinks) {
             kink = this.kinks[idx];
             context.lineTo(kink.x, kink.y);
         }
-        context.lineTo(target.x, target.y);
+        if (this.kinks.length != 0) {
+            var last = this.kinks.length - 1;
+            t_x = this.kinks[last].x;
+            t_y = this.kinks[last].y;
+        } else {
+            t_x = source.x;
+            t_y = source.y;
+        }
+        var end = target.translateEdge(t_x, t_y);
+        context.lineTo(end[0], end[1]);
         context.closePath();
     }
     
@@ -1946,7 +2020,7 @@ var demo_editor = null;
         var context = this.diagram.layers.control.context;
         context.save();
         context.strokeStyle = this.triggerColor;
-        context.lineWidth = 3;
+        context.lineWidth = this.lineWidth;
         this.renderPath(context);
         context.stroke();
         context.restore();
@@ -1959,19 +2033,10 @@ var demo_editor = null;
         } else {
             context.strokeStyle = this.selectedColor;
         }
-        context.lineWidth = 3;
+        context.lineWidth = this.lineWidth;
         this.renderPath(context);
         context.stroke();
         context.restore();
-        
-        // XXX: exact drawing of edges, then no reload
-        if (this.selected) {
-            var diagram = this.diagram;
-            var source = diagram.elements[diagram.r_mapping[this.source]];
-            source.render();
-            var target = diagram.elements[diagram.r_mapping[this.target]];
-            target.render();
-        }
     }
     
     
