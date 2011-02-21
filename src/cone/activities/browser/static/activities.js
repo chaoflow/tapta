@@ -46,6 +46,19 @@ var demo_editor = null;
                 var c = '0123456789ABCDEF';
                 return String(c.charAt(Math.floor(dec / 16)))
                      + String(c.charAt(dec - (Math.floor(dec / 16) * 16)));
+            },
+            
+            /*
+             * create uid
+             * http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+             */
+            createUID: function() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+                    .replace(/[xy]/g, function(c) {
+                        var r = Math.random() * 16 | 0, v = c == 'x' 
+                            ? r : (r & 0x3 | 0x8);
+                        return v.toString(16);
+                    }).toUpperCase();
             }
         },
         
@@ -449,14 +462,22 @@ var demo_editor = null;
          */
         actions: {
             
+            // action markers
+            
+            ADD_DIAGRAM_ELEMENT    : 0,
+            ADD_DIAGRAM_EDGE       : 1,
+            DELETE_DIAGRAM_ELEMENT : 2,
+            
             // tmp. remove as soon as persistence widget is implemented
             _open: 0,
             
-            new_activity: function(actions, element, event) {
+            // specific actions
+            
+            new_activity: function(name, element, event) {
                 demo_editor.newDiagram();
             },
             
-            open_activity: function(actions, element, event) {
+            open_activity: function(name, element, event) {
                 // tmp. alter with persistence widget code
                 var model;
                 if (activities.actions._open) {
@@ -469,54 +490,152 @@ var demo_editor = null;
                 demo_editor.openDiagram(model);
             },
             
-            save_activity: function(actions, element, event) {
+            save_activity: function(name, element, event) {
                 bdajax.error('Not implemented');
             },
             
-            initial_node: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            initial_node: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
+                actions.type = activities.model.INITIAL;
             },
             
-            final_node: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            final_node: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
+                actions.type = activities.model.FINAL;
             },
             
-            action_node: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            action_node: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
+                actions.type = activities.model.ACTION;
             },
             
-            join_node: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            join_node: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
+                actions.type = activities.model.JOIN;
             },
             
-            fork_node: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            fork_node: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
+                actions.type = activities.model.FORK;
             },
             
-            merge_node: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            merge_node: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
+                actions.type = activities.model.MERGE;
             },
             
-            decision_node: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            decision_node: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
+                actions.type = activities.model.DECISION;
             },
             
-            edge: function(actions, element, event) {
-                bdajax.error('Not implemented');
+            edge: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.active = activities.actions.ADD_DIAGRAM_EDGE;
+                actions.type = activities.model.EDGE;
             },
             
-            debug: function(actions, element, event) {
+            debug: function(name, element, event) {
                 var status = $('.status');
                 status.toggleClass('hidden');
             },
             
-            run_tests: function(actions, element, event) {
+            run_tests: function(name, element, event) {
                 $('.qunit').show();
                 tests.run();
             },
             
-            flip_layers: function(actions, element, event) {
+            flip_layers: function(name, element, event) {
                 activities.ui.toggleCanvas(demo_editor.name);
+            },
+            
+            actions_object: function(name) {
+                return $('#' + name + ' canvas.diagram').data('actions');
+            },
+            
+            // utils
+            
+            doAction: function(editor, event) {
+                var actions = editor.actions;
+                switch(actions.active) {
+                    case activities.actions.ADD_DIAGRAM_EDGE: {
+                        break;
+                    }
+                    case activities.actions.ADD_DIAGRAM_ELEMENT: {
+                        
+                        // XXX: move to model as add funtion and simplify
+                        var uid = activities.utils.createUID();
+                        var model = editor.model;
+                        if (!model.context.children) {
+                            model.context.children = new Object();
+                        }
+                        model.context.children[uid] = new Object();
+                        var node = model.context.children[uid];
+                        node.__name = uid;
+                        node.__parent = model.context.__name;
+                        
+                        switch(actions.type) {
+                            case activities.model.INITIAL: {
+                                node.__type = activities.model.INITIAL;
+                                node.label = 'New Initial';
+                                break;
+                            }
+                            case activities.model.FINAL: {
+                                node.__type = activities.model.FINAL;
+                                node.label = 'New Final';
+                                break;
+                            }
+                            case activities.model.ACTION: {
+                                node.__type = activities.model.ACTION;
+                                node.label = 'New Action';
+                                break;
+                            }
+                            case activities.model.FORK: {
+                                node.__type = activities.model.FORK;
+                                node.label = 'New Fork';
+                                break;
+                            }
+                            case activities.model.JOIN: {
+                                node.__type = activities.model.JOIN;
+                                node.label = 'New Join';
+                                break;
+                            }
+                            case activities.model.DECISION: {
+                                node.__type = activities.model.DECISION;
+                                node.label = 'New Decision';
+                                break;
+                            }
+                            case activities.model.MERGE: {
+                                node.__type = activities.model.DECISION;
+                                node.label = 'New Merge';
+                                break;
+                            }
+                        }
+                        
+                        var canvas = $(editor.diagram.layers.diagram.canvas);
+                        var offset = canvas.offset();
+                        var x = event.pageX - offset.left;
+                        var y = event.pageY - offset.top;
+                        
+                        var elem = editor.diagram.getElement(node);
+                        elem.x = x;
+                        elem.y = y;
+                        
+                        editor.diagram.render();
+                        
+                        break;
+                    }
+                    case activities.actions.DELETE_DIAGRAM_ELEMENT: {
+                        break;
+                    }
+                }
             }
         }
     }
@@ -779,30 +898,17 @@ var demo_editor = null;
      */
     activities.ui.Actions = function(editor) {
         this.editor = editor;
-        var actions = this;
+        this.active = null;
+        this.type = null;
+        $('#' + editor.name + ' canvas.diagram').data('actions', this);
         var elements = $('#' + editor.name + ' div.actions a');
         elements.unbind().bind('click', function(event) {
+            event.preventDefault();
             var elem = $(this);
             var action = elem.attr('class');
-            activities.actions[action](actions, elem, event);
+            var func = activities.actions[action];
+            func(editor.name, elem, event);
         });
-    }
-    
-    activities.ui.Actions.prototype = {
-        
-        /*
-         * enable action by id
-         */
-        enable: function(id) {
-            
-        },
-        
-        /*
-         * disable action by id
-         */
-        disable: function(id) {
-            
-        }
     }
     
     
@@ -1033,7 +1139,7 @@ var demo_editor = null;
             try {
                 return this.data[x][y];
             } catch(err) {
-                throw "No coordinates found for position " + x + ',' + y;
+                throw "No element found at position " + x + ',' + y;
             }
         },
         
@@ -1051,6 +1157,13 @@ var demo_editor = null;
                 }
             }
             return [x, y];
+        },
+        
+        /*
+         * return nearest grid x/y position for coordinates
+         */
+        nearest: function(x, y) {
+            
         },
         
         /*
@@ -1433,6 +1546,8 @@ var demo_editor = null;
             dispatcher.subscribe(
                 activities.events.MOUSE_DOWN, this, this.unselectAll);
             dispatcher.subscribe(
+                activities.events.MOUSE_DOWN, this, this.doAction);
+            dispatcher.subscribe(
                 activities.events.MOUSE_MOVE, this, this.dnd.drag);
             dispatcher.subscribe(
                 activities.events.MOUSE_UP, this, this.dnd.drop);
@@ -1574,6 +1689,19 @@ var demo_editor = null;
                 obj.focused.render();
             }
             obj.editor.properties.display(obj);
+        },
+        
+        /*
+         * activities.events.MOUSE_DOWN
+         */
+        doAction: function(obj, event) {
+            var actions = activities.actions.actions_object(obj.editor.name);
+            if (actions.active == null) {
+                return;
+            }
+            activities.actions.doAction(obj.editor, event);
+            actions.active = null;
+            actions.type = null;
         }
     }
     
