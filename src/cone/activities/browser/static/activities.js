@@ -75,7 +75,19 @@ var demo_editor = null;
             MERGE      : 5,
             FINAL      : 6,
             ACTION     : 7,
-            EDGE       : 8
+            EDGE       : 8,
+            
+            TYPE_NAMES: [
+                'Activity',
+                'Initial Node',
+                'Fork',
+                'Join',
+                'Decision',
+                'Merge',
+                'Final Node',
+                'Action',
+                'Edge'
+            ]
         },
         
         /*
@@ -481,10 +493,10 @@ var demo_editor = null;
                 // tmp. alter with persistence widget code
                 var model;
                 if (activities.actions._open) {
-                    model = eval(uneval(tests.model));
+                    model = tests.create_test_model_1();
                     activities.actions._open = 0;
                 } else {
-                    model = eval(uneval(tests.model_2));
+                    model = tests.create_test_model_2();
                     activities.actions._open = 1;
                 }
                 demo_editor.openDiagram(model);
@@ -627,6 +639,8 @@ var demo_editor = null;
                         var elem = editor.diagram.getElement(node);
                         elem.x = x;
                         elem.y = y;
+                        elem.label = node.label;
+                        elem.description = '';
                         
                         editor.diagram.render();
                         
@@ -921,20 +935,6 @@ var demo_editor = null;
         this.container = $('#' + editor.name + ' .element_properties');
         this.recent_node = null;
         this.recent_element = null;
-        
-        var typenames = new Array();
-        var model = activities.model;
-        typenames[model.ACTIVITY] = 'Activity';
-        typenames[model.INITIAL] = 'Initial Node';
-        typenames[model.FORK] = 'Fork';
-        typenames[model.JOIN] = 'Join';
-        typenames[model.DECISION] = 'Decision';
-        typenames[model.MERGE] = 'Merge';
-        typenames[model.FLOW_FINAL] = 'Flow final Node';
-        typenames[model.FINAL] = 'Final Node';
-        typenames[model.ACTION] = 'Action';
-        typenames[model.EDGE] = 'Edge';
-        this.typenames = typenames;
     }
     
     activities.ui.Properties.prototype = {
@@ -957,7 +957,7 @@ var demo_editor = null;
             this.prop({
                 type: 'string',
                 name: 'type',
-                value: this.typenames[node.__type],
+                value: activities.model.TYPE_NAMES[node.__type],
                 title: 'Type:',
                 readonly: true
             });
@@ -1586,11 +1586,23 @@ var demo_editor = null;
         },
         
         /*
-         * map model element path to trigger color
+         * map model element path to trigger color and set properties
          */
         map: function(node, elem) {
             this.mapping[elem.triggerColor] = node.__name;
             this.r_mapping[node.__name] = elem.triggerColor;
+            
+            // label
+            if (node.label) {
+                elem.label = node.label;
+            } else {
+                elem.label = node.__name;
+            }
+            
+            // description
+            if (node.description) {
+                elem.description = node.description;
+            }
         },
         
         /*
@@ -1622,6 +1634,8 @@ var demo_editor = null;
                 return this.elements[trigger];
             }
             
+            var elem;
+            
             // create new diagram element
             switch (node.__type) {
                 case activities.model.EDGE: {
@@ -1633,42 +1647,36 @@ var demo_editor = null;
                     return kink;
                 }
                 case activities.model.INITIAL: {
-                    var initial = new activities.ui.Initial(this);
-                    this.map(node, initial);
-                    return initial;
+                    elem = new activities.ui.Initial(this);
+                    break;
                 }
                 case activities.model.FINAL: {
-                    var final_node = new activities.ui.Final(this);
-                    this.map(node, final_node);
-                    return final_node;
+                    elem = new activities.ui.Final(this);
+                    break;
                 }
                 case activities.model.ACTION: {
-                    var action = new activities.ui.Action(this);
-                    action.label = node.__name;
-                    this.map(node, action);
-                    return action;
+                    elem = new activities.ui.Action(this);
+                    break;
                 }
                 case activities.model.DECISION: {
-                    var decision = new activities.ui.Decision(this);
-                    this.map(node, decision);
-                    return decision;
+                    elem = new activities.ui.Decision(this);
+                    break;
                 }
                 case activities.model.MERGE: {
-                    var merge = new activities.ui.Merge(this);
-                    this.map(node, merge);
-                    return merge;
+                    elem = new activities.ui.Merge(this);
+                    break;
                 }
                 case activities.model.FORK: {
-                    var fork = new activities.ui.Fork(this);
-                    this.map(node, fork);
-                    return fork;
+                    elem = new activities.ui.Fork(this);
+                    break;
                 }
                 case activities.model.JOIN: {
-                    var join = new activities.ui.Join(this);
-                    this.map(node, join);
-                    return join;
+                    elem = new activities.ui.Join(this);
+                    break;
                 }
             }
+            this.map(node, elem);
+            return elem;
         },
         
         // event handler

@@ -2,204 +2,292 @@
     
     tests = {
         
-        // test model
-        // supposed to be serialized/deserialized by JSON later
-        // server side model > node.ext.uml.activities
-        // read activities.model.Model doc.
-        model: {
-            __type: activities.model.ACTIVITY,
-            __name: 'model',
-            children: {
-                start: {
-                    __type: activities.model.INITIAL
-                },
-                fork: {
-                    __type: activities.model.FORK
-                },
-                join: {
-                    __type: activities.model.JOIN
-                },
-                decision: {
-                    __type: activities.model.DECISION
-                },
-                merge: {
-                    __type: activities.model.MERGE
-                },
-                action_1: {
-                    __type: activities.model.ACTION
-                },
-                action_2: {
-                    __type: activities.model.ACTION
-                },
-                action_3: {
-                    __type: activities.model.ACTION
-                },
-                end: {
-                    __type: activities.model.FINAL
-                },
-                edge_1: {
-                    __type: activities.model.EDGE,
-                    source: 'start',
-                    target: 'fork'
-                },
-                edge_2: {
-                    __type: activities.model.EDGE,
-                    source: 'fork',
-                    target: 'action_1'
-                },
-                edge_3: {
-                    __type: activities.model.EDGE,
-                    source: 'fork',
-                    target: 'action_2'
-                },
-                edge_4: {
-                    __type: activities.model.EDGE,
-                    source: 'action_1',
-                    target: 'action_3'
-                },
-                edge_5: {
-                    __type: activities.model.EDGE,
-                    source: 'action_2',
-                    target: 'join'
-                },
-                edge_6: {
-                    __type: activities.model.EDGE,
-                    source: 'action_3',
-                    target: 'decision'
-                },
-                edge_7: {
-                    __type: activities.model.EDGE,
-                    source: 'action_3',
-                    target: 'join'
-                },
-                edge_8: {
-                    __type: activities.model.EDGE,
-                    source: 'decision',
-                    target: 'merge'
-                },
-                edge_9: {
-                    __type: activities.model.EDGE,
-                    source: 'join',
-                    target: 'merge'
-                },
-                edge_10: {
-                    __type: activities.model.EDGE,
-                    source: 'merge',
-                    target: 'end'
+        create_test_model_1: function() {
+            var model = {
+                __type: activities.model.ACTIVITY,
+                __name: 'model_1',
+                children: {
+                    start: {
+                        __type: activities.model.INITIAL,
+                        label: 'Start',
+                        description: 'Description Start'
+                    },
+                    fork: {
+                        __type: activities.model.FORK,
+                        label: 'Fork',
+                        description: 'Description Fork'
+                    },
+                    join: {
+                        __type: activities.model.JOIN,
+                        label: 'Join',
+                        description: 'Description Join'
+                    },
+                    decision: {
+                        __type: activities.model.DECISION,
+                        label: 'Decision',
+                        description: 'Description Decision'
+                    },
+                    merge: {
+                        __type: activities.model.MERGE,
+                        label: 'Merge',
+                        description: 'Description Merge'
+                    },
+                    action_1: {
+                        __type: activities.model.ACTION,
+                        label: 'Action 1',
+                        description: 'Description Action 1'
+                    },
+                    action_2: {
+                        __type: activities.model.ACTION,
+                        label: 'Action 2',
+                        description: 'Description Action 2'
+                    },
+                    action_3: {
+                        __type: activities.model.ACTION,
+                        label: 'Action 3',
+                        description: 'Description Action 3'
+                    },
+                    end: {
+                        __type: activities.model.FINAL,
+                        label: 'End',
+                        description: 'Description End'
+                    },
+                    edge_1: {
+                        __type: activities.model.EDGE,
+                        source: 'start',
+                        target: 'fork',
+                        label: 'Go to Fork',
+                        description: 'Description'
+                    },
+                    edge_2: {
+                        __type: activities.model.EDGE,
+                        source: 'fork',
+                        target: 'action_1',
+                        label: 'Go to Action 1',
+                        description: 'Description'
+                    },
+                    edge_3: {
+                        __type: activities.model.EDGE,
+                        source: 'fork',
+                        target: 'action_2',
+                        label: 'Go to Action 2',
+                        description: 'Description'
+                    },
+                    edge_4: {
+                        __type: activities.model.EDGE,
+                        source: 'action_1',
+                        target: 'action_3',
+                        label: 'Go to Action 3',
+                        description: 'Description'
+                    },
+                    edge_5: {
+                        __type: activities.model.EDGE,
+                        source: 'action_2',
+                        target: 'join',
+                        label: 'Go to Join',
+                        description: 'Description'
+                    },
+                    edge_6: {
+                        __type: activities.model.EDGE,
+                        source: 'action_3',
+                        target: 'decision',
+                        label: 'Go to Decision',
+                        description: 'Description'
+                    },
+                    edge_7: {
+                        __type: activities.model.EDGE,
+                        source: 'action_3',
+                        target: 'join',
+                        label: 'Go to Join',
+                        description: 'Description'
+                    },
+                    edge_8: {
+                        __type: activities.model.EDGE,
+                        source: 'decision',
+                        target: 'merge',
+                        label: 'Go to Merge',
+                        description: 'Description'
+                    },
+                    edge_9: {
+                        __type: activities.model.EDGE,
+                        source: 'join',
+                        target: 'merge',
+                        label: 'Go to Merge',
+                        description: 'Description'
+                    },
+                    edge_10: {
+                        __type: activities.model.EDGE,
+                        source: 'merge',
+                        target: 'end',
+                        label: 'Go to End',
+                        description: 'Description'
+                    }
                 }
             }
+            return model;
         },
         
-        // another test model
-        model_2: {
-            __type: activities.model.ACTIVITY,
-            __name: 'model_2',
-            children: {
-                act_a: {
-                    __type: activities.model.INITIAL
-                },
-                dec_a: {
-                    __type: activities.model.DECISION
-                },
-                act_b: {
-                    __type: activities.model.ACTION
-                },
-                act_c: {
-                    __type: activities.model.ACTION
-                },
-                mer_a: {
-                    __type: activities.model.MERGE
-                },
-                act_d: {
-                    __type: activities.model.ACTION
-                },
-                fork_a: {
-                    __type: activities.model.FORK
-                },
-                act_e: {
-                    __type: activities.model.ACTION
-                },
-                act_f: {
-                    __type: activities.model.ACTION
-                },
-                act_g: {
-                    __type: activities.model.ACTION
-                },
-                act_h: {
-                    __type: activities.model.FINAL
-                },
-                e_1: {
-                    __type: activities.model.EDGE,
-                    source: 'act_a',
-                    target: 'dec_a'
-                },
-                e_2: {
-                    __type: activities.model.EDGE,
-                    source: 'dec_a',
-                    target: 'act_b'
-                },
-                e_3: {
-                    __type: activities.model.EDGE,
-                    source: 'dec_a',
-                    target: 'act_c'
-                },
-                e_4: {
-                    __type: activities.model.EDGE,
-                    source: 'act_b',
-                    target: 'mer_a'
-                },
-                e_5: {
-                    __type: activities.model.EDGE,
-                    source: 'act_c',
-                    target: 'mer_a'
-                },
-                e_6: {
-                    __type: activities.model.EDGE,
-                    source: 'mer_a',
-                    target: 'act_d'
-                },
-                e_7: {
-                    __type: activities.model.EDGE,
-                    source: 'act_d',
-                    target: 'fork_a'
-                },
-                e_8: {
-                    __type: activities.model.EDGE,
-                    source: 'fork_a',
-                    target: 'act_e'
-                },
-                e_9: {
-                    __type: activities.model.EDGE,
-                    source: 'fork_a',
-                    target: 'act_f'
-                },
-                e_10: {
-                    __type: activities.model.EDGE,
-                    source: 'fork_a',
-                    target: 'act_g'
-                },
-                e_11: {
-                    __type: activities.model.EDGE,
-                    source: 'act_e',
-                    target: 'act_h'
-                },
-                e_12: {
-                    __type: activities.model.EDGE,
-                    source: 'act_f',
-                    target: 'act_h'
-                },
-                e_13: {
-                    __type: activities.model.EDGE,
-                    source: 'act_g',
-                    target: 'act_h'
-                },
+        create_test_model_2: function() {
+            var model = {
+                __type: activities.model.ACTIVITY,
+                __name: 'model_2',
+                children: {
+                    act_a: {
+                        __type: activities.model.INITIAL,
+                        label: 'Action A',
+                        description: 'Description Action A'
+                    },
+                    dec_a: {
+                        __type: activities.model.DECISION,
+                        label: 'Decision A',
+                        description: 'Description Decision A'
+                    },
+                    act_b: {
+                        __type: activities.model.ACTION,
+                        label: 'Action B',
+                        description: 'Description Action B'
+                    },
+                    act_c: {
+                        __type: activities.model.ACTION,
+                        label: 'Action C',
+                        description: 'Description Action C'
+                    },
+                    mer_a: {
+                        __type: activities.model.MERGE,
+                        label: 'Merge A',
+                        description: 'Description Merge A'
+                    },
+                    act_d: {
+                        __type: activities.model.ACTION,
+                        label: 'Action D',
+                        description: 'Description Action D'
+                    },
+                    fork_a: {
+                        __type: activities.model.FORK,
+                        label: 'Fork A',
+                        description: 'Description Fork A'
+                    },
+                    act_e: {
+                        __type: activities.model.ACTION,
+                        label: 'Action E',
+                        description: 'Description Action E'
+                    },
+                    act_f: {
+                        __type: activities.model.ACTION,
+                        label: 'Action F',
+                        description: 'Description Action F'
+                    },
+                    act_g: {
+                        __type: activities.model.ACTION,
+                        label: 'Action G',
+                        description: 'Description Action G'
+                    },
+                    act_h: {
+                        __type: activities.model.FINAL,
+                        label: 'Final',
+                        description: 'Description Final'
+                    },
+                    e_1: {
+                        __type: activities.model.EDGE,
+                        source: 'act_a',
+                        target: 'dec_a',
+                        label: 'Go to Decision A',
+                        description: 'Description'
+                    },
+                    e_2: {
+                        __type: activities.model.EDGE,
+                        source: 'dec_a',
+                        target: 'act_b',
+                        label: 'Go to Action B',
+                        description: 'Description'
+                    },
+                    e_3: {
+                        __type: activities.model.EDGE,
+                        source: 'dec_a',
+                        target: 'act_c',
+                        label: 'Go to Action C',
+                        description: 'Description'
+                    },
+                    e_4: {
+                        __type: activities.model.EDGE,
+                        source: 'act_b',
+                        target: 'mer_a',
+                        label: 'Go to Merge A',
+                        description: 'Description'
+                    },
+                    e_5: {
+                        __type: activities.model.EDGE,
+                        source: 'act_c',
+                        target: 'mer_a',
+                        label: 'Go to Merge A',
+                        description: 'Description'
+                    },
+                    e_6: {
+                        __type: activities.model.EDGE,
+                        source: 'mer_a',
+                        target: 'act_d',
+                        label: 'Go to Action D',
+                        description: 'Description'
+                    },
+                    e_7: {
+                        __type: activities.model.EDGE,
+                        source: 'act_d',
+                        target: 'fork_a',
+                        label: 'Go to Fork A',
+                        description: 'Description'
+                    },
+                    e_8: {
+                        __type: activities.model.EDGE,
+                        source: 'fork_a',
+                        target: 'act_e',
+                        label: 'Go to Action E',
+                        description: 'Description'
+                    },
+                    e_9: {
+                        __type: activities.model.EDGE,
+                        source: 'fork_a',
+                        target: 'act_f',
+                        label: 'Go to Action F',
+                        description: 'Description'
+                    },
+                    e_10: {
+                        __type: activities.model.EDGE,
+                        source: 'fork_a',
+                        target: 'act_g',
+                        label: 'Go to Action G',
+                        description: 'Description'
+                    },
+                    e_11: {
+                        __type: activities.model.EDGE,
+                        source: 'act_e',
+                        target: 'act_h',
+                        label: 'Go to Action H',
+                        description: 'Description'
+                    },
+                    e_12: {
+                        __type: activities.model.EDGE,
+                        source: 'act_f',
+                        target: 'act_h',
+                        label: 'Go to Action H',
+                        description: 'Description'
+                    },
+                    e_13: {
+                        __type: activities.model.EDGE,
+                        source: 'act_g',
+                        target: 'act_h',
+                        label: 'Go to Action H',
+                        description: 'Description'
+                    },
+                }
             }
+            return model;
         },
         
         run: function() {
             module("activities.model.Model");
             
-            var model = new activities.model.Model(eval(uneval(tests.model)));
+            var model = new activities.model.Model(
+                tests.create_test_model_1());
             
             test("Model.filtered", function() {
                 // equals(11,
@@ -255,9 +343,9 @@
                 equals(source.__name == 'start',
                        true,
                        "source.__name == 'start'");
-                equals(source.__parent == 'model',
+                equals(source.__parent == 'model_1',
                        true,
-                       "source.__parent == 'model'");
+                       "source.__parent == 'model_1'");
             });
             
             test("Model.target", function() {
@@ -268,9 +356,9 @@
                 equals(target.__name == 'fork',
                        true,
                        "target.__name == 'fork'");
-                equals(target.__parent == 'model',
+                equals(target.__parent == 'model_1',
                        true,
-                       "target.__parent == 'model'");
+                       "target.__parent == 'model_1'");
             });
             
             module("activities.ui.Grid");
