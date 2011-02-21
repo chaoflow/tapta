@@ -50,7 +50,7 @@ var demo_editor = null;
             
             /*
              * create uid
-             * http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+             * http://stackoverflow.com/questions/105034/
              */
             createUID: function() {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
@@ -1448,10 +1448,6 @@ var demo_editor = null;
             var y = event.pageY - offset.top;
             recent.x = x;
             recent.y = y;
-            
-            // render diagram
-            // XXX: faster to only render single element
-            //      implies lots of edge cases
             diagram.render();
         },
         
@@ -1520,10 +1516,13 @@ var demo_editor = null;
                 activities.events.MOUSE_DOWN, this, this.unselectAll);
             dispatcher.subscribe(
                 activities.events.MOUSE_DOWN, this, this.doAction);
+            //dispatcher.subscribe(
+            //    activities.events.MOUSE_MOVE, this, this.pan);
             dispatcher.subscribe(
                 activities.events.MOUSE_MOVE, this, this.dnd.drag);
             dispatcher.subscribe(
                 activities.events.MOUSE_UP, this, this.dnd.drop);
+            
         },
         
         /*
@@ -1693,6 +1692,21 @@ var demo_editor = null;
             actions.active = null;
             actions.type = null;
         }
+        
+        /*
+         * activities.events.MOUSE_MOVE
+         */
+/*        pan: function(obj, event) {
+            if (obj.dnd.recent) {
+                return;
+            }
+            var canvas = $(obj.layers.diagram.canvas);
+            var offset = canvas.offset();
+            var x = event.pageX - offset.left;
+            var y = event.pageY - offset.top;
+            var grid = obj.grid;
+            obj.render();
+        }*/
     }
     
     
@@ -1893,13 +1907,22 @@ var demo_editor = null;
     
     activities.ui.Edge = function(diagram) {
         this.triggerColor = null;
-        
+        this.color = '#333333';
+        this.selectedColor = '#bbbbbb';
+        this.selected = false;
+        this.label = null;
+        this.description = null;
         this.source = null;
         this.target = null;
         this.kinks = new Array();
         
         this.diagram = diagram;
         this.diagram.add(this);
+        
+        diagram.dispatcher.subscribe(
+            activities.events.MOUSE_IN, this, activities.events.setCursor);
+        diagram.dispatcher.subscribe(
+            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
     activities.ui.Edge.prototype.renderPath = function(context) {
@@ -1915,6 +1938,7 @@ var demo_editor = null;
             context.lineTo(kink.x, kink.y);
         }
         context.lineTo(target.x, target.y);
+        context.closePath();
     }
     
     activities.ui.Edge.prototype.render = function() {
@@ -1922,7 +1946,7 @@ var demo_editor = null;
         var context = this.diagram.layers.control.context;
         context.save();
         context.strokeStyle = this.triggerColor;
-        context.lineWidth = 2;
+        context.lineWidth = 3;
         this.renderPath(context);
         context.stroke();
         context.restore();
@@ -1930,11 +1954,24 @@ var demo_editor = null;
         // diagram layer
         context = this.diagram.layers.diagram.context;
         context.save();
-        context.strokeStyle = '#000000';
-        context.lineWidth = 2;
+        if (!this.selected) {
+            context.strokeStyle = this.color;
+        } else {
+            context.strokeStyle = this.selectedColor;
+        }
+        context.lineWidth = 3;
         this.renderPath(context);
         context.stroke();
         context.restore();
+        
+        // XXX: exact drawing of edges, then no reload
+        if (this.selected) {
+            var diagram = this.diagram;
+            var source = diagram.elements[diagram.r_mapping[this.source]];
+            source.render();
+            var target = diagram.elements[diagram.r_mapping[this.target]];
+            target.render();
+        }
     }
     
     
