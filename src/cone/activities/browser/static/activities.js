@@ -162,6 +162,36 @@ var demo_editor = null;
                 diagram.editor.properties.display(obj);
             },
             
+            // event utils
+            
+            /*
+             * bind diagram element default events
+             */
+            bindElementDefaults: function(diagram, element) {
+                // event subscription
+                var dispatcher = diagram.dispatcher;
+                dispatcher.subscribe(
+                    activities.events.MOUSE_IN,
+                    element,
+                    activities.events.setCursor);
+                dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN,
+                    element,
+                    activities.events.setSelected);
+                dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN,
+                    element,
+                    diagram.dnd.dragOn);
+                dispatcher.subscribe(
+                    activities.events.MOUSE_MOVE,
+                    element,
+                    diagram.dnd.drag);
+                dispatcher.subscribe(
+                    activities.events.MOUSE_UP,
+                    element,
+                    diagram.dnd.drop);
+            },
+            
             /*
              * events status message
              */
@@ -1297,11 +1327,53 @@ var demo_editor = null;
             // fill grid
             this.fillGrid();
             
+            // arrange XY positions
+            this.diagram.grid.arrange();
+            
             // render diagram
             this.diagram.render();
         }
     }
     
+    
+    // ************************************************************************
+    // activities.ui.DnD
+    // ************************************************************************
+    
+    activities.ui.DnD = function() {
+        this.recent = null;
+    }
+    
+    activities.ui.DnD.prototype = {
+        
+        dragOn: function(obj, event) {
+            obj.diagram.dnd.recent = obj;
+        },
+        
+        drag: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            var recent = diagram.dnd.recent;
+            if (!recent) {
+                return;
+            }
+            var canvas = $(diagram.layers.diagram.canvas);
+            var offset = canvas.offset();
+            var x = event.pageX - offset.left;
+            var y = event.pageY - offset.top;
+            recent.x = x;
+            recent.y = y;
+            
+            // render diagram
+            // XXX: faster to only render single element
+            //      implies lots of edge cases
+            diagram.render();
+        },
+        
+        drop: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            diagram.dnd.recent = null;
+        },
+    }
     
     // ************************************************************************
     // activities.ui.Diagram
@@ -1314,6 +1386,7 @@ var demo_editor = null;
         this.editor = editor;
         
         this.grid = new activities.ui.Grid(editor.model);
+        this.dnd = new activities.ui.DnD();
         
         // trigger color to diagram element
         this.elements = new Object();
@@ -1359,13 +1432,17 @@ var demo_editor = null;
                 activities.events.MOUSE_IN, this, this.setCursor);
             dispatcher.subscribe(
                 activities.events.MOUSE_DOWN, this, this.unselectAll);
+            dispatcher.subscribe(
+                activities.events.MOUSE_MOVE, this, this.dnd.drag);
+            dispatcher.subscribe(
+                activities.events.MOUSE_UP, this, this.dnd.drop);
         },
         
         /*
          * iterate over elements of diagram and call render function
          */
         render: function() {
-            this.grid.arrange();
+            //this.grid.arrange();
             
             // clear control layer
             var context = this.layers.control.context;
@@ -1511,12 +1588,7 @@ var demo_editor = null;
         this.diagram = diagram;
         this.diagram.add(this);
         
-        // event subscription
-        var dispatcher = diagram.dispatcher;
-        dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
-        dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+        activities.events.bindElementDefaults(diagram, this);
     }
     
     activities.ui.Initial.prototype.init = activities.ui.initDiagramElem;
@@ -1565,12 +1637,7 @@ var demo_editor = null;
         this.diagram = diagram;
         this.diagram.add(this);
         
-        // event subscription
-        var dispatcher = diagram.dispatcher;
-        dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
-        dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+        activities.events.bindElementDefaults(diagram, this);
     }
     
     activities.ui.Final.prototype.init = activities.ui.initDiagramElem;
@@ -1622,12 +1689,7 @@ var demo_editor = null;
         this.diagram = diagram;
         this.diagram.add(this);
         
-        // event subscription
-        var dispatcher = diagram.dispatcher;
-        dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
-        dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+        activities.events.bindElementDefaults(diagram, this);
     }
     
     activities.ui.Action.prototype.init = activities.ui.initDiagramElem;
@@ -1645,12 +1707,7 @@ var demo_editor = null;
         this.diagram = diagram;
         this.diagram.add(this);
         
-        // event subscription
-        var dispatcher = diagram.dispatcher;
-        dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
-        dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+        activities.events.bindElementDefaults(diagram, this);
     }
     
     activities.ui.Decision.prototype.init = activities.ui.initDiagramElem;
@@ -1668,12 +1725,7 @@ var demo_editor = null;
         this.diagram = diagram;
         this.diagram.add(this);
         
-        // event subscription
-        var dispatcher = diagram.dispatcher;
-        dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
-        dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+        activities.events.bindElementDefaults(diagram, this);
     }
     
     activities.ui.Merge.prototype.init = activities.ui.initDiagramElem;
@@ -1691,12 +1743,7 @@ var demo_editor = null;
         this.diagram = diagram;
         this.diagram.add(this);
         
-        // event subscription
-        var dispatcher = diagram.dispatcher;
-        dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
-        dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+        activities.events.bindElementDefaults(diagram, this);
     }
     
     activities.ui.Join.prototype.init = activities.ui.initDiagramElem;
@@ -1714,12 +1761,7 @@ var demo_editor = null;
         this.diagram = diagram;
         this.diagram.add(this);
         
-        // event subscription
-        var dispatcher = diagram.dispatcher;
-        dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
-        dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
+        activities.events.bindElementDefaults(diagram, this);
     }
     
     activities.ui.Fork.prototype.init = activities.ui.initDiagramElem;
