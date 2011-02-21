@@ -575,75 +575,18 @@ var demo_editor = null;
             // utils
             
             doAction: function(editor, event) {
-                var actions = editor.actions;
-                switch(actions.active) {
+                switch(editor.actions.active) {
                     case activities.actions.ADD_DIAGRAM_EDGE: {
                         break;
                     }
                     case activities.actions.ADD_DIAGRAM_ELEMENT: {
-                        
-                        // XXX: move to model as add funtion and simplify
-                        var uid = activities.utils.createUID();
-                        var model = editor.model;
-                        if (!model.context.children) {
-                            model.context.children = new Object();
-                        }
-                        model.context.children[uid] = new Object();
-                        var node = model.context.children[uid];
-                        node.__name = uid;
-                        node.__parent = model.context.__name;
-                        
-                        switch(actions.type) {
-                            case activities.model.INITIAL: {
-                                node.__type = activities.model.INITIAL;
-                                node.label = 'New Initial';
-                                break;
-                            }
-                            case activities.model.FINAL: {
-                                node.__type = activities.model.FINAL;
-                                node.label = 'New Final';
-                                break;
-                            }
-                            case activities.model.ACTION: {
-                                node.__type = activities.model.ACTION;
-                                node.label = 'New Action';
-                                break;
-                            }
-                            case activities.model.FORK: {
-                                node.__type = activities.model.FORK;
-                                node.label = 'New Fork';
-                                break;
-                            }
-                            case activities.model.JOIN: {
-                                node.__type = activities.model.JOIN;
-                                node.label = 'New Join';
-                                break;
-                            }
-                            case activities.model.DECISION: {
-                                node.__type = activities.model.DECISION;
-                                node.label = 'New Decision';
-                                break;
-                            }
-                            case activities.model.MERGE: {
-                                node.__type = activities.model.DECISION;
-                                node.label = 'New Merge';
-                                break;
-                            }
-                        }
-                        
+                        var node = editor.model.create(editor.actions.type);
+                        var elem = editor.diagram.getElement(node);
                         var canvas = $(editor.diagram.layers.diagram.canvas);
                         var offset = canvas.offset();
-                        var x = event.pageX - offset.left;
-                        var y = event.pageY - offset.top;
-                        
-                        var elem = editor.diagram.getElement(node);
-                        elem.x = x;
-                        elem.y = y;
-                        elem.label = node.label;
-                        elem.description = '';
-                        
+                        var x = node.x = elem.x = event.pageX - offset.left;
+                        var y = node.y = elem.y = event.pageY - offset.top;
                         editor.diagram.render();
-                        
                         break;
                     }
                     case activities.actions.DELETE_DIAGRAM_ELEMENT: {
@@ -718,6 +661,36 @@ var demo_editor = null;
                 throw "Invalid model. More than one initial node found";
             }
             return initial[0];
+        },
+        
+        /*
+         * Create new child in parent by type. if parent is null, this.context
+         * is used.
+         */
+        create: function(type, parent) {
+            var context;
+            if (parent) {
+                context = parent;
+            } else {
+                context = this.context;
+            }
+            
+            // create UID
+            var uid = activities.utils.createUID();
+            
+            // create children container if not exists
+            if (!context.children) {
+                context.children = new Object();
+            }
+            
+            // create child node in context.children and return created node
+            context.children[uid] = new Object();
+            var node = context.children[uid];
+            node.__name = uid;
+            node.__parent = context.__name;
+            node.__type = type;
+            node.label = 'New ' + activities.model.TYPE_NAMES[type];
+            return node;
         },
         
         /*
