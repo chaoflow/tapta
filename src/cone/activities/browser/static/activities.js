@@ -358,10 +358,10 @@ var global_mousedown = 0;
                 if (shadow) {
                     activities.ui.shadowOn(context);
                 }
-                var w_2 = width / 2;
-                var h_2 = height / 2;
+                var x = width / 2;
+                var y = height / 2;
                 activities.ui.roundedRect(
-                    context, w_2 * -1, h_2 * -1, w_2, h_2, 3);
+                    context, x * -1, y * -1, x, y, 3);
                 context.fill();
                 if (shadow) {
                     activities.ui.shadowOff(context);
@@ -378,10 +378,10 @@ var global_mousedown = 0;
                                  height) {
                 context.strokeStyle = color;
                 context.lineWidth = lineWidth;
-                var w_2 = width / 2;
-                var h_2 = height / 2;
+                var x = width / 2;
+                var y = height / 2;
                 activities.ui.roundedRect(
-                    context, w_2 * -1, h_2 * -1, w_2, h_2, 3);
+                    context, x * -1, y * -1, x, y, 3);
                 context.stroke();
             },
             
@@ -558,21 +558,22 @@ var global_mousedown = 0;
                 if (this.rotation > 0) {
                     angle -= this.rotation;
                 }
-                var x_diff, y_diff, tan;
-                if (angle > marker) {
+                var x_diff, y_diff;
+                if (angle >= marker) {
                     angle = 90 - angle;
+                    // XXX: offset by cos/sin
+                    // ak = height / 2; //+ this.edgeOffset;
                     ak = height / 2 + this.edgeOffset;
                     gk = ak * Math.tan(Math.PI * angle / 180.0);
                     x_diff = gk;
                     y_diff = ak;
-                } else if (angle < marker) {
+                } else {
+                    // XXX: offset by cos/sin
+                    // ak = width / 2; // + this.edgeOffset;
                     ak = width / 2 + this.edgeOffset;
                     gk = ak * Math.tan(Math.PI * angle / 180.0);
                     x_diff = ak;
                     y_diff = gk;
-                } else if (angle == marker) {
-                    x_diff = width / 2 + this.edgeOffset;
-                    y_diff = height / 2 + this.edgeOffset;
                 }
                 if (this.rotation > 0) {
                     var cos = Math.cos(Math.PI * this.rotation / 180.0);
@@ -1701,7 +1702,8 @@ var global_mousedown = 0;
             // clear diagram layer
             var context = this.layers.diagram.context;
             context.save();
-            context.clearRect(0, 0, this.width, this.height);
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, this.width, this.height);
             context.restore();
             
             var elem, selected;
@@ -2136,25 +2138,25 @@ var global_mousedown = 0;
             var diagram = this.diagram;
             var source = diagram.elements[diagram.r_mapping[this.source]];
             var target = diagram.elements[diagram.r_mapping[this.target]];
-            var t_x, t_y;
+            var x, y;
             if (this.kinks.length != 0) {
-                t_x = this.kinks[0].x;
-                t_y = this.kinks[0].y;
+                x = this.kinks[0].x;
+                y = this.kinks[0].y;
             } else {
-                t_x = target.x;
-                t_y = target.y;
+                x = target.x;
+                y = target.y;
             }
-            this._start = source.translateEdge(t_x, t_y);
+            this._start = source.translateEdge(x, y);
             
             if (this.kinks.length != 0) {
                 var last = this.kinks.length - 1;
-                t_x = this.kinks[last].x;
-                t_y = this.kinks[last].y;
+                x = this.kinks[last].x;
+                y = this.kinks[last].y;
             } else {
-                t_x = source.x;
-                t_y = source.y;
+                x = source.x;
+                y = source.y;
             }
-            this._end = target.translateEdge(t_x, t_y);
+            this._end = target.translateEdge(x, y);
         },
         
         renderPath: function(context) {
@@ -2167,6 +2169,11 @@ var global_mousedown = 0;
             }
             context.lineTo(this._end[0], this._end[1]);
             context.closePath();
+        },
+        
+        renderRoot: function(context) {
+            context.translate(this._start[0], this._start[1]);
+            activities.ui.circle(context, this.lineWidth);
         },
         
         renderArrow: function(context) {
@@ -2188,7 +2195,7 @@ var global_mousedown = 0;
             var context = this.diagram.layers.control.context;
             context.save();
             context.strokeStyle = this.triggerColor;
-            context.lineWidth = this.lineWidth;
+            context.lineWidth = this.lineWidth + 3;
             context.lineCap = 'round';
             this.renderPath(context);
             context.stroke();
@@ -2206,6 +2213,20 @@ var global_mousedown = 0;
             context.lineCap = 'round';
             this.renderPath(context);
             context.stroke();
+            context.restore();
+            
+            // root
+            context.save();
+            if (!this.selected) {
+                context.strokeStyle = this.color;
+                context.fillStyle = this.color;
+            } else {
+                context.strokeStyle = this.selectedColor;
+                context.fillStyle = this.selectedColor;
+            }
+            context.lineWidth = 1;
+            this.renderRoot(context);
+            context.fill();
             context.restore();
             
             // arrow
