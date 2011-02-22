@@ -424,6 +424,7 @@ var demo_editor = null;
                 this.width = width_or_radius;
                 this.height = height;
                 
+                this.edgeOffset = 5;
                 this.borderWidth = 2;
                 this.fillColor = '#edf7ff';
                 this.borderColor = '#b5d9ea';
@@ -493,7 +494,7 @@ var demo_editor = null;
                 var gk = y - this.y;
                 var ak = this.x - x;
                 var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
-                var rad = this.radius;
+                var rad = this.radius + this.edgeOffset;
                 var cos = Math.cos(Math.PI * angle / 180.0);
                 var sin = Math.sin(Math.PI * angle / 180.0);
                 var x_diff = rad * cos;
@@ -524,18 +525,18 @@ var demo_editor = null;
                 var x_diff, y_diff, tan;
                 if (angle > marker) {
                     angle = 90 - angle;
-                    ak = height / 2;
+                    ak = height / 2 + this.edgeOffset;
                     gk = ak * Math.tan(Math.PI * angle / 180.0);
                     x_diff = gk;
                     y_diff = ak;
                 } else if (angle < marker) {
-                    ak = width / 2;
+                    ak = width / 2 + this.edgeOffset;
                     gk = ak * Math.tan(Math.PI * angle / 180.0);
                     x_diff = ak;
                     y_diff = gk;
                 } else if (angle == marker) {
-                    x_diff = width / 2;
-                    y_diff = height / 2;
+                    x_diff = width / 2 + this.edgeOffset;
+                    y_diff = height / 2 + this.edgeOffset;
                 }
                 if (this.rotation > 0) {
                     var cos = Math.cos(Math.PI * this.rotation / 180.0);
@@ -2129,12 +2130,12 @@ var demo_editor = null;
             context.save();
             if (!this.selected) {
                 context.strokeStyle = this.color;
-                context.fillColor = this.color;
+                context.fillStyle = this.color;
             } else {
                 context.strokeStyle = this.selectedColor;
-                context.fillColor = this.selectedColor;
+                context.fillStyle = this.selectedColor;
             }
-            context.lineWidth = 2;
+            context.lineWidth = this.lineWidth;
             context.lineCap = 'round';
             this.renderArrow(context);
             context.stroke();
