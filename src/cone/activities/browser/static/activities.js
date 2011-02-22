@@ -10,6 +10,9 @@
 
 var demo_editor = null;
 
+// dnd related
+var global_mousedown = 0;
+
 (function($) {
     
     $(document).ready(function() {
@@ -1525,6 +1528,17 @@ var demo_editor = null;
     
     activities.ui.DnD = function() {
         this.recent = null;
+        // XXX: multi editor support
+        var dnd = this;
+        $(document).unbind().bind('mousedown', function(event) {
+            ++global_mousedown;
+        });
+        $(document).unbind().bind('mouseup', function(event) {
+            --global_mousedown;
+            if (global_mousedown <= 0) {
+                dnd.recent = null;
+            }
+        });
     }
     
     activities.ui.DnD.prototype = {
@@ -1535,6 +1549,10 @@ var demo_editor = null;
         
         drag: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
+            if (!global_mousedown) {
+                diagram.dnd.recent = null;
+                return;
+            }
             var recent = diagram.dnd.recent;
             if (!recent) {
                 return;
