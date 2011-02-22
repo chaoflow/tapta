@@ -211,7 +211,7 @@ var demo_editor = null;
                 var elem = new activities.ui.Edge(diagram);
                 elem.source = node.source;
                 elem.target = node.target;
-                diagram.map(elem, node);
+                diagram.map(node, elem);
                 actions.active = null;
                 actions.type = null;
                 editor.diagram.render();
