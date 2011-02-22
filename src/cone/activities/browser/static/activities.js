@@ -187,6 +187,36 @@ var demo_editor = null;
                 diagram.editor.properties.display(obj);
             },
             
+            /*
+             * activities.events.MOUSE_DOWN
+             */
+            doElementAction: function(obj, event) {
+                var diagram = obj.diagram;
+                var editor = diagram.editor;
+                var actions = editor.actions;
+                if (actions.active != activities.actions.ADD_DIAGRAM_EDGE) {
+                    return;
+                }
+                var payload = actions.payload;
+                if (payload[1] == null) {
+                    var node_name = diagram.mapping[obj.triggerColor];
+                    payload[1] = node_name;
+                    return;
+                }
+                var node_name = diagram.mapping[obj.triggerColor];
+                payload[2] = node_name;
+                var node = editor.model.create(payload[0]);
+                node.source = payload[1];
+                node.target = payload[2];
+                var elem = new activities.ui.Edge(diagram);
+                elem.source = node.source;
+                elem.target = node.target;
+                diagram.map(elem, node);
+                actions.active = null;
+                actions.type = null;
+                editor.diagram.render();
+            },
+            
             // event utils
             
             /*
@@ -203,6 +233,10 @@ var demo_editor = null;
                     activities.events.MOUSE_DOWN,
                     element,
                     activities.events.setSelected);
+                dispatcher.subscribe(
+                    activities.events.MOUSE_DOWN,
+                    element,
+                    activities.events.doElementAction);
                 dispatcher.subscribe(
                     activities.events.MOUSE_DOWN,
                     element,
@@ -591,49 +625,49 @@ var demo_editor = null;
             initial_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.type = activities.model.INITIAL;
+                actions.payload = activities.model.INITIAL;
             },
             
             final_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.type = activities.model.FINAL;
+                actions.payload = activities.model.FINAL;
             },
             
             action_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.type = activities.model.ACTION;
+                actions.payload = activities.model.ACTION;
             },
             
             join_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.type = activities.model.JOIN;
+                actions.payload = activities.model.JOIN;
             },
             
             fork_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.type = activities.model.FORK;
+                actions.payload = activities.model.FORK;
             },
             
             merge_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.type = activities.model.MERGE;
+                actions.payload = activities.model.MERGE;
             },
             
             decision_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.type = activities.model.DECISION;
+                actions.payload = activities.model.DECISION;
             },
             
             edge: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
                 actions.active = activities.actions.ADD_DIAGRAM_EDGE;
-                actions.type = activities.model.EDGE;
+                actions.payload = [activities.model.EDGE, null, null];
             },
             
             debug: function(name, element, event) {
@@ -652,29 +686,6 @@ var demo_editor = null;
             
             actions_object: function(name) {
                 return $('#' + name + ' canvas.diagram').data('actions');
-            },
-            
-            // utils
-            
-            doAction: function(editor, event) {
-                switch(editor.actions.active) {
-                    case activities.actions.ADD_DIAGRAM_EDGE: {
-                        break;
-                    }
-                    case activities.actions.ADD_DIAGRAM_ELEMENT: {
-                        var node = editor.model.create(editor.actions.type);
-                        var elem = editor.diagram.getElement(node);
-                        var canvas = $(editor.diagram.layers.diagram.canvas);
-                        var offset = canvas.offset();
-                        var x = node.x = elem.x = event.pageX - offset.left;
-                        var y = node.y = elem.y = event.pageY - offset.top;
-                        editor.diagram.render();
-                        break;
-                    }
-                    case activities.actions.DELETE_DIAGRAM_ELEMENT: {
-                        break;
-                    }
-                }
             }
         }
     }
@@ -1770,13 +1781,21 @@ var demo_editor = null;
          * activities.events.MOUSE_DOWN
          */
         doAction: function(obj, event) {
-            var actions = activities.actions.actions_object(obj.editor.name);
-            if (actions.active == null) {
+            var editor = obj.editor;
+            //var actions = activities.actions.actions_object(obj.editor.name);
+            var actions = editor.actions;
+            if (actions.active != activities.actions.ADD_DIAGRAM_ELEMENT) {
                 return;
             }
-            activities.actions.doAction(obj.editor, event);
+            var node = editor.model.create(editor.actions.payload);
+            var elem = editor.diagram.getElement(node);
+            var canvas = $(editor.diagram.layers.diagram.canvas);
+            var offset = canvas.offset();
+            var x = node.x = elem.x = event.pageX - offset.left;
+            var y = node.y = elem.y = event.pageY - offset.top;
             actions.active = null;
             actions.type = null;
+            editor.diagram.render();
         }
         
         /*
