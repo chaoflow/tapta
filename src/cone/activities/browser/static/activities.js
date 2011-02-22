@@ -415,6 +415,9 @@ var demo_editor = null;
                 this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
+                //if (!rotation) {
+                //    rotation = 0;
+                //}
                 this.rotation = rotation;
                 
                 // if circle
@@ -494,8 +497,8 @@ var demo_editor = null;
                 var ak = this.x - x;
                 var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
                 var rad = this.radius;
-                var cos = Math.cos(Math.PI * angle / 180.0)
-                var sin = Math.sin(Math.PI * angle / 180.0)
+                var cos = Math.cos(Math.PI * angle / 180.0);
+                var sin = Math.sin(Math.PI * angle / 180.0);
                 var x_diff = rad * cos;
                 var y_diff = rad * sin;
                 return activities.ui.translateEdge(this, x, y, x_diff, y_diff);
@@ -516,6 +519,9 @@ var demo_editor = null;
                 gk = y - this.y;
                 ak = this.x - x;
                 var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+                if (this.rotation > 0) {
+                    angle -= this.rotation;
+                }
                 var x_diff, y_diff, tan;
                 if (angle > marker) {
                     angle = 90 - angle;
@@ -531,6 +537,14 @@ var demo_editor = null;
                 } else if (angle == marker) {
                     x_diff = width / 2;
                     y_diff = height / 2;
+                }
+                if (this.rotation > 0) {
+                    var cos = Math.cos(Math.PI * this.rotation / 180.0);
+                    var sin = Math.sin(Math.PI * this.rotation / 180.0);
+                    var x_new = x_diff * cos - y_diff * sin;
+                    var y_new = y_diff * cos + x_diff * sin;
+                    x_diff = x_new;
+                    y_diff = y_new;
                 }
                 return activities.ui.translateEdge(this, x, y, x_diff, y_diff);
             }
@@ -1932,9 +1946,7 @@ var demo_editor = null;
         
         init: activities.ui.initDiagramElem,
         
-        translateEdge: function(x, y){
-            return [this.x, this.y];
-        },
+        translateEdge: activities.ui.translateRectEdge,
         
         render: activities.ui.renderRectElem
     }
@@ -1957,9 +1969,7 @@ var demo_editor = null;
         
         init: activities.ui.initDiagramElem,
         
-        translateEdge: function(x, y){
-            return [this.x, this.y];
-        },
+        translateEdge: activities.ui.translateRectEdge,
         
         render: activities.ui.renderRectElem
     }
