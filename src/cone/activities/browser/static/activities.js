@@ -391,6 +391,21 @@ var demo_editor = null;
                 context.fillText(label, 0, 0, width);
             },
             
+            translateEdge: function(elem, x, y, x_diff, y_diff) {
+                if (x - elem.x >= 0 && y - elem.y >= 0) {
+                    return [elem.x + x_diff, elem.y + y_diff];
+                }
+                if (x - elem.x >= 0 && y - elem.y <= 0) {
+                    return [elem.x + x_diff, elem.y - y_diff];
+                }
+                if (x - elem.x <= 0 && y - elem.y <= 0) {
+                    return [elem.x - x_diff, elem.y - y_diff];
+                }
+                if (x - elem.x <= 0 && y - elem.y >= 0) {
+                    return [elem.x - x_diff, elem.y + y_diff];
+                }
+            },
+            
             // diagram element agnostic. must be set on element
             
             /*
@@ -477,24 +492,47 @@ var demo_editor = null;
             translateCircleEdge: function(x, y) {
                 var gk = y - this.y;
                 var ak = this.x - x;
-                var alpha = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+                var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
                 var rad = this.radius;
-                var cos = Math.cos(Math.PI * alpha / 180.0)
-                var sin = Math.sin(Math.PI * alpha / 180.0)
+                var cos = Math.cos(Math.PI * angle / 180.0)
+                var sin = Math.sin(Math.PI * angle / 180.0)
                 var x_diff = rad * cos;
                 var y_diff = rad * sin;
-                if (x - this.x >= 0 && y - this.y >= 0) {
-                    return [this.x + x_diff, this.y + y_diff];
+                return activities.ui.translateEdge(this, x, y, x_diff, y_diff);
+            },
+            
+            /*
+             * Translate element coordinate for edge source by given following
+             * point coordinate.
+             *
+             * Translate for rect element.
+             */
+            translateRectEdge: function(x, y) {
+                var width = this.width;
+                var height = this.height;
+                var gk = height / 2;
+                var ak = width / 2;
+                var marker = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+                gk = y - this.y;
+                ak = this.x - x;
+                var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+                var x_diff, y_diff, tan;
+                if (angle > marker) {
+                    angle = 90 - angle;
+                    ak = height / 2;
+                    gk = ak * Math.tan(Math.PI * angle / 180.0);
+                    x_diff = gk;
+                    y_diff = ak;
+                } else if (angle < marker) {
+                    ak = width / 2;
+                    gk = ak * Math.tan(Math.PI * angle / 180.0);
+                    x_diff = ak;
+                    y_diff = gk;
+                } else if (angle == marker) {
+                    x_diff = width / 2;
+                    y_diff = height / 2;
                 }
-                if (x - this.x >= 0 && y - this.y <= 0) {
-                    return [this.x + x_diff, this.y - y_diff];
-                }
-                if (x - this.x <= 0 && y - this.y <= 0) {
-                    return [this.x - x_diff, this.y - y_diff];
-                }
-                if (x - this.x <= 0 && y - this.y >= 0) {
-                    return [this.x - x_diff, this.y + y_diff];
-                }
+                return activities.ui.translateEdge(this, x, y, x_diff, y_diff);
             }
         },
         
@@ -876,32 +914,36 @@ var demo_editor = null;
         this.renderer = null;
     }
     
-    activities.ui.Editor.prototype.init = function() {
-        try {
-            var canvas = $(this.renderer.diagram.layers.diagram.canvas);
-            canvas.data('dispatcher', null);
-        } catch (err) {}
+    activities.ui.Editor.prototype = {
         
-        this.actions = new activities.ui.Actions(this);
-        this.properties = new activities.ui.Properties(this);
+        init: function() {
+            try {
+                var canvas = $(this.renderer.diagram.layers.diagram.canvas);
+                canvas.data('dispatcher', null);
+            } catch (err) {}
+            
+            this.actions = new activities.ui.Actions(this);
+            this.properties = new activities.ui.Properties(this);
+            
+            this.diagram = new activities.ui.Diagram(this);
+            this.diagram.bind();
+            
+            this.renderer = new activities.ui.TierRenderer(this);
+            this.renderer.render();
+            
+            this.properties.display(this.diagram);
+        },
         
-        this.diagram = new activities.ui.Diagram(this);
-        this.diagram.bind();
+        newDiagram: function() {
+            this.model = new activities.model.Model(null);
+            this.init();
+        },
         
-        this.renderer = new activities.ui.TierRenderer(this);
-        this.renderer.render();
+        openDiagram: function(model){
+            this.model = new activities.model.Model(model);
+            this.init();
+        }
         
-        this.properties.display(this.diagram);
-    }
-    
-    activities.ui.Editor.prototype.newDiagram = function() {
-        this.model = new activities.model.Model(null);
-        this.init();
-    }
-    
-    activities.ui.Editor.prototype.openDiagram = function(model){
-        this.model = new activities.model.Model(model);
-        this.init();
     }
     
     
@@ -1752,43 +1794,45 @@ var demo_editor = null;
         activities.events.bindElementDefaults(diagram, this);
     }
     
-    activities.ui.Initial.prototype.init = activities.ui.initDiagramElem;
-    
-    activities.ui.Initial.prototype.render = function() {
-        // control layer
-        var context = this.diagram.layers.control.context;
-        context.save();
-        context.translate(this.x, this.y);
-        activities.ui.fillCircle(context,
-                                 this.triggerColor,
-                                 this.radius);
-        context.restore();
+    activities.ui.Initial.prototype = {
         
-        // diagram layer
-        var fillColor, borderColor;
-        if (!this.selected) {
-            fillColor = this.fillColor;
-            borderColor = this.borderColor;
-        } else {
-            fillColor = this.selectedFillColor;
-            borderColor = this.selectedBorderColor;
+        init: activities.ui.initDiagramElem,
+        
+        translateEdge: activities.ui.translateCircleEdge,
+        
+        render: function() {
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.translate(this.x, this.y);
+            activities.ui.fillCircle(context,
+                                     this.triggerColor,
+                                     this.radius);
+            context.restore();
+            
+            // diagram layer
+            var fillColor, borderColor;
+            if (!this.selected) {
+                fillColor = this.fillColor;
+                borderColor = this.borderColor;
+            } else {
+                fillColor = this.selectedFillColor;
+                borderColor = this.selectedBorderColor;
+            }
+            context = this.diagram.layers.diagram.context;
+            context.save();
+            context.translate(this.x, this.y);
+            activities.ui.fillCircle(context,
+                                     fillColor,
+                                     this.radius,
+                                     true);
+            activities.ui.strokeCircle(context,
+                                       borderColor,
+                                       this.radius,
+                                       this.borderWidth);
+            context.restore();
         }
-        context = this.diagram.layers.diagram.context;
-        context.save();
-        context.translate(this.x, this.y);
-        activities.ui.fillCircle(context,
-                                 fillColor,
-                                 this.radius,
-                                 true);
-        activities.ui.strokeCircle(context,
-                                   borderColor,
-                                   this.radius,
-                                   this.borderWidth);
-        context.restore();
     }
-    
-    activities.ui.Initial.prototype.translateEdge = 
-        activities.ui.translateCircleEdge;
     
     
     // ************************************************************************
@@ -1804,45 +1848,47 @@ var demo_editor = null;
         activities.events.bindElementDefaults(diagram, this);
     }
     
-    activities.ui.Final.prototype.init = activities.ui.initDiagramElem;
-    
-    activities.ui.Final.prototype.render = function() {
-        // control layer
-        var context = this.diagram.layers.control.context;
-        context.save();
-        context.translate(this.x, this.y);
-        activities.ui.fillCircle(context,
-                                 this.triggerColor,
-                                 this.radius);
-        context.restore();
+    activities.ui.Final.prototype = {
         
-        // diagram layer
-        var fillColor, borderColor;
-        if (!this.selected) {
-            fillColor = this.fillColor;
-            borderColor = this.borderColor;
-        } else {
-            fillColor = this.selectedFillColor;
-            borderColor = this.selectedBorderColor;
+        init: activities.ui.initDiagramElem,
+        
+        translateEdge: activities.ui.translateCircleEdge,
+        
+        render: function() {
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.translate(this.x, this.y);
+            activities.ui.fillCircle(context,
+                                     this.triggerColor,
+                                     this.radius);
+            context.restore();
+            
+            // diagram layer
+            var fillColor, borderColor;
+            if (!this.selected) {
+                fillColor = this.fillColor;
+                borderColor = this.borderColor;
+            } else {
+                fillColor = this.selectedFillColor;
+                borderColor = this.selectedBorderColor;
+            }
+            context = this.diagram.layers.diagram.context;
+            context.save();
+            context.translate(this.x, this.y);
+            activities.ui.fillCircle(context,
+                                     borderColor,
+                                     this.radius,
+                                     true);
+            activities.ui.fillCircle(context,
+                                     fillColor,
+                                     this.radius - this.borderWidth);
+            activities.ui.fillCircle(context,
+                                     borderColor,
+                                     this.radius / 2);
+            context.restore();
         }
-        context = this.diagram.layers.diagram.context;
-        context.save();
-        context.translate(this.x, this.y);
-        activities.ui.fillCircle(context,
-                                 borderColor,
-                                 this.radius,
-                                 true);
-        activities.ui.fillCircle(context,
-                                 fillColor,
-                                 this.radius - this.borderWidth);
-        activities.ui.fillCircle(context,
-                                 borderColor,
-                                 this.radius / 2);
-        context.restore();
     }
-    
-    activities.ui.Final.prototype.translateEdge = 
-        activities.ui.translateCircleEdge;
     
     
     // ************************************************************************
@@ -1859,12 +1905,13 @@ var demo_editor = null;
         activities.events.bindElementDefaults(diagram, this);
     }
     
-    activities.ui.Action.prototype.init = activities.ui.initDiagramElem;
-    
-    activities.ui.Action.prototype.render = activities.ui.renderRectElem;
-    
-    activities.ui.Action.prototype.translateEdge = function(x, y){
-        return [this.x, this.y];
+    activities.ui.Action.prototype = {
+        
+        init: activities.ui.initDiagramElem,
+        
+        translateEdge: activities.ui.translateRectEdge,
+        
+        render: activities.ui.renderRectElem
     }
     
     
@@ -1881,12 +1928,15 @@ var demo_editor = null;
         activities.events.bindElementDefaults(diagram, this);
     }
     
-    activities.ui.Decision.prototype.init = activities.ui.initDiagramElem;
-    
-    activities.ui.Decision.prototype.render = activities.ui.renderRectElem;
-    
-    activities.ui.Decision.prototype.translateEdge = function(x, y){
-        return [this.x, this.y];
+    activities.ui.Decision.prototype = {
+        
+        init: activities.ui.initDiagramElem,
+        
+        translateEdge: function(x, y){
+            return [this.x, this.y];
+        },
+        
+        render: activities.ui.renderRectElem
     }
     
     
@@ -1903,12 +1953,15 @@ var demo_editor = null;
         activities.events.bindElementDefaults(diagram, this);
     }
     
-    activities.ui.Merge.prototype.init = activities.ui.initDiagramElem;
-    
-    activities.ui.Merge.prototype.render = activities.ui.renderRectElem;
-    
-    activities.ui.Merge.prototype.translateEdge = function(x, y){
-        return [this.x, this.y];
+    activities.ui.Merge.prototype = {
+        
+        init: activities.ui.initDiagramElem,
+        
+        translateEdge: function(x, y){
+            return [this.x, this.y];
+        },
+        
+        render: activities.ui.renderRectElem
     }
     
     
@@ -1925,12 +1978,13 @@ var demo_editor = null;
         activities.events.bindElementDefaults(diagram, this);
     }
     
-    activities.ui.Join.prototype.init = activities.ui.initDiagramElem;
-    
-    activities.ui.Join.prototype.render = activities.ui.renderRectElem;
-    
-    activities.ui.Join.prototype.translateEdge = function(x, y){
-        return [this.x, this.y];
+    activities.ui.Join.prototype = {
+        
+        init: activities.ui.initDiagramElem,
+        
+        translateEdge: activities.ui.translateRectEdge,
+        
+        render: activities.ui.renderRectElem
     }
     
     
@@ -1947,12 +2001,13 @@ var demo_editor = null;
         activities.events.bindElementDefaults(diagram, this);
     }
     
-    activities.ui.Fork.prototype.init = activities.ui.initDiagramElem;
-    
-    activities.ui.Fork.prototype.render = activities.ui.renderRectElem;
-    
-    activities.ui.Fork.prototype.translateEdge = function(x, y){
-        return [this.x, this.y];
+    activities.ui.Fork.prototype = {
+        
+        init: activities.ui.initDiagramElem,
+        
+        translateEdge: activities.ui.translateRectEdge,
+        
+        render: activities.ui.renderRectElem
     }
     
     
