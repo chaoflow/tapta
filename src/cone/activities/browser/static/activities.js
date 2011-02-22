@@ -391,18 +391,18 @@ var demo_editor = null;
                 context.fillText(label, 0, 0, width);
             },
             
-            translateEdge: function(elem, x, y, x_diff, y_diff) {
+            translateEdge: function(elem, x, y, x_diff, y_diff, angle) {
                 if (x - elem.x >= 0 && y - elem.y >= 0) {
-                    return [elem.x + x_diff, elem.y + y_diff];
+                    return [elem.x + x_diff, elem.y + y_diff, angle - 180];
                 }
                 if (x - elem.x >= 0 && y - elem.y <= 0) {
-                    return [elem.x + x_diff, elem.y - y_diff];
+                    return [elem.x + x_diff, elem.y - y_diff, 180 - angle];
                 }
                 if (x - elem.x <= 0 && y - elem.y <= 0) {
-                    return [elem.x - x_diff, elem.y - y_diff];
+                    return [elem.x - x_diff, elem.y - y_diff, angle];
                 }
                 if (x - elem.x <= 0 && y - elem.y >= 0) {
-                    return [elem.x - x_diff, elem.y + y_diff];
+                    return [elem.x - x_diff, elem.y + y_diff, angle * -1];
                 }
             },
             
@@ -415,9 +415,6 @@ var demo_editor = null;
                 this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
-                //if (!rotation) {
-                //    rotation = 0;
-                //}
                 this.rotation = rotation;
                 
                 // if circle
@@ -501,7 +498,8 @@ var demo_editor = null;
                 var sin = Math.sin(Math.PI * angle / 180.0);
                 var x_diff = rad * cos;
                 var y_diff = rad * sin;
-                return activities.ui.translateEdge(this, x, y, x_diff, y_diff);
+                return activities.ui.translateEdge(
+                    this, x, y, x_diff, y_diff, angle);
             },
             
             /*
@@ -519,6 +517,7 @@ var demo_editor = null;
                 gk = y - this.y;
                 ak = this.x - x;
                 var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+                var angle_orgin = angle;
                 if (this.rotation > 0) {
                     angle -= this.rotation;
                 }
@@ -546,7 +545,8 @@ var demo_editor = null;
                     x_diff = x_new;
                     y_diff = y_new;
                 }
-                return activities.ui.translateEdge(this, x, y, x_diff, y_diff);
+                return activities.ui.translateEdge(
+                    this, x, y, x_diff, y_diff, angle_orgin);
             }
         },
         
@@ -2029,6 +2029,7 @@ var demo_editor = null;
         this.triggerColor = null;
         this.color = '#333333';
         this.lineWidth = 3;
+        this.arrowLength = 15;
         this.selectedColor = '#bbbbbb';
         this.selected = false;
         this.label = null;
@@ -2046,62 +2047,100 @@ var demo_editor = null;
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
-    activities.ui.Edge.prototype.renderPath = function(context) {
-        var diagram = this.diagram;
-        var source = diagram.elements[diagram.r_mapping[this.source]];
-        var target = diagram.elements[diagram.r_mapping[this.target]];
+    activities.ui.Edge.prototype = {
         
-        context.beginPath();
-        var t_x, t_y;
-        if (this.kinks.length != 0) {
-            t_x = this.kinks[0].x;
-            t_y = this.kinks[0].y;
-        } else {
-            t_x = target.x;
-            t_y = target.y;
-        }
-        var start = source.translateEdge(t_x, t_y);
-        context.moveTo(start[0], start[1]);
-        var kink;
-        for (var idx in this.kinks) {
-            kink = this.kinks[idx];
-            context.lineTo(kink.x, kink.y);
-        }
-        if (this.kinks.length != 0) {
-            var last = this.kinks.length - 1;
-            t_x = this.kinks[last].x;
-            t_y = this.kinks[last].y;
-        } else {
-            t_x = source.x;
-            t_y = source.y;
-        }
-        var end = target.translateEdge(t_x, t_y);
-        context.lineTo(end[0], end[1]);
-        context.closePath();
-    }
-    
-    activities.ui.Edge.prototype.render = function() {
-        // control layer
-        var context = this.diagram.layers.control.context;
-        context.save();
-        context.strokeStyle = this.triggerColor;
-        context.lineWidth = this.lineWidth;
-        this.renderPath(context);
-        context.stroke();
-        context.restore();
+        translate: function() {
+            var diagram = this.diagram;
+            var source = diagram.elements[diagram.r_mapping[this.source]];
+            var target = diagram.elements[diagram.r_mapping[this.target]];
+            var t_x, t_y;
+            if (this.kinks.length != 0) {
+                t_x = this.kinks[0].x;
+                t_y = this.kinks[0].y;
+            } else {
+                t_x = target.x;
+                t_y = target.y;
+            }
+            this._start = source.translateEdge(t_x, t_y);
+            
+            if (this.kinks.length != 0) {
+                var last = this.kinks.length - 1;
+                t_x = this.kinks[last].x;
+                t_y = this.kinks[last].y;
+            } else {
+                t_x = source.x;
+                t_y = source.y;
+            }
+            this._end = target.translateEdge(t_x, t_y);
+        },
         
-        // diagram layer
-        context = this.diagram.layers.diagram.context;
-        context.save();
-        if (!this.selected) {
-            context.strokeStyle = this.color;
-        } else {
-            context.strokeStyle = this.selectedColor;
+        renderPath: function(context) {
+            context.beginPath();
+            context.moveTo(this._start[0], this._start[1]);
+            var kink;
+            for (var idx in this.kinks) {
+                kink = this.kinks[idx];
+                context.lineTo(kink.x, kink.y);
+            }
+            context.lineTo(this._end[0], this._end[1]);
+            context.closePath();
+        },
+        
+        renderArrow: function(context) {
+            var len = this.arrowLength;
+            context.translate(this._end[0], this._end[1]);
+            context.rotate(this._end[2] * Math.PI / 180);
+            context.beginPath();
+            context.lineTo(len * -1, len / 3);
+            context.lineTo(len * -1, len * -1 / 3);
+            context.lineTo(0, 0);
+            context.closePath();
+        },
+        
+        render: function() {
+            // translate edge start and endpoint
+            this.translate();
+            
+            // control layer
+            var context = this.diagram.layers.control.context;
+            context.save();
+            context.strokeStyle = this.triggerColor;
+            context.lineWidth = this.lineWidth;
+            context.lineCap = 'round';
+            this.renderPath(context);
+            context.stroke();
+            context.restore();
+            
+            // diagram layer
+            context = this.diagram.layers.diagram.context;
+            context.save();
+            if (!this.selected) {
+                context.strokeStyle = this.color;
+            } else {
+                context.strokeStyle = this.selectedColor;
+            }
+            context.lineWidth = this.lineWidth;
+            context.lineCap = 'round';
+            this.renderPath(context);
+            context.stroke();
+            context.restore();
+            
+            // arrow
+            context.save();
+            if (!this.selected) {
+                context.strokeStyle = this.color;
+                context.fillColor = this.color;
+            } else {
+                context.strokeStyle = this.selectedColor;
+                context.fillColor = this.selectedColor;
+            }
+            context.lineWidth = 2;
+            context.lineCap = 'round';
+            this.renderArrow(context);
+            context.stroke();
+            context.fill();
+            context.restore();
         }
-        context.lineWidth = this.lineWidth;
-        this.renderPath(context);
-        context.stroke();
-        context.restore();
     }
     
     
