@@ -215,8 +215,7 @@ var global_mousedown = 0;
                 elem.source = node.source;
                 elem.target = node.target;
                 diagram.map(node, elem);
-                actions.active = null;
-                actions.type = null;
+                actions.unselect();
                 editor.diagram.render();
             },
             
@@ -599,6 +598,24 @@ var global_mousedown = 0;
             ADD_DIAGRAM_EDGE       : 1,
             DELETE_DIAGRAM_ELEMENT : 2,
             
+            // css sprite positions
+            CSS_SPRITE: {
+                'initial_node'  : 0,
+                'final_node'    : -23,
+                'action_node'   : -46,
+                'decision_node' : -69,
+                'merge_node'    : -92,
+                'fork_node'     : -115,
+                'join_node'     : -138,
+                'edge'          : -161,
+                'new_activity'  : -184,
+                'open_activity' : -207,
+                'save_activity' : -230,
+                'debug'         : -253,
+                'run_tests'     : -276,
+                'flip_layers'   : -299
+            },
+            
             // tmp. remove as soon as persistence widget is implemented
             _open: 0,
             
@@ -627,48 +644,56 @@ var global_mousedown = 0;
             
             initial_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
                 actions.payload = activities.model.INITIAL;
             },
             
             final_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
                 actions.payload = activities.model.FINAL;
             },
             
             action_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
                 actions.payload = activities.model.ACTION;
             },
             
             join_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
                 actions.payload = activities.model.JOIN;
             },
             
             fork_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
                 actions.payload = activities.model.FORK;
             },
             
             merge_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
                 actions.payload = activities.model.MERGE;
             },
             
             decision_node: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
                 actions.payload = activities.model.DECISION;
             },
             
             edge: function(name, element, event) {
                 var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_EDGE;
                 actions.payload = [activities.model.EDGE, null, null];
             },
@@ -996,6 +1021,27 @@ var global_mousedown = 0;
             var func = activities.actions[action];
             func(editor.name, elem, event);
         });
+    }
+    
+    activities.ui.Actions.prototype = {
+        
+        setSelected: function(name) {
+            this.unselect();
+            $('#' + this.editor.name + ' div.actions a.' + name)
+                .css('background-position',
+                     '-23px ' + activities.actions.CSS_SPRITE[name] + 'px');
+        },
+        
+        unselect: function() {
+            this.active = null;
+            this.type = null;
+            $('#' + this.editor.name + ' div.actions a').each(function() {
+                var elem = $(this);
+                var name = elem.attr('class');
+                elem.css('background-position',
+                         '0px ' + activities.actions.CSS_SPRITE[name] + 'px');
+            });
+        }
     }
     
     
@@ -1811,8 +1857,7 @@ var global_mousedown = 0;
             var offset = canvas.offset();
             var x = node.x = elem.x = event.pageX - offset.left;
             var y = node.y = elem.y = event.pageY - offset.top;
-            actions.active = null;
-            actions.type = null;
+            actions.unselect();
             editor.diagram.render();
         }
         

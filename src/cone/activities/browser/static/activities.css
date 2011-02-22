@@ -36,7 +36,6 @@ body {
 .activity_editor .element_properties .props .field label {
     font-weight:bold;
 }
-
 .activity_editor .element_properties input,
 .activity_editor .element_properties textarea {
     font-size:10px;
