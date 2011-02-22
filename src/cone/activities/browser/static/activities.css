@@ -16,7 +16,7 @@ body {
 .activity_editor .element_properties {
     font-size:10px;
     position:absolute;
-    top:22px;
+    top:30px;
     left:0px;
     width:190px; /* 10px total padding */
     height:440px; /* 10px total padding */
@@ -59,7 +59,7 @@ body {
 /* diagram */
 .activity_diagram {
     position:absolute;
-    top:22px;
+    top:30px;
     left:200px;
     margin-bottom:1em;
 }
@@ -82,68 +82,117 @@ body {
     top:0;
     left:200px;
     width:1200px;
-    height:22px;
+    height:30px;
 }
 .activity_editor .actions .section {
     float:left;
     padding-left:22px;
     padding-right:22px;
-    padding-top:2px;
     border-right:#ccc 1px solid;
+    height:30px;
 }
 .activity_editor .actions a {
-    line-height:16px;
-    padding-left:16px;
+    padding:0;
+    margin:0;
+    height:23px;
+    font-size:17px;
+    line-height:23px;
+    padding-left:18px;
+    width:23px;
     cursor:pointer;
     text-decoration:none;
 }
-.activity_editor .actions a.new_activity {
-    background:url('icons/new.png') 50% 50% no-repeat;
-}
-.activity_editor .actions a.open_activity {
-    background:url('icons/open.png') 50% 50% no-repeat;
-}
-.activity_editor .actions a.save_activity {
-    background:url('icons/save.png') 50% 50% no-repeat;
-}
+
+/* icons */
 .activity_editor .actions a.initial_node {
-    background:url('icons/initial.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px 0px no-repeat;
 }
 .activity_editor .actions a.final_node {
-    background:url('icons/activity_final.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px -23px no-repeat;
 }
 .activity_editor .actions a.action_node {
-    background:url('icons/action.png') 50% 50% no-repeat;
-}
-.activity_editor .actions a.join_node {
-    background:url('icons/join.png') 50% 50% no-repeat;
-}
-.activity_editor .actions a.fork_node {
-    background:url('icons/fork.png') 50% 50% no-repeat;
-}
-.activity_editor .actions a.merge_node {
-    background:url('icons/merge.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px -46px no-repeat;
 }
 .activity_editor .actions a.decision_node {
-    background:url('icons/decision.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px -69px no-repeat;
+}
+.activity_editor .actions a.merge_node {
+    background:url('icons/activities_sprite.png') 0px -92px no-repeat;
+}
+.activity_editor .actions a.fork_node {
+    background:url('icons/activities_sprite.png') 0px -115px no-repeat;
+}
+.activity_editor .actions a.join_node {
+    background:url('icons/activities_sprite.png') 0px -138px no-repeat;
 }
 .activity_editor .actions a.edge {
-    background:url('icons/edge.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px -161px no-repeat;
+}
+.activity_editor .actions a.new_activity {
+    background:url('icons/activities_sprite.png') 0px -184px no-repeat;
+}
+.activity_editor .actions a.open_activity {
+    background:url('icons/activities_sprite.png') 0px -207px no-repeat;
+}
+.activity_editor .actions a.save_activity {
+    background:url('icons/activities_sprite.png') 0px -230px no-repeat;
 }
 .activity_editor .actions a.debug {
-    background:url('icons/debug.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px -253px no-repeat;
 }
 .activity_editor .actions a.run_tests {
-    background:url('icons/run.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px -276px no-repeat;
 }
 .activity_editor .actions a.flip_layers {
-    background:url('icons/flip.png') 50% 50% no-repeat;
+    background:url('icons/activities_sprite.png') 0px -299px no-repeat;
+}
+.activity_editor .actions a.initial_node:hover {
+    background-position:-23px 0px;
+}
+.activity_editor .actions a.final_node:hover {
+    background-position:-23px -23px;
+}
+.activity_editor .actions a.action_node:hover {
+    background-position:-23px -46px;
+}
+.activity_editor .actions a.decision_node:hover {
+    background-position:-23px -69px;
+}
+.activity_editor .actions a.merge_node:hover {
+    background-position:-23px -92px;
+}
+.activity_editor .actions a.fork_node:hover {
+    background-position:-23px -115px;
+}
+.activity_editor .actions a.join_node:hover {
+    background-position:-23px -138px;
+}
+.activity_editor .actions a.edge:hover {
+    background-position:-23px -161px;
+}
+.activity_editor .actions a.new_activity:hover {
+    background-position:-23px -184px;
+}
+.activity_editor .actions a.open_activity:hover {
+    background-position:-23px -207px;
+}
+.activity_editor .actions a.save_activity:hover {
+    background-position:-23px -230px;
+}
+.activity_editor .actions a.debug:hover {
+    background-position:-23px -253px;
+}
+.activity_editor .actions a.run_tests:hover {
+    background-position:-23px -276px;
+}
+.activity_editor .actions a.flip_layers:hover {
+    background-position:-23px -299px;
 }
 
 /* tests */
 .qunit {
     display:none;
     position:relative;
-    top:480px;
+    top:500px;
     width:1400px;
 }
