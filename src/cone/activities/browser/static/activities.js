@@ -496,6 +496,7 @@ var global_mousedown = 0;
              * default rect diagram element initialization
              */
             initDiagramElem: function(width_or_radius, height, rotation) {
+                this.diagram = null;
                 this.triggerColor = null;
                 this.x = 0;
                 this.y = 0;
@@ -1812,13 +1813,13 @@ var global_mousedown = 0;
          */
         bind: function() {
             // event subscription
-            var dispatcher = this.dispatcher;
+            var dsp = this.dispatcher;
             var events = activities.events;
-            dispatcher.subscribe(events.MOUSE_IN, this, events.setDefault);
-            dispatcher.subscribe(events.MOUSE_DOWN, this, events.unselectAll);
-            dispatcher.subscribe(events.MOUSE_DOWN, this, events.doAction);
-            dispatcher.subscribe(events.MOUSE_MOVE, this, this.dnd.drag);
-            dispatcher.subscribe(events.MOUSE_UP, this, this.dnd.drop);
+            dsp.subscribe(events.MOUSE_IN, this, events.setDefault);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.unselectAll);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.drag);
+            dsp.subscribe(events.MOUSE_UP, this, this.dnd.drop);
         },
         
         /*
@@ -1855,20 +1856,17 @@ var global_mousedown = 0;
         },
         
         /*
-         * add element to this diagram
-         */
-        add: function(elem) {
-            var triggerColor = this.nextTriggerColor();
-            elem.triggerColor = triggerColor;
-            this.elements[triggerColor] = elem;
-        },
-        
-        /*
          * map model node to diagram element
          */
         map: function(node, elem) {
-            this.mapping[elem.triggerColor] = node.__name;
-            this.r_mapping[node.__name] = elem.triggerColor;
+            var triggerColor = this.nextTriggerColor();
+            elem.diagram = this;
+            elem.triggerColor = triggerColor;
+            this.elements[triggerColor] = elem;
+            this.mapping[triggerColor] = node.__name;
+            this.r_mapping[node.__name] = triggerColor;
+            elem.bind();
+            
             // label
             if (node.label) {
                 elem.label = node.label;
@@ -1925,7 +1923,7 @@ var global_mousedown = 0;
                 edge.kinks.push(elem);
                 return kink;
             }
-            elem = new this.factories[node.__type](this);
+            elem = new this.factories[node.__type]();
             this.map(node, elem);
             return elem;
         },
@@ -1934,7 +1932,7 @@ var global_mousedown = 0;
          * create diagram edge
          */
         createEdge: function(node) {
-            var elem = new activities.ui.Edge(this);
+            var elem = new activities.ui.Edge();
             elem.source = node.source;
             elem.target = node.target;
             this.map(node, elem);
@@ -1949,9 +1947,6 @@ var global_mousedown = 0;
     
     activities.ui.Initial = function(diagram) {
         this.init(20, 0, 0);
-        this.diagram = diagram;
-        this.diagram.add(this);
-        this.bind();
     }
     
     activities.ui.Initial.prototype = {
@@ -2003,9 +1998,6 @@ var global_mousedown = 0;
     
     activities.ui.Final = function(diagram) {
         this.init(20, 0, 0);
-        this.diagram = diagram;
-        this.diagram.add(this);
-        this.bind();
     }
     
     activities.ui.Final.prototype = {
@@ -2060,9 +2052,6 @@ var global_mousedown = 0;
     activities.ui.Action = function(diagram) {
         this.init(100, 70, 0);
         this.renderLabel = true;
-        this.diagram = diagram;
-        this.diagram.add(this);
-        this.bind();
     }
     
     activities.ui.Action.prototype = {
@@ -2083,9 +2072,6 @@ var global_mousedown = 0;
     
     activities.ui.Decision = function(diagram) {
         this.init(40, 40, 45);
-        this.diagram = diagram;
-        this.diagram.add(this);
-        this.bind();
     }
     
     activities.ui.Decision.prototype = {
@@ -2106,9 +2092,6 @@ var global_mousedown = 0;
     
     activities.ui.Merge = function(diagram) {
         this.init(40, 40, 45);
-        this.diagram = diagram;
-        this.diagram.add(this);
-        this.bind();
     }
     
     activities.ui.Merge.prototype = {
@@ -2129,9 +2112,6 @@ var global_mousedown = 0;
     
     activities.ui.Join = function(diagram) {
         this.init(10, 80, 0);
-        this.diagram = diagram;
-        this.diagram.add(this);
-        this.bind();
     }
     
     activities.ui.Join.prototype = {
@@ -2152,9 +2132,6 @@ var global_mousedown = 0;
     
     activities.ui.Fork = function(diagram) {
         this.init(10, 80, 0);
-        this.diagram = diagram;
-        this.diagram.add(this);
-        this.bind();
     }
     
     activities.ui.Fork.prototype = {
@@ -2174,6 +2151,7 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Edge = function(diagram) {
+        this.diagram = null;
         this.triggerColor = null;
         this.color = '#333333';
         this.lineWidth = 3;
@@ -2185,17 +2163,16 @@ var global_mousedown = 0;
         this.source = null;
         this.target = null;
         this.kinks = new Array();
-        
-        this.diagram = diagram;
-        this.diagram.add(this);
-        
-        diagram.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setPointer);
-        diagram.dispatcher.subscribe(
-            activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
     
     activities.ui.Edge.prototype = {
+        
+        bind: function() {
+            var dsp = this.diagram.dispatcher;
+            var events = activities.events;
+            dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
+        },
         
         translate: function() {
             var diagram = this.diagram;
