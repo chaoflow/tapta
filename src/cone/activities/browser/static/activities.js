@@ -1,11 +1,23 @@
 /*
- * activities.js
+ * activities
+ * ==========
  * 
- * Author: Robert Niederreiter
- * Requires:
- *     - jQuery
- *     - jQuery Tools
- *     - bdajax
+ * An Activity diagram Editor.
+ * 
+ * Copyright (c) 2011, BlueDynamics Alliance, Austria, Germany, Switzerland
+ * All rights reserved.
+ * 
+ * Contributors
+ * ------------
+ * 
+ * - Robert Niederreiter
+ * 
+ * Requires
+ * --------
+ * 
+ * - jQuery
+ * - jQuery Tools
+ * - bdajax
  */
 
 var demo_editor = null;
@@ -65,6 +77,17 @@ var global_mousedown = 0;
                             ? r : (r & 0x3 | 0x8);
                         return v.toString(16);
                     }).toUpperCase();
+            },
+            
+            /*
+             * remove array item
+             * 
+             * http://ejohn.org/blog/javascript-array-remove/
+             */
+            removeArrayItem: function(arr, from, to) {
+                var rest = arr.slice((to || from) + 1 || arr.length);
+                arr.length = from < 0 ? arr.length + from : from;
+                return arr.push.apply(arr, rest);
             }
         },
         
@@ -738,15 +761,19 @@ var global_mousedown = 0;
     activities.model.Model = function(context) {
         if (!context) {
             context = {
-                __type: activities.model.ACTIVITY,
-                __name: ''
+                __type: activities.model.ACTIVITY
             }
         }
         this.context = context;
         if (!this.context.__name) {
-            this.context.__name = 'UNSET';
+            this.context.__name = activities.utils.createUID();
         }
-        this.context.__parent = '';
+        if (!this.context.__parent) {
+            this.context.__parent = null;
+        }
+        if (!this.context.children) {
+            this.context.children = {};
+        }
         
         // set __name and __parent
         // XXX: recursion
@@ -791,6 +818,17 @@ var global_mousedown = 0;
                 throw "Invalid model. More than one initial node found";
             }
             return initial[0];
+        },
+        
+        /*
+         * return parent of node
+         */
+        parent: function(node) {
+            var parent = node.__parent;
+            if (parent == this.context.__name) {
+                return this.context;
+            }
+            return this.node(parent);
         },
         
         /*
@@ -847,6 +885,39 @@ var global_mousedown = 0;
             source_node.outgoing_edges.push(node.__name);
             target_node.incoming_edges.push(node.__name);
             return node;
+        },
+        
+        /*
+         * remove node by path from model
+         */
+        remove: function(path) {
+            var node = this.node(path);
+            var parent = this.parent(node);
+            if (node.__type == activities.model.EDGE) {
+                // if edge, remove from target.incoming_edges and 
+                // source.outgoing_edges
+                var edges = this.source(node).outgoing_edges;
+                activities.utils.removeArrayItem(
+                    edges, edges.indexOf(node.__name));
+                var edges = this.target(node).incoming_edges;
+                activities.utils.removeArrayItem(
+                    edges, edges.indexOf(node.__name));
+                delete parent.children[node.__name];
+            } else {
+                // if activity node, remove all edges defined by incoming_edges
+                // and outgoing_edges
+                var edges = new Array();
+                for (idx in node.incoming_edges) {
+                    edges.push(node.incoming_edges[idx]);
+                }
+                for (idx in node.outgoing_edges) {
+                    edges.push(node.outgoing_edges[idx]);
+                }
+                for (idx in edges) {
+                    this.remove(edges[idx]);
+                }
+                delete parent.children[node.__name];
+            }
         },
         
         /*
@@ -924,6 +995,9 @@ var global_mousedown = 0;
          * return node by path
          */
         node: function(path) {
+            if (!path) {
+                return;
+            }
             // XXX: traversal by dottedpath
             return this.context.children[path];
         }

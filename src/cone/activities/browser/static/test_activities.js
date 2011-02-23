@@ -6,6 +6,7 @@
             var model = {
                 __type: activities.model.ACTIVITY,
                 __name: 'model_1',
+                __parent: null,
                 children: {
                     start: {
                         __type: activities.model.INITIAL,
@@ -131,6 +132,7 @@
             var model = {
                 __type: activities.model.ACTIVITY,
                 __name: 'model_2',
+                __parent: null,
                 children: {
                     act_a: {
                         __type: activities.model.INITIAL,
@@ -356,14 +358,14 @@
             });
             
             test("Model.create[Node|Edge]", function() {
-                var source = model.createNode(activities.model.Action);
+                var source = model.createNode(activities.model.ACTION);
                 equals(source.__name.length, 36, "source.__name.length");
                 equals(source.__parent, 'model_1', "source.__parent");
                 equals(source.incoming_edges.length,
                        0, "source.incoming_edges");
                 equals(source.outgoing_edges.length,
                        0, "source.outgoing_edges");
-                var target = model.createNode(activities.model.Action);
+                var target = model.createNode(activities.model.ACTION);
                 var edge = model.createEdge(source.__name, target.__name);
                 equals(edge.__name.length, 36, "edge.__name.length");
                 equals(edge.source.length, 36, "edge.source.length");
@@ -376,6 +378,33 @@
                        true, "edge.source == source.__name");
                 equals(edge.target == target.__name,
                        true, "edge.target == target.__name");
+            });
+            
+            test("Model.remove", function() {
+                var model = new activities.model.Model();
+                var a1 = model.createNode(activities.model.ACTION);
+                var a2 = model.createNode(activities.model.ACTION);
+                var a3 = model.createNode(activities.model.ACTION);
+                var a4 = model.createNode(activities.model.ACTION);
+                var a5 = model.createNode(activities.model.ACTION);
+                var e1 = model.createEdge(a1.__name, a2.__name);
+                var e2 = model.createEdge(a1.__name, a3.__name);
+                var e3 = model.createEdge(a1.__name, a4.__name);
+                var e4 = model.createEdge(a1.__name, a5.__name);
+                equals(model.filtered(activities.model.ACTION).length,
+                       5, "model.filtered(activities.model.ACTION).length");
+                equals(model.filtered(activities.model.EDGE).length,
+                       4, "model.filtered(activities.model.EDGE).length");
+                model.remove(a5.__name);
+                equals(model.filtered(activities.model.ACTION).length,
+                       4, "model.filtered(activities.model.ACTION).length");
+                equals(model.filtered(activities.model.EDGE).length,
+                       3, "model.filtered(activities.model.EDGE).length");
+                model.remove(a1.__name);
+                equals(model.filtered(activities.model.ACTION).length,
+                       3, "model.filtered(activities.model.ACTION).length");
+                equals(model.filtered(activities.model.EDGE).length,
+                       0, "model.filtered(activities.model.EDGE).length");
             });
             
             module("activities.ui.Grid");
