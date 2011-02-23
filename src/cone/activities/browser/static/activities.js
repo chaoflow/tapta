@@ -257,7 +257,7 @@ var global_mousedown = 0;
                 var node;
                 switch(actions.active) {
                     case activities.actions.ADD_DIAGRAM_ELEMENT: {
-                        node = editor.model.createNode(editor.actions.payload);
+                        node = model.createNode(actions.payload);
                         var elem = diagram.get(node);
                         var canvas = $(diagram.layers.diagram.canvas);
                         var offset = canvas.offset();
@@ -277,9 +277,30 @@ var global_mousedown = 0;
                         diagram.createEdge(node);
                         break;
                     }
+                    case activities.actions.DELETE_DIAGRAM_ELEMENT: {
+                        var elems = diagram.selected();
+                        if (!elems) {
+                            return;
+                        }
+                        var path = diagram.mapping[elems[0].triggerColor];
+                        var opts = {
+                            message: 'Do you really want to delete this Item?',
+                            model: model,
+                            diagram: diagram,
+                            path: path
+                        };
+                        bdajax.dialog(opts, function(options) {
+                            // XXX: dottedpath
+                            options.diagram.remove(options.path);
+                            // XXX: dottedpath
+                            options.model.remove(options.path);
+                            options.diagram.render();
+                        });
+                        break;
+                    }
                 }
                 actions.unselect();
-                editor.diagram.render();
+                diagram.render();
             },
             
             // event utils
@@ -819,12 +840,14 @@ var global_mousedown = 0;
             if (!source.outgoing_edges) {
                 source.outgoing_edges = new Array();
             }
+            // XXX: dottedpath
             source.outgoing_edges.push(edge.__name);
             
             target = this.node(edge.target);
             if (!target.incoming_edges) {
                 target.incoming_edges = new Array();
             }
+            // XXX: dottedpath
             target.incoming_edges.push(edge.__name);
         }
     }
@@ -907,7 +930,9 @@ var global_mousedown = 0;
             node.target = target;
             var source_node = this.node(source);
             var target_node = this.node(target);
+            // XXX: dottedpath
             source_node.outgoing_edges.push(node.__name);
+            // XXX: dottedpath
             target_node.incoming_edges.push(node.__name);
             return node;
         },
@@ -1863,6 +1888,7 @@ var global_mousedown = 0;
             elem.diagram = this;
             elem.triggerColor = triggerColor;
             this.elements[triggerColor] = elem;
+            // XXX: dottedpath
             this.mapping[triggerColor] = node.__name;
             this.r_mapping[node.__name] = triggerColor;
             elem.bind();
@@ -1896,6 +1922,46 @@ var global_mousedown = 0;
             }
             this._nextTriggerColor[idx] += 10;
             return activities.utils.rgb2hex(this._nextTriggerColor);
+        },
+        
+        /*
+         * return array containing selected diagram elements
+         */
+        selected: function() {
+            var ret = new Array();
+            var key, elem;
+            for (key in this.elements) {
+                elem = this.elements[key];
+                if (elem.selected) {
+                    ret.push(elem);
+                }
+            }
+            return ret;
+        },
+        
+        /*
+         * remove diagram elements
+         */
+        remove: function(path) {
+            var model = this.editor.model;
+            var node = model.node(path);
+            var elem = this.get(node);
+            var triggerColor = elem.triggerColor;
+            if (node.__type != activities.model.EDGE) {
+                var edges = new Array();
+                for (idx in node.incoming_edges) {
+                    edges.push(node.incoming_edges[idx]);
+                }
+                for (idx in node.outgoing_edges) {
+                    edges.push(node.outgoing_edges[idx]);
+                }
+                for (idx in edges) {
+                    this.remove(edges[idx]);
+                }
+            }
+            delete this.elements[triggerColor];
+            delete this.mapping[triggerColor];
+            delete this.r_mapping[node.__name];
         },
         
         /*
@@ -2172,6 +2238,7 @@ var global_mousedown = 0;
             var events = activities.events;
             dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
             dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
         },
         
         translate: function() {

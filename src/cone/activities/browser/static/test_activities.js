@@ -395,11 +395,13 @@
                        5, "model.filtered(activities.model.ACTION).length");
                 equals(model.filtered(activities.model.EDGE).length,
                        4, "model.filtered(activities.model.EDGE).length");
+                // XXX: dottedpath
                 model.remove(a5.__name);
                 equals(model.filtered(activities.model.ACTION).length,
                        4, "model.filtered(activities.model.ACTION).length");
                 equals(model.filtered(activities.model.EDGE).length,
                        3, "model.filtered(activities.model.EDGE).length");
+                // XXX: dottedpath
                 model.remove(a1.__name);
                 equals(model.filtered(activities.model.ACTION).length,
                        3, "model.filtered(activities.model.ACTION).length");
