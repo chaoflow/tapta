@@ -165,11 +165,11 @@ var global_mousedown = 0;
                     var canvas = $(this);
                 }
                 event.preventDefault();
-                var offset = canvas.offset();
-                var x = event.pageX - offset.left;
-                var y = event.pageY - offset.top;
                 var dispatcher = canvas.data('dispatcher');
                 var diagram = dispatcher.diagram;
+                var current = diagram.currentCursor(event);
+                var x = current[0];
+                var y = current[1];
                 var context = diagram.layers.control.context;
                 // try to get pixel info, return if fails
                 try {
@@ -307,10 +307,9 @@ var global_mousedown = 0;
                     case activities.actions.ADD_DIAGRAM_ELEMENT: {
                         node = model.createNode(actions.payload);
                         var elem = diagram.get(node);
-                        var canvas = $(diagram.layers.diagram.canvas);
-                        var offset = canvas.offset();
-                        var x = event.pageX - offset.left;
-                        var y = event.pageY - offset.top;
+                        var current = diagram.currentCursor(event);
+                        var x = current[0];
+                        var y = current[1];
                         var translated = diagram.translateCursor(x, y);
                         node.x = elem.x = translated[0];
                         node.y = elem.y = translated[1];
@@ -1808,28 +1807,33 @@ var global_mousedown = 0;
         
         zoom: function(obj, event) {
             var delta = 0;
+            // IE
             if (!event) {
-                // For IE
                 event = window.event;
             }
+            // IE / Opera
             if (event.wheelDelta) {
-                // IE/Opera
                 delta = event.wheelDelta / 120;
-                // In Opera 9, delta differs in sign as compared to IE
+                // In Opera 9
                 if (window.opera) {
                     delta = delta * -1;
                 }
+            // Mozilla
             } else if (event.detail) {
-                // Mozilla case.
-                // In Mozilla, sign of delta is different than in IE
-                // Also, delta is multiple of 3.
                 delta = event.detail * -1 / 3;
             }
             var diagram = obj.dnd ? obj : obj.diagram;
+            var current = diagram.currentCursor(event);
+            var x = current[0];
+            var y = current[1];
             if (delta > 0) {
                 diagram.scale += 0.05;
+                diagram.origin_x -= x * 0.05;
+                diagram.origin_y -= y * 0.05;
             } else {
                 diagram.scale -= 0.05;
+                diagram.origin_x += x * 0.05;
+                diagram.origin_y += y * 0.05;
             }
             diagram.render();
         },
@@ -1858,10 +1862,9 @@ var global_mousedown = 0;
             if (!dnd.pan_active) {
                 return;
             }
-            var canvas = $(diagram.layers.diagram.canvas);
-            var offset = canvas.offset();
-            var x = event.pageX - offset.left;
-            var y = event.pageY - offset.top;
+            var current = diagram.currentCursor(event);
+            var x = current[0];
+            var y = current[1];
             if (dnd.last_x == null || dnd.last_y == null) {
                 dnd.last_x = x;
                 dnd.last_y = y;
@@ -1899,10 +1902,9 @@ var global_mousedown = 0;
             if (!recent) {
                 return;
             }
-            var canvas = $(diagram.layers.diagram.canvas);
-            var offset = canvas.offset();
-            var x = event.pageX - offset.left;
-            var y = event.pageY - offset.top;
+            var current = diagram.currentCursor(event);
+            var x = current[0];
+            var y = current[1];
             var translated = diagram.translateCursor(x, y);
             recent.x = translated[0];
             recent.y = translated[1];
@@ -1995,6 +1997,17 @@ var global_mousedown = 0;
             dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.pan);
             dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.drag);
             dsp.subscribe(events.MOUSE_UP, this, this.dnd.drop);
+        },
+        
+        /*
+         * return current cursor position
+         */
+        currentCursor: function(event) {
+            var canvas = $(this.layers.diagram.canvas);
+            var offset = canvas.offset();
+            var x = event.pageX - offset.left;
+            var y = event.pageY - offset.top;
+            return [x, y];
         },
         
         /*
