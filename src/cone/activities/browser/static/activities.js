@@ -223,11 +223,12 @@ var global_mousedown = 0;
                 var diagram = obj.diagram;
                 if (diagram.focused) {
                     diagram.focused.selected = false;
-                    diagram.focused.render();
+                    //diagram.focused.render();
                 }
                 diagram.focused = obj;
                 obj.selected = true;
-                obj.render();
+                //obj.render();
+                diagram.render();
                 diagram.editor.properties.display(obj);
             },
         
@@ -261,8 +262,11 @@ var global_mousedown = 0;
                         var elem = diagram.get(node);
                         var canvas = $(diagram.layers.diagram.canvas);
                         var offset = canvas.offset();
-                        var x = node.x = elem.x = event.pageX - offset.left;
-                        var y = node.y = elem.y = event.pageY - offset.top;
+                        var x = event.pageX - offset.left;
+                        var y = event.pageY - offset.top;
+                        var translated = diagram.translateCursor(x, y);
+                        node.x = elem.x = translated[0];
+                        node.y = elem.y = translated[1];
                         break;
                     }
                     case activities.actions.ADD_DIAGRAM_EDGE: {
@@ -1764,8 +1768,9 @@ var global_mousedown = 0;
             var offset = canvas.offset();
             var x = event.pageX - offset.left;
             var y = event.pageY - offset.top;
-            recent.x = x;
-            recent.y = y;
+            var translated = diagram.translateCursor(x, y);
+            recent.x = translated[0];
+            recent.y = translated[1];
             diagram.render();
         },
         
@@ -1788,6 +1793,7 @@ var global_mousedown = 0;
         this.grid = new activities.ui.Grid(editor.model);
         this.dnd = new activities.ui.DnD();
         
+        // XXX: move to seperate mapping object
         // trigger color to diagram element
         this.elements = new Object();
         
@@ -1796,6 +1802,7 @@ var global_mousedown = 0;
         
         // model element dotted path to trigger color
         this.r_mapping = new Object();
+        // /XXX
         
         // current focused diagram element
         this.focused = null;
@@ -1809,6 +1816,10 @@ var global_mousedown = 0;
         };
         this.width = this.layers.diagram.canvas.width;
         this.height = this.layers.diagram.canvas.height;
+        
+        this.scale = 1.0;
+        this.origin_x = 0;
+        this.origin_y = 0;
         
         this.label = null;
         this.description = null;
@@ -1854,10 +1865,14 @@ var global_mousedown = 0;
             //this.grid.arrange();
             
             // clear control layer
-            var context = this.layers.control.context;
-            context.save();
-            context.clearRect(0, 0, this.width, this.height);
-            context.restore();
+            var context_ctl = this.layers.control.context;
+            context_ctl.save();
+            context_ctl.clearRect(0, 0, this.width, this.height);
+            context_ctl.restore();
+            
+            context_ctl.save();
+            context_ctl.translate(this.origin_x, this.origin_y);
+            context_ctl.scale(this.scale, this.scale);
             
             // clear diagram layer
             var context = this.layers.diagram.context;
@@ -1865,6 +1880,10 @@ var global_mousedown = 0;
             context.fillStyle = '#ffffff';
             context.fillRect(0, 0, this.width, this.height);
             context.restore();
+            
+            context.save();
+            context.translate(this.origin_x, this.origin_y);
+            context.scale(this.scale, this.scale);
             
             var elem, selected;
             for(var key in this.elements) {
@@ -1878,6 +1897,9 @@ var global_mousedown = 0;
             if (selected) {
                 selected.render();
             }
+            
+            context_ctl.restore();
+            context.restore();
         },
         
         /*
@@ -2003,6 +2025,15 @@ var global_mousedown = 0;
             elem.target = node.target;
             this.map(node, elem);
             return elem;
+        },
+        
+        /*
+         * create diagram edge
+         */
+        translateCursor: function(x, y) {
+            x = (x - this.origin_x) / this.scale;
+            y = (y - this.origin_y) / this.scale;
+            return [x, y];
         }
     }
     
