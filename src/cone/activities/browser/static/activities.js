@@ -287,33 +287,18 @@ var global_mousedown = 0;
             /*
              * bind diagram element default events
              */
-            bindElementDefaults: function(diagram, element) {
+            bindElementDefaults: function() {
                 // event subscription
-                var dispatcher = diagram.dispatcher;
-                dispatcher.subscribe(
-                    activities.events.MOUSE_IN,
-                    element,
-                    activities.events.setPointer);
-                dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN,
-                    element,
-                    activities.events.setSelected);
-                dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN,
-                    element,
-                    activities.events.doAction);
-                dispatcher.subscribe(
-                    activities.events.MOUSE_DOWN,
-                    element,
-                    diagram.dnd.dragOn);
-                dispatcher.subscribe(
-                    activities.events.MOUSE_MOVE,
-                    element,
-                    diagram.dnd.drag);
-                dispatcher.subscribe(
-                    activities.events.MOUSE_UP,
-                    element,
-                    diagram.dnd.drop);
+                var diagram = this.diagram;
+                var dnd = diagram.dnd;
+                var dsp = diagram.dispatcher;
+                var events = activities.events;
+                dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
+                dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
+                dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+                dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
+                dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
+                dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
             },
             
             /*
@@ -799,7 +784,7 @@ var global_mousedown = 0;
      */
     activities.model.Model = function(context) {
         if (!context) {
-            context = {
+            var context = {
                 __type: activities.model.ACTIVITY
             }
         }
@@ -1063,6 +1048,8 @@ var global_mousedown = 0;
         // len array depends on available events
         this.subscriber = new Object();
         this.recent = null;
+        
+        this.bind();
     }
     
     activities.events.Dispatcher.prototype = {
@@ -1126,13 +1113,9 @@ var global_mousedown = 0;
             
             this.actions = new activities.ui.Actions(this);
             this.properties = new activities.ui.Properties(this);
-            
             this.diagram = new activities.ui.Diagram(this);
-            this.diagram.bind();
-            
             this.renderer = new activities.ui.TierRenderer(this);
             this.renderer.render();
-            
             this.properties.display(this.diagram);
         },
         
@@ -1817,9 +1800,9 @@ var global_mousedown = 0;
         this.factories[activities.model.FORK] = activities.ui.Fork;
         this.factories[activities.model.JOIN] = activities.ui.Join;
         
-        
         this.dispatcher = new activities.events.Dispatcher(this);
-        this.dispatcher.bind();
+        
+        this.bind();
     }
     
     activities.ui.Diagram.prototype = {
@@ -1830,19 +1813,12 @@ var global_mousedown = 0;
         bind: function() {
             // event subscription
             var dispatcher = this.dispatcher;
-            dispatcher.subscribe(
-                activities.events.MOUSE_IN, this,
-                activities.events.setDefault);
-            dispatcher.subscribe(
-                activities.events.MOUSE_DOWN, this,
-                activities.events.unselectAll);
-            dispatcher.subscribe(
-                activities.events.MOUSE_DOWN, this,
-                activities.events.doAction);
-            dispatcher.subscribe(
-                activities.events.MOUSE_MOVE, this, this.dnd.drag);
-            dispatcher.subscribe(
-                activities.events.MOUSE_UP, this, this.dnd.drop);
+            var events = activities.events;
+            dispatcher.subscribe(events.MOUSE_IN, this, events.setDefault);
+            dispatcher.subscribe(events.MOUSE_DOWN, this, events.unselectAll);
+            dispatcher.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            dispatcher.subscribe(events.MOUSE_MOVE, this, this.dnd.drag);
+            dispatcher.subscribe(events.MOUSE_UP, this, this.dnd.drop);
         },
         
         /*
@@ -1888,19 +1864,17 @@ var global_mousedown = 0;
         },
         
         /*
-         * map model element path to trigger color and set properties
+         * map model node to diagram element
          */
         map: function(node, elem) {
             this.mapping[elem.triggerColor] = node.__name;
             this.r_mapping[node.__name] = elem.triggerColor;
-            
             // label
             if (node.label) {
                 elem.label = node.label;
             } else {
                 elem.label = node.__name;
             }
-            
             // description
             if (node.description) {
                 elem.description = node.description;
@@ -1975,14 +1949,14 @@ var global_mousedown = 0;
     
     activities.ui.Initial = function(diagram) {
         this.init(20, 0, 0);
-        
         this.diagram = diagram;
         this.diagram.add(this);
-        
-        activities.events.bindElementDefaults(diagram, this);
+        this.bind();
     }
     
     activities.ui.Initial.prototype = {
+        
+        bind: activities.events.bindElementDefaults,
         
         init: activities.ui.initDiagramElem,
         
@@ -2029,14 +2003,14 @@ var global_mousedown = 0;
     
     activities.ui.Final = function(diagram) {
         this.init(20, 0, 0);
-        
         this.diagram = diagram;
         this.diagram.add(this);
-        
-        activities.events.bindElementDefaults(diagram, this);
+        this.bind();
     }
     
     activities.ui.Final.prototype = {
+        
+        bind: activities.events.bindElementDefaults,
         
         init: activities.ui.initDiagramElem,
         
@@ -2086,14 +2060,14 @@ var global_mousedown = 0;
     activities.ui.Action = function(diagram) {
         this.init(100, 70, 0);
         this.renderLabel = true;
-        
         this.diagram = diagram;
         this.diagram.add(this);
-        
-        activities.events.bindElementDefaults(diagram, this);
+        this.bind();
     }
     
     activities.ui.Action.prototype = {
+        
+        bind: activities.events.bindElementDefaults,
         
         init: activities.ui.initDiagramElem,
         
@@ -2109,14 +2083,14 @@ var global_mousedown = 0;
     
     activities.ui.Decision = function(diagram) {
         this.init(40, 40, 45);
-        
         this.diagram = diagram;
         this.diagram.add(this);
-        
-        activities.events.bindElementDefaults(diagram, this);
+        this.bind();
     }
     
     activities.ui.Decision.prototype = {
+        
+        bind: activities.events.bindElementDefaults,
         
         init: activities.ui.initDiagramElem,
         
@@ -2132,14 +2106,14 @@ var global_mousedown = 0;
     
     activities.ui.Merge = function(diagram) {
         this.init(40, 40, 45);
-        
         this.diagram = diagram;
         this.diagram.add(this);
-        
-        activities.events.bindElementDefaults(diagram, this);
+        this.bind();
     }
     
     activities.ui.Merge.prototype = {
+        
+        bind: activities.events.bindElementDefaults,
         
         init: activities.ui.initDiagramElem,
         
@@ -2155,14 +2129,14 @@ var global_mousedown = 0;
     
     activities.ui.Join = function(diagram) {
         this.init(10, 80, 0);
-        
         this.diagram = diagram;
         this.diagram.add(this);
-        
-        activities.events.bindElementDefaults(diagram, this);
+        this.bind();
     }
     
     activities.ui.Join.prototype = {
+        
+        bind: activities.events.bindElementDefaults,
         
         init: activities.ui.initDiagramElem,
         
@@ -2178,14 +2152,14 @@ var global_mousedown = 0;
     
     activities.ui.Fork = function(diagram) {
         this.init(10, 80, 0);
-        
         this.diagram = diagram;
         this.diagram.add(this);
-        
-        activities.events.bindElementDefaults(diagram, this);
+        this.bind();
     }
     
     activities.ui.Fork.prototype = {
+        
+        bind: activities.events.bindElementDefaults,
         
         init: activities.ui.initDiagramElem,
         
@@ -2216,7 +2190,7 @@ var global_mousedown = 0;
         this.diagram.add(this);
         
         diagram.dispatcher.subscribe(
-            activities.events.MOUSE_IN, this, activities.events.setCursor);
+            activities.events.MOUSE_IN, this, activities.events.setPointer);
         diagram.dispatcher.subscribe(
             activities.events.MOUSE_DOWN, this, activities.events.setSelected);
     }
