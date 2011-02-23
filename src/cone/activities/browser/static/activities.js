@@ -28,6 +28,17 @@ var global_mousedown = 0;
 (function($) {
     
     $(document).ready(function() {
+        // global mouse wheel binding
+        if (window.addEventListener) {
+            // mozilla
+            window.addEventListener('DOMMouseScroll',
+                                    activities.events.notify,
+                                    false);
+        }
+        // IE / Opera / Chrome
+        $(document).bind('mousewheel', activities.events.notify);
+        $(window).bind('mousewheel', activities.events.notify);
+        
         demo_editor = new activities.ui.Editor('level_0');
         demo_editor.newDiagram();
         
@@ -129,13 +140,31 @@ var global_mousedown = 0;
             MOUSE_MOVE : 2,
             MOUSE_IN   : 3,
             MOUSE_OUT  : 4,
+            MOUSE_WHEEL: 5,
             
             /*
              * event notification
              */
             notify: function(event) {
+                var canvas;
+                if (event.type == 'mousewheel'
+                 || event.type == 'DOMMouseScroll') {
+                     // mousewheel, check if event target is canvas,
+                    // otherwise return
+                    var target;
+                    if (event.target) {
+                        target = event.target;
+                    } else if (event.srcElement) {
+                        target = event.srcElement;
+                    }
+                    if (!target || target.tagName != 'CANVAS') {
+                        return;
+                    }
+                    canvas = $(target);
+                } else {
+                    var canvas = $(this);
+                }
                 event.preventDefault();
-                var canvas = $(this);
                 var offset = canvas.offset();
                 var x = event.pageX - offset.left;
                 var y = event.pageY - offset.top;
@@ -156,18 +185,29 @@ var global_mousedown = 0;
                     recent = diagram;
                 }
                 
+                // trigger mousewheel if necessary and return
+                if (event.type == 'mousewheel'
+                 || event.type == 'DOMMouseScroll') {
+                    var subscriber = dispatcher.subscriber[recent.triggerColor];
+                    if (subscriber) {
+                        var evt = activities.events.MOUSE_WHEEL;
+                        for (var idx in subscriber[evt]) {
+                            subscriber[evt][idx](recent, event);
+                        }
+                    }
+                    return;
+                }
+                
                 // trigger mousein/mouseout if necessary and return
                 if (dispatcher.recent && recent != dispatcher.recent) {
-                    
-                    // mousein
                     var subscriber = dispatcher.subscriber[recent.triggerColor];
+                    // mousein
                     if (subscriber) {
                         var evt = activities.events.MOUSE_IN;
                         for (var idx in subscriber[evt]) {
                             subscriber[evt][idx](recent, event);
                         }
                     }
-                    
                     // mouseout
                     subscriber = dispatcher.subscriber[triggerColor];
                     if (subscriber) {
@@ -195,8 +235,14 @@ var global_mousedown = 0;
             // several event handler
         
             /*
-             * activities.events.MOUSE_IN
-             * 
+             * set default cursor
+             */
+            setDefault: function(obj, event) {
+                var diagram = obj.dnd ? obj : obj.diagram;
+                $(diagram.layers.diagram.canvas).css('cursor', 'default');
+            },
+        
+            /*
              * set pointer cursor
              */
             setPointer: function(obj, event) {
@@ -205,13 +251,11 @@ var global_mousedown = 0;
             },
             
             /*
-             * activities.events.MOUSE_IN
-             * 
-             * set default cursor
+             * set move cursor
              */
-            setDefault: function(obj, event) {
+            setMove: function(obj, event) {
                 var diagram = obj.dnd ? obj : obj.diagram;
-                $(diagram.layers.diagram.canvas).css('cursor', 'default');
+                $(diagram.layers.diagram.canvas).css('cursor', 'move');
             },
             
             /*
@@ -324,9 +368,11 @@ var global_mousedown = 0;
                 dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
                 dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
                 dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+                dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
                 dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
                 dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
                 dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
+                dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
             },
             
             /*
@@ -1110,7 +1156,8 @@ var global_mousedown = 0;
                     [], // activities.events.MOUSE_UP
                     [], // activities.events.MOUSE_MOVE
                     [], // activities.events.MOUSE_IN
-                    []  // activities.events.MOUSE_OUT
+                    [], // activities.events.MOUSE_OUT
+                    []  // activities.events.MOUSE_WHEEL
                 ];
             }
             this.subscriber[obj.triggerColor][evt].push(handler);
@@ -1738,6 +1785,9 @@ var global_mousedown = 0;
     
     activities.ui.DnD = function() {
         this.recent = null;
+        this.pan_active = false;
+        this.last_x = null;
+        this.last_y = null;
         // XXX: multi editor support
         var dnd = this;
         $(document).unbind().bind('mousedown', function(event) {
@@ -1747,11 +1797,93 @@ var global_mousedown = 0;
             --global_mousedown;
             if (global_mousedown <= 0) {
                 dnd.recent = null;
+                dnd.pan_active = false;
+                dnd.last_x = null;
+                dnd.last_y = null;
             }
         });
     }
     
     activities.ui.DnD.prototype = {
+        
+        zoom: function(obj, event) {
+            var delta = 0;
+            if (!event) {
+                // For IE
+                event = window.event;
+            }
+            if (event.wheelDelta) {
+                // IE/Opera
+                delta = event.wheelDelta / 120;
+                // In Opera 9, delta differs in sign as compared to IE
+                if (window.opera) {
+                    delta = delta * -1;
+                }
+            } else if (event.detail) {
+                // Mozilla case.
+                // In Mozilla, sign of delta is different than in IE
+                // Also, delta is multiple of 3.
+                delta = event.detail * -1 / 3;
+            }
+            var diagram = obj.dnd ? obj : obj.diagram;
+            if (delta > 0) {
+                diagram.scale += 0.05;
+            } else {
+                diagram.scale -= 0.05;
+            }
+            diagram.render();
+        },
+        
+        panOn: function(obj, event) {
+            obj.dnd.pan_active = true;
+            activities.events.setMove(obj, event);
+        },
+        
+        panOff: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            diagram.dnd.pan_active = false;
+            diagram.dnd.last_x = null;
+            diagram.dnd.last_y = null;
+            activities.events.setDefault(obj, event);
+        },
+        
+        pan: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            var dnd = diagram.dnd;
+            if (!global_mousedown) {
+                dnd.pan_active = false;
+                dnd.last_x = null;
+                dnd.last_y = null;
+            }
+            if (!dnd.pan_active) {
+                return;
+            }
+            var canvas = $(diagram.layers.diagram.canvas);
+            var offset = canvas.offset();
+            var x = event.pageX - offset.left;
+            var y = event.pageY - offset.top;
+            if (dnd.last_x == null || dnd.last_y == null) {
+                dnd.last_x = x;
+                dnd.last_y = y;
+                return;
+            }
+            var offset_x, offset_y;
+            if (x > 0) {
+                offset_x = dnd.last_x - x;
+            } else {
+                offset_x = dnd.last_x + x;
+            }
+            if (y > 0) {
+                offset_y = dnd.last_y - y;
+            } else {
+                offset_y = dnd.last_y + y;
+            }
+            dnd.last_x = x;
+            dnd.last_y = y;
+            diagram.origin_x -= offset_x;
+            diagram.origin_y -= offset_y;
+            diagram.render();
+        },
         
         dragOn: function(obj, event) {
             obj.diagram.dnd.recent = obj;
@@ -1857,6 +1989,10 @@ var global_mousedown = 0;
             dsp.subscribe(events.MOUSE_IN, this, events.setDefault);
             dsp.subscribe(events.MOUSE_DOWN, this, events.unselectAll);
             dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            dsp.subscribe(events.MOUSE_WHEEL, this, this.dnd.zoom);
+            dsp.subscribe(events.MOUSE_DOWN, this, this.dnd.panOn);
+            dsp.subscribe(events.MOUSE_UP, this, this.dnd.panOff);
+            dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.pan);
             dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.drag);
             dsp.subscribe(events.MOUSE_UP, this, this.dnd.drop);
         },
@@ -2285,6 +2421,7 @@ var global_mousedown = 0;
             dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
             dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
             dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            dsp.subscribe(events.MOUSE_WHEEL, this, this.diagram.dnd.zoom);
         },
         
         translate: function() {
