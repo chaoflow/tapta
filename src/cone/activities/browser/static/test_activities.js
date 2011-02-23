@@ -289,19 +289,20 @@
             var model = new activities.model.Model(
                 tests.create_test_model_1());
             
+            test("Model.node", function() {
+                equals(model.node('decision').__name,
+                       'decision', "model.node('decision').__name");
+            });
+            
             test("Model.filtered", function() {
-                // equals(11,
                 equals(model.filtered(activities.model.EDGE).length,
-                       10,
-                       "model.filtered(activities.model.EDGE)");
+                       10, "model.filtered(activities.model.EDGE)");
                 equals(model.filtered(activities.model.ACTION).length,
-                       3,
-                       "filtered(activities.model.ACTION)");
+                       3, "filtered(activities.model.ACTION)");
                 var res = model.filtered(
                     activities.model.EDGE,
                     model.node('action_1'));
-                equals(res,
-                       0,
+                equals(res, 0,
                        "filtered(activities.model.ACTION, " +
                        "model.node('action_1'))");
             });
@@ -309,56 +310,72 @@
             test("Model.incoming", function() {
                 var res = model.incoming(model.node('decision'));
                 equals(res.length,
-                       1,
-                       "model.incoming(model.node('decision'))");
+                       1, "model.incoming(model.node('decision'))");
                 res = model.incoming(model.node('merge'));
                 equals(res.length,
-                       2,
-                       "model.incoming(model.node('merge'))");
+                       2, "model.incoming(model.node('merge'))");
                 equals(!res[0].source || !res[0].target,
-                       false,
-                       "res[0].source && res[0].target");
+                       false, "res[0].source && res[0].target");
             });
             
             test("Model.outgoing", function() {
                 var res = model.outgoing(model.node('decision'));
                 // equals(2,
                 equals(res.length,
-                       1,
-                       "model.outgoing(model.node('decision'))");
+                       1, "model.outgoing(model.node('decision'))");
                 res = model.outgoing(model.node('merge'));
                 equals(res.length,
-                       1,
-                       "model.outgoing(model.node('merge'))");
+                       1, "model.outgoing(model.node('merge'))");
                 equals(!res[0].source || !res[0].target,
-                       false,
-                       "res[0].source && res[0].target");
+                       false, "res[0].source && res[0].target");
             });
             
             test("Model.source", function() {
                 var source = model.source(model.node('edge_1'));
                 equals(source.__type == activities.model.INITIAL,
-                       true,
-                       "source.__type == activities.model.INITIAL");
+                       true, "source.__type == activities.model.INITIAL");
                 equals(source.__name == 'start',
-                       true,
-                       "source.__name == 'start'");
+                       true, "source.__name == 'start'");
                 equals(source.__parent == 'model_1',
-                       true,
-                       "source.__parent == 'model_1'");
+                       true, "source.__parent == 'model_1'");
             });
             
             test("Model.target", function() {
                 var target = model.target(model.node('edge_1'));
                 equals(target.__type == activities.model.FORK,
-                       true,
-                       "target.__type == activities.model.FORK");
+                       true, "target.__type == activities.model.FORK");
                 equals(target.__name == 'fork',
-                       true,
-                       "target.__name == 'fork'");
+                       true, "target.__name == 'fork'");
                 equals(target.__parent == 'model_1',
-                       true,
-                       "target.__parent == 'model_1'");
+                       true, "target.__parent == 'model_1'");
+            });
+            
+            test("Model.initial", function() {
+                equals(model.initial().__name,
+                       'start', "model.initial().__name");
+            });
+            
+            test("Model.create[Node|Edge]", function() {
+                var source = model.createNode(activities.model.Action);
+                equals(source.__name.length, 36, "source.__name.length");
+                equals(source.__parent, 'model_1', "source.__parent");
+                equals(source.incoming_edges.length,
+                       0, "source.incoming_edges");
+                equals(source.outgoing_edges.length,
+                       0, "source.outgoing_edges");
+                var target = model.createNode(activities.model.Action);
+                var edge = model.createEdge(source.__name, target.__name);
+                equals(edge.__name.length, 36, "edge.__name.length");
+                equals(edge.source.length, 36, "edge.source.length");
+                equals(edge.target.length, 36, "edge.target.length");
+                equals(edge.__name == source.outgoing_edges[0],
+                       true, "edge.__name == source.outgoing_edges[0]");
+                equals(edge.__name == target.incoming_edges[0],
+                       true, "edge.__name == target.incoming_edges[0]");
+                equals(edge.source == source.__name,
+                       true, "edge.source == source.__name");
+                equals(edge.target == target.__name,
+                       true, "edge.target == target.__name");
             });
             
             module("activities.ui.Grid");
@@ -368,69 +385,50 @@
             test("Grid.[set|get]", function() {
                 grid.set(0, 0, 'foo');
                 grid.set(1, 0, 'bar');
-                
                 equals(grid.get(0, 0),
-                       'foo',
-                       "grid.get(0, 0) == 'foo'");
+                       'foo', "grid.get(0, 0) == 'foo'");
                 equals(grid.get(1, 0),
-                       'bar',
-                       "grid.get(1, 0) == 'bar'");
+                       'bar', "grid.get(1, 0) == 'bar'");
                 equals(typeof(grid.get(1, 1)),
-                       "undefined",
-                       'typeof(grid.get(1, 1)) == "undefined"');
+                       "undefined", 'typeof(grid.get(1, 1)) == "undefined"');
             });
             
             test("Grid.before_X at zero position", function() {
                 grid.before_X(0, 0, 'baz');
-                
                 equals(grid.get(0, 0),
-                       'baz',
-                       "grid.get(0, 0) == 'baz'");
+                       'baz', "grid.get(0, 0) == 'baz'");
                 equals(grid.get(1, 0),
-                       'foo',
-                       "grid.get(1, 0) == 'foo'");
+                       'foo', "grid.get(1, 0) == 'foo'");
                 equals(grid.get(2, 0),
-                       'bar',
-                       "grid.get(2, 0) == 'bar'");
+                       'bar', "grid.get(2, 0) == 'bar'");
             });
             
             test("Grid.before_X at none zero position, new column", function() {
                 // expect ['baz', 'foo', 'bar']
                 grid.before_X(1, 0, 'bam');
-                
                 equals(grid.get(0, 0),
-                       'baz',
-                       "grid.get(0, 0) == 'baz'");
+                       'baz', "grid.get(0, 0) == 'baz'");
                 equals(grid.get(1, 0),
-                       'bam',
-                       "grid.get(1, 0) == 'bam'");
+                       'bam', "grid.get(1, 0) == 'bam'");
                 equals(grid.get(2, 0),
-                       'foo',
-                       "grid.get(2, 0) == 'foo'");
+                       'foo', "grid.get(2, 0) == 'foo'");
                 equals(grid.get(3, 0),
-                       'bar',
-                       "grid.get(3, 0) == 'bar'");
+                       'bar', "grid.get(3, 0) == 'bar'");
             });
             
             test("Grid.before_X at none zero position, free position",
                  function() {
-                     
                 grid.set(2, 0, null);
                 // expect ['baz', 'bam', null, 'bar']
                 grid.before_X(3, 0, 'foo');
-                
                 equals(grid.get(0, 0),
-                       'baz',
-                       "grid.get(0, 0) == 'baz'");
+                       'baz', "grid.get(0, 0) == 'baz'");
                 equals(grid.get(1, 0),
-                       'bam',
-                       "grid.get(1, 0) == 'bam'");
+                       'bam', "grid.get(1, 0) == 'bam'");
                 equals(grid.get(2, 0),
-                       'foo',
-                       "grid.get(2, 0) == 'foo'");
+                       'foo', "grid.get(2, 0) == 'foo'");
                 equals(grid.get(3, 0),
-                       'bar',
-                       "grid.get(3, 0) == 'bar'");
+                       'bar', "grid.get(3, 0) == 'bar'");
             });
             
             grid = new activities.ui.Grid();
@@ -440,22 +438,16 @@
                 grid.set(0, 1, null);
                 grid.set(0, 2, 'bar');
                 grid.set(0, 3, null);
-                
                 grid.before_Y(0, 0, 'baz');
                 equals(grid.get(0, 0),
-                       'baz',
-                       "grid.get(0, 0) == 'baz'");
+                       'baz', "grid.get(0, 0) == 'baz'");
                 equals(grid.get(0, 1),
-                       'foo',
-                       "grid.get(0, 1) == 'foo'");
-                
+                       'foo', "grid.get(0, 1) == 'foo'");
                 grid.before_Y(0, 2, 'bam');
                 equals(grid.get(0, 2),
-                       'bam',
-                       "grid.get(0, 2) == 'bam'");
+                       'bam', "grid.get(0, 2) == 'bam'");
                 equals(grid.get(0, 4),
-                       'bar',
-                       "grid.get(0, 4) == 'bar'");
+                       'bar', "grid.get(0, 4) == 'bar'");
             });
         }
     }

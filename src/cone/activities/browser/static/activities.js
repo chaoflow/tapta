@@ -18,6 +18,9 @@ var global_mousedown = 0;
     $(document).ready(function() {
         demo_editor = new activities.ui.Editor('level_0');
         demo_editor.newDiagram();
+        
+        $('.qunit').show();
+        tests.run();
     });
     
     
