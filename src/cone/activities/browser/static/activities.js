@@ -192,17 +192,32 @@ var global_mousedown = 0;
                 //activities.events.status(event.type, x, y, triggerColor);
             },
             
-            // global event handler for diagram children
+            // several event handler
         
             /*
              * activities.events.MOUSE_IN
+             * 
+             * set pointer cursor
              */
-            setCursor: function(obj, event) {
-                $(obj.diagram.layers.diagram.canvas).css('cursor', 'pointer');
+            setPointer: function(obj, event) {
+                var diagram = obj.dnd ? obj : obj.diagram;
+                $(diagram.layers.diagram.canvas).css('cursor', 'pointer');
+            },
+            
+            /*
+             * activities.events.MOUSE_IN
+             * 
+             * set default cursor
+             */
+            setDefault: function(obj, event) {
+                var diagram = obj.dnd ? obj : obj.diagram;
+                $(diagram.layers.diagram.canvas).css('cursor', 'default');
             },
             
             /*
              * activities.events.MOUSE_DOWN
+             * 
+             * set selected item. used by diagram elements
              */
             setSelected: function(obj, event) {
                 var diagram = obj.diagram;
@@ -215,30 +230,54 @@ var global_mousedown = 0;
                 obj.render();
                 diagram.editor.properties.display(obj);
             },
+        
+            /*
+             * activities.events.MOUSE_DOWN
+             * 
+             * unselect all diagram elements. used by diagram
+             */
+            unselectAll: function(obj, event) {
+                if (obj.focused) {
+                    obj.focused.selected = false;
+                    obj.focused.render();
+                }
+                obj.editor.properties.display(obj);
+            },
             
             /*
              * activities.events.MOUSE_DOWN
+             * 
+             * do action
              */
-            doElementAction: function(obj, event) {
-                var diagram = obj.diagram;
+            doAction: function(obj, event) {
+                var diagram = obj.dnd ? obj : obj.diagram;
                 var editor = diagram.editor;
+                var model = editor.model;
                 var actions = editor.actions;
-                if (actions.active != activities.actions.ADD_DIAGRAM_EDGE) {
-                    return;
+                var node;
+                switch(actions.active) {
+                    case activities.actions.ADD_DIAGRAM_ELEMENT: {
+                        node = editor.model.createNode(editor.actions.payload);
+                        var elem = diagram.get(node);
+                        var canvas = $(diagram.layers.diagram.canvas);
+                        var offset = canvas.offset();
+                        var x = node.x = elem.x = event.pageX - offset.left;
+                        var y = node.y = elem.y = event.pageY - offset.top;
+                        break;
+                    }
+                    case activities.actions.ADD_DIAGRAM_EDGE: {
+                        var payload = actions.payload;
+                        if (payload[1] == null) {
+                            var node_name = diagram.mapping[obj.triggerColor];
+                            payload[1] = node_name;
+                            return;
+                        }
+                        payload[2] = diagram.mapping[obj.triggerColor];
+                        node = model.createEdge(payload[1], payload[2])
+                        diagram.createEdge(node);
+                        break;
+                    }
                 }
-                var payload = actions.payload;
-                if (payload[1] == null) {
-                    var node_name = diagram.mapping[obj.triggerColor];
-                    payload[1] = node_name;
-                    return;
-                }
-                var node_name = diagram.mapping[obj.triggerColor];
-                payload[2] = node_name;
-                var node = editor.model.createEdge(payload[1], payload[2]);
-                var elem = new activities.ui.Edge(diagram);
-                elem.source = node.source;
-                elem.target = node.target;
-                diagram.map(node, elem);
                 actions.unselect();
                 editor.diagram.render();
             },
@@ -254,7 +293,7 @@ var global_mousedown = 0;
                 dispatcher.subscribe(
                     activities.events.MOUSE_IN,
                     element,
-                    activities.events.setCursor);
+                    activities.events.setPointer);
                 dispatcher.subscribe(
                     activities.events.MOUSE_DOWN,
                     element,
@@ -262,7 +301,7 @@ var global_mousedown = 0;
                 dispatcher.subscribe(
                     activities.events.MOUSE_DOWN,
                     element,
-                    activities.events.doElementAction);
+                    activities.events.doAction);
                 dispatcher.subscribe(
                     activities.events.MOUSE_DOWN,
                     element,
@@ -776,7 +815,7 @@ var global_mousedown = 0;
         }
         
         // set __name and __parent
-        // XXX: recursion
+        // XXX: recursion + dottedpath for parent
         for (var key in this.context.children) {
             var node = this.node(key);
             node.__name = key;
@@ -1628,7 +1667,7 @@ var global_mousedown = 0;
                 yStart = yMax / 2 - this.tiers[i].length;
                 for (var j in this.tiers[i]) {
                     node = this.model.node(this.tiers[i][j]);
-                    elem = this.diagram.getElement(node);
+                    elem = this.diagram.get(node);
                     grid.set(i, yStart + (j * 2), elem);
                 }
             }
@@ -1768,6 +1807,17 @@ var global_mousedown = 0;
         // array for trigger color calculation for this diagram
         this._nextTriggerColor = [0, 0, 0];
         
+        // child factories
+        this.factories = new Array();
+        this.factories[activities.model.INITIAL] = activities.ui.Initial;
+        this.factories[activities.model.FINAL] = activities.ui.Final;
+        this.factories[activities.model.ACTION] = activities.ui.Action;
+        this.factories[activities.model.DECISION] = activities.ui.Decision;
+        this.factories[activities.model.MERGE] = activities.ui.Merge;
+        this.factories[activities.model.FORK] = activities.ui.Fork;
+        this.factories[activities.model.JOIN] = activities.ui.Join;
+        
+        
         this.dispatcher = new activities.events.Dispatcher(this);
         this.dispatcher.bind();
     }
@@ -1781,18 +1831,18 @@ var global_mousedown = 0;
             // event subscription
             var dispatcher = this.dispatcher;
             dispatcher.subscribe(
-                activities.events.MOUSE_IN, this, this.setCursor);
+                activities.events.MOUSE_IN, this,
+                activities.events.setDefault);
             dispatcher.subscribe(
-                activities.events.MOUSE_DOWN, this, this.unselectAll);
+                activities.events.MOUSE_DOWN, this,
+                activities.events.unselectAll);
             dispatcher.subscribe(
-                activities.events.MOUSE_DOWN, this, this.doAction);
-            //dispatcher.subscribe(
-            //    activities.events.MOUSE_MOVE, this, this.pan);
+                activities.events.MOUSE_DOWN, this,
+                activities.events.doAction);
             dispatcher.subscribe(
                 activities.events.MOUSE_MOVE, this, this.dnd.drag);
             dispatcher.subscribe(
                 activities.events.MOUSE_UP, this, this.dnd.drop);
-            
         },
         
         /*
@@ -1879,111 +1929,43 @@ var global_mousedown = 0;
         /*
          * Lookup or create Diagram element by model node.
          */
-        getElement: function(node) {
+        get: function(node) {
             // check if element already exists
             var trigger = this.r_mapping[node.__name];
             if (trigger) {
                 return this.elements[trigger];
             }
-            
+            return this.createNode(node);
+        },
+        
+        /*
+         * create diagram node element
+         */
+        createNode: function(node) {
             var elem;
-            
-            // create new diagram element
-            switch (node.__type) {
-                case activities.model.EDGE: {
-                    // this is a kink
-                    var kink = new activities.ui.Kink();
-                    var trigger = this.r_mapping[node.__name];
-                    var edge = this.elements[trigger];
-                    edge.kinks.push(kink);
-                    return kink;
-                }
-                case activities.model.INITIAL: {
-                    elem = new activities.ui.Initial(this);
-                    break;
-                }
-                case activities.model.FINAL: {
-                    elem = new activities.ui.Final(this);
-                    break;
-                }
-                case activities.model.ACTION: {
-                    elem = new activities.ui.Action(this);
-                    break;
-                }
-                case activities.model.DECISION: {
-                    elem = new activities.ui.Decision(this);
-                    break;
-                }
-                case activities.model.MERGE: {
-                    elem = new activities.ui.Merge(this);
-                    break;
-                }
-                case activities.model.FORK: {
-                    elem = new activities.ui.Fork(this);
-                    break;
-                }
-                case activities.model.JOIN: {
-                    elem = new activities.ui.Join(this);
-                    break;
-                }
+            if (node.__type == activities.model.EDGE) {
+                // this is a kink
+                elem = new activities.ui.Kink();
+                var trigger = this.r_mapping[node.__name];
+                var edge = this.elements[trigger];
+                edge.kinks.push(elem);
+                return kink;
             }
+            elem = new this.factories[node.__type](this);
             this.map(node, elem);
             return elem;
         },
         
-        // event handler
-        
         /*
-         * activities.events.MOUSE_IN
+         * create diagram edge
          */
-        setCursor: function(obj, event) {
-            $(obj.layers.diagram.canvas).css('cursor', 'default');
-        },
-        
-        /*
-         * activities.events.MOUSE_DOWN
-         */
-        unselectAll: function(obj, event) {
-            if (obj.focused) {
-                obj.focused.selected = false;
-                obj.focused.render();
-            }
-            obj.editor.properties.display(obj);
-        },
-        
-        /*
-         * activities.events.MOUSE_DOWN
-         */
-        doAction: function(obj, event) {
-            var editor = obj.editor;
-            var actions = editor.actions;
-            if (actions.active != activities.actions.ADD_DIAGRAM_ELEMENT) {
-                return;
-            }
-            var node = editor.model.createNode(editor.actions.payload);
-            var elem = editor.diagram.getElement(node);
-            var canvas = $(editor.diagram.layers.diagram.canvas);
-            var offset = canvas.offset();
-            var x = node.x = elem.x = event.pageX - offset.left;
-            var y = node.y = elem.y = event.pageY - offset.top;
-            actions.unselect();
-            editor.diagram.render();
+        createEdge: function(node) {
+            var elem = new activities.ui.Edge(this);
+            elem.source = node.source;
+            elem.target = node.target;
+            this.map(node, elem);
+            return elem;
         }
-        
-        /*
-         * activities.events.MOUSE_MOVE
-         */
-/*        pan: function(obj, event) {
-            if (obj.dnd.recent) {
-                return;
-            }
-            var canvas = $(obj.layers.diagram.canvas);
-            var offset = canvas.offset();
-            var x = event.pageX - offset.left;
-            var y = event.pageY - offset.top;
-            var grid = obj.grid;
-            obj.render();
-        }*/
     }
     
     
