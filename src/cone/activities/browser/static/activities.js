@@ -208,9 +208,7 @@ var global_mousedown = 0;
                 }
                 var node_name = diagram.mapping[obj.triggerColor];
                 payload[2] = node_name;
-                var node = editor.model.create(payload[0]);
-                node.source = payload[1];
-                node.target = payload[2];
+                var node = editor.model.createEdge(payload[1], payload[2]);
                 var elem = new activities.ui.Edge(diagram);
                 elem.source = node.source;
                 elem.target = node.target;
@@ -614,7 +612,8 @@ var global_mousedown = 0;
                 'save_activity' : -230,
                 'debug'         : -253,
                 'run_tests'     : -276,
-                'flip_layers'   : -299
+                'flip_layers'   : -299,
+                'delete_element': -322
             },
             
             // tmp. remove as soon as persistence widget is implemented
@@ -697,6 +696,12 @@ var global_mousedown = 0;
                 actions.setSelected(element.attr('class'));
                 actions.active = activities.actions.ADD_DIAGRAM_EDGE;
                 actions.payload = [activities.model.EDGE, null, null];
+            },
+            
+            delete_element: function(name, element, event) {
+                var actions = activities.actions.actions_object(name);
+                actions.setSelected(element.attr('class'));
+                actions.active = activities.actions.DELETE_DIAGRAM_ELEMENT;
             },
             
             debug: function(name, element, event) {
@@ -812,6 +817,32 @@ var global_mousedown = 0;
             node.__parent = context.__name;
             node.__type = type;
             node.label = 'New ' + activities.model.TYPE_NAMES[type];
+            node.description = '';
+            return node;
+        },
+        
+        
+        /*
+         * Create new node in parent by type.
+         */
+        createNode: function(type, parent) {
+            var node = this.create(type, parent);
+            node.outgoing_edges = new Array();
+            node.incoming_edges = new Array();
+            return node;
+        },
+        
+        /*
+         * Create new edge in parent.
+         */
+        createEdge: function(source, target, parent) {
+            var node = this.create(activities.model.EDGE, parent);
+            node.source = source;
+            node.target = target;
+            var source_node = this.node(source);
+            var target_node = this.node(target);
+            source_node.outgoing_edges.push(node.__name);
+            target_node.incoming_edges.push(node.__name);
             return node;
         },
         
@@ -1848,12 +1879,11 @@ var global_mousedown = 0;
          */
         doAction: function(obj, event) {
             var editor = obj.editor;
-            //var actions = activities.actions.actions_object(obj.editor.name);
             var actions = editor.actions;
             if (actions.active != activities.actions.ADD_DIAGRAM_ELEMENT) {
                 return;
             }
-            var node = editor.model.create(editor.actions.payload);
+            var node = editor.model.createNode(editor.actions.payload);
             var elem = editor.diagram.getElement(node);
             var canvas = $(editor.diagram.layers.diagram.canvas);
             var offset = canvas.offset();
