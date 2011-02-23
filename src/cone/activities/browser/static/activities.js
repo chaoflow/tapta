@@ -223,12 +223,15 @@ var global_mousedown = 0;
                 var diagram = obj.diagram;
                 if (diagram.focused) {
                     diagram.focused.selected = false;
-                    //diagram.focused.render();
+                    diagram.renderTranslated(function() {
+                        diagram.focused.render();
+                    });
                 }
                 diagram.focused = obj;
                 obj.selected = true;
-                //obj.render();
-                diagram.render();
+                diagram.renderTranslated(function() {
+                    obj.render();
+                });
                 diagram.editor.properties.display(obj);
             },
         
@@ -1859,20 +1862,45 @@ var global_mousedown = 0;
         },
         
         /*
+         * create diagram edge
+         */
+        translateCursor: function(x, y) {
+            x = (x - this.origin_x) / this.scale;
+            y = (y - this.origin_y) / this.scale;
+            return [x, y];
+        },
+        
+        /*
+         * translate editor origin and scale and call render
+         */
+        renderTranslated: function(render) {
+            var context_ctl = this.layers.control.context;
+            context_ctl.save();
+            context_ctl.translate(this.origin_x, this.origin_y);
+            context_ctl.scale(this.scale, this.scale);
+            
+            var context_diag = this.layers.diagram.context;
+            context_diag.save();
+            context_diag.translate(this.origin_x, this.origin_y);
+            context_diag.scale(this.scale, this.scale);
+            
+            render();
+            
+            context_ctl.restore();
+            context_diag.restore();
+        },
+        
+        /*
          * iterate over elements of diagram and call render function
          */
         render: function() {
             //this.grid.arrange();
             
             // clear control layer
-            var context_ctl = this.layers.control.context;
-            context_ctl.save();
-            context_ctl.clearRect(0, 0, this.width, this.height);
-            context_ctl.restore();
-            
-            context_ctl.save();
-            context_ctl.translate(this.origin_x, this.origin_y);
-            context_ctl.scale(this.scale, this.scale);
+            var context = this.layers.control.context;
+            context.save();
+            context.clearRect(0, 0, this.width, this.height);
+            context.restore();
             
             // clear diagram layer
             var context = this.layers.diagram.context;
@@ -1881,25 +1909,21 @@ var global_mousedown = 0;
             context.fillRect(0, 0, this.width, this.height);
             context.restore();
             
-            context.save();
-            context.translate(this.origin_x, this.origin_y);
-            context.scale(this.scale, this.scale);
-            
-            var elem, selected;
-            for(var key in this.elements) {
-                var elem = this.elements[key];
-                if (elem.selected) {
-                    selected = elem;
-                    continue;
+            var diagram = this;
+            this.renderTranslated(function() {
+                var elem, selected;
+                for(var key in diagram.elements) {
+                    var elem = diagram.elements[key];
+                    if (elem.selected) {
+                        selected = elem;
+                        continue;
+                    }
+                    elem.render();
                 }
-                elem.render();
-            }
-            if (selected) {
-                selected.render();
-            }
-            
-            context_ctl.restore();
-            context.restore();
+                if (selected) {
+                    selected.render();
+                }
+            });
         },
         
         /*
@@ -2025,15 +2049,6 @@ var global_mousedown = 0;
             elem.target = node.target;
             this.map(node, elem);
             return elem;
-        },
-        
-        /*
-         * create diagram edge
-         */
-        translateCursor: function(x, y) {
-            x = (x - this.origin_x) / this.scale;
-            y = (y - this.origin_y) / this.scale;
-            return [x, y];
         }
     }
     
