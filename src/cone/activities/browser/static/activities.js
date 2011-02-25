@@ -1277,7 +1277,7 @@ var global_mousedown = 0;
                 ret += row;
             }
             return ret;
-        },
+        }
     }
     
     
@@ -1606,7 +1606,7 @@ var global_mousedown = 0;
         drop: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             diagram.dnd.recent = null;
-        },
+        }
     }
     
     
@@ -2040,7 +2040,7 @@ var global_mousedown = 0;
     // activities.ui.Element
     // ************************************************************************
     
-    activities.ui.Element = function(){
+    activities.ui.Element = function() {
         this.diagram = null;
         this.triggerColor = null;
         
@@ -2124,7 +2124,7 @@ var global_mousedown = 0;
             if (x - this.x <= 0 && y - this.y >= 0) {
                 return [this.x - x_diff, this.y + y_diff, angle * -1];
             }
-        },
+        }
     });
     
     
