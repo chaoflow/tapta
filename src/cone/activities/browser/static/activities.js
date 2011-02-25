@@ -170,10 +170,10 @@ var global_mousedown = 0;
                 var current = diagram.currentCursor(event);
                 var x = current[0];
                 var y = current[1];
-                var context = diagram.layers.control.context;
+                var ctx = diagram.layers.control.context;
                 // try to get pixel info, return if fails
                 try {
-                    var imgData = context.getImageData(x, y, 1, 1).data;
+                    var imgData = ctx.getImageData(x, y, 1, 1).data;
                 } catch (err) {
                     return;
                 }
@@ -379,6 +379,22 @@ var global_mousedown = 0;
             },
             
             /*
+             * bind diagram element default events
+             */
+            unbindElementDefaults: function() {
+                // event subscription
+                var diagram = this.diagram;
+                var dnd = diagram.dnd;
+                var dsp = diagram.dispatcher;
+                var events = activities.events;
+                dsp.unsubscribe(events.MOUSE_IN, this);
+                dsp.unsubscribe(events.MOUSE_DOWN, this);
+                dsp.unsubscribe(events.MOUSE_WHEEL, this);
+                dsp.unsubscribe(events.MOUSE_MOVE, this);
+                dsp.unsubscribe(events.MOUSE_UP, this);
+            },
+            
+            /*
              * events status message
              */
             status: function(evt, x, y, trigger) {
@@ -409,308 +425,6 @@ var global_mousedown = 0;
                     canvas.css('z-index', 1);
                     control.css('z-index', 0);
                 }
-            },
-            
-            // rendering helpers
-            
-            /*
-             * turn shadow drawing on.
-             */
-            shadowOn: function(context) {
-                context.shadowOffsetX = 2.5;
-                context.shadowOffsetY = 2.5;
-                context.shadowBlur = 3.0;
-                context.shadowColor = '#aaa';
-            },
-            
-            /*
-             * turn shadow drawing off.
-             */
-            shadowOff: function(context) {
-                context.shadowOffsetX = 0.0;
-                context.shadowOffsetY = 0.0;
-                context.shadowBlur = 0.0;
-            },
-            
-            /*
-             * draw rounded rect
-             */
-            roundedRect: function(context, x1, y1, x2, y2, r) {
-                var r2d = Math.PI / 180;
-                //ensure that the radius isn't too large for x
-                if ((x2 - x1) - (2 * r) < 0) {
-                    r = ((x2 - x1) / 2);
-                }
-                //ensure that the radius isn't too large for y
-                if((y2 - y1) - (2 * r) < 0 ) {
-                    r = ((y2 - y1) / 2);
-                }
-                context.beginPath();
-                context.moveTo(x1 + r, y1);
-                context.lineTo(x2 - r, y1);
-                context.arc(x2 - r, y1 + r, r, r2d * 270, r2d * 360, false);
-                context.lineTo(x2, y2 - r);
-                context.arc(x2 - r, y2 - r, r, r2d * 0, r2d * 90, false);
-                context.lineTo(x1 + r, y2);
-                context.arc(x1 + r, y2 - r, r, r2d * 90, r2d * 180, false);
-                context.lineTo(x1, y1 + r);
-                context.arc(x1 + r, y1 + r, r, r2d * 180, r2d * 270, false);
-                context.closePath();
-            },
-            
-            /*
-             * draw circle
-             */
-            circle: function(context, r) {
-                context.beginPath();
-                context.arc(0, 0, r, 0, Math.PI * 2, true);
-                context.closePath();
-            },
-            
-            /*
-             * draw filled rect
-             */
-            fillRect: function(context,
-                               color,
-                               width,
-                               height,
-                               shadow,
-                               radius) {
-                if (!radius && radius != 0) {
-                    radius = 3;
-                }
-                context.fillStyle = color;
-                if (shadow) {
-                    activities.ui.shadowOn(context);
-                }
-                var x = width / 2;
-                var y = height / 2;
-                activities.ui.roundedRect(
-                    context, x * -1, y * -1, x, y, 3);
-                context.fill();
-                if (shadow) {
-                    activities.ui.shadowOff(context);
-                }
-            },
-            
-            /*
-             * draw stroke rect
-             */
-            strokeRect: function(context,
-                                 color,
-                                 lineWidth,
-                                 width,
-                                 height) {
-                context.strokeStyle = color;
-                context.lineWidth = lineWidth;
-                var x = width / 2;
-                var y = height / 2;
-                activities.ui.roundedRect(
-                    context, x * -1, y * -1, x, y, 3);
-                context.stroke();
-            },
-            
-            /*
-             * draw filled circle
-             */
-            fillCircle: function(context,
-                                 color,
-                                 radius,
-                                 shadow) {
-                context.fillStyle = color;
-                if (shadow) {
-                    activities.ui.shadowOn(context);
-                }
-                activities.ui.circle(context, radius);
-                context.fill();
-                if (shadow) {
-                    activities.ui.shadowOff(context);
-                }
-            },
-            
-            /*
-             * draw stroke circle 
-             */
-            strokeCircle: function(context,
-                                   color,
-                                   radius,
-                                   lineWidth) {
-                context.strokeStyle = color;
-                context.lineWidth = lineWidth;
-                activities.ui.circle(context, radius);
-                context.stroke();
-            },
-            
-            /*
-             * draw label
-             */
-            label: function(context, label, width) {
-                context.fillStyle = '#000';
-                context.textAlign = 'center';
-                context.textBaseline = 'middle';
-                context.font = '12px sans-serif';
-                context.fillText(label, 0, 0, width);
-            },
-            
-            translateEdge: function(elem, x, y, x_diff, y_diff, angle) {
-                if (x - elem.x >= 0 && y - elem.y >= 0) {
-                    return [elem.x + x_diff, elem.y + y_diff, angle - 180];
-                }
-                if (x - elem.x >= 0 && y - elem.y <= 0) {
-                    return [elem.x + x_diff, elem.y - y_diff, 180 - angle];
-                }
-                if (x - elem.x <= 0 && y - elem.y <= 0) {
-                    return [elem.x - x_diff, elem.y - y_diff, angle];
-                }
-                if (x - elem.x <= 0 && y - elem.y >= 0) {
-                    return [elem.x - x_diff, elem.y + y_diff, angle * -1];
-                }
-            },
-            
-            // diagram element agnostic. must be set on element
-            
-            /*
-             * default rect diagram element initialization
-             */
-            initDiagramElem: function(width_or_radius, height, rotation) {
-                this.diagram = null;
-                this.triggerColor = null;
-                this.x = 0;
-                this.y = 0;
-                this.rotation = rotation;
-                
-                // if circle
-                this.radius = width_or_radius;
-                
-                // if rect
-                this.width = width_or_radius;
-                this.height = height;
-                
-                this.edgeOffset = 5;
-                this.borderWidth = 2;
-                this.fillColor = '#edf7ff';
-                this.borderColor = '#b5d9ea';
-                this.selectedFillColor = '#fff7ae';
-                this.selectedBorderColor = '#e3ca4b';
-                this.renderLabel = false;
-                this.selected = false;
-                this.label = null;
-                this.description = null;
-            },
-            
-            /*
-             * default rect diagram element rendering
-             */
-            renderRectElem: function() {
-                // control layer
-                var context = this.diagram.layers.control.context;
-                context.save();
-                context.translate(this.x, this.y);
-                if (this.rotation) {
-                    context.rotate(this.rotation * Math.PI / 180);
-                }
-                activities.ui.fillRect(context,
-                                       this.triggerColor,
-                                       this.width,
-                                       this.height);
-                context.restore();
-                
-                // diagram layer
-                var fillColor, borderColor;
-                if (!this.selected) {
-                    fillColor = this.fillColor;
-                    borderColor = this.borderColor;
-                } else {
-                    fillColor = this.selectedFillColor;
-                    borderColor = this.selectedBorderColor;
-                }
-                context = this.diagram.layers.diagram.context;
-                context.save();
-                context.translate(this.x, this.y);
-                if (this.rotation) {
-                    context.rotate(this.rotation * Math.PI / 180);
-                }
-                activities.ui.fillRect(context,
-                                       fillColor,
-                                       this.width,
-                                       this.height,
-                                       true);
-                activities.ui.strokeRect(context,
-                                         borderColor,
-                                         this.borderWidth,
-                                         this.width,
-                                         this.height);
-                if (this.renderLabel) {
-                    activities.ui.label(context, this.label, this.width);
-                }
-                context.restore();
-            },
-            
-            /*
-             * Translate element coordinate for edge source by given following
-             * point coordinate.
-             *
-             * Translate for circle element.
-             */
-            translateCircleEdge: function(x, y) {
-                var gk = y - this.y;
-                var ak = this.x - x;
-                var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
-                var rad = this.radius + this.edgeOffset;
-                var cos = Math.cos(Math.PI * angle / 180.0);
-                var sin = Math.sin(Math.PI * angle / 180.0);
-                var x_diff = rad * cos;
-                var y_diff = rad * sin;
-                return activities.ui.translateEdge(
-                    this, x, y, x_diff, y_diff, angle);
-            },
-            
-            /*
-             * Translate element coordinate for edge source by given following
-             * point coordinate.
-             *
-             * Translate for rect element.
-             */
-            translateRectEdge: function(x, y) {
-                var width = this.width;
-                var height = this.height;
-                var gk = height / 2;
-                var ak = width / 2;
-                var marker = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
-                gk = y - this.y;
-                ak = this.x - x;
-                var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
-                var angle_orgin = angle;
-                if (this.rotation > 0) {
-                    angle -= this.rotation;
-                }
-                var x_diff, y_diff;
-                if (angle >= marker) {
-                    angle = 90 - angle;
-                    // XXX: offset by cos/sin
-                    // ak = height / 2; //+ this.edgeOffset;
-                    ak = height / 2 + this.edgeOffset;
-                    gk = ak * Math.tan(Math.PI * angle / 180.0);
-                    x_diff = gk;
-                    y_diff = ak;
-                } else {
-                    // XXX: offset by cos/sin
-                    // ak = width / 2; // + this.edgeOffset;
-                    ak = width / 2 + this.edgeOffset;
-                    gk = ak * Math.tan(Math.PI * angle / 180.0);
-                    x_diff = ak;
-                    y_diff = gk;
-                }
-                if (this.rotation > 0) {
-                    var cos = Math.cos(Math.PI * this.rotation / 180.0);
-                    var sin = Math.sin(Math.PI * this.rotation / 180.0);
-                    var x_new = x_diff * cos - y_diff * sin;
-                    var y_new = y_diff * cos + x_diff * sin;
-                    x_diff = x_new;
-                    y_diff = y_new;
-                }
-                return activities.ui.translateEdge(
-                    this, x, y, x_diff, y_diff, angle_orgin);
             }
         },
         
@@ -1164,6 +878,13 @@ var global_mousedown = 0;
                 ];
             }
             this.subscriber[obj.triggerColor][evt].push(handler);
+        },
+        
+        /*
+         * unsubscribe object from event
+         */
+        unsubscribe: function(evt, obj) {
+            delete this.subscriber[obj.triggerColor];
         }
     }
     
@@ -2027,20 +1748,20 @@ var global_mousedown = 0;
          * translate editor origin and scale and call render
          */
         renderTranslated: function(render) {
-            var context_ctl = this.layers.control.context;
-            context_ctl.save();
-            context_ctl.translate(this.origin_x, this.origin_y);
-            context_ctl.scale(this.scale, this.scale);
+            var ctx_ctl = this.layers.control.context;
+            ctx_ctl.save();
+            ctx_ctl.translate(this.origin_x, this.origin_y);
+            ctx_ctl.scale(this.scale, this.scale);
             
-            var context_diag = this.layers.diagram.context;
-            context_diag.save();
-            context_diag.translate(this.origin_x, this.origin_y);
-            context_diag.scale(this.scale, this.scale);
+            var ctx_diag = this.layers.diagram.context;
+            ctx_diag.save();
+            ctx_diag.translate(this.origin_x, this.origin_y);
+            ctx_diag.scale(this.scale, this.scale);
             
             render();
             
-            context_ctl.restore();
-            context_diag.restore();
+            ctx_ctl.restore();
+            ctx_diag.restore();
         },
         
         /*
@@ -2050,17 +1771,17 @@ var global_mousedown = 0;
             //this.grid.arrange();
             
             // clear control layer
-            var context = this.layers.control.context;
-            context.save();
-            context.clearRect(0, 0, this.width, this.height);
-            context.restore();
+            var ctx = this.layers.control.context;
+            ctx.save();
+            ctx.clearRect(0, 0, this.width, this.height);
+            ctx.restore();
             
             // clear diagram layer
-            var context = this.layers.diagram.context;
-            context.save();
-            context.fillStyle = '#ffffff';
-            context.fillRect(0, 0, this.width, this.height);
-            context.restore();
+            var ctx = this.layers.diagram.context;
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, this.width, this.height);
+            ctx.restore();
             
             var diagram = this;
             this.renderTranslated(function() {
@@ -2146,6 +1867,7 @@ var global_mousedown = 0;
             var node = model.node(path);
             var elem = this.get(node);
             var triggerColor = elem.triggerColor;
+            elem.unbind();
             if (node.__type != activities.model.EDGE) {
                 var edges = new Array();
                 for (idx in node.incoming_edges) {
@@ -2207,30 +1929,191 @@ var global_mousedown = 0;
     
     
     // ************************************************************************
-    // activities.ui.Initial
+    // activities.ui.DiagramElement
     // ************************************************************************
     
-    activities.ui.Initial = function(diagram) {
-        this.init(20, 0, 0);
+    activities.ui.DiagramElement = function(width_or_radius, height, rotation) {
+        this.diagram = null;
+        this.triggerColor = null;
+        this.x = 0;
+        this.y = 0;
+        this.rotation = rotation;
+        
+        // if circle
+        this.radius = width_or_radius;
+        
+        // if rect
+        this.width = width_or_radius;
+        this.height = height;
+        
+        this.edgeOffset = 5;
+        this.borderWidth = 2;
+        this.fillColor = '#edf7ff';
+        this.borderColor = '#b5d9ea';
+        this.selectedFillColor = '#fff7ae';
+        this.selectedBorderColor = '#e3ca4b';
+        this.renderLabel = false;
+        this.selected = false;
+        this.label = null;
+        this.description = null;
     }
     
-    activities.ui.Initial.prototype = {
+    activities.ui.DiagramElement.prototype = {
         
-        bind: activities.events.bindElementDefaults,
+        /*
+         * turn shadow drawing on.
+         */
+        shadowOn: function(ctx) {
+            ctx.shadowOffsetX = 2.5;
+            ctx.shadowOffsetY = 2.5;
+            ctx.shadowBlur = 3.0;
+            ctx.shadowColor = '#aaa';
+        },
         
-        init: activities.ui.initDiagramElem,
+        /*
+         * turn shadow drawing off.
+         */
+        shadowOff: function(ctx) {
+            ctx.shadowOffsetX = 0.0;
+            ctx.shadowOffsetY = 0.0;
+            ctx.shadowBlur = 0.0;
+        },
         
-        translateEdge: activities.ui.translateCircleEdge,
+        /*
+         * draw rounded rect
+         */
+        roundedRect: function(ctx, x1, y1, x2, y2, r) {
+            var r2d = Math.PI / 180;
+            //ensure that the radius isn't too large for x
+            if ((x2 - x1) - (2 * r) < 0) {
+                r = ((x2 - x1) / 2);
+            }
+            //ensure that the radius isn't too large for y
+            if((y2 - y1) - (2 * r) < 0 ) {
+                r = ((y2 - y1) / 2);
+            }
+            ctx.beginPath();
+            ctx.moveTo(x1 + r, y1);
+            ctx.lineTo(x2 - r, y1);
+            ctx.arc(x2 - r, y1 + r, r, r2d * 270, r2d * 360, false);
+            ctx.lineTo(x2, y2 - r);
+            ctx.arc(x2 - r, y2 - r, r, r2d * 0, r2d * 90, false);
+            ctx.lineTo(x1 + r, y2);
+            ctx.arc(x1 + r, y2 - r, r, r2d * 90, r2d * 180, false);
+            ctx.lineTo(x1, y1 + r);
+            ctx.arc(x1 + r, y1 + r, r, r2d * 180, r2d * 270, false);
+            ctx.closePath();
+        },
         
-        render: function() {
+        /*
+         * draw circle
+         */
+        circle: function(ctx, r) {
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2, true);
+            ctx.closePath();
+        },
+        
+        /*
+         * draw filled rect
+         */
+        fillRect: function(ctx, color, width, height, shadow, radius) {
+            if (!radius && radius != 0) {
+                radius = 3;
+            }
+            ctx.fillStyle = color;
+            if (shadow) {
+                this.shadowOn(ctx);
+            }
+            var x = width / 2;
+            var y = height / 2;
+            this.roundedRect(ctx, x * -1, y * -1, x, y, 3);
+            ctx.fill();
+            if (shadow) {
+                this.shadowOff(ctx);
+            }
+        },
+        
+        /*
+         * draw stroke rect
+         */
+        strokeRect: function(ctx, color, lineWidth, width, height) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            var x = width / 2;
+            var y = height / 2;
+            this.roundedRect(ctx, x * -1, y * -1, x, y, 3);
+            ctx.stroke();
+        },
+        
+        /*
+         * draw filled circle
+         */
+        fillCircle: function(ctx, color, radius, shadow) {
+            ctx.fillStyle = color;
+            if (shadow) {
+                this.shadowOn(ctx);
+            }
+            this.circle(ctx, radius);
+            ctx.fill();
+            if (shadow) {
+                this.shadowOff(ctx);
+            }
+        },
+        
+        /*
+         * draw stroke circle 
+         */
+        strokeCircle: function(ctx, color, radius, lineWidth) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            this.circle(ctx, radius);
+            ctx.stroke();
+        },
+        
+        /*
+         * draw label
+         */
+        drawLabel: function(ctx, label, width) {
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = '12px sans-serif';
+            ctx.fillText(label, 0, 0, width);
+        },
+        
+        /*
+         * translate coordinate direction for element edge start/end
+         * translation.
+         */
+        translateDirection: function(x, y, x_diff, y_diff, angle) {
+            if (x - this.x >= 0 && y - this.y >= 0) {
+                return [this.x + x_diff, this.y + y_diff, angle - 180];
+            }
+            if (x - this.x >= 0 && y - this.y <= 0) {
+                return [this.x + x_diff, this.y - y_diff, 180 - angle];
+            }
+            if (x - this.x <= 0 && y - this.y <= 0) {
+                return [this.x - x_diff, this.y - y_diff, angle];
+            }
+            if (x - this.x <= 0 && y - this.y >= 0) {
+                return [this.x - x_diff, this.y + y_diff, angle * -1];
+            }
+        },
+        
+        /*
+         * default rect diagram element rendering
+         */
+        renderRectElem: function() {
             // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillCircle(context,
-                                     this.triggerColor,
-                                     this.radius);
-            context.restore();
+            var ctx = this.diagram.layers.control.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            if (this.rotation) {
+                ctx.rotate(this.rotation * Math.PI / 180);
+            }
+            this.fillRect(ctx, this.triggerColor, this.width, this.height);
+            ctx.restore();
             
             // diagram layer
             var fillColor, borderColor;
@@ -2241,72 +2124,176 @@ var global_mousedown = 0;
                 fillColor = this.selectedFillColor;
                 borderColor = this.selectedBorderColor;
             }
-            context = this.diagram.layers.diagram.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillCircle(context,
-                                     fillColor,
-                                     this.radius,
-                                     true);
-            activities.ui.strokeCircle(context,
-                                       borderColor,
-                                       this.radius,
-                                       this.borderWidth);
-            context.restore();
+            ctx = this.diagram.layers.diagram.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            if (this.rotation) {
+                ctx.rotate(this.rotation * Math.PI / 180);
+            }
+            this.fillRect(
+                ctx, fillColor, this.width, this.height, true);
+            this.strokeRect(
+                ctx, borderColor, this.borderWidth, this.width, this.height);
+            if (this.renderLabel) {
+                this.drawLabel(ctx, this.label, this.width);
+            }
+            ctx.restore();
+        },
+        
+        /*
+         * Translate element coordinate for edge source by given following
+         * point coordinate.
+         *
+         * Translate for circle element.
+         */
+        translateCircleEdge: function(x, y) {
+            var gk = y - this.y;
+            var ak = this.x - x;
+            var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+            var rad = this.radius + this.edgeOffset;
+            var cos = Math.cos(Math.PI * angle / 180.0);
+            var sin = Math.sin(Math.PI * angle / 180.0);
+            var x_diff = rad * cos;
+            var y_diff = rad * sin;
+            return this.translateDirection(x, y, x_diff, y_diff, angle);
+        },
+        
+        /*
+         * Translate element coordinate for edge source by given following
+         * point coordinate.
+         *
+         * Translate for rect element.
+         */
+        translateRectEdge: function(x, y) {
+            var width = this.width;
+            var height = this.height;
+            var gk = height / 2;
+            var ak = width / 2;
+            var marker = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+            gk = y - this.y;
+            ak = this.x - x;
+            var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+            var angle_orgin = angle;
+            if (this.rotation > 0) {
+                angle -= this.rotation;
+            }
+            var x_diff, y_diff;
+            if (angle >= marker) {
+                angle = 90 - angle;
+                // XXX: offset by cos/sin
+                // ak = height / 2; //+ this.edgeOffset;
+                ak = height / 2 + this.edgeOffset;
+                gk = ak * Math.tan(Math.PI * angle / 180.0);
+                x_diff = gk;
+                y_diff = ak;
+            } else {
+                // XXX: offset by cos/sin
+                // ak = width / 2; // + this.edgeOffset;
+                ak = width / 2 + this.edgeOffset;
+                gk = ak * Math.tan(Math.PI * angle / 180.0);
+                x_diff = ak;
+                y_diff = gk;
+            }
+            if (this.rotation > 0) {
+                var cos = Math.cos(Math.PI * this.rotation / 180.0);
+                var sin = Math.sin(Math.PI * this.rotation / 180.0);
+                var x_new = x_diff * cos - y_diff * sin;
+                var y_new = y_diff * cos + x_diff * sin;
+                x_diff = x_new;
+                y_diff = y_new;
+            }
+            return this.translateDirection(x, y, x_diff, y_diff, angle_orgin);
         }
     }
     
+    
+    // ************************************************************************
+    // activities.ui.Initial
+    // ************************************************************************
+    
+    activities.ui.Initial = function() {
+        activities.ui.DiagramElement.call(this, 20, 0, 0);
+    }
+    
+    activities.ui.Initial.prototype = new activities.ui.DiagramElement;
+    
+    activities.ui.Initial.prototype.bind = 
+        activities.events.bindElementDefaults;
+    
+    activities.ui.Initial.prototype.unbind = 
+        activities.events.unbindElementDefaults;
+    
+    activities.ui.Initial.prototype.translateEdge = 
+        activities.ui.DiagramElement.prototype.translateCircleEdge;
+    
+    activities.ui.Initial.prototype.render = function() {
+        // control layer
+        var ctx = this.diagram.layers.control.context;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        this.fillCircle(ctx, this.triggerColor, this.radius);
+        ctx.restore();
+        
+        // diagram layer
+        var fillColor, borderColor;
+        if (!this.selected) {
+            fillColor = this.fillColor;
+            borderColor = this.borderColor;
+        } else {
+            fillColor = this.selectedFillColor;
+            borderColor = this.selectedBorderColor;
+        }
+        ctx = this.diagram.layers.diagram.context;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        this.fillCircle(ctx, fillColor, this.radius, true);
+        this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
+        ctx.restore();
+    }
     
     // ************************************************************************
     // activities.ui.Final
     // ************************************************************************
     
-    activities.ui.Final = function(diagram) {
-        this.init(20, 0, 0);
+    activities.ui.Final = function() {
+        activities.ui.DiagramElement.call(this, 20, 0, 0);
     }
     
-    activities.ui.Final.prototype = {
+    activities.ui.Final.prototype = new activities.ui.DiagramElement;
+    
+    activities.ui.Final.prototype.bind = 
+        activities.events.bindElementDefaults;
+    
+    activities.ui.Final.prototype.unbind = 
+        activities.events.unbindElementDefaults;
+    
+    activities.ui.Final.prototype.translateEdge =
+        activities.ui.DiagramElement.prototype.translateCircleEdge;
+    
+    activities.ui.Final.prototype.render = function() {
+        // control layer
+        var ctx = this.diagram.layers.control.context;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        this.fillCircle(ctx, this.triggerColor, this.radius);
+        ctx.restore();
         
-        bind: activities.events.bindElementDefaults,
-        
-        init: activities.ui.initDiagramElem,
-        
-        translateEdge: activities.ui.translateCircleEdge,
-        
-        render: function() {
-            // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillCircle(context,
-                                     this.triggerColor,
-                                     this.radius);
-            context.restore();
-            
-            // diagram layer
-            var fillColor, borderColor;
-            if (!this.selected) {
-                fillColor = this.fillColor;
-                borderColor = this.borderColor;
-            } else {
-                fillColor = this.selectedFillColor;
-                borderColor = this.selectedBorderColor;
-            }
-            context = this.diagram.layers.diagram.context;
-            context.save();
-            context.translate(this.x, this.y);
-            activities.ui.fillCircle(context,
-                                     borderColor,
-                                     this.radius,
-                                     true);
-            activities.ui.fillCircle(context,
-                                     fillColor,
-                                     this.radius - this.borderWidth);
-            activities.ui.fillCircle(context,
-                                     borderColor,
-                                     this.radius / 2);
-            context.restore();
+        // diagram layer
+        var fillColor, borderColor;
+        if (!this.selected) {
+            fillColor = this.fillColor;
+            borderColor = this.borderColor;
+        } else {
+            fillColor = this.selectedFillColor;
+            borderColor = this.selectedBorderColor;
         }
+        ctx = this.diagram.layers.diagram.context;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        this.fillCircle(ctx, borderColor, this.radius, true);
+        this.fillCircle(ctx, fillColor, this.radius - this.borderWidth);
+        this.fillCircle(ctx, borderColor, this.radius / 2);
+        ctx.restore();
     }
     
     
@@ -2314,61 +2301,70 @@ var global_mousedown = 0;
     // activities.ui.Action
     // ************************************************************************
     
-    activities.ui.Action = function(diagram) {
-        this.init(100, 70, 0);
+    activities.ui.Action = function() {
+        activities.ui.DiagramElement.call(this, 100, 70, 0);
         this.renderLabel = true;
     }
     
-    activities.ui.Action.prototype = {
-        
-        bind: activities.events.bindElementDefaults,
-        
-        init: activities.ui.initDiagramElem,
-        
-        translateEdge: activities.ui.translateRectEdge,
-        
-        render: activities.ui.renderRectElem
-    }
+    activities.ui.Action.prototype = new activities.ui.DiagramElement;
+    
+    activities.ui.Action.prototype.bind = 
+        activities.events.bindElementDefaults;
+    
+    activities.ui.Action.prototype.unbind = 
+        activities.events.unbindElementDefaults;
+    
+    activities.ui.Action.prototype.translateEdge = 
+        activities.ui.DiagramElement.prototype.translateRectEdge;
+    
+    activities.ui.Action.prototype.render = 
+        activities.ui.DiagramElement.prototype.renderRectElem;
     
     
     // ************************************************************************
     // activities.ui.Decision
     // ************************************************************************
     
-    activities.ui.Decision = function(diagram) {
-        this.init(40, 40, 45);
+    activities.ui.Decision = function() {
+        activities.ui.DiagramElement.call(this, 40, 40, 45);
     }
     
-    activities.ui.Decision.prototype = {
-        
-        bind: activities.events.bindElementDefaults,
-        
-        init: activities.ui.initDiagramElem,
-        
-        translateEdge: activities.ui.translateRectEdge,
-        
-        render: activities.ui.renderRectElem
-    }
+    activities.ui.Decision.prototype = new activities.ui.DiagramElement;
+    
+    activities.ui.Decision.prototype.bind = 
+        activities.events.bindElementDefaults;
+    
+    activities.ui.Decision.prototype.unbind = 
+        activities.events.unbindElementDefaults;
+    
+    activities.ui.Decision.prototype.translateEdge = 
+        activities.ui.DiagramElement.prototype.translateRectEdge;
+    
+    activities.ui.Decision.prototype.render = 
+        activities.ui.DiagramElement.prototype.renderRectElem;
     
     
     // ************************************************************************
     // activities.ui.Merge
     // ************************************************************************
     
-    activities.ui.Merge = function(diagram) {
-        this.init(40, 40, 45);
+    activities.ui.Merge = function() {
+        activities.ui.DiagramElement.call(this, 40, 40, 45);
     }
     
-    activities.ui.Merge.prototype = {
-        
-        bind: activities.events.bindElementDefaults,
-        
-        init: activities.ui.initDiagramElem,
-        
-        translateEdge: activities.ui.translateRectEdge,
-        
-        render: activities.ui.renderRectElem
-    }
+    activities.ui.Merge.prototype = new activities.ui.DiagramElement;
+    
+    activities.ui.Merge.prototype.bind = 
+        activities.events.bindElementDefaults;
+    
+    activities.ui.Merge.prototype.unbind = 
+        activities.events.unbindElementDefaults;
+    
+    activities.ui.Merge.prototype.translateEdge = 
+        activities.ui.DiagramElement.prototype.translateRectEdge;
+    
+    activities.ui.Merge.prototype.render = 
+        activities.ui.DiagramElement.prototype.renderRectElem;
     
     
     // ************************************************************************
@@ -2376,19 +2372,22 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Join = function(diagram) {
-        this.init(10, 80, 0);
+        activities.ui.DiagramElement.call(this, 10, 80, 0);
     }
     
-    activities.ui.Join.prototype = {
-        
-        bind: activities.events.bindElementDefaults,
-        
-        init: activities.ui.initDiagramElem,
-        
-        translateEdge: activities.ui.translateRectEdge,
-        
-        render: activities.ui.renderRectElem
-    }
+    activities.ui.Join.prototype = new activities.ui.DiagramElement;
+    
+    activities.ui.Join.prototype.bind = 
+        activities.events.bindElementDefaults;
+    
+    activities.ui.Join.prototype.unbind = 
+        activities.events.unbindElementDefaults;
+    
+    activities.ui.Join.prototype.translateEdge = 
+        activities.ui.DiagramElement.prototype.translateRectEdge;
+    
+    activities.ui.Join.prototype.render = 
+        activities.ui.DiagramElement.prototype.renderRectElem;
     
     
     // ************************************************************************
@@ -2396,26 +2395,29 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Fork = function(diagram) {
-        this.init(10, 80, 0);
+        activities.ui.DiagramElement.call(this, 10, 80, 0);
     }
     
-    activities.ui.Fork.prototype = {
-        
-        bind: activities.events.bindElementDefaults,
-        
-        init: activities.ui.initDiagramElem,
-        
-        translateEdge: activities.ui.translateRectEdge,
-        
-        render: activities.ui.renderRectElem
-    }
+    activities.ui.Fork.prototype = new activities.ui.DiagramElement;
+    
+    activities.ui.Fork.prototype.bind = 
+        activities.events.bindElementDefaults;
+    
+    activities.ui.Fork.prototype.unbind = 
+        activities.events.unbindElementDefaults;
+    
+    activities.ui.Fork.prototype.translateEdge = 
+        activities.ui.DiagramElement.prototype.translateRectEdge;
+    
+    activities.ui.Fork.prototype.render = 
+        activities.ui.DiagramElement.prototype.renderRectElem;
     
     
     // ************************************************************************
     // activities.ui.Edge
     // ************************************************************************
     
-    activities.ui.Edge = function(diagram) {
+    activities.ui.Edge = function() {
         this.diagram = null;
         this.triggerColor = null;
         this.color = '#333333';
@@ -2432,6 +2434,8 @@ var global_mousedown = 0;
     
     activities.ui.Edge.prototype = {
         
+        circle: activities.ui.DiagramElement.prototype.circle,
+        
         bind: function() {
             var dsp = this.diagram.dispatcher;
             var events = activities.events;
@@ -2439,6 +2443,14 @@ var global_mousedown = 0;
             dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
             dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, this.diagram.dnd.zoom);
+        },
+        
+        unbind: function() {
+            var dsp = this.diagram.dispatcher;
+            var events = activities.events;
+            dsp.unsubscribe(events.MOUSE_IN, this);
+            dsp.unsubscribe(events.MOUSE_DOWN, this);
+            dsp.unsubscribe(events.MOUSE_WHEEL, this);
         },
         
         translate: function() {
@@ -2466,32 +2478,32 @@ var global_mousedown = 0;
             this._end = target.translateEdge(x, y);
         },
         
-        renderPath: function(context) {
-            context.beginPath();
-            context.moveTo(this._start[0], this._start[1]);
+        renderPath: function(ctx) {
+            ctx.beginPath();
+            ctx.moveTo(this._start[0], this._start[1]);
             var kink;
             for (var idx in this.kinks) {
                 kink = this.kinks[idx];
-                context.lineTo(kink.x, kink.y);
+                ctx.lineTo(kink.x, kink.y);
             }
-            context.lineTo(this._end[0], this._end[1]);
-            context.closePath();
+            ctx.lineTo(this._end[0], this._end[1]);
+            ctx.closePath();
         },
         
-        renderRoot: function(context) {
-            context.translate(this._start[0], this._start[1]);
-            activities.ui.circle(context, this.lineWidth);
+        renderRoot: function(ctx) {
+            ctx.translate(this._start[0], this._start[1]);
+            this.circle(ctx, this.lineWidth);
         },
         
-        renderArrow: function(context) {
+        renderArrow: function(ctx) {
             var len = this.arrowLength;
-            context.translate(this._end[0], this._end[1]);
-            context.rotate(this._end[2] * Math.PI / 180);
-            context.beginPath();
-            context.lineTo(len * -1, len / 3);
-            context.lineTo(len * -1, len * -1 / 3);
-            context.lineTo(0, 0);
-            context.closePath();
+            ctx.translate(this._end[0], this._end[1]);
+            ctx.rotate(this._end[2] * Math.PI / 180);
+            ctx.beginPath();
+            ctx.lineTo(len * -1, len / 3);
+            ctx.lineTo(len * -1, len * -1 / 3);
+            ctx.lineTo(0, 0);
+            ctx.closePath();
         },
         
         render: function() {
@@ -2499,58 +2511,58 @@ var global_mousedown = 0;
             this.translate();
             
             // control layer
-            var context = this.diagram.layers.control.context;
-            context.save();
-            context.strokeStyle = this.triggerColor;
-            context.lineWidth = this.lineWidth + 3;
-            context.lineCap = 'round';
-            this.renderPath(context);
-            context.stroke();
-            context.restore();
+            var ctx = this.diagram.layers.control.context;
+            ctx.save();
+            ctx.strokeStyle = this.triggerColor;
+            ctx.lineWidth = this.lineWidth + 3;
+            ctx.lineCap = 'round';
+            this.renderPath(ctx);
+            ctx.stroke();
+            ctx.restore();
             
             // diagram layer
-            context = this.diagram.layers.diagram.context;
-            context.save();
+            ctx = this.diagram.layers.diagram.context;
+            ctx.save();
             if (!this.selected) {
-                context.strokeStyle = this.color;
+                ctx.strokeStyle = this.color;
             } else {
-                context.strokeStyle = this.selectedColor;
+                ctx.strokeStyle = this.selectedColor;
             }
-            context.lineWidth = this.lineWidth;
-            context.lineCap = 'round';
-            this.renderPath(context);
-            context.stroke();
-            context.restore();
+            ctx.lineWidth = this.lineWidth;
+            ctx.lineCap = 'round';
+            this.renderPath(ctx);
+            ctx.stroke();
+            ctx.restore();
             
             // root
-            context.save();
+            ctx.save();
             if (!this.selected) {
-                context.strokeStyle = this.color;
-                context.fillStyle = this.color;
+                ctx.strokeStyle = this.color;
+                ctx.fillStyle = this.color;
             } else {
-                context.strokeStyle = this.selectedColor;
-                context.fillStyle = this.selectedColor;
+                ctx.strokeStyle = this.selectedColor;
+                ctx.fillStyle = this.selectedColor;
             }
-            context.lineWidth = 1;
-            this.renderRoot(context);
-            context.fill();
-            context.restore();
+            ctx.lineWidth = 1;
+            this.renderRoot(ctx);
+            ctx.fill();
+            ctx.restore();
             
             // arrow
-            context.save();
+            ctx.save();
             if (!this.selected) {
-                context.strokeStyle = this.color;
-                context.fillStyle = this.color;
+                ctx.strokeStyle = this.color;
+                ctx.fillStyle = this.color;
             } else {
-                context.strokeStyle = this.selectedColor;
-                context.fillStyle = this.selectedColor;
+                ctx.strokeStyle = this.selectedColor;
+                ctx.fillStyle = this.selectedColor;
             }
-            context.lineWidth = this.lineWidth;
-            context.lineCap = 'round';
-            this.renderArrow(context);
-            context.stroke();
-            context.fill();
-            context.restore();
+            ctx.lineWidth = this.lineWidth;
+            ctx.lineCap = 'round';
+            this.renderArrow(ctx);
+            ctx.stroke();
+            ctx.fill();
+            ctx.restore();
         }
     }
     
