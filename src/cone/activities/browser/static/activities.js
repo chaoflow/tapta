@@ -958,84 +958,6 @@ var global_mousedown = 0;
     activities.ui.Properties.prototype = {
         
         /*
-         * display properties for diagram element
-         */
-        display: function(elem) {
-            this.clear();
-            var node;
-            if (typeof(elem.diagram) == 'undefined') {
-                node = this.model.context;
-            } else {
-                var path = elem.diagram.mapping[elem.triggerColor];
-                node = this.model.node(path);
-            }
-            this.recent_node = node;
-            this.recent_element = elem;
-            // generic
-            this.prop({
-                type: 'string',
-                name: 'type',
-                value: activities.model.TYPE_NAMES[node.__type],
-                title: 'Type:',
-                readonly: true
-            });
-            this.prop({
-                type: 'string',
-                name: 'label',
-                value: elem.label || node.__name,
-                title: 'Label:'
-            });
-            this.prop({
-                type: 'text',
-                name: 'description',
-                value: elem.description || '',
-                title: 'Description:'
-            });
-            if (node.__type == activities.model.EDGE) {
-                this.prop({
-                    type: 'string',
-                    name: 'source',
-                    value: node.source || '',
-                    title: 'Source:',
-                    readonly: true
-                });
-                this.prop({
-                    type: 'string',
-                    name: 'target',
-                    value: node.target || '',
-                    title: 'Target:',
-                    readonly: true
-                });
-            } else if (node.__type != activities.model.ACTIVITY) {
-                var value =
-                    node.incoming_edges ? node.incoming_edges.join(',') : '';
-                this.prop({
-                    type: 'string',
-                    name: 'incoming',
-                    value: value,
-                    title: 'Incoming Edges:',
-                    readonly: true
-                });
-                value =
-                    node.outgoing_edges ? node.outgoing_edges.join(',') : '';
-                this.prop({
-                    type: 'string',
-                    name: 'outgoing',
-                    value: value,
-                    title: 'Outgoing Edges:',
-                    readonly: true
-                });
-            }
-            var properties = this;
-            $('.update', this.container)
-                .unbind()
-                .bind('click', function(evt) {
-                    evt.preventDefault();
-                    properties.update();
-                });
-        },
-        
-        /*
          * update props on node and diagram element
          */
         update: function() {
@@ -1056,46 +978,80 @@ var global_mousedown = 0;
         },
         
         /*
+         * display properties for diagram element
+         */
+        display: function(elem) {
+            this.clear();
+            var node;
+            if (typeof(elem.diagram) == 'undefined') {
+                node = this.model.context;
+            } else {
+                var path = elem.diagram.mapping[elem.triggerColor];
+                node = this.model.node(path);
+            }
+            this.recent_node = node;
+            this.recent_element = elem;
+            var model = activities.model;
+            this.displayProperty('Type:', model.TYPE_NAMES[node.__type]);
+            this.stringProperty('label', 'Label:', elem.label || node.__name);
+            this.textProperty('description',
+                              'Description:',
+                              elem.description || '');
+            if (node.__type == activities.model.EDGE) {
+                this.displayProperty('Source:', node.source || '');
+                this.displayProperty('Target:', node.target || '');
+            } else if (node.__type != activities.model.ACTIVITY) {
+                var val = node.incoming_edges ? node.incoming_edges.length : 0;
+                this.displayProperty('Incoming Edges:', val);
+                var val = node.outgoing_edges ? node.outgoing_edges.length : 0;
+                this.displayProperty('Outgoing Edges:', val);
+            }
+            var properties = this;
+            $('.update', this.container)
+                .unbind()
+                .bind('click', function(evt) {
+                    evt.preventDefault();
+                    properties.update();
+                });
+        },
+        
+        /*
          * clear props
          */
         clear: function() {
             $('.props', this.container).empty();
         },
         
-        /*
-         * opts = {
-         *     type: [string|text],
-         *     name: 'foo',
-         *     value: 'bar',
-         *     title: 'Baz',
-         *     readonly: false,
-         * }
-         */
-        prop: function(opts) {
-            var type = opts.type;
-            var name = opts.name;
-            var value = opts.value;
-            var title = opts.title;
-            var readonly = opts.readonly;
-            var prop = '<div class="field">';
-            prop += '<label for="' + name + '">' + opts.title + '</label>';
-            prop += '<br />';
-            if (type == 'string') {
-                prop += '<input type="text" name="' + name +
-                        '" value="' + value + '"';
-                if (readonly) {
-                    prop += ' disabled="disabled"';
-                }
-                prop += ' />';
-            } else {
-                prop += '<textarea name="' + name + '" rows="6" cols="27"';
-                if (readonly) {
-                    prop += ' disabled="disabled"';
-                }
-                prop += '>' + value + '</textarea>';
+        displayProperty: function(title, value) {
+            var opts = {
+                title: title,
+                value: value
             }
-            prop += '</div>';
-            $('.props', this.container).append(prop);
+            $("#display_property").tmpl(opts).appendTo(
+                $('.props', this.container)
+            );
+        },
+        
+        stringProperty: function(name, title, value) {
+            var opts = {
+                name: name,
+                title: title,
+                value: value
+            }
+            $("#string_property").tmpl(opts).appendTo(
+                $('.props', this.container)
+            );
+        },
+        
+        textProperty: function(name, title, value) {
+            var opts = {
+                name: name,
+                title: title,
+                value: value
+            }
+            $("#text_property").tmpl(opts).appendTo(
+                $('.props', this.container)
+            );
         }
     }
     

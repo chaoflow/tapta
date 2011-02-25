@@ -2,9 +2,10 @@
     
     <head>
         <title>Activities</title>
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script> 
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script> 
         <script src="http://code.jquery.com/qunit/git/qunit.js"></script>
         <script src="http://cdn.jquerytools.org/1.2.5/jquery.tools.min.js"></script>
+        <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
         <script src="bdajax/bdajax.js"></script>
         <script src="activities.js"></script>
         <script src="test_activities.js"></script>
@@ -23,6 +24,27 @@
     </head>
     
     <body>
+        
+        <script type="text/html" id="string_property">
+            <div class="field">
+                <label for="${name}">${title}</label>
+                <input type="text" name="${name}" value="${value}" />
+            </div>
+        </script>
+        
+        <script type="text/html" id="text_property">
+            <div class="field">
+                <label for="${name}">${title}</label>
+                <textarea name="${name}" rows="6" cols="27">${value}</textarea>
+            </div>
+        </script>
+        
+        <script type="text/html" id="display_property">
+            <div class="field">
+                <strong>${title}</strong>
+                <span>${value}</span>
+            </div>
+        </script>
         
         <!-- activity editor -->
         <div class="activity_editor"
