@@ -149,7 +149,7 @@ var global_mousedown = 0;
                 var canvas;
                 if (event.type == 'mousewheel'
                  || event.type == 'DOMMouseScroll') {
-                     // mousewheel, check if event target is canvas,
+                    // mousewheel, check if event target is canvas,
                     // otherwise return
                     var target;
                     if (event.target) {
@@ -317,12 +317,16 @@ var global_mousedown = 0;
                     }
                     case activities.actions.ADD_DIAGRAM_EDGE: {
                         var payload = actions.payload;
-                        if (payload[1] == null) {
+                        if (payload[1] == null
+                         || typeof(payload[1]) == "undefined") {
                             var node_name = diagram.mapping[obj.triggerColor];
                             payload[1] = node_name;
                             return;
                         }
                         payload[2] = diagram.mapping[obj.triggerColor];
+                        if (typeof(payload[2]) == "undefined") {
+                            break;
+                        }
                         node = model.createEdge(payload[1], payload[2])
                         diagram.createEdge(node);
                         break;
@@ -1955,8 +1959,8 @@ var global_mousedown = 0;
         this.height = this.layers.diagram.canvas.height;
         
         this.scale = 1.0;
-        this.origin_x = 0;
-        this.origin_y = 0;
+        this.origin_x = 0.0;
+        this.origin_y = 0.0;
         
         this.label = null;
         this.description = null;
