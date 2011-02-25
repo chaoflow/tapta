@@ -360,41 +360,6 @@ var global_mousedown = 0;
             // event utils
             
             /*
-             * bind diagram element default events
-             */
-            bindElementDefaults: function() {
-                // event subscription
-                var diagram = this.diagram;
-                var dnd = diagram.dnd;
-                var dsp = diagram.dispatcher;
-                var events = activities.events;
-                dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
-                dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
-                dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
-                dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
-                dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
-                dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
-                dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
-                dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
-            },
-            
-            /*
-             * bind diagram element default events
-             */
-            unbindElementDefaults: function() {
-                // event subscription
-                var diagram = this.diagram;
-                var dnd = diagram.dnd;
-                var dsp = diagram.dispatcher;
-                var events = activities.events;
-                dsp.unsubscribe(events.MOUSE_IN, this);
-                dsp.unsubscribe(events.MOUSE_DOWN, this);
-                dsp.unsubscribe(events.MOUSE_WHEEL, this);
-                dsp.unsubscribe(events.MOUSE_MOVE, this);
-                dsp.unsubscribe(events.MOUSE_UP, this);
-            },
-            
-            /*
              * events status message
              */
             status: function(evt, x, y, trigger) {
@@ -1929,10 +1894,13 @@ var global_mousedown = 0;
     
     
     // ************************************************************************
-    // activities.ui.DiagramElement
+    // activities.ui.Node
     // ************************************************************************
     
-    activities.ui.DiagramElement = function(width_or_radius, height, rotation) {
+    /*
+     * abstract diagram node
+     */
+    activities.ui.Node = function(width_or_radius, height, rotation, shape) {
         this.diagram = null;
         this.triggerColor = null;
         this.x = 0;
@@ -1946,6 +1914,8 @@ var global_mousedown = 0;
         this.width = width_or_radius;
         this.height = height;
         
+        this.shape = shape;
+        
         this.edgeOffset = 5;
         this.borderWidth = 2;
         this.fillColor = '#edf7ff';
@@ -1958,7 +1928,53 @@ var global_mousedown = 0;
         this.description = null;
     }
     
-    activities.ui.DiagramElement.prototype = {
+    activities.ui.Node.prototype = {
+        
+        SHAPE_RECT: 0,
+        SHAPE_CIRCLE: 1,
+        
+        bind: function() {
+            // event subscription
+            var diagram = this.diagram;
+            var dnd = diagram.dnd;
+            var dsp = diagram.dispatcher;
+            var events = activities.events;
+            dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
+            dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
+            dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
+            dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
+            dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
+        },
+        
+        unbind: function() {
+            // event subscription
+            var diagram = this.diagram;
+            var dnd = diagram.dnd;
+            var dsp = diagram.dispatcher;
+            var events = activities.events;
+            dsp.unsubscribe(events.MOUSE_IN, this);
+            dsp.unsubscribe(events.MOUSE_DOWN, this);
+            dsp.unsubscribe(events.MOUSE_WHEEL, this);
+            dsp.unsubscribe(events.MOUSE_MOVE, this);
+            dsp.unsubscribe(events.MOUSE_UP, this);
+        },
+        
+        translateEdge: function(x, y) {
+            if (this.shape == this.SHAPE_RECT) {
+                return this.translateRectEdge(x, y);
+            }
+            return this.translateCircleEdge(x, y);
+        },
+    
+        render: function() {
+            if (this.shape == this.SHAPE_RECT) {
+                return this.renderRect();
+            }
+            return this.renderCircle();
+        },
         
         /*
          * turn shadow drawing on.
@@ -2102,9 +2118,37 @@ var global_mousedown = 0;
         },
         
         /*
+         * default circle diagram element rendering
+         */
+        renderCircle: function() {
+            // control layer
+            var ctx = this.diagram.layers.control.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, this.triggerColor, this.radius);
+            ctx.restore();
+            
+            // diagram layer
+            var fillColor, borderColor;
+            if (!this.selected) {
+                fillColor = this.fillColor;
+                borderColor = this.borderColor;
+            } else {
+                fillColor = this.selectedFillColor;
+                borderColor = this.selectedBorderColor;
+            }
+            ctx = this.diagram.layers.diagram.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, fillColor, this.radius, true);
+            this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
+            ctx.restore();
+        },
+        
+        /*
          * default rect diagram element rendering
          */
-        renderRectElem: function() {
+        renderRect: function() {
             // control layer
             var ctx = this.diagram.layers.control.context;
             ctx.save();
@@ -2212,63 +2256,20 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Initial = function() {
-        activities.ui.DiagramElement.call(this, 20, 0, 0);
+        activities.ui.Node.call(this, 20, 0, 0, this.SHAPE_CIRCLE);
     }
     
-    activities.ui.Initial.prototype = new activities.ui.DiagramElement;
-    
-    activities.ui.Initial.prototype.bind = 
-        activities.events.bindElementDefaults;
-    
-    activities.ui.Initial.prototype.unbind = 
-        activities.events.unbindElementDefaults;
-    
-    activities.ui.Initial.prototype.translateEdge = 
-        activities.ui.DiagramElement.prototype.translateCircleEdge;
-    
-    activities.ui.Initial.prototype.render = function() {
-        // control layer
-        var ctx = this.diagram.layers.control.context;
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        this.fillCircle(ctx, this.triggerColor, this.radius);
-        ctx.restore();
-        
-        // diagram layer
-        var fillColor, borderColor;
-        if (!this.selected) {
-            fillColor = this.fillColor;
-            borderColor = this.borderColor;
-        } else {
-            fillColor = this.selectedFillColor;
-            borderColor = this.selectedBorderColor;
-        }
-        ctx = this.diagram.layers.diagram.context;
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        this.fillCircle(ctx, fillColor, this.radius, true);
-        this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
-        ctx.restore();
-    }
+    activities.ui.Initial.prototype = new activities.ui.Node;
     
     // ************************************************************************
     // activities.ui.Final
     // ************************************************************************
     
     activities.ui.Final = function() {
-        activities.ui.DiagramElement.call(this, 20, 0, 0);
+        activities.ui.Node.call(this, 20, 0, 0, this.SHAPE_CIRCLE);
     }
     
-    activities.ui.Final.prototype = new activities.ui.DiagramElement;
-    
-    activities.ui.Final.prototype.bind = 
-        activities.events.bindElementDefaults;
-    
-    activities.ui.Final.prototype.unbind = 
-        activities.events.unbindElementDefaults;
-    
-    activities.ui.Final.prototype.translateEdge =
-        activities.ui.DiagramElement.prototype.translateCircleEdge;
+    activities.ui.Final.prototype = new activities.ui.Node;
     
     activities.ui.Final.prototype.render = function() {
         // control layer
@@ -2302,23 +2303,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Action = function() {
-        activities.ui.DiagramElement.call(this, 100, 70, 0);
+        activities.ui.Node.call(this, 100, 70, 0, this.SHAPE_RECT);
         this.renderLabel = true;
     }
     
-    activities.ui.Action.prototype = new activities.ui.DiagramElement;
-    
-    activities.ui.Action.prototype.bind = 
-        activities.events.bindElementDefaults;
-    
-    activities.ui.Action.prototype.unbind = 
-        activities.events.unbindElementDefaults;
-    
-    activities.ui.Action.prototype.translateEdge = 
-        activities.ui.DiagramElement.prototype.translateRectEdge;
-    
-    activities.ui.Action.prototype.render = 
-        activities.ui.DiagramElement.prototype.renderRectElem;
+    activities.ui.Action.prototype = new activities.ui.Node;
     
     
     // ************************************************************************
@@ -2326,22 +2315,10 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Decision = function() {
-        activities.ui.DiagramElement.call(this, 40, 40, 45);
+        activities.ui.Node.call(this, 40, 40, 45, this.SHAPE_RECT);
     }
     
-    activities.ui.Decision.prototype = new activities.ui.DiagramElement;
-    
-    activities.ui.Decision.prototype.bind = 
-        activities.events.bindElementDefaults;
-    
-    activities.ui.Decision.prototype.unbind = 
-        activities.events.unbindElementDefaults;
-    
-    activities.ui.Decision.prototype.translateEdge = 
-        activities.ui.DiagramElement.prototype.translateRectEdge;
-    
-    activities.ui.Decision.prototype.render = 
-        activities.ui.DiagramElement.prototype.renderRectElem;
+    activities.ui.Decision.prototype = new activities.ui.Node;
     
     
     // ************************************************************************
@@ -2349,68 +2326,32 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Merge = function() {
-        activities.ui.DiagramElement.call(this, 40, 40, 45);
+        activities.ui.Node.call(this, 40, 40, 45, this.SHAPE_RECT);
     }
     
-    activities.ui.Merge.prototype = new activities.ui.DiagramElement;
-    
-    activities.ui.Merge.prototype.bind = 
-        activities.events.bindElementDefaults;
-    
-    activities.ui.Merge.prototype.unbind = 
-        activities.events.unbindElementDefaults;
-    
-    activities.ui.Merge.prototype.translateEdge = 
-        activities.ui.DiagramElement.prototype.translateRectEdge;
-    
-    activities.ui.Merge.prototype.render = 
-        activities.ui.DiagramElement.prototype.renderRectElem;
+    activities.ui.Merge.prototype = new activities.ui.Node;
     
     
     // ************************************************************************
     // activities.ui.Join
     // ************************************************************************
     
-    activities.ui.Join = function(diagram) {
-        activities.ui.DiagramElement.call(this, 10, 80, 0);
+    activities.ui.Join = function() {
+        activities.ui.Node.call(this, 10, 80, 0, this.SHAPE_RECT);
     }
     
-    activities.ui.Join.prototype = new activities.ui.DiagramElement;
-    
-    activities.ui.Join.prototype.bind = 
-        activities.events.bindElementDefaults;
-    
-    activities.ui.Join.prototype.unbind = 
-        activities.events.unbindElementDefaults;
-    
-    activities.ui.Join.prototype.translateEdge = 
-        activities.ui.DiagramElement.prototype.translateRectEdge;
-    
-    activities.ui.Join.prototype.render = 
-        activities.ui.DiagramElement.prototype.renderRectElem;
+    activities.ui.Join.prototype = new activities.ui.Node;
     
     
     // ************************************************************************
     // activities.ui.Fork
     // ************************************************************************
     
-    activities.ui.Fork = function(diagram) {
-        activities.ui.DiagramElement.call(this, 10, 80, 0);
+    activities.ui.Fork = function() {
+        activities.ui.Node.call(this, 10, 80, 0, this.SHAPE_RECT);
     }
     
-    activities.ui.Fork.prototype = new activities.ui.DiagramElement;
-    
-    activities.ui.Fork.prototype.bind = 
-        activities.events.bindElementDefaults;
-    
-    activities.ui.Fork.prototype.unbind = 
-        activities.events.unbindElementDefaults;
-    
-    activities.ui.Fork.prototype.translateEdge = 
-        activities.ui.DiagramElement.prototype.translateRectEdge;
-    
-    activities.ui.Fork.prototype.render = 
-        activities.ui.DiagramElement.prototype.renderRectElem;
+    activities.ui.Fork.prototype = new activities.ui.Node;
     
     
     // ************************************************************************
@@ -2434,7 +2375,7 @@ var global_mousedown = 0;
     
     activities.ui.Edge.prototype = {
         
-        circle: activities.ui.DiagramElement.prototype.circle,
+        circle: activities.ui.Node.prototype.circle,
         
         bind: function() {
             var dsp = this.diagram.dispatcher;
