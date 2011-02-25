@@ -897,7 +897,6 @@ var global_mousedown = 0;
             this.model = new activities.model.Model(model);
             this.init();
         }
-        
     }
     
     
@@ -1385,7 +1384,7 @@ var global_mousedown = 0;
             var edges = model.filtered(activities.model.EDGE);
             for (var idx in edges) {
                 var edge = edges[idx];
-                var elem = new activities.ui.Edge(diagram);
+                var elem = new activities.ui.Edge();
                 elem.source = edge.source;
                 elem.target = edge.target;
                 diagram.map(edge, elem);
@@ -1894,87 +1893,36 @@ var global_mousedown = 0;
     
     
     // ************************************************************************
-    // activities.ui.Node
+    // activities.ui.Element
     // ************************************************************************
     
     /*
-     * abstract diagram node
+     * abstract diagram element
      */
-    activities.ui.Node = function(width_or_radius, height, rotation, shape) {
+    activities.ui.Element = function() {
         this.diagram = null;
         this.triggerColor = null;
+        
         this.x = 0;
         this.y = 0;
-        this.rotation = rotation;
-        
-        // if circle
-        this.radius = width_or_radius;
-        
-        // if rect
-        this.width = width_or_radius;
-        this.height = height;
-        
-        this.shape = shape;
         
         this.edgeOffset = 5;
         this.borderWidth = 2;
+        
         this.fillColor = '#edf7ff';
         this.borderColor = '#b5d9ea';
+        
         this.selectedFillColor = '#fff7ae';
         this.selectedBorderColor = '#e3ca4b';
+        
         this.renderLabel = false;
         this.selected = false;
+        
         this.label = null;
         this.description = null;
     }
     
-    activities.ui.Node.prototype = {
-        
-        SHAPE_RECT: 0,
-        SHAPE_CIRCLE: 1,
-        
-        bind: function() {
-            // event subscription
-            var diagram = this.diagram;
-            var dnd = diagram.dnd;
-            var dsp = diagram.dispatcher;
-            var events = activities.events;
-            dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
-            dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
-            dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
-            dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
-            dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
-            dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
-        },
-        
-        unbind: function() {
-            // event subscription
-            var diagram = this.diagram;
-            var dnd = diagram.dnd;
-            var dsp = diagram.dispatcher;
-            var events = activities.events;
-            dsp.unsubscribe(events.MOUSE_IN, this);
-            dsp.unsubscribe(events.MOUSE_DOWN, this);
-            dsp.unsubscribe(events.MOUSE_WHEEL, this);
-            dsp.unsubscribe(events.MOUSE_MOVE, this);
-            dsp.unsubscribe(events.MOUSE_UP, this);
-        },
-        
-        translateEdge: function(x, y) {
-            if (this.shape == this.SHAPE_RECT) {
-                return this.translateRectEdge(x, y);
-            }
-            return this.translateCircleEdge(x, y);
-        },
-    
-        render: function() {
-            if (this.shape == this.SHAPE_RECT) {
-                return this.renderRect();
-            }
-            return this.renderCircle();
-        },
+    activities.ui.Element.prototype = {
         
         /*
          * turn shadow drawing on.
@@ -2116,99 +2064,76 @@ var global_mousedown = 0;
                 return [this.x - x_diff, this.y + y_diff, angle * -1];
             }
         },
+    }
+    
+    
+    // ************************************************************************
+    // activities.ui.Node
+    // ************************************************************************
+    
+    /*
+     * abstract diagram node
+     */
+    activities.ui.Node = function() {
+        activities.ui.Element.call(this);
+    }
+    activities.ui.Node.prototype = new activities.ui.Element;
+    
+    $.extend(activities.ui.Node.prototype, {
         
-        /*
-         * default circle diagram element rendering
-         */
-        renderCircle: function() {
-            // control layer
-            var ctx = this.diagram.layers.control.context;
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            this.fillCircle(ctx, this.triggerColor, this.radius);
-            ctx.restore();
-            
-            // diagram layer
-            var fillColor, borderColor;
-            if (!this.selected) {
-                fillColor = this.fillColor;
-                borderColor = this.borderColor;
-            } else {
-                fillColor = this.selectedFillColor;
-                borderColor = this.selectedBorderColor;
-            }
-            ctx = this.diagram.layers.diagram.context;
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            this.fillCircle(ctx, fillColor, this.radius, true);
-            this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
-            ctx.restore();
+        SHAPE_RECT: 0,
+        SHAPE_CIRCLE: 1,
+        
+        bind: function() {
+            // event subscription
+            var diagram = this.diagram;
+            var dnd = diagram.dnd;
+            var dsp = diagram.dispatcher;
+            var events = activities.events;
+            dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
+            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
+            dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
+            dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
+            dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
+            dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
         },
         
-        /*
-         * default rect diagram element rendering
-         */
-        renderRect: function() {
-            // control layer
-            var ctx = this.diagram.layers.control.context;
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            if (this.rotation) {
-                ctx.rotate(this.rotation * Math.PI / 180);
-            }
-            this.fillRect(ctx, this.triggerColor, this.width, this.height);
-            ctx.restore();
-            
-            // diagram layer
-            var fillColor, borderColor;
-            if (!this.selected) {
-                fillColor = this.fillColor;
-                borderColor = this.borderColor;
-            } else {
-                fillColor = this.selectedFillColor;
-                borderColor = this.selectedBorderColor;
-            }
-            ctx = this.diagram.layers.diagram.context;
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            if (this.rotation) {
-                ctx.rotate(this.rotation * Math.PI / 180);
-            }
-            this.fillRect(
-                ctx, fillColor, this.width, this.height, true);
-            this.strokeRect(
-                ctx, borderColor, this.borderWidth, this.width, this.height);
-            if (this.renderLabel) {
-                this.drawLabel(ctx, this.label, this.width);
-            }
-            ctx.restore();
-        },
+        unbind: function() {
+            // event subscription
+            var diagram = this.diagram;
+            var dnd = diagram.dnd;
+            var dsp = diagram.dispatcher;
+            var events = activities.events;
+            dsp.unsubscribe(events.MOUSE_IN, this);
+            dsp.unsubscribe(events.MOUSE_DOWN, this);
+            dsp.unsubscribe(events.MOUSE_WHEEL, this);
+            dsp.unsubscribe(events.MOUSE_MOVE, this);
+            dsp.unsubscribe(events.MOUSE_UP, this);
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.ui.RectNode
+    // ************************************************************************
+    
+    activities.ui.RectNode = function(width, height, rotation) {
+        activities.ui.Node.call(this);
+        this.width = width;
+        this.height = height;
+        this.rotation = rotation;
+    }
+    activities.ui.RectNode.prototype = new activities.ui.Node;
+    
+    $.extend(activities.ui.RectNode.prototype, {
         
         /*
          * Translate element coordinate for edge source by given following
          * point coordinate.
-         *
-         * Translate for circle element.
          */
-        translateCircleEdge: function(x, y) {
-            var gk = y - this.y;
-            var ak = this.x - x;
-            var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
-            var rad = this.radius + this.edgeOffset;
-            var cos = Math.cos(Math.PI * angle / 180.0);
-            var sin = Math.sin(Math.PI * angle / 180.0);
-            var x_diff = rad * cos;
-            var y_diff = rad * sin;
-            return this.translateDirection(x, y, x_diff, y_diff, angle);
-        },
-        
-        /*
-         * Translate element coordinate for edge source by given following
-         * point coordinate.
-         *
-         * Translate for rect element.
-         */
-        translateRectEdge: function(x, y) {
+        translateEdge: function(x, y) {
             var width = this.width;
             var height = this.height;
             var gk = height / 2;
@@ -2247,8 +2172,99 @@ var global_mousedown = 0;
                 y_diff = y_new;
             }
             return this.translateDirection(x, y, x_diff, y_diff, angle_orgin);
+        },
+        
+        render: function() {
+            // control layer
+            var ctx = this.diagram.layers.control.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            if (this.rotation) {
+                ctx.rotate(this.rotation * Math.PI / 180);
+            }
+            this.fillRect(ctx, this.triggerColor, this.width, this.height);
+            ctx.restore();
+            
+            // diagram layer
+            var fillColor, borderColor;
+            if (!this.selected) {
+                fillColor = this.fillColor;
+                borderColor = this.borderColor;
+            } else {
+                fillColor = this.selectedFillColor;
+                borderColor = this.selectedBorderColor;
+            }
+            ctx = this.diagram.layers.diagram.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            if (this.rotation) {
+                ctx.rotate(this.rotation * Math.PI / 180);
+            }
+            this.fillRect(
+                ctx, fillColor, this.width, this.height, true);
+            this.strokeRect(
+                ctx, borderColor, this.borderWidth, this.width, this.height);
+            if (this.renderLabel) {
+                this.drawLabel(ctx, this.label, this.width);
+            }
+            ctx.restore();
         }
+    });
+    
+    
+    // ************************************************************************
+    // activities.ui.CircleNode
+    // ************************************************************************
+    
+    activities.ui.CircleNode = function(radius) {
+        activities.ui.Node.call(this);
+        this.radius = radius;
     }
+    activities.ui.CircleNode.prototype = new activities.ui.Node;
+    
+    $.extend(activities.ui.CircleNode.prototype, {
+        
+        /*
+         * Translate element coordinate for edge source by given following
+         * point coordinate.
+         */
+        translateEdge: function(x, y) {
+            var gk = y - this.y;
+            var ak = this.x - x;
+            var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+            var rad = this.radius + this.edgeOffset;
+            var cos = Math.cos(Math.PI * angle / 180.0);
+            var sin = Math.sin(Math.PI * angle / 180.0);
+            var x_diff = rad * cos;
+            var y_diff = rad * sin;
+            return this.translateDirection(x, y, x_diff, y_diff, angle);
+        },
+        
+        render: function() {
+            // control layer
+            var ctx = this.diagram.layers.control.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, this.triggerColor, this.radius);
+            ctx.restore();
+            
+            // diagram layer
+            var fillColor, borderColor;
+            if (!this.selected) {
+                fillColor = this.fillColor;
+                borderColor = this.borderColor;
+            } else {
+                fillColor = this.selectedFillColor;
+                borderColor = this.selectedBorderColor;
+            }
+            ctx = this.diagram.layers.diagram.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, fillColor, this.radius, true);
+            this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
+            ctx.restore();
+        }
+    });
     
     
     // ************************************************************************
@@ -2256,46 +2272,48 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Initial = function() {
-        activities.ui.Node.call(this, 20, 0, 0, this.SHAPE_CIRCLE);
+        activities.ui.CircleNode.call(this, 20);
     }
+    activities.ui.Initial.prototype = new activities.ui.CircleNode;
     
-    activities.ui.Initial.prototype = new activities.ui.Node;
     
     // ************************************************************************
     // activities.ui.Final
     // ************************************************************************
     
     activities.ui.Final = function() {
-        activities.ui.Node.call(this, 20, 0, 0, this.SHAPE_CIRCLE);
+        activities.ui.CircleNode.call(this, 20);
     }
+    activities.ui.Final.prototype = new activities.ui.CircleNode;
     
-    activities.ui.Final.prototype = new activities.ui.Node;
-    
-    activities.ui.Final.prototype.render = function() {
-        // control layer
-        var ctx = this.diagram.layers.control.context;
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        this.fillCircle(ctx, this.triggerColor, this.radius);
-        ctx.restore();
+    $.extend(activities.ui.Final.prototype, {
         
-        // diagram layer
-        var fillColor, borderColor;
-        if (!this.selected) {
-            fillColor = this.fillColor;
-            borderColor = this.borderColor;
-        } else {
-            fillColor = this.selectedFillColor;
-            borderColor = this.selectedBorderColor;
+        render: function() {
+            // control layer
+            var ctx = this.diagram.layers.control.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, this.triggerColor, this.radius);
+            ctx.restore();
+            
+            // diagram layer
+            var fillColor, borderColor;
+            if (!this.selected) {
+                fillColor = this.fillColor;
+                borderColor = this.borderColor;
+            } else {
+                fillColor = this.selectedFillColor;
+                borderColor = this.selectedBorderColor;
+            }
+            ctx = this.diagram.layers.diagram.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, borderColor, this.radius, true);
+            this.fillCircle(ctx, fillColor, this.radius - this.borderWidth);
+            this.fillCircle(ctx, borderColor, this.radius / 2);
+            ctx.restore();
         }
-        ctx = this.diagram.layers.diagram.context;
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        this.fillCircle(ctx, borderColor, this.radius, true);
-        this.fillCircle(ctx, fillColor, this.radius - this.borderWidth);
-        this.fillCircle(ctx, borderColor, this.radius / 2);
-        ctx.restore();
-    }
+    });
     
     
     // ************************************************************************
@@ -2303,11 +2321,10 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Action = function() {
-        activities.ui.Node.call(this, 100, 70, 0, this.SHAPE_RECT);
+        activities.ui.RectNode.call(this, 100, 70, 0);
         this.renderLabel = true;
     }
-    
-    activities.ui.Action.prototype = new activities.ui.Node;
+    activities.ui.Action.prototype = new activities.ui.RectNode;
     
     
     // ************************************************************************
@@ -2315,10 +2332,9 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Decision = function() {
-        activities.ui.Node.call(this, 40, 40, 45, this.SHAPE_RECT);
+        activities.ui.RectNode.call(this, 40, 40, 45);
     }
-    
-    activities.ui.Decision.prototype = new activities.ui.Node;
+    activities.ui.Decision.prototype = new activities.ui.RectNode;
     
     
     // ************************************************************************
@@ -2326,10 +2342,9 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Merge = function() {
-        activities.ui.Node.call(this, 40, 40, 45, this.SHAPE_RECT);
+        activities.ui.RectNode.call(this, 40, 40, 45);
     }
-    
-    activities.ui.Merge.prototype = new activities.ui.Node;
+    activities.ui.Merge.prototype = new activities.ui.RectNode;
     
     
     // ************************************************************************
@@ -2337,10 +2352,9 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Join = function() {
-        activities.ui.Node.call(this, 10, 80, 0, this.SHAPE_RECT);
+        activities.ui.RectNode.call(this, 10, 80, 0);
     }
-    
-    activities.ui.Join.prototype = new activities.ui.Node;
+    activities.ui.Join.prototype = new activities.ui.RectNode;
     
     
     // ************************************************************************
@@ -2348,10 +2362,9 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Fork = function() {
-        activities.ui.Node.call(this, 10, 80, 0, this.SHAPE_RECT);
+        activities.ui.RectNode.call(this, 10, 80, 0);
     }
-    
-    activities.ui.Fork.prototype = new activities.ui.Node;
+    activities.ui.Fork.prototype = new activities.ui.RectNode;
     
     
     // ************************************************************************
