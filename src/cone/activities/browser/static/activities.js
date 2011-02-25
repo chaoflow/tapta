@@ -1041,6 +1041,7 @@ var global_mousedown = 0;
         update: function() {
             var node = this.recent_node;
             var elem = this.recent_element;
+            var diagram = elem.diagram;
             var label = $('input[name="label"]',
                           this.container).attr('value');
             var description = $('textarea[name="description"]',
@@ -1049,7 +1050,9 @@ var global_mousedown = 0;
             node.description = description;
             elem.label = label;
             elem.description = description;
-            elem.render();
+            diagram.renderTranslated(function() {
+                elem.render();
+            });
         },
         
         /*
@@ -1606,6 +1609,143 @@ var global_mousedown = 0;
         },
     }
     
+    
+    // ************************************************************************
+    // activities.ui.Rendering
+    // ************************************************************************
+    
+    activities.ui.Rendering = function() {}
+    
+    activities.ui.Rendering.prototype = {
+        
+        /*
+         * turn shadow drawing on.
+         */
+        shadowOn: function(ctx) {
+            ctx.shadowOffsetX = 2.5;
+            ctx.shadowOffsetY = 2.5;
+            ctx.shadowBlur = 3.0;
+            ctx.shadowColor = '#aaa';
+        },
+        
+        /*
+         * turn shadow drawing off.
+         */
+        shadowOff: function(ctx) {
+            ctx.shadowOffsetX = 0.0;
+            ctx.shadowOffsetY = 0.0;
+            ctx.shadowBlur = 0.0;
+        },
+        
+        /*
+         * draw circle
+         */
+        circle: function(ctx, r) {
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2, true);
+            ctx.closePath();
+        },
+        
+        /*
+         * draw filled circle
+         */
+        fillCircle: function(ctx, color, radius, shadow) {
+            ctx.fillStyle = color;
+            if (shadow) {
+                this.shadowOn(ctx);
+            }
+            this.circle(ctx, radius);
+            ctx.fill();
+            if (shadow) {
+                this.shadowOff(ctx);
+            }
+        },
+        
+        /*
+         * draw stroke circle 
+         */
+        strokeCircle: function(ctx, color, radius, lineWidth) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            this.circle(ctx, radius);
+            ctx.stroke();
+        },
+        
+        /*
+         * draw rounded rect
+         */
+        rect: function(ctx, x1, y1, x2, y2, r) {
+            var r2d = Math.PI / 180;
+            //ensure that the radius isn't too large for x
+            if ((x2 - x1) - (2 * r) < 0) {
+                r = ((x2 - x1) / 2);
+            }
+            //ensure that the radius isn't too large for y
+            if((y2 - y1) - (2 * r) < 0 ) {
+                r = ((y2 - y1) / 2);
+            }
+            ctx.beginPath();
+            ctx.moveTo(x1 + r, y1);
+            ctx.lineTo(x2 - r, y1);
+            ctx.arc(x2 - r, y1 + r, r, r2d * 270, r2d * 360, false);
+            ctx.lineTo(x2, y2 - r);
+            ctx.arc(x2 - r, y2 - r, r, r2d * 0, r2d * 90, false);
+            ctx.lineTo(x1 + r, y2);
+            ctx.arc(x1 + r, y2 - r, r, r2d * 90, r2d * 180, false);
+            ctx.lineTo(x1, y1 + r);
+            ctx.arc(x1 + r, y1 + r, r, r2d * 180, r2d * 270, false);
+            ctx.closePath();
+        },
+        
+        /*
+         * draw filled rect
+         */
+        fillRect: function(ctx, color, width, height, shadow, radius) {
+            if (!radius && radius != 0) {
+                radius = 3;
+            }
+            ctx.fillStyle = color;
+            if (shadow) {
+                this.shadowOn(ctx);
+            }
+            var x = width / 2;
+            var y = height / 2;
+            this.rect(ctx, x * -1, y * -1, x, y, 3);
+            ctx.fill();
+            if (shadow) {
+                this.shadowOff(ctx);
+            }
+        },
+        
+        /*
+         * draw stroke rect
+         */
+        strokeRect: function(ctx, color, lineWidth, width, height) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            var x = width / 2;
+            var y = height / 2;
+            this.rect(ctx, x * -1, y * -1, x, y, 3);
+            ctx.stroke();
+        },
+        
+        /*
+         * draw label
+         */
+        drawLabel: function(ctx, label, width) {
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = '12px sans-serif';
+            ctx.fillText(label, 0, 0, width);
+        },
+        
+        render: function() {
+            this.renderCtl();
+            this.renderDiag();
+        }
+    }
+    
     // ************************************************************************
     // activities.ui.Diagram
     // ************************************************************************
@@ -1640,6 +1780,10 @@ var global_mousedown = 0;
             diagram:
                 new activities.ui.Layer($('#diagram_' + editor.name).get(0))
         };
+        
+        this.ctl_ctx = this.layers.control.context;
+        this.diag_ctx = this.layers.diagram.context;
+        
         this.width = this.layers.diagram.canvas.width;
         this.height = this.layers.diagram.canvas.height;
         
@@ -1712,12 +1856,12 @@ var global_mousedown = 0;
          * translate editor origin and scale and call render
          */
         renderTranslated: function(render) {
-            var ctx_ctl = this.layers.control.context;
+            var ctx_ctl = this.ctl_ctx;
             ctx_ctl.save();
             ctx_ctl.translate(this.origin_x, this.origin_y);
             ctx_ctl.scale(this.scale, this.scale);
             
-            var ctx_diag = this.layers.diagram.context;
+            var ctx_diag = this.diag_ctx;
             ctx_diag.save();
             ctx_diag.translate(this.origin_x, this.origin_y);
             ctx_diag.scale(this.scale, this.scale);
@@ -1735,13 +1879,13 @@ var global_mousedown = 0;
             //this.grid.arrange();
             
             // clear control layer
-            var ctx = this.layers.control.context;
+            var ctx = this.ctl_ctx;
             ctx.save();
             ctx.clearRect(0, 0, this.width, this.height);
             ctx.restore();
             
             // clear diagram layer
-            var ctx = this.layers.diagram.context;
+            var ctx = this.diag_ctx;
             ctx.save();
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, this.width, this.height);
@@ -1896,13 +2040,25 @@ var global_mousedown = 0;
     // activities.ui.Element
     // ************************************************************************
     
-    /*
-     * abstract diagram element
-     */
-    activities.ui.Element = function() {
+    activities.ui.Element = function(){
         this.diagram = null;
         this.triggerColor = null;
         
+        this.renderLabel = false;
+        this.selected = false;
+        
+        this.label = null;
+        this.description = null;
+    }
+    activities.ui.Element.prototype = new activities.ui.Rendering;
+    
+    
+    // ************************************************************************
+    // activities.ui.Node
+    // ************************************************************************
+    
+    activities.ui.Node = function() {
+        activities.ui.Element.call(this);
         this.x = 0;
         this.y = 0;
         
@@ -1914,168 +2070,6 @@ var global_mousedown = 0;
         
         this.selectedFillColor = '#fff7ae';
         this.selectedBorderColor = '#e3ca4b';
-        
-        this.renderLabel = false;
-        this.selected = false;
-        
-        this.label = null;
-        this.description = null;
-    }
-    
-    activities.ui.Element.prototype = {
-        
-        /*
-         * turn shadow drawing on.
-         */
-        shadowOn: function(ctx) {
-            ctx.shadowOffsetX = 2.5;
-            ctx.shadowOffsetY = 2.5;
-            ctx.shadowBlur = 3.0;
-            ctx.shadowColor = '#aaa';
-        },
-        
-        /*
-         * turn shadow drawing off.
-         */
-        shadowOff: function(ctx) {
-            ctx.shadowOffsetX = 0.0;
-            ctx.shadowOffsetY = 0.0;
-            ctx.shadowBlur = 0.0;
-        },
-        
-        /*
-         * draw rounded rect
-         */
-        roundedRect: function(ctx, x1, y1, x2, y2, r) {
-            var r2d = Math.PI / 180;
-            //ensure that the radius isn't too large for x
-            if ((x2 - x1) - (2 * r) < 0) {
-                r = ((x2 - x1) / 2);
-            }
-            //ensure that the radius isn't too large for y
-            if((y2 - y1) - (2 * r) < 0 ) {
-                r = ((y2 - y1) / 2);
-            }
-            ctx.beginPath();
-            ctx.moveTo(x1 + r, y1);
-            ctx.lineTo(x2 - r, y1);
-            ctx.arc(x2 - r, y1 + r, r, r2d * 270, r2d * 360, false);
-            ctx.lineTo(x2, y2 - r);
-            ctx.arc(x2 - r, y2 - r, r, r2d * 0, r2d * 90, false);
-            ctx.lineTo(x1 + r, y2);
-            ctx.arc(x1 + r, y2 - r, r, r2d * 90, r2d * 180, false);
-            ctx.lineTo(x1, y1 + r);
-            ctx.arc(x1 + r, y1 + r, r, r2d * 180, r2d * 270, false);
-            ctx.closePath();
-        },
-        
-        /*
-         * draw circle
-         */
-        circle: function(ctx, r) {
-            ctx.beginPath();
-            ctx.arc(0, 0, r, 0, Math.PI * 2, true);
-            ctx.closePath();
-        },
-        
-        /*
-         * draw filled rect
-         */
-        fillRect: function(ctx, color, width, height, shadow, radius) {
-            if (!radius && radius != 0) {
-                radius = 3;
-            }
-            ctx.fillStyle = color;
-            if (shadow) {
-                this.shadowOn(ctx);
-            }
-            var x = width / 2;
-            var y = height / 2;
-            this.roundedRect(ctx, x * -1, y * -1, x, y, 3);
-            ctx.fill();
-            if (shadow) {
-                this.shadowOff(ctx);
-            }
-        },
-        
-        /*
-         * draw stroke rect
-         */
-        strokeRect: function(ctx, color, lineWidth, width, height) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = lineWidth;
-            var x = width / 2;
-            var y = height / 2;
-            this.roundedRect(ctx, x * -1, y * -1, x, y, 3);
-            ctx.stroke();
-        },
-        
-        /*
-         * draw filled circle
-         */
-        fillCircle: function(ctx, color, radius, shadow) {
-            ctx.fillStyle = color;
-            if (shadow) {
-                this.shadowOn(ctx);
-            }
-            this.circle(ctx, radius);
-            ctx.fill();
-            if (shadow) {
-                this.shadowOff(ctx);
-            }
-        },
-        
-        /*
-         * draw stroke circle 
-         */
-        strokeCircle: function(ctx, color, radius, lineWidth) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = lineWidth;
-            this.circle(ctx, radius);
-            ctx.stroke();
-        },
-        
-        /*
-         * draw label
-         */
-        drawLabel: function(ctx, label, width) {
-            ctx.fillStyle = '#000';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = '12px sans-serif';
-            ctx.fillText(label, 0, 0, width);
-        },
-        
-        /*
-         * translate coordinate direction for element edge start/end
-         * translation.
-         */
-        translateDirection: function(x, y, x_diff, y_diff, angle) {
-            if (x - this.x >= 0 && y - this.y >= 0) {
-                return [this.x + x_diff, this.y + y_diff, angle - 180];
-            }
-            if (x - this.x >= 0 && y - this.y <= 0) {
-                return [this.x + x_diff, this.y - y_diff, 180 - angle];
-            }
-            if (x - this.x <= 0 && y - this.y <= 0) {
-                return [this.x - x_diff, this.y - y_diff, angle];
-            }
-            if (x - this.x <= 0 && y - this.y >= 0) {
-                return [this.x - x_diff, this.y + y_diff, angle * -1];
-            }
-        },
-    }
-    
-    
-    // ************************************************************************
-    // activities.ui.Node
-    // ************************************************************************
-    
-    /*
-     * abstract diagram node
-     */
-    activities.ui.Node = function() {
-        activities.ui.Element.call(this);
     }
     activities.ui.Node.prototype = new activities.ui.Element;
     
@@ -2111,6 +2105,80 @@ var global_mousedown = 0;
             dsp.unsubscribe(events.MOUSE_WHEEL, this);
             dsp.unsubscribe(events.MOUSE_MOVE, this);
             dsp.unsubscribe(events.MOUSE_UP, this);
+        },
+        
+        /*
+         * translate coordinate direction for element edge start/end
+         * translation.
+         */
+        translateDirection: function(x, y, x_diff, y_diff, angle) {
+            if (x - this.x >= 0 && y - this.y >= 0) {
+                return [this.x + x_diff, this.y + y_diff, angle - 180];
+            }
+            if (x - this.x >= 0 && y - this.y <= 0) {
+                return [this.x + x_diff, this.y - y_diff, 180 - angle];
+            }
+            if (x - this.x <= 0 && y - this.y <= 0) {
+                return [this.x - x_diff, this.y - y_diff, angle];
+            }
+            if (x - this.x <= 0 && y - this.y >= 0) {
+                return [this.x - x_diff, this.y + y_diff, angle * -1];
+            }
+        },
+    });
+    
+    
+    // ************************************************************************
+    // activities.ui.CircleNode
+    // ************************************************************************
+    
+    activities.ui.CircleNode = function(radius) {
+        activities.ui.Node.call(this);
+        this.radius = radius;
+    }
+    activities.ui.CircleNode.prototype = new activities.ui.Node;
+    
+    $.extend(activities.ui.CircleNode.prototype, {
+        
+        /*
+         * Translate element coordinate for edge source by given following
+         * point coordinate.
+         */
+        translateEdge: function(x, y) {
+            var gk = y - this.y;
+            var ak = this.x - x;
+            var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
+            var rad = this.radius + this.edgeOffset;
+            var cos = Math.cos(Math.PI * angle / 180.0);
+            var sin = Math.sin(Math.PI * angle / 180.0);
+            var x_diff = rad * cos;
+            var y_diff = rad * sin;
+            return this.translateDirection(x, y, x_diff, y_diff, angle);
+        },
+        
+        renderCtl: function() {
+            var ctx = this.diagram.ctl_ctx;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, this.triggerColor, this.radius);
+            ctx.restore();
+        },
+        
+        renderDiag: function() {
+            var fillColor, borderColor;
+            if (!this.selected) {
+                fillColor = this.fillColor;
+                borderColor = this.borderColor;
+            } else {
+                fillColor = this.selectedFillColor;
+                borderColor = this.selectedBorderColor;
+            }
+            var ctx = this.diagram.diag_ctx;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            this.fillCircle(ctx, fillColor, this.radius, true);
+            this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
+            ctx.restore();
         }
     });
     
@@ -2174,9 +2242,8 @@ var global_mousedown = 0;
             return this.translateDirection(x, y, x_diff, y_diff, angle_orgin);
         },
         
-        render: function() {
-            // control layer
-            var ctx = this.diagram.layers.control.context;
+        renderCtl: function() {
+            var ctx = this.diagram.ctl_ctx;
             ctx.save();
             ctx.translate(this.x, this.y);
             if (this.rotation) {
@@ -2184,7 +2251,9 @@ var global_mousedown = 0;
             }
             this.fillRect(ctx, this.triggerColor, this.width, this.height);
             ctx.restore();
-            
+        },
+        
+        renderDiag: function() {
             // diagram layer
             var fillColor, borderColor;
             if (!this.selected) {
@@ -2194,7 +2263,7 @@ var global_mousedown = 0;
                 fillColor = this.selectedFillColor;
                 borderColor = this.selectedBorderColor;
             }
-            ctx = this.diagram.layers.diagram.context;
+            var ctx = this.diagram.diag_ctx;
             ctx.save();
             ctx.translate(this.x, this.y);
             if (this.rotation) {
@@ -2207,61 +2276,6 @@ var global_mousedown = 0;
             if (this.renderLabel) {
                 this.drawLabel(ctx, this.label, this.width);
             }
-            ctx.restore();
-        }
-    });
-    
-    
-    // ************************************************************************
-    // activities.ui.CircleNode
-    // ************************************************************************
-    
-    activities.ui.CircleNode = function(radius) {
-        activities.ui.Node.call(this);
-        this.radius = radius;
-    }
-    activities.ui.CircleNode.prototype = new activities.ui.Node;
-    
-    $.extend(activities.ui.CircleNode.prototype, {
-        
-        /*
-         * Translate element coordinate for edge source by given following
-         * point coordinate.
-         */
-        translateEdge: function(x, y) {
-            var gk = y - this.y;
-            var ak = this.x - x;
-            var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
-            var rad = this.radius + this.edgeOffset;
-            var cos = Math.cos(Math.PI * angle / 180.0);
-            var sin = Math.sin(Math.PI * angle / 180.0);
-            var x_diff = rad * cos;
-            var y_diff = rad * sin;
-            return this.translateDirection(x, y, x_diff, y_diff, angle);
-        },
-        
-        render: function() {
-            // control layer
-            var ctx = this.diagram.layers.control.context;
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            this.fillCircle(ctx, this.triggerColor, this.radius);
-            ctx.restore();
-            
-            // diagram layer
-            var fillColor, borderColor;
-            if (!this.selected) {
-                fillColor = this.fillColor;
-                borderColor = this.borderColor;
-            } else {
-                fillColor = this.selectedFillColor;
-                borderColor = this.selectedBorderColor;
-            }
-            ctx = this.diagram.layers.diagram.context;
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            this.fillCircle(ctx, fillColor, this.radius, true);
-            this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
             ctx.restore();
         }
     });
@@ -2288,15 +2302,7 @@ var global_mousedown = 0;
     
     $.extend(activities.ui.Final.prototype, {
         
-        render: function() {
-            // control layer
-            var ctx = this.diagram.layers.control.context;
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            this.fillCircle(ctx, this.triggerColor, this.radius);
-            ctx.restore();
-            
-            // diagram layer
+        renderDiag: function() {
             var fillColor, borderColor;
             if (!this.selected) {
                 fillColor = this.fillColor;
@@ -2305,7 +2311,7 @@ var global_mousedown = 0;
                 fillColor = this.selectedFillColor;
                 borderColor = this.selectedBorderColor;
             }
-            ctx = this.diagram.layers.diagram.context;
+            ctx = this.diagram.diag_ctx;
             ctx.save();
             ctx.translate(this.x, this.y);
             this.fillCircle(ctx, borderColor, this.radius, true);
@@ -2372,23 +2378,18 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Edge = function() {
-        this.diagram = null;
-        this.triggerColor = null;
+        activities.ui.Element.call(this);
         this.color = '#333333';
         this.lineWidth = 3;
         this.arrowLength = 15;
         this.selectedColor = '#bbbbbb';
-        this.selected = false;
-        this.label = null;
-        this.description = null;
         this.source = null;
         this.target = null;
         this.kinks = new Array();
     }
+    activities.ui.Edge.prototype = new activities.ui.Element;
     
-    activities.ui.Edge.prototype = {
-        
-        circle: activities.ui.Node.prototype.circle,
+    $.extend(activities.ui.Edge.prototype, {
         
         bind: function() {
             var dsp = this.diagram.dispatcher;
@@ -2465,7 +2466,7 @@ var global_mousedown = 0;
             this.translate();
             
             // control layer
-            var ctx = this.diagram.layers.control.context;
+            var ctx = this.diagram.ctl_ctx;
             ctx.save();
             ctx.strokeStyle = this.triggerColor;
             ctx.lineWidth = this.lineWidth + 3;
@@ -2475,13 +2476,17 @@ var global_mousedown = 0;
             ctx.restore();
             
             // diagram layer
-            ctx = this.diagram.layers.diagram.context;
-            ctx.save();
+            var strokeStyle, fillStyle;
             if (!this.selected) {
-                ctx.strokeStyle = this.color;
+                strokeStyle = this.color;
+                fillStyle = this.color;
             } else {
-                ctx.strokeStyle = this.selectedColor;
+                strokeStyle = this.selectedColor;
+                fillStyle = this.selectedColor;
             }
+            ctx = this.diagram.diag_ctx;
+            ctx.save();
+            ctx.strokeStyle = strokeStyle;
             ctx.lineWidth = this.lineWidth;
             ctx.lineCap = 'round';
             this.renderPath(ctx);
@@ -2490,13 +2495,8 @@ var global_mousedown = 0;
             
             // root
             ctx.save();
-            if (!this.selected) {
-                ctx.strokeStyle = this.color;
-                ctx.fillStyle = this.color;
-            } else {
-                ctx.strokeStyle = this.selectedColor;
-                ctx.fillStyle = this.selectedColor;
-            }
+            ctx.strokeStyle = strokeStyle;
+            ctx.fillStyle = strokeStyle;
             ctx.lineWidth = 1;
             this.renderRoot(ctx);
             ctx.fill();
@@ -2504,13 +2504,8 @@ var global_mousedown = 0;
             
             // arrow
             ctx.save();
-            if (!this.selected) {
-                ctx.strokeStyle = this.color;
-                ctx.fillStyle = this.color;
-            } else {
-                ctx.strokeStyle = this.selectedColor;
-                ctx.fillStyle = this.selectedColor;
-            }
+            ctx.strokeStyle = strokeStyle;
+            ctx.fillStyle = strokeStyle;
             ctx.lineWidth = this.lineWidth;
             ctx.lineCap = 'round';
             this.renderArrow(ctx);
@@ -2518,7 +2513,7 @@ var global_mousedown = 0;
             ctx.fill();
             ctx.restore();
         }
-    }
+    });
     
     
     // ************************************************************************
