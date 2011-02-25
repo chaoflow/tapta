@@ -17,6 +17,7 @@
  * 
  * - jQuery
  * - jQuery Tools
+ * - jQuery templates
  * - bdajax
  */
 
@@ -142,98 +143,25 @@ var global_mousedown = 0;
             MOUSE_OUT  : 4,
             MOUSE_WHEEL: 5,
             
-            /*
-             * event notification
-             */
-            notify: function(event) {
-                var canvas;
-                if (event.type == 'mousewheel'
-                 || event.type == 'DOMMouseScroll') {
-                    // mousewheel, check if event target is canvas,
-                    // otherwise return
-                    var target;
-                    if (event.target) {
-                        target = event.target;
-                    } else if (event.srcElement) {
-                        target = event.srcElement;
-                    }
-                    if (!target || target.tagName != 'CANVAS') {
-                        return;
-                    }
-                    canvas = $(target);
-                } else {
-                    var canvas = $(this);
-                }
-                event.preventDefault();
-                var dispatcher = canvas.data('dispatcher');
-                var diagram = dispatcher.diagram;
-                var current = diagram.currentCursor(event);
-                var x = current[0];
-                var y = current[1];
-                var ctx = diagram.layers.control.context;
-                // try to get pixel info, return if fails
-                try {
-                    var imgData = ctx.getImageData(x, y, 1, 1).data;
-                } catch (err) {
-                    return;
-                }
-                
-                // detect event scope object
-                var triggerColor = activities.utils.rgb2hex(imgData);
-                var recent = diagram.elements[triggerColor];
-                if (!recent) {
-                    recent = diagram;
-                }
-                
-                // trigger mousewheel if necessary and return
-                if (event.type == 'mousewheel'
-                 || event.type == 'DOMMouseScroll') {
-                    var subscriber = dispatcher.subscriber[recent.triggerColor];
-                    if (subscriber) {
-                        var evt = activities.events.MOUSE_WHEEL;
-                        for (var idx in subscriber[evt]) {
-                            subscriber[evt][idx](recent, event);
-                        }
-                    }
-                    return;
-                }
-                
-                // trigger mousein/mouseout if necessary and return
-                if (dispatcher.recent && recent != dispatcher.recent) {
-                    var subscriber = dispatcher.subscriber[recent.triggerColor];
-                    // mousein
-                    if (subscriber) {
-                        var evt = activities.events.MOUSE_IN;
-                        for (var idx in subscriber[evt]) {
-                            subscriber[evt][idx](recent, event);
-                        }
-                    }
-                    // mouseout
-                    subscriber = dispatcher.subscriber[triggerColor];
-                    if (subscriber) {
-                        var evt = activities.events.MOUSE_OUT;
-                        for (var idx in subscriber[evt]) {
-                            subscriber[evt][idx](dispatcher.recent, event);
-                        }
-                    }
-                    dispatcher.recent = recent;
-                    return;
-                }
-                
-                // trigger events directly mapped from javascript events        
-                dispatcher.recent = recent;
-                var subscriber = dispatcher.subscriber[triggerColor];
-                if (subscriber) {
-                    var mapped = dispatcher.eventMapping[event.type];
-                    for (var idx in subscriber[mapped]) {
-                        subscriber[mapped][idx](recent, event);
-                    }
-                }
-                //activities.events.status(event.type, x, y, triggerColor);
-            },
+            // event utils
             
-            // several event handler
+            /*
+             * events status message
+             */
+            status: function(evt, x, y, trigger) {
+                var status = 'Evt: ' + evt + '<br />' +
+                             'X: ' + x + '<br />' +
+                             'Y: ' + y + '<br />' +
+                             'T: ' + trigger;
+                $('.status').html(status);
+            }
+        },
         
+        /*
+         * activity handler
+         */
+        handler: {
+            
             /*
              * set default cursor
              */
@@ -259,8 +187,6 @@ var global_mousedown = 0;
             },
             
             /*
-             * activities.events.MOUSE_DOWN
-             * 
              * set selected item. used by diagram elements
              */
             setSelected: function(obj, event) {
@@ -280,8 +206,6 @@ var global_mousedown = 0;
             },
         
             /*
-             * activities.events.MOUSE_DOWN
-             * 
              * unselect all diagram elements. used by diagram
              */
             unselectAll: function(obj, event) {
@@ -293,8 +217,6 @@ var global_mousedown = 0;
             },
             
             /*
-             * activities.events.MOUSE_DOWN
-             * 
              * do action
              */
             doAction: function(obj, event) {
@@ -355,19 +277,6 @@ var global_mousedown = 0;
                 }
                 actions.unselect();
                 diagram.render();
-            },
-            
-            // event utils
-            
-            /*
-             * events status message
-             */
-            status: function(evt, x, y, trigger) {
-                var status = 'Evt: ' + evt + '<br />' +
-                             'X: ' + x + '<br />' +
-                             'Y: ' + y + '<br />' +
-                             'T: ' + trigger;
-                $('.status').html(status);
             }
         },
         
@@ -531,6 +440,17 @@ var global_mousedown = 0;
         }
     }
     
+    
+    // ************************************************************************
+    // activities.actions.Action
+    // ************************************************************************
+    
+    activities.actions.Action = function(){
+    }
+    
+    activities.actions.Action.prototype = {
+        
+    }
     
     // ************************************************************************
     // activities.model.Model
@@ -851,6 +771,96 @@ var global_mousedown = 0;
         unsubscribe: function(evt, obj) {
             delete this.subscriber[obj.triggerColor];
         }
+    }
+    
+    /*
+     * event notification
+     */
+    activities.events.notify = function(event) {
+        var canvas;
+        if (event.type == 'mousewheel'
+         || event.type == 'DOMMouseScroll') {
+            // mousewheel, check if event target is canvas,
+            // otherwise return
+            var target;
+            if (event.target) {
+                target = event.target;
+            } else if (event.srcElement) {
+                target = event.srcElement;
+            }
+            if (!target || target.tagName != 'CANVAS') {
+                return;
+            }
+            canvas = $(target);
+        } else {
+            var canvas = $(this);
+        }
+        event.preventDefault();
+        var dispatcher = canvas.data('dispatcher');
+        var diagram = dispatcher.diagram;
+        var current = diagram.currentCursor(event);
+        var x = current[0];
+        var y = current[1];
+        var ctx = diagram.layers.control.context;
+        // try to get pixel info, return if fails
+        try {
+            var imgData = ctx.getImageData(x, y, 1, 1).data;
+        } catch (err) {
+            return;
+        }
+        
+        // detect event scope object
+        var triggerColor = activities.utils.rgb2hex(imgData);
+        var recent = diagram.elements[triggerColor];
+        if (!recent) {
+            recent = diagram;
+        }
+        
+        // trigger mousewheel if necessary and return
+        if (event.type == 'mousewheel'
+         || event.type == 'DOMMouseScroll') {
+            var subscriber = dispatcher.subscriber[recent.triggerColor];
+            if (subscriber) {
+                var evt = activities.events.MOUSE_WHEEL;
+                for (var idx in subscriber[evt]) {
+                    subscriber[evt][idx](recent, event);
+                }
+            }
+            return;
+        }
+        
+        // trigger mousein/mouseout if necessary and return
+        if (dispatcher.recent && recent != dispatcher.recent) {
+            var subscriber = dispatcher.subscriber[recent.triggerColor];
+            // mousein
+            if (subscriber) {
+                var evt = activities.events.MOUSE_IN;
+                for (var idx in subscriber[evt]) {
+                    subscriber[evt][idx](recent, event);
+                }
+            }
+            // mouseout
+            subscriber = dispatcher.subscriber[triggerColor];
+            if (subscriber) {
+                var evt = activities.events.MOUSE_OUT;
+                for (var idx in subscriber[evt]) {
+                    subscriber[evt][idx](dispatcher.recent, event);
+                }
+            }
+            dispatcher.recent = recent;
+            return;
+        }
+        
+        // trigger events directly mapped from javascript events        
+        dispatcher.recent = recent;
+        var subscriber = dispatcher.subscriber[triggerColor];
+        if (subscriber) {
+            var mapped = dispatcher.eventMapping[event.type];
+            for (var idx in subscriber[mapped]) {
+                subscriber[mapped][idx](recent, event);
+            }
+        }
+        //activities.events.status(event.type, x, y, triggerColor);
     }
     
     
@@ -1488,7 +1498,7 @@ var global_mousedown = 0;
         
         panOn: function(obj, event) {
             obj.dnd.pan_active = true;
-            activities.events.setMove(obj, event);
+            activities.handler.setMove(obj, event);
         },
         
         panOff: function(obj, event) {
@@ -1496,7 +1506,7 @@ var global_mousedown = 0;
             diagram.dnd.pan_active = false;
             diagram.dnd.last_x = null;
             diagram.dnd.last_y = null;
-            activities.events.setDefault(obj, event);
+            activities.handler.setDefault(obj, event);
         },
         
         pan: function(obj, event) {
@@ -1777,9 +1787,10 @@ var global_mousedown = 0;
             // event subscription
             var dsp = this.dispatcher;
             var events = activities.events;
-            dsp.subscribe(events.MOUSE_IN, this, events.setDefault);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.unselectAll);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            var handler = activities.handler;
+            dsp.subscribe(events.MOUSE_IN, this, handler.setDefault);
+            dsp.subscribe(events.MOUSE_DOWN, this, handler.unselectAll);
+            dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, this.dnd.zoom);
             dsp.subscribe(events.MOUSE_DOWN, this, this.dnd.panOn);
             dsp.subscribe(events.MOUSE_UP, this, this.dnd.panOff);
@@ -2040,9 +2051,10 @@ var global_mousedown = 0;
             var dnd = diagram.dnd;
             var dsp = diagram.dispatcher;
             var events = activities.events;
-            dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            var handler = activities.handler;
+            dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
+            dsp.subscribe(events.MOUSE_DOWN, this, handler.setSelected);
+            dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
             dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
             dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
@@ -2350,9 +2362,10 @@ var global_mousedown = 0;
         bind: function() {
             var dsp = this.diagram.dispatcher;
             var events = activities.events;
-            dsp.subscribe(events.MOUSE_IN, this, events.setPointer);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.setSelected);
-            dsp.subscribe(events.MOUSE_DOWN, this, events.doAction);
+            var handler = activities.handler;
+            dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
+            dsp.subscribe(events.MOUSE_DOWN, this, handler.setSelected);
+            dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, this.diagram.dnd.zoom);
         },
         
