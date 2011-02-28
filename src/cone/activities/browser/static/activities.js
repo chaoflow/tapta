@@ -705,6 +705,32 @@ var global_mousedown = 0;
             }
             // XXX: traversal by dottedpath
             return this.context.children[path];
+        },
+        
+        /*
+         * model as string for debugging purposes
+         */
+        debug: function(context) {
+            var ret = '';
+            if (!context) {
+                context = this.context;
+            }
+            if (!context.children) {
+                return ret;
+            }
+            var child;
+            for (var key in context.children) {
+                child = context.children[key];
+                for (subkey in child) {
+                    if (subkey == 'children') {
+                        continue;
+                    }
+                    ret += subkey + ': ' + child[subkey] + '\n';
+                }
+                ret += '---\n';
+                ret += this.debug(child);
+            }
+            return ret;
         }
     }
     
@@ -914,9 +940,6 @@ var global_mousedown = 0;
     // activities.ui.Actions
     // ************************************************************************
     
-    /*
-     * Actions
-     */
     activities.ui.Actions = function(editor) {
         this.editor = editor;
         this.active = null;
@@ -1017,12 +1040,10 @@ var global_mousedown = 0;
                 this.displayProperty('Outgoing Edges:', val);
             }
             var properties = this;
-            $('.update', this.container)
-                .unbind()
-                .bind('click', function(evt) {
-                    evt.preventDefault();
-                    properties.update();
-                });
+            $('.update', this.container).unbind().bind('click', function(evt) {
+                evt.preventDefault();
+                properties.update();
+            });
         },
         
         /*
@@ -2241,10 +2262,15 @@ var global_mousedown = 0;
                 ctx, fillColor, this.width, this.height, true);
             this.strokeRect(
                 ctx, borderColor, this.borderWidth, this.width, this.height);
-            if (this.renderLabel) {
-                this.drawLabel(ctx, this.label, this.width);
-            }
             ctx.restore();
+            
+            if (this.renderLabel) {
+                var label = this.label;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                this.drawLabel(ctx, label, 200);
+                ctx.restore();
+            }
         }
     });
     
@@ -2307,6 +2333,7 @@ var global_mousedown = 0;
     
     activities.ui.Decision = function() {
         activities.ui.RectNode.call(this, 40, 40, 45);
+        this.renderLabel = true;
     }
     activities.ui.Decision.prototype = new activities.ui.RectNode;
     
@@ -2353,6 +2380,7 @@ var global_mousedown = 0;
         this.selectedColor = '#bbbbbb';
         this.source = null;
         this.target = null;
+        this.renderLabel = true;
         this.kinks = new Array();
     }
     activities.ui.Edge.prototype = new activities.ui.Element;
@@ -2400,6 +2428,14 @@ var global_mousedown = 0;
                 y = source.y;
             }
             this._end = target.translateEdge(x, y);
+        },
+        
+        labelOffset: function() {
+            // XXX: consider kinks if present
+            return [
+                this._start[0] + ((this._end[0] - this._start[0]) / 2),
+                this._start[1] + ((this._end[1] - this._start[1]) / 2)
+            ];
         },
         
         renderPath: function(ctx) {
@@ -2481,6 +2517,16 @@ var global_mousedown = 0;
             ctx.stroke();
             ctx.fill();
             ctx.restore();
+            
+            // label
+            if (this.renderLabel) {
+                var label = this.label;
+                var labelOffset = this.labelOffset();
+                ctx.save();
+                ctx.translate(labelOffset[0], labelOffset[1]);
+                this.drawLabel(ctx, label, 200);
+                ctx.restore();
+            }
         }
     });
     
