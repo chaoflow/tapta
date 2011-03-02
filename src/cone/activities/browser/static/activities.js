@@ -2437,10 +2437,7 @@ var global_mousedown = 0;
             dsp.unsubscribe(events.MOUSE_WHEEL, this);
         },
         
-        translate: function() {
-            var diagram = this.diagram;
-            var source = diagram.elements[diagram.r_mapping[this.source]];
-            var target = diagram.elements[diagram.r_mapping[this.target]];
+        translate: function(source, target) {
             var x, y;
             if (this.kinks.length != 0) {
                 x = this.kinks[0].x;
@@ -2499,11 +2496,21 @@ var global_mousedown = 0;
         },
         
         render: function() {
+            var diagram = this.diagram;
+            var source = diagram.elements[diagram.r_mapping[this.source]];
+            var target = diagram.elements[diagram.r_mapping[this.target]];
+            
+            // do not render edge if source and target refer to same 
+            // diagram position
+            if (source.x == target.x && source.y == target.y) {
+                return;
+            }
+            
             // translate edge start and endpoint
-            this.translate();
+            this.translate(source, target);
             
             // control layer
-            var ctx = this.diagram.ctl_ctx;
+            var ctx = diagram.ctl_ctx;
             ctx.save();
             ctx.strokeStyle = this.triggerColor;
             ctx.lineWidth = this.lineWidth + 3;
@@ -2521,7 +2528,7 @@ var global_mousedown = 0;
                 strokeStyle = this.selectedColor;
                 fillStyle = this.selectedColor;
             }
-            ctx = this.diagram.diag_ctx;
+            ctx = diagram.diag_ctx;
             ctx.save();
             ctx.strokeStyle = strokeStyle;
             ctx.lineWidth = this.lineWidth;
