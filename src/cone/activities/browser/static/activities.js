@@ -43,8 +43,8 @@ var global_mousedown = 0;
         demo_editor = new activities.ui.Editor('level_0');
         demo_editor.newDiagram();
         
-        $('.qunit').show();
-        tests.run();
+        //$('.qunit').show();
+        //tests.run();
     });
     
     
@@ -1111,21 +1111,56 @@ var global_mousedown = 0;
      * x / y grid mapping 2 dimensional array positions to diagram elements
      */
     activities.ui.Grid = function(model) {
-        this.model = model;
-        
-        // this.data[x][y]
-        this.data = new Array();
-        
-        this.res_x = 10;
-        this.res_y = 10;
+        this.res_x = 50;
+        this.res_y = 50;
     }
     
     activities.ui.Grid.prototype = {
+        
+        /*
+         * return nearest grid x/y position for coordinates
+         * x, y are positive integer values
+         */
+        nearest: function(x, y) {
+            var nearest_x = x == 0 ? 0 : Math.round(x / this.res_x);
+            var nearest_y = y == 0 ? 0 : Math.round(y / this.res_y);
+            return [nearest_x, nearest_y];
+        },
+        
+        /*
+         * snap diagram elements to grid
+         */
+        snap: function(diagram) {
+            var elem, nearest;
+            for (var idx in diagram.elements) {
+                elem = diagram.elements[idx];
+                nearest = this.nearest(elem.x, elem.y);
+                elem.x = nearest[0] * this.res_x;
+                elem.y = nearest[1] * this.res_y;
+            }
+        },
+    }
+    
+    // ************************************************************************
+    // activities.ui.ElementMatrix
+    // ************************************************************************
+    
+    /*
+     * x / y matrix poiting to diagram elements
+     */
+    activities.ui.ElementMatrix = function(grid) {
+        this.grid = grid;
+        
+        // this.data[x][y]
+        this.data = new Array();
+    }
+    
+    activities.ui.ElementMatrix.prototype = {
     
         /*
-         * set grid position
-         * x - grid x position
-         * y - grid y position
+         * set matrix position
+         * x - matrix x position
+         * y - matrix y position
          * elem - the diagram element
          */
         set: function(x, y, elem) {
@@ -1139,9 +1174,9 @@ var global_mousedown = 0;
         },
         
         /*
-         * get grid coordinates for position
-         * x - grid x position
-         * y - grid y position
+         * get matrix coordinates for position
+         * x - matrix x position
+         * y - matrix y position
          */
         get: function(x, y) {
             try {
@@ -1152,7 +1187,7 @@ var global_mousedown = 0;
         },
         
         /*
-         * return grid size
+         * return matrix size
          */
         size: function() {
             var x = this.data.length;
@@ -1168,22 +1203,11 @@ var global_mousedown = 0;
         },
         
         /*
-         * return nearest grid x/y position for coordinates
-         * x, y are positive integer values
-         */
-        nearest: function(x, y) {
-            var nearest_x = x == 0 ? 0 : Math.round(x / this.res_x);
-            var nearest_y = y == 0 ? 0 : Math.round(y / this.res_y);
-            return [nearest_x, nearest_y];
-        },
-        
-        /*
          * Set x/y position for elements in grid
          */
         arrange: function() {
             var x = 0;
             var y = 0;
-            var model = this.model;
             var size = this.size();
             var elem;
             for (var i = 0; i < size[0]; i++) {
@@ -1193,9 +1217,9 @@ var global_mousedown = 0;
                         elem.x = x;
                         elem.y = y;
                     }
-                    y += this.res_y;
+                    y += this.grid.res_y;
                 }
-                x += this.res_x;
+                x += this.grid.res_x;
                 y = 0;
             }
         },
@@ -1208,7 +1232,7 @@ var global_mousedown = 0;
             // always inserts new column
             if (x == 0) {
                 var col = new Array();
-                col[y] = elem;
+                col[0] = elem;
                 this.data.splice(0, 0, col);
                 return;
             }
@@ -1255,7 +1279,6 @@ var global_mousedown = 0;
             return ret;
         }
     }
-    
     
     // ************************************************************************
     // activities.ui.TierRenderer
@@ -1384,10 +1407,11 @@ var global_mousedown = 0;
         },
         
         /*
-         * fill grid
+         * fill matrix
          */
-        fillGrid: function() {
+        fillMatrix: function() {
             grid = this.diagram.grid;
+            this.matrix = new activities.ui.ElementMatrix(grid);
             var yMax = this.maxTierElements() * 2 - 1;
             if (yMax % 2 == 1) {
                 yMax += 1;
@@ -1398,7 +1422,7 @@ var global_mousedown = 0;
                 for (var j in this.tiers[i]) {
                     node = this.model.node(this.tiers[i][j]);
                     elem = this.diagram.get(node);
-                    grid.set(i, yStart + (j * 2), elem);
+                    this.matrix.set(i, yStart + (j * 2), elem);
                 }
             }
         },
@@ -1440,17 +1464,15 @@ var global_mousedown = 0;
             // create edges
             this.createEdges();
             
-            // fill grid
-            this.fillGrid();
-            
-            var grid = diagram.grid;
+            // fill matrix
+            this.fillMatrix();
             
             // set grid resolution
-            grid.res_x = 120;
-            grid.res_y = 50;
+            diagram.grid.res_x = 120;
+            diagram.grid.res_y = 50;
             
             // arrange XY positions
-            grid.arrange();
+            this.matrix.arrange();
             
             // render diagram
             diagram.render();
@@ -1747,6 +1769,8 @@ var global_mousedown = 0;
         this.editor = editor;
         
         this.grid = new activities.ui.Grid(editor.model);
+        this.snap = true;
+        
         this.dnd = new activities.ui.DnD();
         
         // XXX: move to seperate mapping object
@@ -1884,6 +1908,9 @@ var global_mousedown = 0;
             
             var diagram = this;
             this.renderTranslated(function() {
+                if (diagram.snap) {
+                    diagram.grid.snap(diagram);
+                }
                 var edges = new Array();
                 var elem, selected;
                 for(var key in diagram.elements) {

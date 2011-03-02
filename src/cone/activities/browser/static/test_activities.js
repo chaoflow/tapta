@@ -409,77 +409,84 @@
                        0, "model.filtered(activities.model.EDGE).length");
             });
             
-            module("activities.ui.Grid");
+            module("activities.ui.ElementMatrix");
             
             var grid = new activities.ui.Grid();
+            var matrix = new activities.ui.ElementMatrix(grid);
             
-            test("Grid.[set|get]", function() {
-                grid.set(0, 0, 'foo');
-                grid.set(1, 0, 'bar');
-                equals(grid.get(0, 0),
-                       'foo', "grid.get(0, 0) == 'foo'");
-                equals(grid.get(1, 0),
-                       'bar', "grid.get(1, 0) == 'bar'");
-                equals(typeof(grid.get(1, 1)),
-                       "undefined", 'typeof(grid.get(1, 1)) == "undefined"');
+            test("ElementMatrix.[set|get]", function() {
+                matrix.set(0, 0, 'foo');
+                matrix.set(1, 0, 'bar');
+                equals(matrix.get(0, 0),
+                       'foo', "matrix.get(0, 0) == 'foo'");
+                equals(matrix.get(1, 0),
+                       'bar', "matrix.get(1, 0) == 'bar'");
+                equals(typeof(matrix.get(1, 1)),
+                       "undefined", 'typeof(matrix.get(1, 1)) == "undefined"');
             });
             
-            test("Grid.before_X at zero position", function() {
-                grid.before_X(0, 0, 'baz');
-                equals(grid.get(0, 0),
-                       'baz', "grid.get(0, 0) == 'baz'");
-                equals(grid.get(1, 0),
-                       'foo', "grid.get(1, 0) == 'foo'");
-                equals(grid.get(2, 0),
-                       'bar', "grid.get(2, 0) == 'bar'");
+            test("ElementMatrix.before_X at zero position", function() {
+                matrix.before_X(0, 0, 'baz');
+                equals(matrix.get(0, 0),
+                       'baz', "matrix.get(0, 0) == 'baz'");
+                equals(matrix.get(1, 0),
+                       'foo', "matrix.get(1, 0) == 'foo'");
+                equals(matrix.get(2, 0),
+                       'bar', "matrix.get(2, 0) == 'bar'");
             });
             
-            test("Grid.before_X at none zero position, new column", function() {
+            test("ElementMatrix.before_X at none zero position, new column", function() {
                 // expect ['baz', 'foo', 'bar']
-                grid.before_X(1, 0, 'bam');
-                equals(grid.get(0, 0),
-                       'baz', "grid.get(0, 0) == 'baz'");
-                equals(grid.get(1, 0),
-                       'bam', "grid.get(1, 0) == 'bam'");
-                equals(grid.get(2, 0),
-                       'foo', "grid.get(2, 0) == 'foo'");
-                equals(grid.get(3, 0),
-                       'bar', "grid.get(3, 0) == 'bar'");
+                matrix.before_X(1, 0, 'bam');
+                equals(matrix.get(0, 0),
+                       'baz', "matrix.get(0, 0) == 'baz'");
+                equals(matrix.get(1, 0),
+                       'bam', "matrix.get(1, 0) == 'bam'");
+                equals(matrix.get(2, 0),
+                       'foo', "matrix.get(2, 0) == 'foo'");
+                equals(matrix.get(3, 0),
+                       'bar', "matrix.get(3, 0) == 'bar'");
             });
             
-            test("Grid.before_X at none zero position, free position",
+            test("ElementMatrix.before_X at none zero position, free position",
                  function() {
-                grid.set(2, 0, null);
+                matrix.set(2, 0, null);
                 // expect ['baz', 'bam', null, 'bar']
-                grid.before_X(3, 0, 'foo');
-                equals(grid.get(0, 0),
-                       'baz', "grid.get(0, 0) == 'baz'");
-                equals(grid.get(1, 0),
-                       'bam', "grid.get(1, 0) == 'bam'");
-                equals(grid.get(2, 0),
-                       'foo', "grid.get(2, 0) == 'foo'");
-                equals(grid.get(3, 0),
-                       'bar', "grid.get(3, 0) == 'bar'");
+                matrix.before_X(3, 0, 'foo');
+                equals(matrix.get(0, 0),
+                       'baz', "matrix.get(0, 0) == 'baz'");
+                equals(matrix.get(1, 0),
+                       'bam', "matrix.get(1, 0) == 'bam'");
+                equals(matrix.get(2, 0),
+                       'foo', "matrix.get(2, 0) == 'foo'");
+                equals(matrix.get(3, 0),
+                       'bar', "matrix.get(3, 0) == 'bar'");
             });
+            
+            matrix = new activities.ui.ElementMatrix();
+            
+            test("ElementMatrix.before_Y", function() {
+                matrix.set(0, 0, 'foo');
+                matrix.set(0, 1, null);
+                matrix.set(0, 2, 'bar');
+                matrix.set(0, 3, null);
+                matrix.before_Y(0, 0, 'baz');
+                equals(matrix.get(0, 0),
+                       'baz', "matrix.get(0, 0) == 'baz'");
+                equals(matrix.get(0, 1),
+                       'foo', "matrix.get(0, 1) == 'foo'");
+                matrix.before_Y(0, 2, 'bam');
+                equals(matrix.get(0, 2),
+                       'bam', "matrix.get(0, 2) == 'bam'");
+                equals(matrix.get(0, 4),
+                       'bar', "matrix.get(0, 4) == 'bar'");
+            });
+            
+            module("activities.ui.Grid");
             
             grid = new activities.ui.Grid();
-            
-            test("Grid.before_Y", function() {
-                grid.set(0, 0, 'foo');
-                grid.set(0, 1, null);
-                grid.set(0, 2, 'bar');
-                grid.set(0, 3, null);
-                grid.before_Y(0, 0, 'baz');
-                equals(grid.get(0, 0),
-                       'baz', "grid.get(0, 0) == 'baz'");
-                equals(grid.get(0, 1),
-                       'foo', "grid.get(0, 1) == 'foo'");
-                grid.before_Y(0, 2, 'bam');
-                equals(grid.get(0, 2),
-                       'bam', "grid.get(0, 2) == 'bam'");
-                equals(grid.get(0, 4),
-                       'bar', "grid.get(0, 4) == 'bar'");
-            });
+            grid.res_x = 10.0;
+            grid.res_y = 10.0;
             
             test("Grid.nearest", function() {
                 equals(grid.nearest(0, 0)[0] + ',' + grid.nearest(0, 0)[1],
