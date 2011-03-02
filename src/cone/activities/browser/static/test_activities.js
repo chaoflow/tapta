@@ -480,6 +480,21 @@
                 equals(grid.get(0, 4),
                        'bar', "grid.get(0, 4) == 'bar'");
             });
+            
+            test("Grid.nearest", function() {
+                equals(grid.nearest(0, 0)[0] + ',' + grid.nearest(0, 0)[1],
+                       '0,0', 'grid.nearest(0, 0)');
+                equals(grid.nearest(4, 5)[0] + ',' + grid.nearest(4, 5)[1],
+                       '0,1', 'grid.nearest(4, 5)');
+                equals(grid.nearest(15, 14)[0] + ',' + grid.nearest(15, 14)[1],
+                       '2,1', 'grid.nearest(15, 14)');
+                grid.res_x = 30;
+                grid.res_y = 50;
+                equals(grid.nearest(30, 24)[0] + ',' + grid.nearest(30, 24)[1],
+                       '1,0', 'grid.nearest(30, 24)');
+                equals(grid.nearest(30, 50)[0] + ',' + grid.nearest(30, 50)[1],
+                       '1,1', 'grid.nearest(30, 50)');
+            });
         }
     }
     

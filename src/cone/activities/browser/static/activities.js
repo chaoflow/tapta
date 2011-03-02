@@ -1113,10 +1113,8 @@ var global_mousedown = 0;
         // this.data[x][y]
         this.data = new Array();
         
-        this.orgin_x = 60;
-        this.orgin_y = 70;
-        this.step_x = 120;
-        this.step_y = 50;
+        this.res_x = 10;
+        this.res_y = 10;
     }
     
     activities.ui.Grid.prototype = {
@@ -1146,7 +1144,7 @@ var global_mousedown = 0;
             try {
                 return this.data[x][y];
             } catch(err) {
-                throw "No element found at position " + x + ',' + y;
+                return null;
             }
         },
         
@@ -1168,17 +1166,20 @@ var global_mousedown = 0;
         
         /*
          * return nearest grid x/y position for coordinates
+         * x, y are positive integer values
          */
         nearest: function(x, y) {
-            
+            var nearest_x = x == 0 ? 0 : Math.round(x / this.res_x);
+            var nearest_y = y == 0 ? 0 : Math.round(y / this.res_y);
+            return [nearest_x, nearest_y];
         },
         
         /*
          * Set x/y position for elements in grid
          */
         arrange: function() {
-            var x = this.orgin_x;
-            var y = this.orgin_y;
+            var x = 0;
+            var y = 0;
             var model = this.model;
             var size = this.size();
             var elem;
@@ -1189,10 +1190,10 @@ var global_mousedown = 0;
                         elem.x = x;
                         elem.y = y;
                     }
-                    y += this.step_y;
+                    y += this.res_y;
                 }
-                x += this.step_x;
-                y = this.orgin_y;
+                x += this.res_x;
+                y = 0;
             }
         },
         
@@ -1226,20 +1227,6 @@ var global_mousedown = 0;
          */
         before_Y: function(x, y, elem) {
             this.data[x].splice(y, 0, elem);
-        },
-        
-        /*
-         * insert element after x position at y position
-         */
-        after_X: function(x, y, elem) {
-            
-        },
-        
-        /*
-         * insert element after y position at x position
-         */
-        after_Y: function(x, y, elem) {
-            
         },
         
         /*
@@ -1417,6 +1404,12 @@ var global_mousedown = 0;
          * render diagram
          */
         render: function() {
+            var diagram = this.diagram;
+            
+            // set diagram origin
+            diagram.origin_x = 100;
+            diagram.origin_y = 100;
+            
             // mapping for node id to tier level
             this.node2tier = new Object();
             
@@ -1428,7 +1421,7 @@ var global_mousedown = 0;
             try {
                 initial = this.model.initial();
             } catch (err) {
-                this.diagram.render();
+                diagram.render();
                 return;
             }
             
@@ -1447,11 +1440,17 @@ var global_mousedown = 0;
             // fill grid
             this.fillGrid();
             
+            var grid = diagram.grid;
+            
+            // set grid resolution
+            grid.res_x = 120;
+            grid.res_y = 50;
+            
             // arrange XY positions
-            this.diagram.grid.arrange();
+            grid.arrange();
             
             // render diagram
-            this.diagram.render();
+            diagram.render();
         }
     }
     
