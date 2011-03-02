@@ -57,71 +57,71 @@
                         __type: activities.model.EDGE,
                         source: 'start',
                         target: 'fork',
-                        label: 'Go to Fork',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_2: {
                         __type: activities.model.EDGE,
                         source: 'fork',
                         target: 'action_1',
-                        label: 'Go to Action 1',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_3: {
                         __type: activities.model.EDGE,
                         source: 'fork',
                         target: 'action_2',
-                        label: 'Go to Action 2',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_4: {
                         __type: activities.model.EDGE,
                         source: 'action_1',
                         target: 'action_3',
-                        label: 'Go to Action 3',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_5: {
                         __type: activities.model.EDGE,
                         source: 'action_2',
                         target: 'join',
-                        label: 'Go to Join',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_6: {
                         __type: activities.model.EDGE,
                         source: 'action_3',
                         target: 'decision',
-                        label: 'Go to Decision',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_7: {
                         __type: activities.model.EDGE,
                         source: 'action_3',
                         target: 'join',
-                        label: 'Go to Join',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_8: {
                         __type: activities.model.EDGE,
                         source: 'decision',
                         target: 'merge',
-                        label: 'Go to Merge',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_9: {
                         __type: activities.model.EDGE,
                         source: 'join',
                         target: 'merge',
-                        label: 'Go to Merge',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     edge_10: {
                         __type: activities.model.EDGE,
                         source: 'merge',
                         target: 'end',
-                        label: 'Go to End',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     }
                 }
             }
@@ -193,92 +193,92 @@
                         __type: activities.model.EDGE,
                         source: 'act_a',
                         target: 'dec_a',
-                        label: 'Go to Decision A',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_2: {
                         __type: activities.model.EDGE,
                         source: 'dec_a',
                         target: 'act_b',
-                        label: 'Go to Action B',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_3: {
                         __type: activities.model.EDGE,
                         source: 'dec_a',
                         target: 'act_c',
-                        label: 'Go to Action C',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_4: {
                         __type: activities.model.EDGE,
                         source: 'act_b',
                         target: 'mer_a',
-                        label: 'Go to Merge A',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_5: {
                         __type: activities.model.EDGE,
                         source: 'act_c',
                         target: 'mer_a',
-                        label: 'Go to Merge A',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_6: {
                         __type: activities.model.EDGE,
                         source: 'mer_a',
                         target: 'act_d',
-                        label: 'Go to Action D',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_7: {
                         __type: activities.model.EDGE,
                         source: 'act_d',
                         target: 'fork_a',
-                        label: 'Go to Fork A',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_8: {
                         __type: activities.model.EDGE,
                         source: 'fork_a',
                         target: 'act_e',
-                        label: 'Go to Action E',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_9: {
                         __type: activities.model.EDGE,
                         source: 'fork_a',
                         target: 'act_f',
-                        label: 'Go to Action F',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_10: {
                         __type: activities.model.EDGE,
                         source: 'fork_a',
                         target: 'act_g',
-                        label: 'Go to Action G',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_11: {
                         __type: activities.model.EDGE,
                         source: 'act_e',
                         target: 'act_h',
-                        label: 'Go to Action H',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_12: {
                         __type: activities.model.EDGE,
                         source: 'act_f',
                         target: 'act_h',
-                        label: 'Go to Action H',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                     e_13: {
                         __type: activities.model.EDGE,
                         source: 'act_g',
                         target: 'act_h',
-                        label: 'Go to Action H',
-                        description: 'Description'
+                        label: '',
+                        description: ''
                     },
                 }
             }

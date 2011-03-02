@@ -560,8 +560,7 @@ var global_mousedown = 0;
             node.__name = uid;
             node.__parent = context.__name;
             node.__type = type;
-            node.label = 'New ' + activities.model.TYPE_NAMES[type];
-            node.description = '';
+            node.label = node.description = '';
             return node;
         },
         
@@ -1026,7 +1025,7 @@ var global_mousedown = 0;
             this.recent_element = elem;
             var model = activities.model;
             this.displayProperty('Type:', model.TYPE_NAMES[node.__type]);
-            this.stringProperty('label', 'Label:', elem.label || node.__name);
+            this.stringProperty('label', 'Label:', elem.label || '');
             this.textProperty('description',
                               'Description:',
                               elem.description || '');
@@ -1908,17 +1907,8 @@ var global_mousedown = 0;
             this.mapping[triggerColor] = node.__name;
             this.r_mapping[node.__name] = triggerColor;
             elem.bind();
-            
-            // label
-            if (node.label) {
-                elem.label = node.label;
-            } else {
-                elem.label = node.__name;
-            }
-            // description
-            if (node.description) {
-                elem.description = node.description;
-            }
+            elem.label = node.label || '';
+            elem.description = node.description || '';
         },
         
         /*
