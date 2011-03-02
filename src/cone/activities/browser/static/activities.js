@@ -232,6 +232,9 @@ var global_mousedown = 0;
                         var current = diagram.currentCursor(event);
                         var x = current[0];
                         var y = current[1];
+                        
+                        // XXX: grid
+                        
                         var translated = diagram.translateCursor(x, y);
                         node.x = elem.x = translated[0];
                         node.y = elem.y = translated[1];
@@ -1591,6 +1594,8 @@ var global_mousedown = 0;
         drop: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             diagram.dnd.recent = null;
+            
+            // XXX: grid
         }
     }
     
@@ -1879,6 +1884,7 @@ var global_mousedown = 0;
             
             var diagram = this;
             this.renderTranslated(function() {
+                var edges = new Array();
                 var elem, selected;
                 for(var key in diagram.elements) {
                     var elem = diagram.elements[key];
@@ -1886,7 +1892,15 @@ var global_mousedown = 0;
                         selected = elem;
                         continue;
                     }
+                    if (elem.node.__type == activities.model.EDGE) {
+                        edges.push(elem);
+                        continue;
+                    }
                     elem.render();
+                }
+                for (idx in edges) {
+                    edge = edges[idx]
+                    edge.render();
                 }
                 if (selected) {
                     selected.render();
@@ -1899,6 +1913,7 @@ var global_mousedown = 0;
          */
         map: function(node, elem) {
             var triggerColor = this.nextTriggerColor();
+            elem.node = node;
             elem.diagram = this;
             elem.triggerColor = triggerColor;
             this.elements[triggerColor] = elem;
@@ -2018,6 +2033,7 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.ui.Element = function() {
+        this.node = null;
         this.diagram = null;
         this.triggerColor = null;
         
