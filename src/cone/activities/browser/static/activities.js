@@ -211,7 +211,9 @@ var global_mousedown = 0;
             unselectAll: function(obj, event) {
                 if (obj.focused) {
                     obj.focused.selected = false;
-                    obj.focused.render();
+                    obj.renderTranslated(function() {
+                        obj.focused.render();
+                    });
                 }
                 obj.editor.properties.display(obj);
             },
