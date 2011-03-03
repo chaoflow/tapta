@@ -260,6 +260,10 @@ var global_mousedown = 0;
              * unselect all diagram elements. bound by diagram
              */
             unselectAll: function(obj, event) {
+                // do not unselect if pan was performed
+                if (obj.dnd.last_x) {
+                    return;
+                }
                 var selected = obj.selected;
                 var elem;
                 for (idx in selected) {
@@ -1367,8 +1371,6 @@ var global_mousedown = 0;
     
     activities.ui.Actions = function(editor) {
         this.editor = editor;
-        this.active = null;
-        this.type = null;
         this.selector = '#' +editor.name + ' div.actions';
         this.sections = new Array();
         var section, action;
@@ -2376,7 +2378,7 @@ var global_mousedown = 0;
             var events = activities.events;
             var handler = activities.handler;
             dsp.subscribe(events.MOUSE_IN, this, handler.setDefault);
-            dsp.subscribe(events.MOUSE_DOWN, this, handler.unselectAll);
+            dsp.subscribe(events.MOUSE_UP, this, handler.unselectAll);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, this.dnd.zoom);
             dsp.subscribe(events.MOUSE_DOWN, this, this.dnd.panOn);
@@ -2635,10 +2637,10 @@ var global_mousedown = 0;
             var events = activities.events;
             var handler = activities.handler;
             dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
+            dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.setSelected);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
-            dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
             dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
             dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
             dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
