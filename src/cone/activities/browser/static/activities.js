@@ -475,11 +475,25 @@ var global_mousedown = 0;
     activities.actions.Action = function(id, title) {
         this.id = id;
         this.title = title;
-        this.holding = false;
+        
+        // flag wether action is actually selected
+        this.active = false;
+        
+        // flag wether action must be disabled manually
+        this.steady = false;
+        
+        // the action corresponding dom element as jQuery object
+        this.element = null;
+        
+        // reference to activities.ui.Editor object
+        this.editor = null;
     }
     
     activities.actions.Action.prototype = {
         
+        /*
+         * render action
+         */
         render: function() {
             var opts = {
                 id: this.id,
@@ -488,6 +502,38 @@ var global_mousedown = 0;
             return $("#editor_action").tmpl(opts);
         },
         
+        /*
+         * set this action active
+         */
+        select: function(name) {
+            this.element.css('background-position',
+                '-23px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
+        },
+        
+        /*
+         * set this action inactive
+         */
+        unselect: function() {
+            this.element.css('background-position',
+                '0px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
+        },
+        
+        /*
+         * action clicked callback
+         */
+        click: function() {
+            if (this.active) {
+                this.unselect();
+                this.active = false;
+            } else {
+                this.select();
+                this.active = true;
+            }
+        },
+        
+        /*
+         * perform whatever this action is supposed to perform
+         */
         perform: function() {
             throw "``perform`` is not implemented on abstract Action";
         }
@@ -505,8 +551,12 @@ var global_mousedown = 0;
     
     $.extend(activities.actions.NewDiagram.prototype, {
         
+        click: function() {
+            this.perform();
+        },
+        
         perform: function() {
-            
+            demo_editor.newDiagram();
         }
     });
     
@@ -517,13 +567,27 @@ var global_mousedown = 0;
     
     activities.actions.OpenDiagram = function() {
         activities.actions.Action.call(this, 'open_activity', 'Open');
+        this._open = 0;
     }
     activities.actions.OpenDiagram.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.OpenDiagram.prototype, {
         
+        click: function() {
+            this.perform();
+        },
+        
         perform: function() {
-            
+            // tmp. alter with persistence widget code
+            var model;
+            if (this._open) {
+                model = tests.create_test_model_1();
+                this._open = 0;
+            } else {
+                model = tests.create_test_model_2();
+                this._open = 1;
+            }
+            demo_editor.openDiagram(model);
         }
     });
     
@@ -539,9 +603,40 @@ var global_mousedown = 0;
     
     $.extend(activities.actions.SaveDiagram.prototype, {
         
+        click: function() {
+            this.perform();
+        },
+        
         perform: function() {
-            
+            bdajax.error('Not implemented');
         }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.NodeAction
+    // ************************************************************************
+    
+    activities.actions.NodeAction = function(id, title, type) {
+        activities.actions.Action.call(this, id, title);
+        this.type = type;
+    }
+    activities.actions.NodeAction.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.NodeAction.prototype, {
+        
+        perform: function() {
+            var node = this.editor.model.createNode(this.type);
+            var diagram = this.editor.diagram;
+            var elem = diagram.get(node);
+            var current = diagram.currentCursor(event);
+            var x = current[0];
+            var y = current[1];
+            var translated = diagram.translateCursor(x, y);
+            node.x = elem.x = translated[0];
+            node.y = elem.y = translated[1];
+            diagram.render();
+        },
     });
     
     
@@ -550,16 +645,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.actions.InitialNode = function() {
-        activities.actions.Action.call(this, 'initial_node', 'Initial Node');
+        activities.actions.Action.call(
+            this, 'initial_node', 'Initial Node', activities.model.INITIAL);
     }
-    activities.actions.InitialNode.prototype = new activities.actions.Action;
-    
-    $.extend(activities.actions.InitialNode.prototype, {
-        
-        perform: function() {
-            
-        }
-    });
+    activities.actions.InitialNode.prototype =
+        new activities.actions.NodeAction;
     
     
     // ************************************************************************
@@ -567,16 +657,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.actions.FinalNode = function() {
-        activities.actions.Action.call(this, 'final_node', 'Final Node');
+        activities.actions.Action.call(
+            this, 'final_node', 'Final Node', activities.model.FINAL);
     }
-    activities.actions.FinalNode.prototype = new activities.actions.Action;
-    
-    $.extend(activities.actions.FinalNode.prototype, {
-        
-        perform: function() {
-            
-        }
-    });
+    activities.actions.FinalNode.prototype =
+        new activities.actions.NodeAction;
     
     
     // ************************************************************************
@@ -584,16 +669,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.actions.ActionNode = function() {
-        activities.actions.Action.call(this, 'action_node', 'Action Node');
+        activities.actions.Action.call(
+            this, 'action_node', 'Action Node', activities.model.ACTION);
     }
-    activities.actions.ActionNode.prototype = new activities.actions.Action;
-    
-    $.extend(activities.actions.ActionNode.prototype, {
-        
-        perform: function() {
-            
-        }
-    });
+    activities.actions.ActionNode.prototype =
+        new activities.actions.NodeAction;
     
     
     // ************************************************************************
@@ -601,16 +681,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.actions.JoinNode = function() {
-        activities.actions.Action.call(this, 'join_node', 'Join Node');
+        activities.actions.Action.call(
+            this, 'join_node', 'Join Node', activities.model.JOIN);
     }
-    activities.actions.JoinNode.prototype = new activities.actions.Action;
-    
-    $.extend(activities.actions.JoinNode.prototype, {
-        
-        perform: function() {
-            
-        }
-    });
+    activities.actions.JoinNode.prototype =
+        new activities.actions.NodeAction;
     
     
     // ************************************************************************
@@ -618,16 +693,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.actions.ForkNode = function() {
-        activities.actions.Action.call(this, 'fork_node', 'Fork Node');
+        activities.actions.Action.call(
+            this, 'fork_node', 'Fork Node', activities.model.FORK);
     }
-    activities.actions.ForkNode.prototype = new activities.actions.Action;
-    
-    $.extend(activities.actions.ForkNode.prototype, {
-        
-        perform: function() {
-            
-        }
-    });
+    activities.actions.ForkNode.prototype =
+        new activities.actions.NodeAction;
     
     
     // ************************************************************************
@@ -635,16 +705,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.actions.MergeNode = function() {
-        activities.actions.Action.call(this, 'merge_node', 'Merge Node');
+        activities.actions.Action.call(
+            this, 'merge_node', 'Merge Node', activities.model.MERGE);
     }
-    activities.actions.MergeNode.prototype = new activities.actions.Action;
-    
-    $.extend(activities.actions.MergeNode.prototype, {
-        
-        perform: function() {
-            
-        }
-    });
+    activities.actions.MergeNode.prototype =
+        new activities.actions.NodeAction;
     
     
     // ************************************************************************
@@ -652,16 +717,11 @@ var global_mousedown = 0;
     // ************************************************************************
     
     activities.actions.DecisionNode = function() {
-        activities.actions.Action.call(this, 'decision_node', 'Decision Node');
+        activities.actions.Action.call(
+            this, 'decision_node', 'Decision Node', activities.model.DECISION);
     }
-    activities.actions.DecisionNode.prototype = new activities.actions.Action;
-    
-    $.extend(activities.actions.DecisionNode.prototype, {
-        
-        perform: function() {
-            
-        }
-    });
+    activities.actions.DecisionNode.prototype =
+        new activities.actions.NodeAction;
     
     
     // ************************************************************************
@@ -670,13 +730,40 @@ var global_mousedown = 0;
     
     activities.actions.Edge = function() {
         activities.actions.Action.call(this, 'edge', 'Edge');
+        this.source = null;
+        this.target = null;
     }
     activities.actions.Edge.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.Edge.prototype, {
         
+        click: function() {
+            if (this.active) {
+                this.unselect();
+                this.active = false;
+                this.source = null;
+                this.target = null;
+            } else {
+                this.select();
+                this.active = true;
+            }
+        },
+        
         perform: function() {
-            
+            var diagram = this.editor.diagram;
+            if (this.source == null
+             || typeof(this.source) == "undefined") {
+                var node_name = diagram.mapping[obj.triggerColor];
+                this.source = node_name;
+                return;
+            }
+            this.target = diagram.mapping[obj.triggerColor];
+            if (typeof(this.target) == "undefined") {
+                return;
+            }
+            node = this.editor.model.createEdge(this.source, this.target);
+            diagram.createEdge(node);
+            diagram.render();
         }
     });
     
@@ -694,7 +781,25 @@ var global_mousedown = 0;
     $.extend(activities.actions.DeleteElement.prototype, {
         
         perform: function() {
-            
+            var diagram = this.editor.diagram;
+            var elems = diagram.selected();
+            if (!elems) {
+                return;
+            }
+            var path = diagram.mapping[elems[0].triggerColor];
+            var opts = {
+                message: 'Do you really want to delete this Item?',
+                model: model,
+                diagram: diagram,
+                path: path
+            };
+            bdajax.dialog(opts, function(options) {
+                // XXX: dottedpath
+                options.diagram.remove(options.path);
+                // XXX: dottedpath
+                options.model.remove(options.path);
+                options.diagram.render();
+            });
         }
     });
     
@@ -710,8 +815,13 @@ var global_mousedown = 0;
     
     $.extend(activities.actions.Monitor.prototype, {
         
+        click: function() {
+            this.perform();
+        },
+        
         perform: function() {
-            
+            var status = $('.status');
+            status.toggleClass('hidden');
         }
     });
     
@@ -727,8 +837,13 @@ var global_mousedown = 0;
     
     $.extend(activities.actions.RunTests.prototype, {
         
+        click: function() {
+            this.perform();
+        },
+        
         perform: function() {
-            
+            $('.qunit').show();
+            tests.run();
         }
     });
     
@@ -744,8 +859,12 @@ var global_mousedown = 0;
     
     $.extend(activities.actions.FlipLayers.prototype, {
         
+        click: function() {
+            this.perform();
+        },
+        
         perform: function() {
-            
+            activities.ui.toggleCanvas(demo_editor.name);
         }
     });
     
