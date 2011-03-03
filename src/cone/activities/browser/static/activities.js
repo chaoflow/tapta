@@ -195,18 +195,54 @@ var global_mousedown = 0;
              */
             setSelected: function(obj, event) {
                 var diagram = obj.diagram;
-                //diagram.keylistener.pressed(activities.events.CTL);
-                if (diagram.focused) {
-                    diagram.focused.selected = false;
+                var selected = diagram.selected;
+                // only set obj selected and return if an action is pending
+                if (diagram.editor.actions.pending()) {
+                    obj.selected = true;
+                    selected.push(obj);
                     diagram.renderTranslated(function() {
-                        diagram.focused.render();
+                        obj.render();
+                    });
+                    return;
+                }
+                var to_render = new Array();
+                if (diagram.keylistener.pressed(activities.events.CTL)) {
+                    if (obj.selected) {
+                        var idx = selected.indexOf(obj);
+                        activities.utils.removeArrayItem(selected, idx, idx);
+                        obj.selected = false;
+                    } else {
+                        selected.push(obj);
+                        obj.selected = true;
+                    }
+                } else {
+                    if (selected.length > 0) {
+                        var elem, idx;
+                        for (var idx in selected) {
+                            elem = selected[idx];
+                            if (elem.triggerColor != obj.triggerColor) {
+                                elem.selected = false;
+                            }
+                            to_render.push(elem);
+                        }
+                        diagram.selected = new Array();
+                        selected = diagram.selected;
+                    }
+                    if (obj.selected) {
+                        obj.selected = false;
+                    } else {
+                        selected.push(obj);
+                        obj.selected = true;
+                    }
+                }
+                to_render.push(obj);
+                var elem;
+                for (var idx in to_render) {
+                    elem = to_render[idx];
+                    diagram.renderTranslated(function() {
+                        elem.render();
                     });
                 }
-                diagram.focused = obj;
-                obj.selected = true;
-                diagram.renderTranslated(function() {
-                    obj.render();
-                });
                 diagram.editor.properties.display(obj);
             },
         
@@ -214,12 +250,16 @@ var global_mousedown = 0;
              * unselect all diagram elements. used by diagram
              */
             unselectAll: function(obj, event) {
-                if (obj.focused) {
-                    obj.focused.selected = false;
+                var selected = obj.selected;
+                var elem;
+                for (idx in selected) {
+                    elem = selected[idx];
+                    elem.selected = false;
                     obj.renderTranslated(function() {
-                        obj.focused.render();
+                        elem.render();
                     });
                 }
+                obj.selected = new Array();
                 obj.editor.properties.display(obj);
             },
             
@@ -330,6 +370,9 @@ var global_mousedown = 0;
         // flag wether action must be disabled manually
         this.steady = false;
         
+        // flag wether action is busy.
+        this.busy = false;
+        
         // the action corresponding dom element as jQuery object
         this.element = null;
         
@@ -364,6 +407,7 @@ var global_mousedown = 0;
          */
         unselect: function() {
             this.active = false;
+            this.busy = false;
             this.element.css('background-position',
                 '0px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
         },
@@ -645,6 +689,7 @@ var global_mousedown = 0;
              || typeof(this.source) == "undefined") {
                 var node_name = diagram.mapping[obj.triggerColor];
                 this.source = node_name;
+                this.busy = true;
                 return;
             }
             this.target = diagram.mapping[obj.triggerColor];
@@ -677,23 +722,36 @@ var global_mousedown = 0;
             this.unselect();
             var diagram = editor.diagram;
             var model = editor.model;
-            var elems = diagram.selected();
-            if (!elems) {
+            if (!diagram.selected) {
                 return;
             }
-            var path = diagram.mapping[elems[0].triggerColor];
             var opts = {
                 message: 'Do you really want to delete this Item?',
                 model: model,
                 diagram: diagram,
-                path: path // XXX: dottedpath
             };
             bdajax.dialog(opts, function(options) {
                 var diagram = options.diagram;
                 var model = options.model;
+                var elem, path;
+                var paths = new Array();
+                for (var idx in diagram.selected) {
+                    elem = diagram.selected[idx];
+                    path = diagram.mapping[elem.triggerColor];
+                    paths.push(path);
+                }
+                for (var idx in paths) {
+                    path = paths[idx];
+                    diagram.remove(path);
+                }
+                for (var idx in paths) {
+                    path = paths[idx];
+                    model.remove(path);
+                }
+                // outdated 
                 diagram.focused = null;
-                diagram.remove(options.path);
-                model.remove(options.path);
+                
+                diagram.selected = new Array();
                 diagram.render();
             });
         }
@@ -917,6 +975,9 @@ var global_mousedown = 0;
          */
         remove: function(path) {
             var node = this.node(path);
+            if (!node) {
+                return;
+            }
             var parent = this.parent(node);
             if (node.__type == activities.model.EDGE) {
                 // if edge, remove from target.incoming_edges and 
@@ -1355,6 +1416,20 @@ var global_mousedown = 0;
                 action = actions.get(id);
                 action.click();
             });
+        },
+        
+        /*
+         * return wether an action is pending
+         */
+        pending: function() {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (action.active && !action.steady && !action.busy) {
+                    return true;
+                }
+            }
         },
         
         /*
@@ -2236,6 +2311,9 @@ var global_mousedown = 0;
         // current focused diagram element
         this.focused = null;
         
+        // currently selected items
+        this.selected = new Array();
+        
         this.triggerColor = '#000000';
         this.layers = {
             control:
@@ -2362,11 +2440,10 @@ var global_mousedown = 0;
                     diagram.grid.snap(diagram);
                 }
                 var edges = new Array();
-                var elem, selected;
+                var elem;
                 for(var key in diagram.elements) {
                     var elem = diagram.elements[key];
                     if (elem.selected) {
-                        selected = elem;
                         continue;
                     }
                     if (elem.node.__type == activities.model.EDGE) {
@@ -2379,8 +2456,8 @@ var global_mousedown = 0;
                     edge = edges[idx]
                     edge.render();
                 }
-                if (selected) {
-                    selected.render();
+                for (var idx in diagram.selected) {
+                    diagram.selected[idx].render();
                 }
             });
         },
@@ -2422,28 +2499,19 @@ var global_mousedown = 0;
         },
         
         /*
-         * return array containing selected diagram elements
-         */
-        selected: function() {
-            var ret = new Array();
-            var key, elem;
-            for (key in this.elements) {
-                elem = this.elements[key];
-                if (elem.selected) {
-                    ret.push(elem);
-                }
-            }
-            return ret;
-        },
-        
-        /*
          * remove diagram elements
          */
         remove: function(path) {
             var model = this.editor.model;
             var node = model.node(path);
-            var elem = this.get(node);
-            var triggerColor = elem.triggerColor;
+            if (!node) {
+                return;
+            }
+            var triggerColor = this.r_mapping[node.__name];
+            if (!triggerColor) {
+                return;
+            }
+            var elem = this.elements[triggerColor];
             elem.unbind();
             if (node.__type != activities.model.EDGE) {
                 var edges = new Array();
