@@ -276,7 +276,8 @@ var global_mousedown = 0;
                 'debug'         : -253,
                 'run_tests'     : -276,
                 'flip_layers'   : -299,
-                'delete_element': -322
+                'delete_element': -322,
+                'snap'          : -345
             },
         }
     }
@@ -346,9 +347,7 @@ var global_mousedown = 0;
          * set this action active
          */
         select: function(name) {
-            if (!this.steady) {
-                this.active = true;
-            }
+            this.active = true;
             this.element.css('background-position',
                 '-23px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
         },
@@ -357,9 +356,7 @@ var global_mousedown = 0;
          * set this action inactive
          */
         unselect: function() {
-            if (!this.steady) {
-                this.active = false;
-            }
+            this.active = false;
             this.element.css('background-position',
                 '0px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
         },
@@ -455,6 +452,32 @@ var global_mousedown = 0;
         
         perform: function() {
             bdajax.error('Not implemented');
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.Snap
+    // ************************************************************************
+    
+    activities.actions.Snap = function(actions) {
+        activities.actions.Action.call(this, actions, 'snap', 'Snap to Grid');
+        this.steady = true;
+    }
+    activities.actions.Snap.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.Snap.prototype, {
+        
+        click: function() {
+            var diagram = this.actions.editor.diagram;
+            if (this.active) {
+                this.unselect();
+                diagram.snap = false;
+            } else {
+                this.select();
+                diagram.snap = true;
+                diagram.render();
+            }
         }
     });
     
@@ -1244,6 +1267,11 @@ var global_mousedown = 0;
         section.add(new activities.actions.SaveDiagram(this));
         this.sections.push(section);
         
+        // diagram behavior releated
+        section = new activities.actions.Section();
+        section.add(new activities.actions.Snap(this));
+        this.sections.push(section);
+        
         // diagram element related actions
         section = new activities.actions.Section();
         section.add(new activities.actions.InitialNode(this));
@@ -1312,7 +1340,7 @@ var global_mousedown = 0;
             var action;
             for (var idx in actions) {
                 action = actions[idx];
-                if (action.active) {
+                if (action.active && !action.steady) {
                     action.perform(editor, obj, event);
                 }
             }
@@ -2150,7 +2178,7 @@ var global_mousedown = 0;
         this.editor = editor;
         
         this.grid = new activities.ui.Grid(editor.model);
-        this.snap = true;
+        this.snap = false;
         
         this.dnd = new activities.ui.DnD();
         

@@ -148,6 +148,9 @@ body {
 .activity_editor .actions a.delete_element {
     background:url('icons/activities_sprite.png') 0px -322px no-repeat;
 }
+.activity_editor .actions a.snap {
+    background:url('icons/activities_sprite.png') 0px -345px no-repeat;
+}
 .activity_editor .actions a.initial_node:hover {
     background-position:-23px 0px;
 }
@@ -192,6 +195,9 @@ body {
 }
 .activity_editor .actions a.delete_element:hover {
     background-position:-23px -322px;
+}
+.activity_editor .actions a.snap:hover {
+    background-position:-23px -345px;
 }
 
 /* tests */
