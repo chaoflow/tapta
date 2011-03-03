@@ -136,6 +136,7 @@ var global_mousedown = 0;
          */
         events: {
             
+            // mouse events
             MOUSE_DOWN : 0,
             MOUSE_UP   : 1,
             MOUSE_MOVE : 2,
@@ -143,7 +144,10 @@ var global_mousedown = 0;
             MOUSE_OUT  : 4,
             MOUSE_WHEEL: 5,
             
-            // event utils
+            // keys
+            KEY_SHIFT  : 16,
+            KEY_CTL    : 17,
+            KEY_ALT    : 18,
             
             /*
              * events status message
@@ -191,6 +195,7 @@ var global_mousedown = 0;
              */
             setSelected: function(obj, event) {
                 var diagram = obj.diagram;
+                //diagram.keylistener.pressed(activities.events.CTL);
                 if (diagram.focused) {
                     diagram.focused.selected = false;
                     diagram.renderTranslated(function() {
@@ -1114,9 +1119,41 @@ var global_mousedown = 0;
         }
     }
     
-    /*
-     * event notification
-     */
+    
+    // ************************************************************************
+    // activities.events.KeyListener
+    // ************************************************************************
+    
+    activities.events.KeyListener = function() {
+        this.keyCode = null;
+        this.charCode = null;
+        this.bind();
+    }
+    
+    activities.events.KeyListener.prototype = {
+        
+        bind: function() {
+            var keylisterer = this;
+            $(document).unbind('keydown').bind('keydown', function (event) {
+                keylisterer.keyCode = event.keyCode;
+                keylisterer.charCode = event.charCode;
+            });
+            $(document).unbind('keyup').bind('keyup', function (event) {
+                keylisterer.keyCode = null;
+                keylisterer.charCode = null;
+            });
+        },
+        
+        pressed: function(key) {
+            return !(this.keyCode == key || this.charCode == key);
+        }
+    }
+    
+    
+    // ************************************************************************
+    // activities.events.notify
+    // ************************************************************************
+    
     activities.events.notify = function(event) {
         var canvas;
         if (event.type == 'mousewheel'
@@ -1903,10 +1940,10 @@ var global_mousedown = 0;
         this.last_y = null;
         // XXX: multi editor support
         var dnd = this;
-        $(document).unbind().bind('mousedown', function(event) {
+        $(document).unbind('mousedown').bind('mousedown', function(event) {
             ++global_mousedown;
         });
-        $(document).unbind().bind('mouseup', function(event) {
+        $(document).unbind('mouseup').bind('mouseup', function(event) {
             --global_mousedown;
             if (global_mousedown <= 0) {
                 dnd.recent = null;
@@ -2234,6 +2271,7 @@ var global_mousedown = 0;
         this.factories[activities.model.JOIN] = activities.ui.Join;
         
         this.dispatcher = new activities.events.Dispatcher(this);
+        this.keylistener = new activities.events.KeyListener();
         
         this.bind();
     }
