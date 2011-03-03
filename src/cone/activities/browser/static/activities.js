@@ -681,14 +681,15 @@ var global_mousedown = 0;
                 message: 'Do you really want to delete this Item?',
                 model: model,
                 diagram: diagram,
-                path: path
+                path: path // XXX: dottedpath
             };
             bdajax.dialog(opts, function(options) {
-                // XXX: dottedpath
-                options.diagram.remove(options.path);
-                // XXX: dottedpath
-                options.model.remove(options.path);
-                options.diagram.render();
+                var diagram = options.diagram;
+                var model = options.model;
+                diagram.focused = null;
+                diagram.remove(options.path);
+                model.remove(options.path);
+                diagram.render();
             });
         }
     });
