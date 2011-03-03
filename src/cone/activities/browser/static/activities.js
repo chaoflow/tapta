@@ -238,12 +238,8 @@ var global_mousedown = 0;
                     if (selected.length > 0) {
                         selected = unselect(diagram, to_render);
                     }
-                    if (obj.selected) {
-                        obj.selected = false;
-                    } else {
-                        selected.push(obj);
-                        obj.selected = true;
-                    }
+                    selected.push(obj);
+                    obj.selected = true;
                 }
                 to_render.push(obj);
                 var elem;
