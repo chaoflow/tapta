@@ -222,64 +222,8 @@ var global_mousedown = 0;
             doAction: function(obj, event) {
                 var diagram = obj.dnd ? obj : obj.diagram;
                 var editor = diagram.editor;
-                var model = editor.model;
                 var actions = editor.actions;
-                var node;
-                switch(actions.active) {
-                    case activities.actions.ADD_DIAGRAM_ELEMENT: {
-                        node = model.createNode(actions.payload);
-                        var elem = diagram.get(node);
-                        var current = diagram.currentCursor(event);
-                        var x = current[0];
-                        var y = current[1];
-                        
-                        // XXX: grid
-                        
-                        var translated = diagram.translateCursor(x, y);
-                        node.x = elem.x = translated[0];
-                        node.y = elem.y = translated[1];
-                        break;
-                    }
-                    case activities.actions.ADD_DIAGRAM_EDGE: {
-                        var payload = actions.payload;
-                        if (payload[1] == null
-                         || typeof(payload[1]) == "undefined") {
-                            var node_name = diagram.mapping[obj.triggerColor];
-                            payload[1] = node_name;
-                            return;
-                        }
-                        payload[2] = diagram.mapping[obj.triggerColor];
-                        if (typeof(payload[2]) == "undefined") {
-                            break;
-                        }
-                        node = model.createEdge(payload[1], payload[2])
-                        diagram.createEdge(node);
-                        break;
-                    }
-                    case activities.actions.DELETE_DIAGRAM_ELEMENT: {
-                        var elems = diagram.selected();
-                        if (!elems) {
-                            return;
-                        }
-                        var path = diagram.mapping[elems[0].triggerColor];
-                        var opts = {
-                            message: 'Do you really want to delete this Item?',
-                            model: model,
-                            diagram: diagram,
-                            path: path
-                        };
-                        bdajax.dialog(opts, function(options) {
-                            // XXX: dottedpath
-                            options.diagram.remove(options.path);
-                            // XXX: dottedpath
-                            options.model.remove(options.path);
-                            options.diagram.render();
-                        });
-                        break;
-                    }
-                }
-                actions.unselect();
-                diagram.render();
+                actions.perform(editor, obj, event);
             }
         },
         
@@ -334,112 +278,6 @@ var global_mousedown = 0;
                 'flip_layers'   : -299,
                 'delete_element': -322
             },
-            
-            // tmp. remove as soon as persistence widget is implemented
-            _open: 0,
-            
-            // specific actions
-            
-            new_activity: function(name, element, event) {
-                demo_editor.newDiagram();
-            },
-            
-            open_activity: function(name, element, event) {
-                // tmp. alter with persistence widget code
-                var model;
-                if (activities.actions._open) {
-                    model = tests.create_test_model_1();
-                    activities.actions._open = 0;
-                } else {
-                    model = tests.create_test_model_2();
-                    activities.actions._open = 1;
-                }
-                demo_editor.openDiagram(model);
-            },
-            
-            save_activity: function(name, element, event) {
-                bdajax.error('Not implemented');
-            },
-            
-            initial_node: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.payload = activities.model.INITIAL;
-            },
-            
-            final_node: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.payload = activities.model.FINAL;
-            },
-            
-            action_node: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.payload = activities.model.ACTION;
-            },
-            
-            join_node: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.payload = activities.model.JOIN;
-            },
-            
-            fork_node: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.payload = activities.model.FORK;
-            },
-            
-            merge_node: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.payload = activities.model.MERGE;
-            },
-            
-            decision_node: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_ELEMENT;
-                actions.payload = activities.model.DECISION;
-            },
-            
-            edge: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.ADD_DIAGRAM_EDGE;
-                actions.payload = [activities.model.EDGE, null, null];
-            },
-            
-            delete_element: function(name, element, event) {
-                var actions = activities.actions.actions_object(name);
-                actions.setSelected(element.attr('class'));
-                actions.active = activities.actions.DELETE_DIAGRAM_ELEMENT;
-            },
-            
-            debug: function(name, element, event) {
-                var status = $('.status');
-                status.toggleClass('hidden');
-            },
-            
-            run_tests: function(name, element, event) {
-                $('.qunit').show();
-                tests.run();
-            },
-            
-            flip_layers: function(name, element, event) {
-                activities.ui.toggleCanvas(demo_editor.name);
-            },
-            
-            actions_object: function(name) {
-                return $('#' + name + ' canvas.diagram').data('actions');
-            }
         }
     }
     
@@ -472,7 +310,9 @@ var global_mousedown = 0;
     // activities.actions.Action
     // ************************************************************************
     
-    activities.actions.Action = function(id, title) {
+    activities.actions.Action = function(actions, id, title) {
+        // activities.ui.Actions instance
+        this.actions = actions
         this.id = id;
         this.title = title;
         
@@ -506,6 +346,9 @@ var global_mousedown = 0;
          * set this action active
          */
         select: function(name) {
+            if (!this.steady) {
+                this.active = true;
+            }
             this.element.css('background-position',
                 '-23px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
         },
@@ -514,6 +357,9 @@ var global_mousedown = 0;
          * set this action inactive
          */
         unselect: function() {
+            if (!this.steady) {
+                this.active = false;
+            }
             this.element.css('background-position',
                 '0px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
         },
@@ -524,17 +370,16 @@ var global_mousedown = 0;
         click: function() {
             if (this.active) {
                 this.unselect();
-                this.active = false;
             } else {
+                this.actions.reset(true);
                 this.select();
-                this.active = true;
             }
         },
         
         /*
          * perform whatever this action is supposed to perform
          */
-        perform: function() {
+        perform: function(editor, obj, event) {
             throw "``perform`` is not implemented on abstract Action";
         }
     }
@@ -544,8 +389,8 @@ var global_mousedown = 0;
     // activities.actions.NewDiagram
     // ************************************************************************
     
-    activities.actions.NewDiagram = function() {
-        activities.actions.Action.call(this, 'new_activity', 'New');
+    activities.actions.NewDiagram = function(actions) {
+        activities.actions.Action.call(this, actions, 'new_activity', 'New');
     }
     activities.actions.NewDiagram.prototype = new activities.actions.Action;
     
@@ -565,13 +410,14 @@ var global_mousedown = 0;
     // activities.actions.OpenDiagram
     // ************************************************************************
     
-    activities.actions.OpenDiagram = function() {
-        activities.actions.Action.call(this, 'open_activity', 'Open');
-        this._open = 0;
+    activities.actions.OpenDiagram = function(actions) {
+        activities.actions.Action.call(this, actions, 'open_activity', 'Open');
     }
     activities.actions.OpenDiagram.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.OpenDiagram.prototype, {
+        
+        _open: 0,
         
         click: function() {
             this.perform();
@@ -580,12 +426,12 @@ var global_mousedown = 0;
         perform: function() {
             // tmp. alter with persistence widget code
             var model;
-            if (this._open) {
+            if (activities.actions.OpenDiagram._open) {
                 model = tests.create_test_model_1();
-                this._open = 0;
+                activities.actions.OpenDiagram._open = 0;
             } else {
                 model = tests.create_test_model_2();
-                this._open = 1;
+                activities.actions.OpenDiagram._open = 1;
             }
             demo_editor.openDiagram(model);
         }
@@ -596,8 +442,8 @@ var global_mousedown = 0;
     // activities.actions.SaveDiagram
     // ************************************************************************
     
-    activities.actions.SaveDiagram = function() {
-        activities.actions.Action.call(this, 'save_activity', 'Save');
+    activities.actions.SaveDiagram = function(actions) {
+        activities.actions.Action.call(this, actions, 'save_activity', 'Save');
     }
     activities.actions.SaveDiagram.prototype = new activities.actions.Action;
     
@@ -617,17 +463,18 @@ var global_mousedown = 0;
     // activities.actions.NodeAction
     // ************************************************************************
     
-    activities.actions.NodeAction = function(id, title, type) {
-        activities.actions.Action.call(this, id, title);
+    activities.actions.NodeAction = function(actions, id, title, type) {
+        activities.actions.Action.call(this, actions, id, title);
         this.type = type;
     }
     activities.actions.NodeAction.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.NodeAction.prototype, {
         
-        perform: function() {
-            var node = this.editor.model.createNode(this.type);
-            var diagram = this.editor.diagram;
+        perform: function(editor, obj, event) {
+            this.unselect();
+            var node = editor.model.createNode(this.type);
+            var diagram = editor.diagram;
             var elem = diagram.get(node);
             var current = diagram.currentCursor(event);
             var x = current[0];
@@ -636,7 +483,7 @@ var global_mousedown = 0;
             node.x = elem.x = translated[0];
             node.y = elem.y = translated[1];
             diagram.render();
-        },
+        }
     });
     
     
@@ -644,9 +491,12 @@ var global_mousedown = 0;
     // activities.actions.InitialNode
     // ************************************************************************
     
-    activities.actions.InitialNode = function() {
-        activities.actions.Action.call(
-            this, 'initial_node', 'Initial Node', activities.model.INITIAL);
+    activities.actions.InitialNode = function(actions) {
+        activities.actions.NodeAction.call(this,
+                                           actions,
+                                           'initial_node',
+                                           'Initial Node',
+                                           activities.model.INITIAL);
     }
     activities.actions.InitialNode.prototype =
         new activities.actions.NodeAction;
@@ -656,9 +506,12 @@ var global_mousedown = 0;
     // activities.actions.FinalNode
     // ************************************************************************
     
-    activities.actions.FinalNode = function() {
-        activities.actions.Action.call(
-            this, 'final_node', 'Final Node', activities.model.FINAL);
+    activities.actions.FinalNode = function(actions) {
+        activities.actions.NodeAction.call(this,
+                                           actions,
+                                           'final_node',
+                                           'Final Node',
+                                           activities.model.FINAL);
     }
     activities.actions.FinalNode.prototype =
         new activities.actions.NodeAction;
@@ -668,9 +521,12 @@ var global_mousedown = 0;
     // activities.actions.ActionNode
     // ************************************************************************
     
-    activities.actions.ActionNode = function() {
-        activities.actions.Action.call(
-            this, 'action_node', 'Action Node', activities.model.ACTION);
+    activities.actions.ActionNode = function(actions) {
+        activities.actions.NodeAction.call(this,
+                                           actions,
+                                           'action_node',
+                                           'Action Node',
+                                           activities.model.ACTION);
     }
     activities.actions.ActionNode.prototype =
         new activities.actions.NodeAction;
@@ -680,9 +536,9 @@ var global_mousedown = 0;
     // activities.actions.JoinNode
     // ************************************************************************
     
-    activities.actions.JoinNode = function() {
-        activities.actions.Action.call(
-            this, 'join_node', 'Join Node', activities.model.JOIN);
+    activities.actions.JoinNode = function(actions) {
+        activities.actions.NodeAction.call(
+            this, actions, 'join_node', 'Join Node', activities.model.JOIN);
     }
     activities.actions.JoinNode.prototype =
         new activities.actions.NodeAction;
@@ -692,9 +548,9 @@ var global_mousedown = 0;
     // activities.actions.ForkNode
     // ************************************************************************
     
-    activities.actions.ForkNode = function() {
-        activities.actions.Action.call(
-            this, 'fork_node', 'Fork Node', activities.model.FORK);
+    activities.actions.ForkNode = function(actions) {
+        activities.actions.NodeAction.call(
+            this, actions, 'fork_node', 'Fork Node', activities.model.FORK);
     }
     activities.actions.ForkNode.prototype =
         new activities.actions.NodeAction;
@@ -704,9 +560,9 @@ var global_mousedown = 0;
     // activities.actions.MergeNode
     // ************************************************************************
     
-    activities.actions.MergeNode = function() {
-        activities.actions.Action.call(
-            this, 'merge_node', 'Merge Node', activities.model.MERGE);
+    activities.actions.MergeNode = function(actions) {
+        activities.actions.NodeAction.call(
+            this, actions, 'merge_node', 'Merge Node', activities.model.MERGE);
     }
     activities.actions.MergeNode.prototype =
         new activities.actions.NodeAction;
@@ -716,9 +572,12 @@ var global_mousedown = 0;
     // activities.actions.DecisionNode
     // ************************************************************************
     
-    activities.actions.DecisionNode = function() {
-        activities.actions.Action.call(
-            this, 'decision_node', 'Decision Node', activities.model.DECISION);
+    activities.actions.DecisionNode = function(actions) {
+        activities.actions.NodeAction.call(this,
+                                           actions,
+                                           'decision_node',
+                                           'Decision Node',
+                                           activities.model.DECISION);
     }
     activities.actions.DecisionNode.prototype =
         new activities.actions.NodeAction;
@@ -728,8 +587,8 @@ var global_mousedown = 0;
     // activities.actions.Edge
     // ************************************************************************
     
-    activities.actions.Edge = function() {
-        activities.actions.Action.call(this, 'edge', 'Edge');
+    activities.actions.Edge = function(actions) {
+        activities.actions.Action.call(this, actions, 'edge', 'Edge');
         this.source = null;
         this.target = null;
     }
@@ -739,18 +598,19 @@ var global_mousedown = 0;
         
         click: function() {
             if (this.active) {
-                this.unselect();
-                this.active = false;
                 this.source = null;
                 this.target = null;
+                this.unselect();
             } else {
+                this.actions.reset(true);
+                this.source = null;
+                this.target = null;
                 this.select();
-                this.active = true;
             }
         },
         
-        perform: function() {
-            var diagram = this.editor.diagram;
+        perform: function(editor, obj, event) {
+            var diagram = editor.diagram;
             if (this.source == null
              || typeof(this.source) == "undefined") {
                 var node_name = diagram.mapping[obj.triggerColor];
@@ -761,8 +621,11 @@ var global_mousedown = 0;
             if (typeof(this.target) == "undefined") {
                 return;
             }
-            node = this.editor.model.createEdge(this.source, this.target);
+            var node = editor.model.createEdge(this.source, this.target);
             diagram.createEdge(node);
+            this.source = null;
+            this.target = null;
+            this.unselect();
             diagram.render();
         }
     });
@@ -772,16 +635,18 @@ var global_mousedown = 0;
     // activities.actions.DeleteElement
     // ************************************************************************
     
-    activities.actions.DeleteElement = function() {
+    activities.actions.DeleteElement = function(actions) {
         activities.actions.Action.call(
-            this, 'delete_element', 'Delete Element');
+            this, actions, 'delete_element', 'Delete Element');
     }
     activities.actions.DeleteElement.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.DeleteElement.prototype, {
         
-        perform: function() {
-            var diagram = this.editor.diagram;
+        perform: function(editor, obj, event) {
+            this.unselect();
+            var diagram = editor.diagram;
+            var model = editor.model;
             var elems = diagram.selected();
             if (!elems) {
                 return;
@@ -808,8 +673,9 @@ var global_mousedown = 0;
     // activities.actions.Monitor
     // ************************************************************************
     
-    activities.actions.Monitor = function() {
-        activities.actions.Action.call(this, 'debug', 'Debug');
+    activities.actions.Monitor = function(actions) {
+        activities.actions.Action.call(this, actions, 'debug', 'Debug');
+        this.steady = true;
     }
     activities.actions.Monitor.prototype = new activities.actions.Action;
     
@@ -822,6 +688,11 @@ var global_mousedown = 0;
         perform: function() {
             var status = $('.status');
             status.toggleClass('hidden');
+            if (status.hasClass('hidden')) {
+                this.unselect();
+            } else {
+                this.select();
+            }
         }
     });
     
@@ -830,8 +701,9 @@ var global_mousedown = 0;
     // activities.actions.RunTests
     // ************************************************************************
     
-    activities.actions.RunTests = function() {
-        activities.actions.Action.call(this, 'run_tests', 'Run Tests');
+    activities.actions.RunTests = function(actions) {
+        activities.actions.Action.call(
+            this, actions, 'run_tests', 'Run Tests');
     }
     activities.actions.RunTests.prototype = new activities.actions.Action;
     
@@ -852,8 +724,9 @@ var global_mousedown = 0;
     // activities.actions.FlipLayers
     // ************************************************************************
     
-    activities.actions.FlipLayers = function() {
-        activities.actions.Action.call(this, 'flip_layers', 'Flip Layers');
+    activities.actions.FlipLayers = function(actions) {
+        activities.actions.Action.call(
+            this, actions, 'flip_layers', 'Flip Layers');
     }
     activities.actions.FlipLayers.prototype = new activities.actions.Action;
     
@@ -1366,74 +1239,123 @@ var global_mousedown = 0;
         
         // diagram management actions
         section = new activities.actions.Section();
-        section.add(new activities.actions.NewDiagram());
-        section.add(new activities.actions.OpenDiagram());
-        section.add(new activities.actions.SaveDiagram());
+        section.add(new activities.actions.NewDiagram(this));
+        section.add(new activities.actions.OpenDiagram(this));
+        section.add(new activities.actions.SaveDiagram(this));
         this.sections.push(section);
         
         // diagram element related actions
         section = new activities.actions.Section();
-        section.add(new activities.actions.InitialNode());
-        section.add(new activities.actions.FinalNode());
-        section.add(new activities.actions.ActionNode());
-        section.add(new activities.actions.JoinNode());
-        section.add(new activities.actions.ForkNode());
-        section.add(new activities.actions.MergeNode());
-        section.add(new activities.actions.DecisionNode());
-        section.add(new activities.actions.Edge());
-        section.add(new activities.actions.DeleteElement());
+        section.add(new activities.actions.InitialNode(this));
+        section.add(new activities.actions.FinalNode(this));
+        section.add(new activities.actions.ActionNode(this));
+        section.add(new activities.actions.JoinNode(this));
+        section.add(new activities.actions.ForkNode(this));
+        section.add(new activities.actions.MergeNode(this));
+        section.add(new activities.actions.DecisionNode(this));
+        section.add(new activities.actions.Edge(this));
+        section.add(new activities.actions.DeleteElement(this));
         this.sections.push(section);
         
         // debugging and development actions
-        section = new activities.actions.Section();
-        section.add(new activities.actions.Monitor());
-        section.add(new activities.actions.RunTests());
-        section.add(new activities.actions.FlipLayers());
+        section = new activities.actions.Section(this);
+        section.add(new activities.actions.Monitor(this));
+        section.add(new activities.actions.RunTests(this));
+        section.add(new activities.actions.FlipLayers(this));
         this.sections.push(section);
         
         this.render();
-        this.bind();
     }
     
     activities.ui.Actions.prototype = {
         
         bind: function() {
             var editor = this.editor;
-            $('#' + editor.name + ' canvas.diagram').data('actions', this);
             var elements = $(this.selector + ' a');
+            var actions = this;
+            var action, id, elem;
+            elements.each(function() {
+                elem = $(this);
+                id = elem.attr('class');
+                action = actions.get(id);
+                action.element = elem;
+            });
             elements.unbind().bind('click', function(event) {
                 event.preventDefault();
-                var elem = $(this);
-                var action = elem.attr('class');
-                var func = activities.actions[action];
-                func(editor.name, elem, event);
+                elem = $(this);
+                id = elem.attr('class');
+                action = actions.get(id);
+                action.click();
             });
         },
         
+        /*
+         * reset actions.
+         */
+        reset: function(unsteady_only) {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (unsteady_only && action.steady) {
+                    continue;
+                }
+                action.unselect();
+            }
+        },
+        
+        /*
+         * search for active action and perform
+         */
+        perform: function(editor, obj, event) {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (action.active) {
+                    action.perform(editor, obj, event);
+                }
+            }
+        },
+        
+        /*
+         * return all actions as array
+         */
+        actions: function() {
+            var ret = new Array();
+            for (var i in this.sections) {
+                for (var j in this.sections[i].actions) {
+                    ret.push(this.sections[i].actions[j]);
+                }
+            }
+            return ret;
+        },
+        
+        /*
+         * return action by id
+         */
+        get: function(id) {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (action.id == id) {
+                    return action;
+                }
+            }
+            throw "No Action found with id '" + id + "'";
+        },
+        
+        /*
+         * render actions
+         */
         render: function() {
             var elements = $(this.selector);
             elements.empty();
             for (var idx in this.sections) {
                 this.sections[idx].render().appendTo(elements);
             }
-        },
-        
-        setSelected: function(name) {
-            this.unselect();
-            $(this.selector + ' a.' + name)
-                .css('background-position',
-                     '-23px ' + activities.actions.CSS_SPRITE[name] + 'px');
-        },
-        
-        unselect: function() {
-            this.active = null;
-            this.type = null;
-            $(this.selector + ' a').each(function() {
-                var elem = $(this);
-                var name = elem.attr('class');
-                elem.css('background-position',
-                         '0px ' + activities.actions.CSS_SPRITE[name] + 'px');
-            });
+            this.bind();
         }
     }
     
