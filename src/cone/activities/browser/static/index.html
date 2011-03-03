@@ -32,6 +32,12 @@
         
         <!-- jQuery templates -->
         
+        <script type="text/html" id="editor_action">
+            <a href="#"
+               title="${title}"
+               class="${id}">&nbsp;</a>
+        </script>
+        
         <script type="text/html" id="string_property">
             <div class="field">
                 <label for="${name}">${title}</label>
@@ -70,65 +76,8 @@
                        class="update" />
             </div>
             
-            <!-- actions -->
+            <!-- actions container -->
             <div class="actions">
-                
-                <!-- activity related -->
-                <div class="section">
-                    <a href="#"
-                       title="New"
-                       class="new_activity">&nbsp;</a>
-                    <a href="#"
-                       title="Open"
-                       class="open_activity">&nbsp;</a>
-                    <a href="#"
-                       title="Save"
-                       class="save_activity">&nbsp;</a>
-                </div>
-                
-                <!-- diagram related -->
-                <div class="section">
-                    <a href="#"
-                       title="Initial Node"
-                       class="initial_node">&nbsp;</a>
-                    <a href="#"
-                       title="Final Node"
-                       class="final_node">&nbsp;</a>
-                    <a href="#"
-                       title="Action"
-                       class="action_node">&nbsp;</a>
-                    <a href="#"
-                       title="Decision"
-                       class="decision_node">&nbsp;</a>
-                    <a href="#"
-                       title="Merge"
-                       class="merge_node">&nbsp;</a>
-                    <a href="#"
-                       title="Fork"
-                       class="fork_node">&nbsp;</a>
-                    <a href="#"
-                       title="Join"
-                       class="join_node">&nbsp;</a>
-                    <a href="#"
-                       title="Edge"
-                       class="edge">&nbsp;</a>
-                    <a href="#"
-                       title="Delete Element"
-                       class="delete_element">&nbsp;</a>
-                </div>
-                
-                <!-- development related -->
-                <div class="section">
-                    <a href="#"
-                       title="Debug"
-                       class="debug">&nbsp;</a>
-                    <a href="#"
-                       title="Run Tests"
-                       class="run_tests">&nbsp;</a>
-                    <a href="#"
-                       title="Flip Layers"
-                       class="flip_layers">&nbsp;</a>
-                </div>
             </div>
             
             <!-- diagram -->

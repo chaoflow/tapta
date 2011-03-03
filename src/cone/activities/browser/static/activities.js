@@ -445,15 +445,310 @@ var global_mousedown = 0;
     
     
     // ************************************************************************
+    // activities.actions.Section
+    // ************************************************************************
+    
+    activities.actions.Section = function() {
+        this.actions = new Array();
+    }
+    
+    activities.actions.Section.prototype = {
+        
+        add: function(action) {
+            this.actions.push(action);
+        },
+        
+        render: function() {
+            var section = $('<div class="section"></div>');
+            for (var idx in this.actions) {
+                this.actions[idx].render().appendTo(section);
+            }
+            return section;
+        }
+    }
+    
+    
+    // ************************************************************************
     // activities.actions.Action
     // ************************************************************************
     
-    activities.actions.Action = function(){
+    activities.actions.Action = function(id, title) {
+        this.id = id;
+        this.title = title;
+        this.holding = false;
     }
     
     activities.actions.Action.prototype = {
         
+        render: function() {
+            var opts = {
+                id: this.id,
+                title: this.title
+            }
+            return $("#editor_action").tmpl(opts);
+        },
+        
+        perform: function() {
+            throw "``perform`` is not implemented on abstract Action";
+        }
     }
+    
+    
+    // ************************************************************************
+    // activities.actions.NewDiagram
+    // ************************************************************************
+    
+    activities.actions.NewDiagram = function() {
+        activities.actions.Action.call(this, 'new_activity', 'New');
+    }
+    activities.actions.NewDiagram.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.NewDiagram.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.OpenDiagram
+    // ************************************************************************
+    
+    activities.actions.OpenDiagram = function() {
+        activities.actions.Action.call(this, 'open_activity', 'Open');
+    }
+    activities.actions.OpenDiagram.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.OpenDiagram.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.SaveDiagram
+    // ************************************************************************
+    
+    activities.actions.SaveDiagram = function() {
+        activities.actions.Action.call(this, 'save_activity', 'Save');
+    }
+    activities.actions.SaveDiagram.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.SaveDiagram.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.InitialNode
+    // ************************************************************************
+    
+    activities.actions.InitialNode = function() {
+        activities.actions.Action.call(this, 'initial_node', 'Initial Node');
+    }
+    activities.actions.InitialNode.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.InitialNode.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.FinalNode
+    // ************************************************************************
+    
+    activities.actions.FinalNode = function() {
+        activities.actions.Action.call(this, 'final_node', 'Final Node');
+    }
+    activities.actions.FinalNode.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.FinalNode.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.ActionNode
+    // ************************************************************************
+    
+    activities.actions.ActionNode = function() {
+        activities.actions.Action.call(this, 'action_node', 'Action Node');
+    }
+    activities.actions.ActionNode.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.ActionNode.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.JoinNode
+    // ************************************************************************
+    
+    activities.actions.JoinNode = function() {
+        activities.actions.Action.call(this, 'join_node', 'Join Node');
+    }
+    activities.actions.JoinNode.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.JoinNode.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.ForkNode
+    // ************************************************************************
+    
+    activities.actions.ForkNode = function() {
+        activities.actions.Action.call(this, 'fork_node', 'Fork Node');
+    }
+    activities.actions.ForkNode.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.ForkNode.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.MergeNode
+    // ************************************************************************
+    
+    activities.actions.MergeNode = function() {
+        activities.actions.Action.call(this, 'merge_node', 'Merge Node');
+    }
+    activities.actions.MergeNode.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.MergeNode.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.DecisionNode
+    // ************************************************************************
+    
+    activities.actions.DecisionNode = function() {
+        activities.actions.Action.call(this, 'decision_node', 'Decision Node');
+    }
+    activities.actions.DecisionNode.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.DecisionNode.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.Edge
+    // ************************************************************************
+    
+    activities.actions.Edge = function() {
+        activities.actions.Action.call(this, 'edge', 'Edge');
+    }
+    activities.actions.Edge.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.Edge.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.DeleteElement
+    // ************************************************************************
+    
+    activities.actions.DeleteElement = function() {
+        activities.actions.Action.call(
+            this, 'delete_element', 'Delete Element');
+    }
+    activities.actions.DeleteElement.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.DeleteElement.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.Monitor
+    // ************************************************************************
+    
+    activities.actions.Monitor = function() {
+        activities.actions.Action.call(this, 'debug', 'Debug');
+    }
+    activities.actions.Monitor.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.Monitor.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.RunTests
+    // ************************************************************************
+    
+    activities.actions.RunTests = function() {
+        activities.actions.Action.call(this, 'run_tests', 'Run Tests');
+    }
+    activities.actions.RunTests.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.RunTests.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
+    
+    // ************************************************************************
+    // activities.actions.FlipLayers
+    // ************************************************************************
+    
+    activities.actions.FlipLayers = function() {
+        activities.actions.Action.call(this, 'flip_layers', 'Flip Layers');
+    }
+    activities.actions.FlipLayers.prototype = new activities.actions.Action;
+    
+    $.extend(activities.actions.FlipLayers.prototype, {
+        
+        perform: function() {
+            
+        }
+    });
+    
     
     // ************************************************************************
     // activities.model.Model
@@ -946,22 +1241,67 @@ var global_mousedown = 0;
         this.editor = editor;
         this.active = null;
         this.type = null;
-        $('#' + editor.name + ' canvas.diagram').data('actions', this);
-        var elements = $('#' + editor.name + ' div.actions a');
-        elements.unbind().bind('click', function(event) {
-            event.preventDefault();
-            var elem = $(this);
-            var action = elem.attr('class');
-            var func = activities.actions[action];
-            func(editor.name, elem, event);
-        });
+        this.selector = '#' +editor.name + ' div.actions';
+        this.sections = new Array();
+        var section, action;
+        
+        // diagram management actions
+        section = new activities.actions.Section();
+        section.add(new activities.actions.NewDiagram());
+        section.add(new activities.actions.OpenDiagram());
+        section.add(new activities.actions.SaveDiagram());
+        this.sections.push(section);
+        
+        // diagram element related actions
+        section = new activities.actions.Section();
+        section.add(new activities.actions.InitialNode());
+        section.add(new activities.actions.FinalNode());
+        section.add(new activities.actions.ActionNode());
+        section.add(new activities.actions.JoinNode());
+        section.add(new activities.actions.ForkNode());
+        section.add(new activities.actions.MergeNode());
+        section.add(new activities.actions.DecisionNode());
+        section.add(new activities.actions.Edge());
+        section.add(new activities.actions.DeleteElement());
+        this.sections.push(section);
+        
+        // debugging and development actions
+        section = new activities.actions.Section();
+        section.add(new activities.actions.Monitor());
+        section.add(new activities.actions.RunTests());
+        section.add(new activities.actions.FlipLayers());
+        this.sections.push(section);
+        
+        this.render();
+        this.bind();
     }
     
     activities.ui.Actions.prototype = {
         
+        bind: function() {
+            var editor = this.editor;
+            $('#' + editor.name + ' canvas.diagram').data('actions', this);
+            var elements = $(this.selector + ' a');
+            elements.unbind().bind('click', function(event) {
+                event.preventDefault();
+                var elem = $(this);
+                var action = elem.attr('class');
+                var func = activities.actions[action];
+                func(editor.name, elem, event);
+            });
+        },
+        
+        render: function() {
+            var elements = $(this.selector);
+            elements.empty();
+            for (var idx in this.sections) {
+                this.sections[idx].render().appendTo(elements);
+            }
+        },
+        
         setSelected: function(name) {
             this.unselect();
-            $('#' + this.editor.name + ' div.actions a.' + name)
+            $(this.selector + ' a.' + name)
                 .css('background-position',
                      '-23px ' + activities.actions.CSS_SPRITE[name] + 'px');
         },
@@ -969,7 +1309,7 @@ var global_mousedown = 0;
         unselect: function() {
             this.active = null;
             this.type = null;
-            $('#' + this.editor.name + ' div.actions a').each(function() {
+            $(this.selector + ' a').each(function() {
                 var elem = $(this);
                 var name = elem.attr('class');
                 elem.css('background-position',
