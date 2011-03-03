@@ -278,7 +278,7 @@ var global_mousedown = 0;
             },
             
             /*
-             * do action
+             * do action. bound by diagram and elements
              */
             doAction: function(obj, event) {
                 var diagram = obj.dnd ? obj : obj.diagram;
@@ -339,7 +339,7 @@ var global_mousedown = 0;
                 'flip_layers'   : -299,
                 'delete_element': -322,
                 'snap'          : -345
-            },
+            }
         }
     }
     
@@ -389,9 +389,6 @@ var global_mousedown = 0;
         
         // the action corresponding dom element as jQuery object
         this.element = null;
-        
-        // reference to activities.ui.Editor object
-        this.editor = null;
     }
     
     activities.actions.Action.prototype = {
@@ -764,9 +761,6 @@ var global_mousedown = 0;
                     path = paths[idx];
                     model.remove(path);
                 }
-                // outdated 
-                diagram.focused = null;
-                
                 diagram.selected = new Array();
                 diagram.render();
             });
@@ -1433,7 +1427,7 @@ var global_mousedown = 0;
         },
         
         /*
-         * return wether an action is pending
+         * return true whether an action is pending
          */
         pending: function() {
             var actions = this.actions();
@@ -1673,7 +1667,7 @@ var global_mousedown = 0;
                 elem.x = nearest[0] * this.res_x;
                 elem.y = nearest[1] * this.res_y;
             }
-        },
+        }
     }
     
     
@@ -2153,8 +2147,6 @@ var global_mousedown = 0;
         drop: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             diagram.dnd.recent = null;
-            
-            // XXX: grid
         }
     }
     
@@ -2310,7 +2302,7 @@ var global_mousedown = 0;
         
         this.dnd = new activities.ui.DnD();
         
-        // XXX: move to seperate mapping object
+        // XXX: maybe move to seperate mapping object
         // trigger color to diagram element
         this.elements = new Object();
         
@@ -2319,10 +2311,6 @@ var global_mousedown = 0;
         
         // model element dotted path to trigger color
         this.r_mapping = new Object();
-        // /XXX
-        
-        // current focused diagram element
-        this.focused = null;
         
         // currently selected items
         this.selected = new Array();
