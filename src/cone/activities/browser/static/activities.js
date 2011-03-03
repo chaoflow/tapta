@@ -191,42 +191,52 @@ var global_mousedown = 0;
             },
             
             /*
-             * set selected item. used by diagram elements
+             * set selected item. bound by diagram elements
              */
             setSelected: function(obj, event) {
+                // helper for unselecting all diagram elements
+                var unselect = function(diagram, to_render) {
+                    var selected = diagram.selected;
+                    var elem, idx;
+                    for (var idx in selected) {
+                        elem = selected[idx];
+                        if (elem.triggerColor != obj.triggerColor) {
+                            elem.selected = false;
+                        }
+                        to_render.push(elem);
+                    }
+                    diagram.selected = new Array();
+                    return diagram.selected;
+                };
+                
                 var diagram = obj.diagram;
                 var selected = diagram.selected;
-                // only set obj selected and return if an action is pending
+                var to_render = new Array();
+                
+                // case pending action
                 if (diagram.editor.actions.pending()) {
+                    // if obj unselected, select exclusive 
+                    if (!obj.selected && selected.length > 0) {
+                        selected = unselect(diagram, to_render);
+                    }
                     obj.selected = true;
                     selected.push(obj);
-                    diagram.renderTranslated(function() {
-                        obj.render();
-                    });
-                    return;
-                }
-                var to_render = new Array();
-                if (diagram.keylistener.pressed(activities.events.CTL)) {
+                // case ctrl pressed
+                } else if (diagram.keylistener.pressed(activities.events.CTL)) {
+                    // case unselect
                     if (obj.selected) {
                         var idx = selected.indexOf(obj);
                         activities.utils.removeArrayItem(selected, idx, idx);
                         obj.selected = false;
+                    // case select
                     } else {
                         selected.push(obj);
                         obj.selected = true;
                     }
+                // case single select
                 } else {
                     if (selected.length > 0) {
-                        var elem, idx;
-                        for (var idx in selected) {
-                            elem = selected[idx];
-                            if (elem.triggerColor != obj.triggerColor) {
-                                elem.selected = false;
-                            }
-                            to_render.push(elem);
-                        }
-                        diagram.selected = new Array();
-                        selected = diagram.selected;
+                        selected = unselect(diagram, to_render);
                     }
                     if (obj.selected) {
                         obj.selected = false;
@@ -247,7 +257,7 @@ var global_mousedown = 0;
             },
         
             /*
-             * unselect all diagram elements. used by diagram
+             * unselect all diagram elements. bound by diagram
              */
             unselectAll: function(obj, event) {
                 var selected = obj.selected;
@@ -556,6 +566,8 @@ var global_mousedown = 0;
             var translated = diagram.translateCursor(x, y);
             node.x = elem.x = translated[0];
             node.y = elem.y = translated[1];
+            elem.selected = true;
+            diagram.selected.push(elem);
             diagram.render();
         }
     });
@@ -1631,9 +1643,6 @@ var global_mousedown = 0;
     // activities.ui.Grid
     // ************************************************************************
     
-    /*
-     * x / y grid mapping 2 dimensional array positions to diagram elements
-     */
     activities.ui.Grid = function(model) {
         this.res_x = 50;
         this.res_y = 50;
@@ -1664,6 +1673,7 @@ var global_mousedown = 0;
             }
         },
     }
+    
     
     // ************************************************************************
     // activities.ui.ElementMatrix
@@ -1803,6 +1813,7 @@ var global_mousedown = 0;
             return ret;
         }
     }
+    
     
     // ************************************************************************
     // activities.ui.TierRenderer
