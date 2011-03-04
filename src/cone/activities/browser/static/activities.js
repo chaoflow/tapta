@@ -492,6 +492,7 @@ var global_Y = 0;
             var translated = diagram.translateCursor(x, y);
             node.x = elem.x = translated[0];
             node.y = elem.y = translated[1];
+            diagram.unselect();
             elem.selected = true;
             diagram.selected.push(elem);
             diagram.render();
@@ -2622,6 +2623,19 @@ var global_Y = 0;
             return elem;
         },
         
+        /*
+         * set selected flag to fasle on all diagram elements in selected array
+         */
+        unselect: function() {
+            var selected = this.selected;
+            var elem, idx;
+            for (var idx in selected) {
+                selected[idx].selected = false;
+            }
+            this.selected = new Array();
+            return this.selected;
+        },
+        
         // event handler. note that event handlers are called unbound, so
         // working with ``this`` inside event handlers does not work.
         
@@ -2694,21 +2708,6 @@ var global_Y = 0;
          * set selected item.
          */
         setSelected: function(obj, event) {
-            
-            // helper for unselecting all diagram elements
-            var unselect = function(diagram) {
-                var selected = diagram.selected;
-                var elem, idx;
-                for (var idx in selected) {
-                    elem = selected[idx];
-                    if (elem.triggerColor != obj.triggerColor) {
-                        elem.selected = false;
-                    }
-                }
-                diagram.selected = new Array();
-                return diagram.selected;
-            };
-            
             var diagram = obj.diagram;
             var selected = diagram.selected;
             
@@ -2716,7 +2715,7 @@ var global_Y = 0;
             if (diagram.editor.actions.pending()) {
                 // if obj unselected, select exclusive 
                 if (!obj.selected && selected.length > 0) {
-                    selected = unselect(diagram);
+                    selected = diagram.unselect();
                 }
                 obj.selected = true;
                 selected.push(obj);
@@ -2737,12 +2736,12 @@ var global_Y = 0;
             // case single select
             } else {
                 if (selected.length > 0) {
-                    selected = unselect(diagram);
+                    selected = diagram.unselect();
                 }
                 selected.push(obj);
                 obj.selected = true;
             }
-            
+            obj.showOverlay = false;
             diagram.render();
             diagram.editor.properties.display(obj);
         },
@@ -2751,6 +2750,9 @@ var global_Y = 0;
          * turn on info rendering
          */
         infoOn: function(obj, event) {
+            if (obj.diagram.keylistener.pressed(activities.events.CTL)) {
+                return;
+            }
             obj.showOverlay = true;
         },
         
