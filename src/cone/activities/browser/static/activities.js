@@ -2478,6 +2478,7 @@ var global_Y = 0;
             ctx.fillRect(0, 0, this.width, this.height);
             ctx.restore();
             
+            var overlay;
             var diagram = this;
             this.renderTranslated(function() {
                 if (diagram.snap) {
@@ -2494,6 +2495,9 @@ var global_Y = 0;
                         edges.push(elem);
                         continue;
                     }
+                    if (elem.showOverlay) {
+                        overlay = new activities.ui.Overlay(elem);
+                    }
                     elem.render();
                 }
                 for (idx in edges) {
@@ -2502,6 +2506,9 @@ var global_Y = 0;
                 }
                 for (var idx in diagram.selected) {
                     diagram.selected[idx].render();
+                }
+                if (overlay) {
+                    overlay.render();
                 }
             });
         },
@@ -2767,7 +2774,7 @@ var global_Y = 0;
         this.selectedFillColor = '#fff7ae';
         this.selectedBorderColor = '#e3ca4b';
         
-        this.infoOverlay = false;
+        this.showOverlay = false;
     }
     activities.ui.Node.prototype = new activities.ui.Element;
     
@@ -2834,17 +2841,6 @@ var global_Y = 0;
             }
         },
         
-        /*
-         * render info overlay
-         */
-        renderInfo: function() {
-            if (!this.infoOverlay) {
-                return;
-            }
-            var overlay = new activities.ui.InfoOverlay(this);
-            overlay.render();
-        },
-        
         // event handler. note that event handlers are called unbound, so
         // working with ``this`` inside event handlers does not work.
         
@@ -2852,7 +2848,7 @@ var global_Y = 0;
          * turn on info rendering
          */
         infoOn: function(obj, event) {
-            obj.infoOverlay = true;
+            obj.showOverlay = true;
             obj.diagram.render();
         },
         
@@ -2860,7 +2856,7 @@ var global_Y = 0;
          * turn off info rendering
          */
         infoOff: function(obj, event) {
-            obj.infoOverlay = false;
+            obj.showOverlay = false;
             obj.diagram.render();
         }
     });
@@ -2923,8 +2919,6 @@ var global_Y = 0;
             this.fillCircle(ctx, fillColor, this.radius, true);
             this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
             ctx.restore();
-            
-            this.renderInfo();
         }
     });
     
@@ -3034,7 +3028,6 @@ var global_Y = 0;
                 this.drawLabel(ctx, label, 200);
                 ctx.restore();
             }
-            this.renderInfo();
         }
     });
     
@@ -3079,7 +3072,6 @@ var global_Y = 0;
             this.fillCircle(ctx, fillColor, this.radius - this.borderWidth);
             this.fillCircle(ctx, borderColor, this.radius / 2);
             ctx.restore();
-            this.renderInfo();
         }
     });
     
@@ -3345,16 +3337,16 @@ var global_Y = 0;
     
     
     // ************************************************************************
-    // activities.ui.InfoOverlay
+    // activities.ui.Overlay
     // ************************************************************************
     
-    activities.ui.InfoOverlay = function(node) {
+    activities.ui.Overlay = function(node) {
         this.node = node;
         this.diagram = node.diagram;
     }
-    activities.ui.InfoOverlay.prototype = new activities.ui.Rendering;
+    activities.ui.Overlay.prototype = new activities.ui.Rendering;
     
-    $.extend(activities.ui.InfoOverlay.prototype, {
+    $.extend(activities.ui.Overlay.prototype, {
         
         /*
          * render info overlay
@@ -3362,8 +3354,57 @@ var global_Y = 0;
         render: function() {
             var ctx = this.diagram.diag_ctx;
             ctx.save();
+            
+            var label = this.node.label;
+            var description = this.node.description.split('\n');
+            
+            var lines = ['Label:'];
+            lines = lines.concat([label]);
+            lines = lines.concat(['', 'Description:']);
+            lines = lines.concat(description);
+            
+            var lineHeight = 14;
+            var fontSize = 12;
+            var padding = 10;
+            
+            ctx.font = fontSize + 'px sans-serif';
+            var width = ctx.measureText(label).width + 2 * padding;
+            var height = (lines.length * lineHeight) + 2 * padding;
+            
+            var line, line_width;
+            for (var i in description) {
+                line = description[i];
+                line_width = ctx.measureText(line).width;
+                if (line_width > width) {
+                    width = line_width + 2 * padding;
+                }
+            }
+            if (width < 40) {
+                width = 40;
+            }
+            if (height < 30) {
+                height = 30;
+            }
+            
             ctx.translate(this.node.x, this.node.y);
-            this.fillRect(ctx, '#12344', 100, 100);
+            ctx.globalAlpha = 0.8;
+            this.fillRect(ctx, '#eeeeee', width, height, false, 3);
+            this.strokeRect(ctx, '#dddddd', 3, width, height);
+            ctx.globalAlpha = 1.0;
+            
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            
+            var x = width / 2 * -1 + padding;
+            var y = height / 2 * -1 + padding;
+            
+            ctx.translate(x, y);
+            y = 0;
+            for (var i in lines) {
+                ctx.fillText(lines[i], 0, y, width);
+                y = y + lineHeight;
+            }
             ctx.restore();
         }
     });
