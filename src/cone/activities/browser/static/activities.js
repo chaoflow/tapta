@@ -1534,6 +1534,9 @@ var global_Y = 0;
             $('.props', this.container).empty();
         },
         
+        /*
+         * immutable property
+         */
         displayProperty: function(title, value) {
             var opts = {
                 title: title,
@@ -1544,6 +1547,9 @@ var global_Y = 0;
             );
         },
         
+        /*
+         * property as string field
+         */
         stringProperty: function(name, title, value) {
             var opts = {
                 name: name,
@@ -1555,6 +1561,9 @@ var global_Y = 0;
             );
         },
         
+        /*
+         * property as text field
+         */
         textProperty: function(name, title, value) {
             var opts = {
                 name: name,
@@ -2252,6 +2261,9 @@ var global_Y = 0;
             ctx.fillText(label, 0, 0, width);
         },
         
+        /*
+         * render control layer and diagram layer
+         */
         render: function() {
             this.renderCtl();
             this.renderDiag();
@@ -2624,6 +2636,7 @@ var global_Y = 0;
          * set selected item.
          */
         setSelected: function(obj, event) {
+            
             // helper for unselecting all diagram elements
             var unselect = function(diagram, to_render) {
                 var selected = diagram.selected;
@@ -2651,6 +2664,7 @@ var global_Y = 0;
                 }
                 obj.selected = true;
                 selected.push(obj);
+            
             // case ctrl pressed
             } else if (diagram.keylistener.pressed(activities.events.CTL)) {
                 // case unselect
@@ -2663,6 +2677,7 @@ var global_Y = 0;
                     selected.push(obj);
                     obj.selected = true;
                 }
+            
             // case single select
             } else {
                 if (selected.length > 0) {
@@ -2671,6 +2686,7 @@ var global_Y = 0;
                 selected.push(obj);
                 obj.selected = true;
             }
+            
             to_render.push(obj);
             var elem;
             for (var idx in to_render) {
@@ -2709,6 +2725,9 @@ var global_Y = 0;
         SHAPE_RECT: 0,
         SHAPE_CIRCLE: 1,
         
+        /*
+         * bind node to dispatcher
+         */
         bind: function() {
             // event subscription
             var diagram = this.diagram;
@@ -2726,6 +2745,9 @@ var global_Y = 0;
             dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
         },
         
+        /*
+         * unbind node from dispatcher
+         */
         unbind: function() {
             // event subscription
             var diagram = this.diagram;
@@ -2788,6 +2810,9 @@ var global_Y = 0;
             return this.translateDirection(x, y, x_diff, y_diff, angle);
         },
         
+        /*
+         * render control layer
+         */
         renderCtl: function() {
             var ctx = this.diagram.ctl_ctx;
             ctx.save();
@@ -2796,6 +2821,9 @@ var global_Y = 0;
             ctx.restore();
         },
         
+        /*
+         * render diagram layer
+         */
         renderDiag: function() {
             var fillColor, borderColor;
             if (!this.selected) {
@@ -2874,6 +2902,9 @@ var global_Y = 0;
             return this.translateDirection(x, y, x_diff, y_diff, angle_orgin);
         },
         
+        /*
+         * render control layer
+         */
         renderCtl: function() {
             var ctx = this.diagram.ctl_ctx;
             ctx.save();
@@ -2885,6 +2916,9 @@ var global_Y = 0;
             ctx.restore();
         },
         
+        /*
+         * render diagram layer
+         */
         renderDiag: function() {
             // diagram layer
             var fillColor, borderColor;
@@ -2939,6 +2973,9 @@ var global_Y = 0;
     
     $.extend(activities.ui.Final.prototype, {
         
+        /*
+         * render diagram layer
+         */
         renderDiag: function() {
             var fillColor, borderColor;
             if (!this.selected) {
@@ -3030,6 +3067,9 @@ var global_Y = 0;
     
     $.extend(activities.ui.Edge.prototype, {
         
+        /*
+         * bind edge to dispatcher
+         */
         bind: function() {
             var dsp = this.diagram.dispatcher;
             var events = activities.events;
@@ -3040,6 +3080,9 @@ var global_Y = 0;
             dsp.subscribe(events.MOUSE_WHEEL, this, this.diagram.dnd.zoom);
         },
         
+        /*
+         * unbind edge from dispatcher
+         */
         unbind: function() {
             var dsp = this.diagram.dispatcher;
             var events = activities.events;
@@ -3048,6 +3091,10 @@ var global_Y = 0;
             dsp.unsubscribe(events.MOUSE_WHEEL, this);
         },
         
+        /*
+         * translate edge start- and endpoint relative to corresponding source
+         * and target object
+         */
         translate: function(source, target) {
             var x, y;
             if (this.kinks.length != 0) {
@@ -3070,6 +3117,9 @@ var global_Y = 0;
             this._end = target.translateEdge(x, y);
         },
         
+        /*
+         * return label offset position
+         */
         labelOffset: function() {
             // XXX: consider kinks if present
             return [
@@ -3078,6 +3128,9 @@ var global_Y = 0;
             ];
         },
         
+        /*
+         * render edge path
+         */
         renderPath: function(ctx) {
             ctx.beginPath();
             ctx.moveTo(this._start[0], this._start[1]);
@@ -3090,11 +3143,17 @@ var global_Y = 0;
             ctx.closePath();
         },
         
+        /*
+         * render edge root bubble
+         */
         renderRoot: function(ctx) {
             ctx.translate(this._start[0], this._start[1]);
             this.circle(ctx, this.lineWidth);
         },
         
+        /*
+         * render edge arrow
+         */
         renderArrow: function(ctx) {
             var len = this.arrowLength;
             ctx.translate(this._end[0], this._end[1]);
@@ -3106,6 +3165,9 @@ var global_Y = 0;
             ctx.closePath();
         },
         
+        /*
+         * render edge
+         */
         render: function() {
             var diagram = this.diagram;
             var source = diagram.elements[diagram.r_mapping[this.source]];
