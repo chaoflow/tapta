@@ -1235,7 +1235,7 @@ var global_Y = 0;
                 }
             }
             // mouseout
-            subscriber = dispatcher.subscriber[triggerColor];
+            subscriber = dispatcher.subscriber[dispatcher.recent.triggerColor];
             if (subscriber) {
                 var evt = activities.events.MOUSE_OUT;
                 for (var idx in subscriber[evt]) {
@@ -2766,6 +2766,8 @@ var global_Y = 0;
         
         this.selectedFillColor = '#fff7ae';
         this.selectedBorderColor = '#e3ca4b';
+        
+        this.infoOverlay = false;
     }
     activities.ui.Node.prototype = new activities.ui.Element;
     
@@ -2784,6 +2786,8 @@ var global_Y = 0;
             var dsp = diagram.dispatcher;
             var events = activities.events;
             var handler = activities.handler;
+            dsp.subscribe(events.MOUSE_IN, this, this.infoOn);
+            dsp.subscribe(events.MOUSE_OUT, this, this.infoOff);
             dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
             dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
             dsp.subscribe(events.MOUSE_DOWN, this, this.setSelected);
@@ -2804,6 +2808,7 @@ var global_Y = 0;
             var dsp = diagram.dispatcher;
             var events = activities.events;
             dsp.unsubscribe(events.MOUSE_IN, this);
+            dsp.unsubscribe(events.MOUSE_OUT, this);
             dsp.unsubscribe(events.MOUSE_DOWN, this);
             dsp.unsubscribe(events.MOUSE_WHEEL, this);
             dsp.unsubscribe(events.MOUSE_MOVE, this);
@@ -2827,6 +2832,36 @@ var global_Y = 0;
             if (x - this.x <= 0 && y - this.y >= 0) {
                 return [this.x - x_diff, this.y + y_diff, angle * -1];
             }
+        },
+        
+        /*
+         * render info overlay
+         */
+        renderInfo: function() {
+            if (!this.infoOverlay) {
+                return;
+            }
+            var overlay = new activities.ui.InfoOverlay(this);
+            overlay.render();
+        },
+        
+        // event handler. note that event handlers are called unbound, so
+        // working with ``this`` inside event handlers does not work.
+        
+        /*
+         * turn on info rendering
+         */
+        infoOn: function(obj, event) {
+            obj.infoOverlay = true;
+            obj.diagram.render();
+        },
+        
+        /*
+         * turn off info rendering
+         */
+        infoOff: function(obj, event) {
+            obj.infoOverlay = false;
+            obj.diagram.render();
         }
     });
     
@@ -2888,6 +2923,8 @@ var global_Y = 0;
             this.fillCircle(ctx, fillColor, this.radius, true);
             this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
             ctx.restore();
+            
+            this.renderInfo();
         }
     });
     
@@ -2997,6 +3034,7 @@ var global_Y = 0;
                 this.drawLabel(ctx, label, 200);
                 ctx.restore();
             }
+            this.renderInfo();
         }
     });
     
@@ -3041,6 +3079,7 @@ var global_Y = 0;
             this.fillCircle(ctx, fillColor, this.radius - this.borderWidth);
             this.fillCircle(ctx, borderColor, this.radius / 2);
             ctx.restore();
+            this.renderInfo();
         }
     });
     
@@ -3297,11 +3336,36 @@ var global_Y = 0;
     // ************************************************************************
     
     /*
-     * represent a kink of an edge.
+     * represents a kink of an edge.
      */
     activities.ui.Kink = function() {
         this.x = null;
         this.y = null;
     }
+    
+    
+    // ************************************************************************
+    // activities.ui.InfoOverlay
+    // ************************************************************************
+    
+    activities.ui.InfoOverlay = function(node) {
+        this.node = node;
+        this.diagram = node.diagram;
+    }
+    activities.ui.InfoOverlay.prototype = new activities.ui.Rendering;
+    
+    $.extend(activities.ui.InfoOverlay.prototype, {
+        
+        /*
+         * render info overlay
+         */
+        render: function() {
+            var ctx = this.diagram.diag_ctx;
+            ctx.save();
+            ctx.translate(this.node.x, this.node.y);
+            this.fillRect(ctx, '#12344', 100, 100);
+            ctx.restore();
+        }
+    });
     
 })(jQuery);
