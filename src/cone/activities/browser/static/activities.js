@@ -2419,7 +2419,7 @@ var global_Y = 0;
             var px, py;
             if (event.type == 'keydown'
              || event.type == 'keyup') {
-                 px = global_X;
+                px = global_X;
                 py = global_Y;
             } else {
                 px = event.pageX;
@@ -2488,15 +2488,15 @@ var global_Y = 0;
                 var elem;
                 for(var key in diagram.elements) {
                     var elem = diagram.elements[key];
+                    if (elem.showOverlay) {
+                        overlay = new activities.ui.Overlay(elem);
+                    }
                     if (elem.selected) {
                         continue;
                     }
                     if (elem.node.__type == activities.model.EDGE) {
                         edges.push(elem);
                         continue;
-                    }
-                    if (elem.showOverlay) {
-                        overlay = new activities.ui.Overlay(elem);
                     }
                     elem.render();
                 }
@@ -2680,6 +2680,8 @@ var global_Y = 0;
         
         this.label = null;
         this.description = null;
+        
+        this.showOverlay = false;
     }
     activities.ui.Element.prototype = new activities.ui.Rendering;
     
@@ -2694,7 +2696,7 @@ var global_Y = 0;
         setSelected: function(obj, event) {
             
             // helper for unselecting all diagram elements
-            var unselect = function(diagram, to_render) {
+            var unselect = function(diagram) {
                 var selected = diagram.selected;
                 var elem, idx;
                 for (var idx in selected) {
@@ -2702,7 +2704,6 @@ var global_Y = 0;
                     if (elem.triggerColor != obj.triggerColor) {
                         elem.selected = false;
                     }
-                    to_render.push(elem);
                 }
                 diagram.selected = new Array();
                 return diagram.selected;
@@ -2710,13 +2711,12 @@ var global_Y = 0;
             
             var diagram = obj.diagram;
             var selected = diagram.selected;
-            var to_render = new Array();
             
             // case pending action
             if (diagram.editor.actions.pending()) {
                 // if obj unselected, select exclusive 
                 if (!obj.selected && selected.length > 0) {
-                    selected = unselect(diagram, to_render);
+                    selected = unselect(diagram);
                 }
                 obj.selected = true;
                 selected.push(obj);
@@ -2737,22 +2737,39 @@ var global_Y = 0;
             // case single select
             } else {
                 if (selected.length > 0) {
-                    selected = unselect(diagram, to_render);
+                    selected = unselect(diagram);
                 }
                 selected.push(obj);
                 obj.selected = true;
             }
             
-            to_render.push(obj);
-            var elem;
-            for (var idx in to_render) {
-                elem = to_render[idx];
-                diagram.renderTranslated(function() {
-                    elem.render();
-                });
-            }
+            diagram.render();
             diagram.editor.properties.display(obj);
-        }
+        },
+        
+        /*
+         * turn on info rendering
+         */
+        infoOn: function(obj, event) {
+            obj.showOverlay = true;
+        },
+        
+        /*
+         * turn off info rendering
+         */
+        infoOff: function(obj, event) {
+            obj.showOverlay = false;
+            obj.diagram.render();
+        },
+        
+        /*
+         * render info
+         */
+        renderInfo: function(obj, event) {
+            if (obj.showOverlay) {
+                obj.diagram.render();
+            }
+        },
     });
     
     
@@ -2773,8 +2790,6 @@ var global_Y = 0;
         
         this.selectedFillColor = '#fff7ae';
         this.selectedBorderColor = '#e3ca4b';
-        
-        this.showOverlay = false;
     }
     activities.ui.Node.prototype = new activities.ui.Element;
     
@@ -2795,6 +2810,7 @@ var global_Y = 0;
             var handler = activities.handler;
             dsp.subscribe(events.MOUSE_IN, this, this.infoOn);
             dsp.subscribe(events.MOUSE_OUT, this, this.infoOff);
+            dsp.subscribe(events.MOUSE_MOVE, this, this.renderInfo);
             dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
             dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
             dsp.subscribe(events.MOUSE_DOWN, this, this.setSelected);
@@ -2839,25 +2855,6 @@ var global_Y = 0;
             if (x - this.x <= 0 && y - this.y >= 0) {
                 return [this.x - x_diff, this.y + y_diff, angle * -1];
             }
-        },
-        
-        // event handler. note that event handlers are called unbound, so
-        // working with ``this`` inside event handlers does not work.
-        
-        /*
-         * turn on info rendering
-         */
-        infoOn: function(obj, event) {
-            obj.showOverlay = true;
-            obj.diagram.render();
-        },
-        
-        /*
-         * turn off info rendering
-         */
-        infoOff: function(obj, event) {
-            obj.showOverlay = false;
-            obj.diagram.render();
         }
     });
     
@@ -3154,6 +3151,9 @@ var global_Y = 0;
             var dsp = this.diagram.dispatcher;
             var events = activities.events;
             var handler = activities.handler;
+            dsp.subscribe(events.MOUSE_IN, this, this.infoOn);
+            dsp.subscribe(events.MOUSE_OUT, this, this.infoOff);
+            dsp.subscribe(events.MOUSE_MOVE, this, this.renderInfo);
             dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
             dsp.subscribe(events.MOUSE_DOWN, this, this.setSelected);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
@@ -3168,6 +3168,7 @@ var global_Y = 0;
             var events = activities.events;
             dsp.unsubscribe(events.MOUSE_IN, this);
             dsp.unsubscribe(events.MOUSE_DOWN, this);
+            dsp.unsubscribe(events.MOUSE_MOVE, this);
             dsp.unsubscribe(events.MOUSE_WHEEL, this);
         },
         
@@ -3198,10 +3199,9 @@ var global_Y = 0;
         },
         
         /*
-         * return label offset position
+         * return zero position between start and end point
          */
-        labelOffset: function() {
-            // XXX: consider kinks if present
+        zero: function() {
             return [
                 this._start[0] + ((this._end[0] - this._start[0]) / 2),
                 this._start[1] + ((this._end[1] - this._start[1]) / 2)
@@ -3313,9 +3313,9 @@ var global_Y = 0;
             // label
             if (this.renderLabel) {
                 var label = this.label;
-                var labelOffset = this.labelOffset();
+                var zero = this.zero();
                 ctx.save();
-                ctx.translate(labelOffset[0], labelOffset[1]);
+                ctx.translate(zero[0], zero[1]);
                 this.drawLabel(ctx, label, 200);
                 ctx.restore();
             }
@@ -3340,9 +3340,9 @@ var global_Y = 0;
     // activities.ui.Overlay
     // ************************************************************************
     
-    activities.ui.Overlay = function(node) {
-        this.node = node;
-        this.diagram = node.diagram;
+    activities.ui.Overlay = function(element) {
+        this.element = element;
+        this.diagram = element.diagram;
     }
     activities.ui.Overlay.prototype = new activities.ui.Rendering;
     
@@ -3355,8 +3355,9 @@ var global_Y = 0;
             var ctx = this.diagram.diag_ctx;
             ctx.save();
             
-            var label = this.node.label;
-            var description = this.node.description.split('\n');
+            var element = this.element;
+            var label = element.label;
+            var description = element.description.split('\n');
             
             var lines = ['Label:'];
             lines = lines.concat([label]);
@@ -3372,21 +3373,36 @@ var global_Y = 0;
             var height = (lines.length * lineHeight) + 2 * padding;
             
             var line, line_width;
-            for (var i in description) {
-                line = description[i];
+            for (var i in lines) {
+                line = lines[i];
                 line_width = ctx.measureText(line).width;
                 if (line_width > width) {
                     width = line_width + 2 * padding;
                 }
             }
-            if (width < 40) {
-                width = 40;
-            }
-            if (height < 30) {
-                height = 30;
+            
+            var x, y;
+            if (element.zero) {
+                var zero = element.zero();
+                x = zero[0];
+                y = zero[1];
+            } else {
+                x = element.x;
+                y = element.y;
             }
             
-            ctx.translate(this.node.x, this.node.y);
+            var diagram = element.diagram;
+            var current = diagram.currentCursor({
+                pageX: global_X,
+                pageY: global_Y
+            });
+            current = diagram.translateCursor(current[0], current[1]);
+            
+            var offset = [current[0] - x, current[1] - y];
+            x = x + offset[0] + width / 2;
+            y = y + offset[1] + height / 2;
+            
+            ctx.translate(x, y);
             ctx.globalAlpha = 0.8;
             this.fillRect(ctx, '#eeeeee', width, height, false, 3);
             this.strokeRect(ctx, '#dddddd', 3, width, height);
@@ -3396,9 +3412,8 @@ var global_Y = 0;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
             
-            var x = width / 2 * -1 + padding;
-            var y = height / 2 * -1 + padding;
-            
+            x = width / 2 * -1 + padding;
+            y = height / 2 * -1 + padding;
             ctx.translate(x, y);
             y = 0;
             for (var i in lines) {
