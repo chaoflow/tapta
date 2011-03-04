@@ -1994,6 +1994,26 @@ var global_Y = 0;
     
     activities.ui.DnD.prototype = {
         
+        /*
+         * compute offset relative to xy
+         */
+        offset: function(x, y) {
+            var offset_x, offset_y;
+            if (x > 0) {
+                offset_x = this.last_x - x;
+            } else {
+                offset_x = this.last_x + x;
+            }
+            if (y > 0) {
+                offset_y = this.last_y - y;
+            } else {
+                offset_y = this.last_y + y;
+            }
+            this.last_x = x;
+            this.last_y = y;
+            return [offset_x, offset_y]
+        },
+        
         // event handler. note that event handlers are called unbound, so
         // working with ``this`` inside event handlers does not work.
         
@@ -2037,6 +2057,9 @@ var global_Y = 0;
          * switch pan on
          */
         panOn: function(obj, event) {
+            if (obj.keylistener.pressed(activities.events.CTL)) {
+                return;
+            }
             obj.dnd.pan_active = true;
             activities.handler.setMove(obj, event);
         },
@@ -2046,6 +2069,9 @@ var global_Y = 0;
          */
         panOff: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
+            if (diagram.keylistener.pressed(activities.events.CTL)) {
+                return;
+            }
             diagram.dnd.pan_active = false;
             diagram.dnd.last_x = null;
             diagram.dnd.last_y = null;
@@ -2057,6 +2083,9 @@ var global_Y = 0;
          */
         pan: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
+            if (diagram.keylistener.pressed(activities.events.CTL)) {
+                return;
+            }
             var dnd = diagram.dnd;
             if (!global_mousedown) {
                 dnd.pan_active = false;
@@ -2074,21 +2103,9 @@ var global_Y = 0;
                 dnd.last_y = y;
                 return;
             }
-            var offset_x, offset_y;
-            if (x > 0) {
-                offset_x = dnd.last_x - x;
-            } else {
-                offset_x = dnd.last_x + x;
-            }
-            if (y > 0) {
-                offset_y = dnd.last_y - y;
-            } else {
-                offset_y = dnd.last_y + y;
-            }
-            dnd.last_x = x;
-            dnd.last_y = y;
-            diagram.origin_x -= offset_x;
-            diagram.origin_y -= offset_y;
+            var offset = dnd.offset(x, y);
+            diagram.origin_x -= offset[0];
+            diagram.origin_y -= offset[1];
             diagram.render();
         },
         
@@ -2106,18 +2123,48 @@ var global_Y = 0;
             var diagram = obj.dnd ? obj : obj.diagram;
             if (!global_mousedown) {
                 diagram.dnd.recent = null;
+                diagram.dnd.last_x = null;
+                diagram.dnd.last_y = null;
                 return;
             }
+            
+            var ctl_down = diagram.keylistener.pressed(activities.events.CTL);
+            
             var recent = diagram.dnd.recent;
-            if (!recent) {
+            if (!recent && !ctl_down) {
                 return;
             }
+            
             var current = diagram.currentCursor(event);
             var x = current[0];
             var y = current[1];
-            var translated = diagram.translateCursor(x, y);
-            recent.x = translated[0];
-            recent.y = translated[1];
+            
+            // multi drag
+            if (ctl_down) {
+                var selected = diagram.selected;
+                if (!selected) {
+                    return;
+                }
+                var dnd = diagram.dnd;
+                if (dnd.last_x == null || dnd.last_y == null) {
+                    dnd.last_x = x;
+                    dnd.last_y = y;
+                    return;
+                }
+                var offset = dnd.offset(x, y);
+                var elem;
+                for (var idx in selected) {
+                    elem = selected[idx];
+                    elem.x -= offset[0];
+                    elem.y -= offset[1];
+                }
+            
+            // single drag
+            } else {
+                var translated = diagram.translateCursor(x, y);
+                recent.x = translated[0];
+                recent.y = translated[1];
+            }
             diagram.render();
         },
         
@@ -2127,6 +2174,8 @@ var global_Y = 0;
         drop: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             diagram.dnd.recent = null;
+            diagram.dnd.last_x = null;
+            diagram.dnd.last_y = null;
         }
     }
     
