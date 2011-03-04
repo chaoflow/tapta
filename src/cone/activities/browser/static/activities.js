@@ -26,6 +26,10 @@ var demo_editor = null;
 // dnd related
 var global_mousedown = 0;
 
+// notification related for keyup / keydown
+var global_X = 0;
+var global_Y = 0;
+
 (function($) {
     
     $(document).ready(function() {
@@ -39,6 +43,12 @@ var global_mousedown = 0;
         // IE / Opera / Chrome
         $(document).bind('mousewheel', activities.events.notify);
         $(window).bind('mousewheel', activities.events.notify);
+        
+        // global mouse move binding
+        $(document).bind('mousemove', function(event) {
+            global_X = event.pageX;
+            global_Y = event.pageY;
+        });
         
         demo_editor = new activities.ui.Editor('level_0');
         demo_editor.newDiagram();
@@ -136,13 +146,15 @@ var global_mousedown = 0;
          */
         events: {
             
-            // mouse events
+            // events
             MOUSE_DOWN : 0,
             MOUSE_UP   : 1,
             MOUSE_MOVE : 2,
             MOUSE_IN   : 3,
             MOUSE_OUT  : 4,
             MOUSE_WHEEL: 5,
+            KEY_DOWN   : 6,
+            KEY_UP     : 7,
             
             // keys
             KEY_SHIFT  : 16,
@@ -162,7 +174,7 @@ var global_mousedown = 0;
         },
         
         /*
-         * activity handler
+         * generic event handler
          */
         handler: {
             
@@ -188,89 +200,6 @@ var global_mousedown = 0;
             setMove: function(obj, event) {
                 var diagram = obj.dnd ? obj : obj.diagram;
                 $(diagram.layers.diagram.canvas).css('cursor', 'move');
-            },
-            
-            /*
-             * set selected item. bound by diagram elements
-             */
-            setSelected: function(obj, event) {
-                // helper for unselecting all diagram elements
-                var unselect = function(diagram, to_render) {
-                    var selected = diagram.selected;
-                    var elem, idx;
-                    for (var idx in selected) {
-                        elem = selected[idx];
-                        if (elem.triggerColor != obj.triggerColor) {
-                            elem.selected = false;
-                        }
-                        to_render.push(elem);
-                    }
-                    diagram.selected = new Array();
-                    return diagram.selected;
-                };
-                
-                var diagram = obj.diagram;
-                var selected = diagram.selected;
-                var to_render = new Array();
-                
-                // case pending action
-                if (diagram.editor.actions.pending()) {
-                    // if obj unselected, select exclusive 
-                    if (!obj.selected && selected.length > 0) {
-                        selected = unselect(diagram, to_render);
-                    }
-                    obj.selected = true;
-                    selected.push(obj);
-                // case ctrl pressed
-                } else if (diagram.keylistener.pressed(activities.events.CTL)) {
-                    // case unselect
-                    if (obj.selected) {
-                        var idx = selected.indexOf(obj);
-                        activities.utils.removeArrayItem(selected, idx, idx);
-                        obj.selected = false;
-                    // case select
-                    } else {
-                        selected.push(obj);
-                        obj.selected = true;
-                    }
-                // case single select
-                } else {
-                    if (selected.length > 0) {
-                        selected = unselect(diagram, to_render);
-                    }
-                    selected.push(obj);
-                    obj.selected = true;
-                }
-                to_render.push(obj);
-                var elem;
-                for (var idx in to_render) {
-                    elem = to_render[idx];
-                    diagram.renderTranslated(function() {
-                        elem.render();
-                    });
-                }
-                diagram.editor.properties.display(obj);
-            },
-        
-            /*
-             * unselect all diagram elements. bound by diagram
-             */
-            unselectAll: function(obj, event) {
-                // do not unselect if pan was performed
-                if (obj.dnd.last_x) {
-                    return;
-                }
-                var selected = obj.selected;
-                var elem;
-                for (idx in selected) {
-                    elem = selected[idx];
-                    elem.selected = false;
-                    obj.renderTranslated(function() {
-                        elem.render();
-                    });
-                }
-                obj.selected = new Array();
-                obj.editor.properties.display(obj);
             },
             
             /*
@@ -1137,6 +1066,8 @@ var global_mousedown = 0;
             mousedown: activities.events.MOUSE_DOWN,
             mouseup: activities.events.MOUSE_UP,
             mousemove: activities.events.MOUSE_MOVE,
+            keydown: activities.events.KEY_DOWN,
+            keyup: activities.events.KEY_UP,
         };
         
         // len array depends on available events
@@ -1172,7 +1103,9 @@ var global_mousedown = 0;
                     [], // activities.events.MOUSE_MOVE
                     [], // activities.events.MOUSE_IN
                     [], // activities.events.MOUSE_OUT
-                    []  // activities.events.MOUSE_WHEEL
+                    [], // activities.events.MOUSE_WHEEL
+                    [], // activities.events.KEY_DOWN
+                    []  // activities.events.KEY_UP
                 ];
             }
             this.subscriber[obj.triggerColor][evt].push(handler);
@@ -1204,10 +1137,12 @@ var global_mousedown = 0;
             $(document).unbind('keydown').bind('keydown', function (event) {
                 keylisterer.keyCode = event.keyCode;
                 keylisterer.charCode = event.charCode;
+                activities.events.notify(event);
             });
             $(document).unbind('keyup').bind('keyup', function (event) {
                 keylisterer.keyCode = null;
                 keylisterer.charCode = null;
+                activities.events.notify(event);
             });
         },
         
@@ -1223,10 +1158,21 @@ var global_mousedown = 0;
     
     activities.events.notify = function(event) {
         var canvas;
-        if (event.type == 'mousewheel'
-         || event.type == 'DOMMouseScroll') {
-            // mousewheel, check if event target is canvas,
-            // otherwise return
+        
+        // get canvas by global mouse position if keydown, keyup
+        if (event.type == 'keydown'
+         || event.type == 'keyup') {
+             // key events, check if x, y target is canvas, otherwise return
+            var target = document.elementFromPoint(global_X, global_Y);
+            if (!target || target.tagName != 'CANVAS') {
+                return;
+            }
+            canvas = $(target);
+        
+        // get canvas by event target if mousewheel
+        } else if (event.type == 'mousewheel'
+                || event.type == 'DOMMouseScroll') {
+            // mousewheel, check if event target is canvas, otherwise return
             var target;
             if (event.target) {
                 target = event.target;
@@ -1237,9 +1183,12 @@ var global_mousedown = 0;
                 return;
             }
             canvas = $(target);
+        
+        // event directly bound to canvas
         } else {
             var canvas = $(this);
         }
+        
         event.preventDefault();
         var dispatcher = canvas.data('dispatcher');
         var diagram = dispatcher.diagram;
@@ -1247,6 +1196,7 @@ var global_mousedown = 0;
         var x = current[0];
         var y = current[1];
         var ctx = diagram.layers.control.context;
+        
         // try to get pixel info, return if fails
         try {
             var imgData = ctx.getImageData(x, y, 1, 1).data;
@@ -1296,7 +1246,7 @@ var global_mousedown = 0;
             return;
         }
         
-        // trigger events directly mapped from javascript events        
+        // trigger mousedown mouseup mousemove keydown keyup   
         dispatcher.recent = recent;
         var subscriber = dispatcher.subscriber[triggerColor];
         if (subscriber) {
@@ -1305,6 +1255,7 @@ var global_mousedown = 0;
                 subscriber[mapped][idx](recent, event);
             }
         }
+        
         //activities.events.status(event.type, x, y, triggerColor);
     }
     
@@ -2034,6 +1985,12 @@ var global_mousedown = 0;
     
     activities.ui.DnD.prototype = {
         
+        // event handler. note that event handlers are called unbound, so
+        // working with ``this`` inside event handlers does not work.
+        
+        /*
+         * zoom diagram
+         */
         zoom: function(obj, event) {
             var delta = 0;
             // IE
@@ -2067,11 +2024,17 @@ var global_mousedown = 0;
             diagram.render();
         },
         
+        /*
+         * switch pan on
+         */
         panOn: function(obj, event) {
             obj.dnd.pan_active = true;
             activities.handler.setMove(obj, event);
         },
         
+        /*
+         * switch pan off
+         */
         panOff: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             diagram.dnd.pan_active = false;
@@ -2080,6 +2043,9 @@ var global_mousedown = 0;
             activities.handler.setDefault(obj, event);
         },
         
+        /*
+         * do pan
+         */
         pan: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             var dnd = diagram.dnd;
@@ -2117,10 +2083,16 @@ var global_mousedown = 0;
             diagram.render();
         },
         
+        /*
+         * switch drag on
+         */
         dragOn: function(obj, event) {
             obj.diagram.dnd.recent = obj;
         },
         
+        /*
+         * do drag
+         */
         drag: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             if (!global_mousedown) {
@@ -2140,6 +2112,9 @@ var global_mousedown = 0;
             diagram.render();
         },
         
+        /*
+         * do drop
+         */
         drop: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
             diagram.dnd.recent = null;
@@ -2362,7 +2337,7 @@ var global_mousedown = 0;
             var events = activities.events;
             var handler = activities.handler;
             dsp.subscribe(events.MOUSE_IN, this, handler.setDefault);
-            dsp.subscribe(events.MOUSE_UP, this, handler.unselectAll);
+            dsp.subscribe(events.MOUSE_UP, this, this.unselectAll);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, this.dnd.zoom);
             dsp.subscribe(events.MOUSE_DOWN, this, this.dnd.panOn);
@@ -2370,6 +2345,8 @@ var global_mousedown = 0;
             dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.pan);
             dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.drag);
             dsp.subscribe(events.MOUSE_UP, this, this.dnd.drop);
+            dsp.subscribe(events.KEY_DOWN, this, this.setMultiPanCursor);
+            dsp.subscribe(events.KEY_UP, this, this.unsetMultiPanCursor);
         },
         
         /*
@@ -2378,8 +2355,17 @@ var global_mousedown = 0;
         currentCursor: function(event) {
             var canvas = $(this.layers.diagram.canvas);
             var offset = canvas.offset();
-            var x = event.pageX - offset.left;
-            var y = event.pageY - offset.top;
+            var px, py;
+            if (event.type == 'keydown'
+             || event.type == 'keyup') {
+                 px = global_X;
+                py = global_Y;
+            } else {
+                px = event.pageX;
+                py = event.pageY;
+            }
+            var x = px - offset.left;
+            var y = py - offset.top;
             return [x, y];
         },
         
@@ -2566,6 +2552,48 @@ var global_mousedown = 0;
             elem.target = node.target;
             this.map(node, elem);
             return elem;
+        },
+        
+        // event handler. note that event handlers are called unbound, so
+        // working with ``this`` inside event handlers does not work.
+        
+        /*
+         * set cursor for multi item pan if ctl key is pressed
+         */
+        setMultiPanCursor: function(obj, event) {
+            if (obj.keylistener.pressed(activities.events.CTL)) {
+                activities.handler.setMove(obj, event);
+            }
+        },
+        
+        /*
+         * unset cursor for multi item pan if ctl key is released
+         */
+        unsetMultiPanCursor: function(obj, event) {
+            if (!obj.keylistener.pressed(activities.events.CTL)) {
+                activities.handler.setDefault(obj, event);
+            }
+        },
+        
+        /*
+         * unselect all diagram elements. bound by diagram
+         */
+        unselectAll: function(obj, event) {
+            // do not unselect if pan was performed
+            if (obj.dnd.last_x) {
+                return;
+            }
+            var selected = obj.selected;
+            var elem;
+            for (idx in selected) {
+                elem = selected[idx];
+                elem.selected = false;
+                obj.renderTranslated(function() {
+                    elem.render();
+                });
+            }
+            obj.selected = new Array();
+            obj.editor.properties.display(obj);
         }
     }
     
@@ -2586,6 +2614,74 @@ var global_mousedown = 0;
         this.description = null;
     }
     activities.ui.Element.prototype = new activities.ui.Rendering;
+    
+    $.extend(activities.ui.Element.prototype, {
+        
+        // event handler. note that event handlers are called unbound, so
+        // working with ``this`` inside event handlers does not work.
+        
+        /*
+         * set selected item.
+         */
+        setSelected: function(obj, event) {
+            // helper for unselecting all diagram elements
+            var unselect = function(diagram, to_render) {
+                var selected = diagram.selected;
+                var elem, idx;
+                for (var idx in selected) {
+                    elem = selected[idx];
+                    if (elem.triggerColor != obj.triggerColor) {
+                        elem.selected = false;
+                    }
+                    to_render.push(elem);
+                }
+                diagram.selected = new Array();
+                return diagram.selected;
+            };
+            
+            var diagram = obj.diagram;
+            var selected = diagram.selected;
+            var to_render = new Array();
+            
+            // case pending action
+            if (diagram.editor.actions.pending()) {
+                // if obj unselected, select exclusive 
+                if (!obj.selected && selected.length > 0) {
+                    selected = unselect(diagram, to_render);
+                }
+                obj.selected = true;
+                selected.push(obj);
+            // case ctrl pressed
+            } else if (diagram.keylistener.pressed(activities.events.CTL)) {
+                // case unselect
+                if (obj.selected) {
+                    var idx = selected.indexOf(obj);
+                    activities.utils.removeArrayItem(selected, idx, idx);
+                    obj.selected = false;
+                // case select
+                } else {
+                    selected.push(obj);
+                    obj.selected = true;
+                }
+            // case single select
+            } else {
+                if (selected.length > 0) {
+                    selected = unselect(diagram, to_render);
+                }
+                selected.push(obj);
+                obj.selected = true;
+            }
+            to_render.push(obj);
+            var elem;
+            for (var idx in to_render) {
+                elem = to_render[idx];
+                diagram.renderTranslated(function() {
+                    elem.render();
+                });
+            }
+            diagram.editor.properties.display(obj);
+        }
+    });
     
     
     // ************************************************************************
@@ -2622,7 +2718,7 @@ var global_mousedown = 0;
             var handler = activities.handler;
             dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
             dsp.subscribe(events.MOUSE_DOWN, this, dnd.dragOn);
-            dsp.subscribe(events.MOUSE_DOWN, this, handler.setSelected);
+            dsp.subscribe(events.MOUSE_DOWN, this, this.setSelected);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
             dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
@@ -2939,7 +3035,7 @@ var global_mousedown = 0;
             var events = activities.events;
             var handler = activities.handler;
             dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
-            dsp.subscribe(events.MOUSE_DOWN, this, handler.setSelected);
+            dsp.subscribe(events.MOUSE_DOWN, this, this.setSelected);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
             dsp.subscribe(events.MOUSE_WHEEL, this, this.diagram.dnd.zoom);
         },
