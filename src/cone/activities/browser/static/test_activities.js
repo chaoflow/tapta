@@ -1,5 +1,12 @@
 (function($) {
     
+    $(document).ready(function() {
+        $('#demo_editor').activities({
+            width: 1200,
+            height: 450,
+        });
+    });
+    
     tests = {
         
         create_test_model_1: function() {

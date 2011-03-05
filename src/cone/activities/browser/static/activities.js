@@ -25,23 +25,20 @@
     
     $(document).ready(function() {
         // initialie activities child factories
-        var factories = activities.settings.diagram.childFactories;
-        factories[activities.model.INITIAL] = activities.ui.Initial;
-        factories[activities.model.FINAL] = activities.ui.Final;
-        factories[activities.model.ACTION] = activities.ui.Action;
-        factories[activities.model.DECISION] = activities.ui.Decision;
-        factories[activities.model.MERGE] = activities.ui.Merge;
-        factories[activities.model.FORK] = activities.ui.Fork;
-        factories[activities.model.JOIN] = activities.ui.Join;
+        var ats = activities;
+        var model = ats.model;
+        var ui = ats.ui;
+        var factories = ats.settings.diagram.childFactories;
+        factories[model.INITIAL] = ui.Initial;
+        factories[model.FINAL] = ui.Final;
+        factories[model.ACTION] = ui.Action;
+        factories[model.DECISION] = ui.Decision;
+        factories[model.MERGE] = ui.Merge;
+        factories[model.FORK] = ui.Fork;
+        factories[model.JOIN] = ui.Join;
         
         // initialie activities globals
-        activities.glob.initialize();
-        
-        // demo editor
-        $('#demo_editor').activities({
-            width: 1200,
-            height: 450,
-        });
+        ats.glob.initialize();
     });
     
     /*
