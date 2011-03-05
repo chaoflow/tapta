@@ -60,7 +60,7 @@
         elem = elem.replaceWith($("#editor_template").tmpl({
             name: name,
             width: opts.width,
-            height: opts.height,
+            height: opts.height
         }));
         
         // create editor
@@ -68,7 +68,7 @@
         elem.data('activities_editor', editor);
         editor.newDiagram();
         return elem;
-    }
+    };
     
     
     // ************************************************************************
@@ -354,7 +354,7 @@
                 }
             }
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -363,7 +363,7 @@
     
     activities.actions.Section = function() {
         this.actions = new Array();
-    }
+    };
     
     activities.actions.Section.prototype = {
         
@@ -378,7 +378,7 @@
             }
             return section;
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -387,7 +387,7 @@
     
     activities.actions.Action = function(actions, id, title) {
         // activities.ui.Actions instance
-        this.actions = actions
+        this.actions = actions;
         this.id = id;
         this.title = title;
         
@@ -402,7 +402,7 @@
         
         // the action corresponding dom element as jQuery object
         this.element = null;
-    }
+    };
     
     activities.actions.Action.prototype = {
         
@@ -463,7 +463,7 @@
         perform: function(editor, obj, event) {
             throw "``perform`` is not implemented on abstract Action";
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -472,7 +472,7 @@
     
     activities.actions.NewDiagram = function(actions) {
         activities.actions.Action.call(this, actions, 'new_activity', 'New');
-    }
+    };
     activities.actions.NewDiagram.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.NewDiagram.prototype, {
@@ -493,7 +493,7 @@
     
     activities.actions.OpenDiagram = function(actions) {
         activities.actions.Action.call(this, actions, 'open_activity', 'Open');
-    }
+    };
     activities.actions.OpenDiagram.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.OpenDiagram.prototype, {
@@ -525,7 +525,7 @@
     
     activities.actions.SaveDiagram = function(actions) {
         activities.actions.Action.call(this, actions, 'save_activity', 'Save');
-    }
+    };
     activities.actions.SaveDiagram.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.SaveDiagram.prototype, {
@@ -547,7 +547,7 @@
     activities.actions.Snap = function(actions) {
         activities.actions.Action.call(this, actions, 'snap', 'Snap to Grid');
         this.steady = true;
-    }
+    };
     activities.actions.Snap.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.Snap.prototype, {
@@ -573,7 +573,7 @@
     activities.actions.NodeAction = function(actions, id, title, type) {
         activities.actions.Action.call(this, actions, id, title);
         this.type = type;
-    }
+    };
     activities.actions.NodeAction.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.NodeAction.prototype, {
@@ -607,7 +607,7 @@
                                            'initial_node',
                                            'Initial Node',
                                            activities.model.INITIAL);
-    }
+    };
     activities.actions.InitialNode.prototype =
         new activities.actions.NodeAction;
     
@@ -622,7 +622,7 @@
                                            'final_node',
                                            'Final Node',
                                            activities.model.FINAL);
-    }
+    };
     activities.actions.FinalNode.prototype =
         new activities.actions.NodeAction;
     
@@ -637,7 +637,7 @@
                                            'action_node',
                                            'Action Node',
                                            activities.model.ACTION);
-    }
+    };
     activities.actions.ActionNode.prototype =
         new activities.actions.NodeAction;
     
@@ -649,7 +649,7 @@
     activities.actions.JoinNode = function(actions) {
         activities.actions.NodeAction.call(
             this, actions, 'join_node', 'Join Node', activities.model.JOIN);
-    }
+    };
     activities.actions.JoinNode.prototype =
         new activities.actions.NodeAction;
     
@@ -661,7 +661,7 @@
     activities.actions.ForkNode = function(actions) {
         activities.actions.NodeAction.call(
             this, actions, 'fork_node', 'Fork Node', activities.model.FORK);
-    }
+    };
     activities.actions.ForkNode.prototype =
         new activities.actions.NodeAction;
     
@@ -673,7 +673,7 @@
     activities.actions.MergeNode = function(actions) {
         activities.actions.NodeAction.call(
             this, actions, 'merge_node', 'Merge Node', activities.model.MERGE);
-    }
+    };
     activities.actions.MergeNode.prototype =
         new activities.actions.NodeAction;
     
@@ -688,7 +688,7 @@
                                            'decision_node',
                                            'Decision Node',
                                            activities.model.DECISION);
-    }
+    };
     activities.actions.DecisionNode.prototype =
         new activities.actions.NodeAction;
     
@@ -701,7 +701,7 @@
         activities.actions.Action.call(this, actions, 'edge', 'Edge');
         this.source = null;
         this.target = null;
-    }
+    };
     activities.actions.Edge.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.Edge.prototype, {
@@ -749,7 +749,7 @@
     activities.actions.DeleteElement = function(actions) {
         activities.actions.Action.call(
             this, actions, 'delete_element', 'Delete Element');
-    }
+    };
     activities.actions.DeleteElement.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.DeleteElement.prototype, {
@@ -764,7 +764,7 @@
             var opts = {
                 message: 'Do you really want to delete this Item?',
                 model: model,
-                diagram: diagram,
+                diagram: diagram
             };
             bdajax.dialog(opts, function(options) {
                 var diagram = options.diagram;
@@ -798,7 +798,7 @@
     activities.actions.Monitor = function(actions) {
         activities.actions.Action.call(this, actions, 'debug', 'Debug');
         this.steady = true;
-    }
+    };
     activities.actions.Monitor.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.Monitor.prototype, {
@@ -826,7 +826,7 @@
     activities.actions.RunTests = function(actions) {
         activities.actions.Action.call(
             this, actions, 'run_tests', 'Run Tests');
-    }
+    };
     activities.actions.RunTests.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.RunTests.prototype, {
@@ -849,7 +849,7 @@
     activities.actions.FlipLayers = function(actions) {
         activities.actions.Action.call(
             this, actions, 'flip_layers', 'Flip Layers');
-    }
+    };
     activities.actions.FlipLayers.prototype = new activities.actions.Action;
     
     $.extend(activities.actions.FlipLayers.prototype, {
@@ -917,7 +917,7 @@
             // XXX: dottedpath
             target.incoming_edges.push(edge.__name);
         }
-    }
+    };
     
     activities.model.Model.prototype = {
         
@@ -1070,7 +1070,7 @@
             }
             for (var idx in node.incoming_edges) {
                 var edge = this.node(node.incoming_edges[idx]);
-                ret.push(edge)
+                ret.push(edge);
             }
             return ret;
         },
@@ -1085,7 +1085,7 @@
             }
             for (var idx in node.outgoing_edges) {
                 var edge = this.node(node.outgoing_edges[idx]);
-                ret.push(edge)
+                ret.push(edge);
             }
             return ret;
         },
@@ -1146,7 +1146,7 @@
             }
             return ret;
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1165,7 +1165,7 @@
             mouseup: activities.events.MOUSE_UP,
             mousemove: activities.events.MOUSE_MOVE,
             keydown: activities.events.KEY_DOWN,
-            keyup: activities.events.KEY_UP,
+            keyup: activities.events.KEY_UP
         };
         
         // len array depends on available events
@@ -1173,7 +1173,7 @@
         this.recent = null;
         
         this.bind();
-    }
+    };
     
     activities.events.Dispatcher.prototype = {
         
@@ -1215,7 +1215,7 @@
         unsubscribe: function(evt, obj) {
             delete this.subscriber[obj.triggerColor];
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1226,7 +1226,7 @@
         this.keyCode = null;
         this.charCode = null;
         this.bind();
-    }
+    };
     
     activities.events.KeyListener.prototype = {
         
@@ -1246,7 +1246,7 @@
         pressed: function(key) {
             return !(this.keyCode == key || this.charCode == key);
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1258,7 +1258,7 @@
         this.y = 0;
         this.pressed = 0;
         this.bind();
-    }
+    };
     
     activities.events.MouseListener.prototype = {
         
@@ -1288,7 +1288,7 @@
                 --activities.glob.mouse.pressed;
             });
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1300,7 +1300,7 @@
         this.pan_active = false;
         this.last_x = null;
         this.last_y = null;
-    }
+    };
     
     activities.events.DnD.prototype = {
         
@@ -1332,7 +1332,7 @@
             }
             this.last_x = x;
             this.last_y = y;
-            return [offset_x, offset_y]
+            return [offset_x, offset_y];
         },
         
         // event handler. note that event handlers are called unbound, so
@@ -1532,7 +1532,7 @@
             dnd.last_x = null;
             dnd.last_y = null;
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1643,7 +1643,7 @@
                 subscriber[mapped][idx](recent, event);
             }
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1662,7 +1662,7 @@
         this.model = null;
         this.diagram = null;
         this.renderer = null;
-    }
+    };
     
     activities.ui.Editor.prototype = {
         
@@ -1673,7 +1673,8 @@
             try {
                 var canvas = $(this.renderer.diagram.layers.diagram.canvas);
                 canvas.data('dispatcher', null);
-            } catch (err) {}
+            } catch (err) {
+            }
             
             this.actions = new activities.ui.Actions(this);
             this.properties = new activities.ui.Properties(this);
@@ -1694,11 +1695,11 @@
         /*
          * open existing diagram
          */
-        openDiagram: function(model){
+        openDiagram: function(model) {
             this.model = new activities.model.Model(model);
             this.init();
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1744,7 +1745,7 @@
         this.sections.push(section);
         
         this.render();
-    }
+    };
     
     activities.ui.Actions.prototype = {
         
@@ -1870,7 +1871,7 @@
             }
             this.bind();
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -1882,7 +1883,7 @@
         this.container = $('#' + editor.name + ' .element_properties');
         this.recent_node = null;
         this.recent_element = null;
-    }
+    };
     
     activities.ui.Properties.prototype = {
         
@@ -1989,7 +1990,7 @@
                 $('.props', this.container)
             );
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -2003,7 +2004,7 @@
     activities.ui.Layer = function(canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
-    }
+    };
     
     
     // ************************************************************************
@@ -2014,7 +2015,7 @@
         var settings = activities.settings.grid;
         this.res_x = settings.res_x;
         this.res_y = settings.res_y;
-    }
+    };
     
     activities.ui.Grid.prototype = {
         
@@ -2050,7 +2051,7 @@
                 elem.y = nearest[1] * this.res_y;
             }
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -2065,7 +2066,7 @@
         
         // this.data[x][y]
         this.data = new Array();
-    }
+    };
     
     activities.ui.ElementMatrix.prototype = {
     
@@ -2190,7 +2191,7 @@
             }
             return ret;
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -2206,7 +2207,7 @@
         
         this.node2tier = new Object();
         this.tiers = new Array();
-    }
+    };
     
     activities.ui.TierRenderer.prototype = {
         
@@ -2259,7 +2260,7 @@
          */
         setTierNodes: function() {
             for (var key in this.node2tier) {
-                tier = this.node2tier[key]
+                tier = this.node2tier[key];
                 if (typeof(this.tiers[tier]) == "undefined") {
                     this.tiers[tier] = new Array();
                 }
@@ -2390,7 +2391,7 @@
             // render diagram
             diagram.render();
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -2413,7 +2414,7 @@
         this.fontStyle = settings.fontStyle;
         
         this.defaultRounding = settings.defaultRounding;
-    }
+    };
     
     activities.ui.Rendering.prototype = {
         
@@ -2582,7 +2583,7 @@
             this.renderCtl();
             this.renderDiag();
         }
-    }
+    };
     
     // ************************************************************************
     // activities.ui.Diagram
@@ -2640,7 +2641,7 @@
         this.factories = activities.settings.diagram.childFactories;
         this.dispatcher = new activities.events.Dispatcher(this);
         this.bind();
-    }
+    };
     
     activities.ui.Diagram.prototype = {
         
@@ -2757,7 +2758,7 @@
                     elem.render();
                 }
                 for (idx in edges) {
-                    edge = edges[idx]
+                    edge = edges[idx];
                     edge.render();
                 }
                 for (var idx in diagram.selected) {
@@ -2934,7 +2935,7 @@
             obj.selected = new Array();
             obj.editor.properties.display(obj);
         }
-    }
+    };
     
     
     // ************************************************************************
@@ -2954,7 +2955,7 @@
         this.description = null;
         
         this.showOverlay = false;
-    }
+    };
     activities.ui.Element.prototype = new activities.ui.Rendering;
     
     $.extend(activities.ui.Element.prototype, {
@@ -3051,7 +3052,7 @@
         
         this.selectedFillColor = settings.selectedFillColor;
         this.selectedBorderColor = settings.selectedBorderColor;
-    }
+    };
     activities.ui.Node.prototype = new activities.ui.Element;
     
     $.extend(activities.ui.Node.prototype, {
@@ -3127,7 +3128,7 @@
     activities.ui.CircleNode = function(radius) {
         activities.ui.Node.call(this);
         this.radius = radius;
-    }
+    };
     activities.ui.CircleNode.prototype = new activities.ui.Node;
     
     $.extend(activities.ui.CircleNode.prototype, {
@@ -3190,7 +3191,7 @@
         this.width = width;
         this.height = height;
         this.rotation = rotation;
-    }
+    };
     activities.ui.RectNode.prototype = new activities.ui.Node;
     
     $.extend(activities.ui.RectNode.prototype, {
@@ -3296,7 +3297,7 @@
     
     activities.ui.Initial = function() {
         activities.ui.CircleNode.call(this, 20);
-    }
+    };
     activities.ui.Initial.prototype = new activities.ui.CircleNode;
     
     
@@ -3306,7 +3307,7 @@
     
     activities.ui.Final = function() {
         activities.ui.CircleNode.call(this, 20);
-    }
+    };
     activities.ui.Final.prototype = new activities.ui.CircleNode;
     
     $.extend(activities.ui.Final.prototype, {
@@ -3341,7 +3342,7 @@
     activities.ui.Action = function() {
         activities.ui.RectNode.call(this, 100, 70, 0);
         this.renderLabel = true;
-    }
+    };
     activities.ui.Action.prototype = new activities.ui.RectNode;
     
     
@@ -3352,7 +3353,7 @@
     activities.ui.Decision = function() {
         activities.ui.RectNode.call(this, 40, 40, 45);
         this.renderLabel = true;
-    }
+    };
     activities.ui.Decision.prototype = new activities.ui.RectNode;
     
     
@@ -3362,7 +3363,7 @@
     
     activities.ui.Merge = function() {
         activities.ui.RectNode.call(this, 40, 40, 45);
-    }
+    };
     activities.ui.Merge.prototype = new activities.ui.RectNode;
     
     
@@ -3372,7 +3373,7 @@
     
     activities.ui.Join = function() {
         activities.ui.RectNode.call(this, 10, 80, 0);
-    }
+    };
     activities.ui.Join.prototype = new activities.ui.RectNode;
     
     
@@ -3382,7 +3383,7 @@
     
     activities.ui.Fork = function() {
         activities.ui.RectNode.call(this, 10, 80, 0);
-    }
+    };
     activities.ui.Fork.prototype = new activities.ui.RectNode;
     
     
@@ -3401,7 +3402,7 @@
         this.target = null;
         this.renderLabel = true;
         this.kinks = new Array();
-    }
+    };
     activities.ui.Edge.prototype = new activities.ui.Element;
     
     $.extend(activities.ui.Edge.prototype, {
@@ -3596,7 +3597,7 @@
     activities.ui.Kink = function() {
         this.x = null;
         this.y = null;
-    }
+    };
     
     
     // ************************************************************************
@@ -3616,7 +3617,7 @@
         this.textColor = settings.textColor;
         this.textAlign = 'left';
         this.textBaseline = 'top';
-    }
+    };
     activities.ui.Overlay.prototype = new activities.ui.Rendering;
     
     $.extend(activities.ui.Overlay.prototype, {
