@@ -1163,7 +1163,8 @@ var global_Y = 0;
         // get canvas by global mouse position if keydown, keyup
         if (event.type == 'keydown'
          || event.type == 'keyup') {
-             // key events, check if x, y target is canvas, otherwise return
+             
+            // key events, check if x, y target is canvas, otherwise return
             var target = document.elementFromPoint(global_X, global_Y);
             if (!target || target.tagName != 'CANVAS') {
                 return;
@@ -1173,6 +1174,7 @@ var global_Y = 0;
         // get canvas by event target if mousewheel
         } else if (event.type == 'mousewheel'
                 || event.type == 'DOMMouseScroll') {
+            
             // mousewheel, check if event target is canvas, otherwise return
             var target;
             if (event.target) {
@@ -1228,6 +1230,7 @@ var global_Y = 0;
         // trigger mousein/mouseout if necessary and return
         if (dispatcher.recent && recent != dispatcher.recent) {
             var subscriber = dispatcher.subscriber[recent.triggerColor];
+            
             // mousein
             if (subscriber) {
                 var evt = activities.events.MOUSE_IN;
@@ -1235,6 +1238,7 @@ var global_Y = 0;
                     subscriber[evt][idx](recent, event);
                 }
             }
+            
             // mouseout
             subscriber = dispatcher.subscriber[dispatcher.recent.triggerColor];
             if (subscriber) {
@@ -1256,8 +1260,6 @@ var global_Y = 0;
                 subscriber[mapped][idx](recent, event);
             }
         }
-        
-        //activities.events.status(event.type, x, y, triggerColor);
     }
     
     
@@ -1281,6 +1283,9 @@ var global_Y = 0;
     
     activities.ui.Editor.prototype = {
         
+        /*
+         * initialize editor
+         */
         init: function() {
             try {
                 var canvas = $(this.renderer.diagram.layers.diagram.canvas);
@@ -1295,11 +1300,17 @@ var global_Y = 0;
             this.properties.display(this.diagram);
         },
         
+        /*
+         * create new diagram
+         */
         newDiagram: function() {
             this.model = new activities.model.Model(null);
             this.init();
         },
         
+        /*
+         * open existing diagram
+         */
         openDiagram: function(model){
             this.model = new activities.model.Model(model);
             this.init();
@@ -1354,6 +1365,9 @@ var global_Y = 0;
     
     activities.ui.Actions.prototype = {
         
+        /*
+         * bind toolbar actions
+         */
         bind: function() {
             var editor = this.editor;
             var elements = $(this.selector + ' a');
