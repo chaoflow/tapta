@@ -28,3 +28,9 @@ bdajax related
 --------------
 
   * loadSpeed: 0 L236 configurable
+
+
+Licence
+=======
+
+GNU General Public License Version 2

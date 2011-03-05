@@ -15,10 +15,10 @@
  * Requires
  * --------
  * 
- * - jQuery
- * - jQuery Tools
- * - jQuery templates
- * - bdajax
+ * - jQuery 1.4.2
+ * - jQuery Tools 1.2.5
+ * - jQuery templates beta 1
+ * - bdajax 1.0.2
  */
 
 (function($) {
@@ -50,6 +50,12 @@
     $.fn.activities = function(opts) {
         // render editor template
         var elem = $(this);
+        if (elem.length == 0) {
+            return;
+        }
+        if (elem.length > 1) {
+            throw "Can only intitialize Editor for single DOM element";
+        }
         var name = elem.attr('id');
         elem = elem.replaceWith($("#editor_template").tmpl({
             name: name,
