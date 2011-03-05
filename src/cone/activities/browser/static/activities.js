@@ -34,7 +34,21 @@
      * jQuery activities editor plugin
      */
     $.fn.activities = function(opts) {
+        
+        // initialie activities child factories
+        var factories = activities.settings.diagram.childFactories;
+        factories[activities.model.INITIAL] = activities.ui.Initial;
+        factories[activities.model.FINAL] = activities.ui.Final;
+        factories[activities.model.ACTION] = activities.ui.Action;
+        factories[activities.model.DECISION] = activities.ui.Decision;
+        factories[activities.model.MERGE] = activities.ui.Merge;
+        factories[activities.model.FORK] = activities.ui.Fork;
+        factories[activities.model.JOIN] = activities.ui.Join;
+        
+        // initialie activities globals
         activities.glob.initialize();
+        
+        // render editor template
         var elem = $(this);
         var name = elem.attr('id');
         elem = elem.replaceWith($("#editor_template").tmpl({
@@ -42,6 +56,8 @@
             width: opts.width,
             height: opts.height,
         }));
+        
+        // create editor
         editor = new activities.ui.Editor(name);
         elem.data('activities_editor', editor);
         editor.newDiagram();
@@ -129,6 +145,10 @@
                 borderColor : '#dddddd',
                 alpha       : 0.9,
                 textColor   : '#222222'
+            },
+            
+            diagram: {
+                childFactories: []
             }
         },
         
@@ -250,7 +270,7 @@
              * set default cursor
              */
             setDefault: function(obj, event) {
-                var diagram = obj.dnd ? obj : obj.diagram;
+                var diagram = activities.ui.getDiagram(obj);
                 $(diagram.layers.diagram.canvas).css('cursor', 'default');
             },
         
@@ -258,7 +278,7 @@
              * set pointer cursor
              */
             setPointer: function(obj, event) {
-                var diagram = obj.dnd ? obj : obj.diagram;
+                var diagram = activities.ui.getDiagram(obj);
                 $(diagram.layers.diagram.canvas).css('cursor', 'pointer');
             },
             
@@ -266,7 +286,7 @@
              * set move cursor
              */
             setMove: function(obj, event) {
-                var diagram = obj.dnd ? obj : obj.diagram;
+                var diagram = activities.ui.getDiagram(obj);
                 $(diagram.layers.diagram.canvas).css('cursor', 'move');
             },
             
@@ -274,7 +294,7 @@
              * do action. bound by diagram and elements
              */
             doAction: function(obj, event) {
-                var diagram = obj.dnd ? obj : obj.diagram;
+                var diagram = activities.ui.getDiagram(obj);
                 var editor = diagram.editor;
                 var actions = editor.actions;
                 actions.perform(editor, obj, event);
@@ -317,6 +337,14 @@
          * activities ui namespace and helpers
          */
         ui: {
+            
+            /*
+             * lookup diagram on object.
+             * object is either diagram or diagram element
+             */
+            getDiagram: function(obj) {
+                return obj.isDiag ? obj : obj.diagram;
+            },
             
             /*
              * toggles control canvas with diagram canvas
@@ -1328,7 +1356,7 @@
             } else if (event.detail) {
                 delta = event.detail * -1 / 3;
             }
-            var diagram = obj.dnd ? obj : obj.diagram;
+            var diagram = activities.ui.getDiagram(obj);
             var current = diagram.currentCursor(event);
             var x = current[0];
             var y = current[1];
@@ -1359,7 +1387,7 @@
          * switch pan off
          */
         panOff: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
+            var diagram = activities.ui.getDiagram(obj);
             if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
@@ -1373,7 +1401,7 @@
          * do pan
          */
         pan: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
+            var diagram = activities.ui.getDiagram(obj);
             if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
@@ -1411,7 +1439,7 @@
          * do drag
          */
         drag: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
+            var diagram = activities.ui.getDiagram(obj);
             
             // check for global mousedown, if not set, reset dnd and return
             if (!activities.glob.mouse.pressed) {
@@ -1439,7 +1467,7 @@
             if (ctl_down) {
                 
                 // only perform multi drag if event object is diagram
-                if (!obj.dnd) {
+                if (!obj.isDiag) {
                     return;
                 }
                 
@@ -1496,7 +1524,7 @@
          * do drop
          */
         drop: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
+            var diagram = activities.ui.getDiagram(obj);
             diagram.dnd.recent = null;
             diagram.dnd.last_x = null;
             diagram.dnd.last_y = null;
@@ -2546,6 +2574,9 @@
     activities.ui.Diagram = function(editor) {
         this.editor = editor;
         
+        // flag for diagram checking in event handlers
+        this.isDiag = true;
+        
         this.grid = new activities.ui.Grid(editor.model);
         this.snap = false;
         
@@ -2588,18 +2619,8 @@
         // array for trigger color calculation for this diagram
         this._nextTriggerColor = [0, 0, 0];
         
-        // child factories
-        this.factories = new Array();
-        this.factories[activities.model.INITIAL] = activities.ui.Initial;
-        this.factories[activities.model.FINAL] = activities.ui.Final;
-        this.factories[activities.model.ACTION] = activities.ui.Action;
-        this.factories[activities.model.DECISION] = activities.ui.Decision;
-        this.factories[activities.model.MERGE] = activities.ui.Merge;
-        this.factories[activities.model.FORK] = activities.ui.Fork;
-        this.factories[activities.model.JOIN] = activities.ui.Join;
-        
+        this.factories = activities.settings.diagram.childFactories;
         this.dispatcher = new activities.events.Dispatcher(this);
-        
         this.bind();
     }
     
