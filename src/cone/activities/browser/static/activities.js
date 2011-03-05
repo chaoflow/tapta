@@ -149,6 +149,31 @@
             
             diagram: {
                 childFactories: []
+            },
+            
+            actions: {
+                
+                icon_css_sprite_img: "url('icons/activities_sprite.png')",
+                
+                // css sprite positions for actions by id
+                icon_css_sprite: {
+                    'initial_node'  : 0,
+                    'final_node'    : -23,
+                    'action_node'   : -46,
+                    'decision_node' : -69,
+                    'merge_node'    : -92,
+                    'fork_node'     : -115,
+                    'join_node'     : -138,
+                    'edge'          : -161,
+                    'new_activity'  : -184,
+                    'open_activity' : -207,
+                    'save_activity' : -230,
+                    'debug'         : -253,
+                    'run_tests'     : -276,
+                    'flip_layers'   : -299,
+                    'delete_element': -322,
+                    'snap'          : -345
+                }
             }
         },
         
@@ -247,18 +272,7 @@
             // keys
             KEY_SHIFT  : 16,
             KEY_CTL    : 17,
-            KEY_ALT    : 18,
-            
-            /*
-             * events status message
-             */
-            status: function(evt, x, y, trigger) {
-                var status = 'Evt: ' + evt + '<br />' +
-                             'X: ' + x + '<br />' +
-                             'Y: ' + y + '<br />' +
-                             'T: ' + trigger;
-                $('.status').html(status);
-            }
+            KEY_ALT    : 18
         },
         
         /*
@@ -302,36 +316,9 @@
         },
         
         /*
-         * action handler for activities
+         * actions namespace
          */
-        actions: {
-            
-            // action markers
-            
-            ADD_DIAGRAM_ELEMENT    : 0,
-            ADD_DIAGRAM_EDGE       : 1,
-            DELETE_DIAGRAM_ELEMENT : 2,
-            
-            // css sprite positions
-            CSS_SPRITE: {
-                'initial_node'  : 0,
-                'final_node'    : -23,
-                'action_node'   : -46,
-                'decision_node' : -69,
-                'merge_node'    : -92,
-                'fork_node'     : -115,
-                'join_node'     : -138,
-                'edge'          : -161,
-                'new_activity'  : -184,
-                'open_activity' : -207,
-                'save_activity' : -230,
-                'debug'         : -253,
-                'run_tests'     : -276,
-                'flip_layers'   : -299,
-                'delete_element': -322,
-                'snap'          : -345
-            }
-        },
+        actions: {},
         
         /*
          * activities ui namespace and helpers
@@ -421,7 +408,14 @@
                 id: this.id,
                 title: this.title
             }
-            return $("#editor_action").tmpl(opts);
+            var action = $("#editor_action").tmpl(opts);
+            var css_sprite = activities.settings.actions.icon_css_sprite;
+            var img = activities.settings.actions.icon_css_sprite_img;
+            var val = '0px ' + css_sprite[this.id] + 'px';
+            action.css('background-image', img);
+            action.css('background-repeat', 'no-repeat');
+            action.css('background-position', val);
+            return action;
         },
         
         /*
@@ -429,8 +423,9 @@
          */
         select: function(name) {
             this.active = true;
-            this.element.css('background-position',
-                '-23px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
+            var css_sprite = activities.settings.actions.icon_css_sprite;
+            var val = '-23px ' + css_sprite[this.id] + 'px';
+            this.element.css('background-position', val);
         },
         
         /*
@@ -439,8 +434,9 @@
         unselect: function() {
             this.active = false;
             this.busy = false;
-            this.element.css('background-position',
-                '0px ' + activities.actions.CSS_SPRITE[this.id] + 'px');
+            var css_sprite = activities.settings.actions.icon_css_sprite;
+            var val = '-0px ' + css_sprite[this.id] + 'px';
+            this.element.css('background-position', val);
         },
         
         /*
@@ -1760,13 +1756,29 @@
                 action = actions.get(id);
                 action.element = elem;
             });
-            elements.unbind().bind('click', function(event) {
+            elements.unbind();
+            elements.bind('click', function(event) {
                 event.preventDefault();
                 elem = $(this);
                 id = elem.attr('class');
                 action = actions.get(id);
                 action.click();
             });
+            elements.hover(
+                function(event) {
+                    var elem = $(this);
+                    var css_sprite = 
+                        activities.settings.actions.icon_css_sprite;
+                    var val = '-23px ' + css_sprite[elem.attr('class')] + 'px';
+                    elem.css('background-position', val);
+                },
+                function(event) {
+                    var elem = $(this);
+                    var css_sprite = 
+                        activities.settings.actions.icon_css_sprite;
+                    var val = '0px ' + css_sprite[elem.attr('class')] + 'px';
+                    elem.css('background-position', val);
+                });
         },
         
         /*
@@ -1845,6 +1857,7 @@
          */
         render: function() {
             var elements = $(this.selector);
+            $('a', elements).unbind();
             elements.empty();
             for (var idx in this.sections) {
                 this.sections[idx].render().appendTo(elements);
