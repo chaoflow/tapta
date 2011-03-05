@@ -1470,7 +1470,7 @@
             // multi drag
             if (ctl_down) {
                 
-                // only perform multi drag if event object is diagram
+                // only perform multi drag if object is diagram
                 if (!obj.isDiag) {
                     return;
                 }
@@ -2725,8 +2725,6 @@
          * iterate over elements of diagram and call render function
          */
         render: function() {
-            //this.grid.arrange();
-            
             // clear control layer
             var ctx = this.ctl_ctx;
             ctx.save();
@@ -3092,10 +3090,7 @@
          * unbind node from dispatcher
          */
         unbind: function() {
-            // event subscription
-            var diagram = this.diagram;
-            var dnd = activities.glob.dnd;
-            var dsp = diagram.dispatcher;
+            var dsp = this.diagram.dispatcher;
             var events = activities.events;
             dsp.unsubscribe(events.MOUSE_IN, this);
             dsp.unsubscribe(events.MOUSE_OUT, this);
@@ -3436,6 +3431,7 @@
             var dsp = this.diagram.dispatcher;
             var events = activities.events;
             dsp.unsubscribe(events.MOUSE_IN, this);
+            dsp.unsubscribe(events.MOUSE_OUT, this);
             dsp.unsubscribe(events.MOUSE_DOWN, this);
             dsp.unsubscribe(events.MOUSE_MOVE, this);
             dsp.unsubscribe(events.MOUSE_WHEEL, this);
