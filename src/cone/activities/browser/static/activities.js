@@ -3345,6 +3345,14 @@ var global_Y = 0;
     activities.ui.Overlay = function(element) {
         this.element = element;
         this.diagram = element.diagram;
+        
+        this.lineHeight = 14;
+        this.fontSize = 12;
+        this.padding = 10;
+        this.fillColor = '#efefef';
+        this.strokeColor = '#dddddd';
+        this.fontColor = '#222222';
+        this.alpha = 0.9;
     }
     activities.ui.Overlay.prototype = new activities.ui.Rendering;
     
@@ -3366,9 +3374,9 @@ var global_Y = 0;
             lines = lines.concat(['', 'Description:']);
             lines = lines.concat(description);
             
-            var lineHeight = 14;
-            var fontSize = 12;
-            var padding = 10;
+            var lineHeight = this.lineHeight;
+            var fontSize = this.fontSize;
+            var padding = this.padding;
             
             ctx.font = fontSize + 'px sans-serif';
             var width = ctx.measureText(label).width + 2 * padding;
@@ -3405,12 +3413,12 @@ var global_Y = 0;
             y = y + offset[1] + height / 2;
             
             ctx.translate(x, y);
-            ctx.globalAlpha = 0.8;
-            this.fillRect(ctx, '#eeeeee', width, height, false, 3);
-            this.strokeRect(ctx, '#dddddd', 3, width, height);
+            ctx.globalAlpha = this.alpha;
+            this.fillRect(ctx, this.fillColor, width, height, false, 3);
+            this.strokeRect(ctx, this.strokeColor, 3, width, height);
             ctx.globalAlpha = 1.0;
             
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = this.fontColor;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
             
