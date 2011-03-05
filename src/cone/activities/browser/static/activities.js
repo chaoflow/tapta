@@ -1774,16 +1774,21 @@
             elements.hover(
                 function(event) {
                     var elem = $(this);
+                    var id = elem.attr('class');
                     var css_sprite = 
                         activities.settings.actions.icon_css_sprite;
-                    var val = '-23px ' + css_sprite[elem.attr('class')] + 'px';
+                    var val = '-23px ' + css_sprite[id] + 'px';
                     elem.css('background-position', val);
                 },
                 function(event) {
                     var elem = $(this);
+                    var id = elem.attr('class');
+                    if (actions.get(id).active) {
+                        return;
+                    }
                     var css_sprite = 
                         activities.settings.actions.icon_css_sprite;
-                    var val = '0px ' + css_sprite[elem.attr('class')] + 'px';
+                    var val = '0px ' + css_sprite[id] + 'px';
                     elem.css('background-position', val);
                 });
         },
