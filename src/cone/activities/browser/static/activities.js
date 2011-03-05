@@ -24,17 +24,6 @@
 (function($) {
     
     $(document).ready(function() {
-        $('#demo_editor').activities({
-            width: 1200,
-            height: 450,
-        });
-    });
-    
-    /*
-     * jQuery activities editor plugin
-     */
-    $.fn.activities = function(opts) {
-        
         // initialie activities child factories
         var factories = activities.settings.diagram.childFactories;
         factories[activities.model.INITIAL] = activities.ui.Initial;
@@ -48,6 +37,17 @@
         // initialie activities globals
         activities.glob.initialize();
         
+        // demo editor
+        $('#demo_editor').activities({
+            width: 1200,
+            height: 450,
+        });
+    });
+    
+    /*
+     * jQuery activities editor plugin
+     */
+    $.fn.activities = function(opts) {
         // render editor template
         var elem = $(this);
         var name = elem.attr('id');
