@@ -30,14 +30,7 @@
     
     <body>
         
-        <!-- jQuery templates -->
-        
-        <script type="text/html" id="editor_action">
-            <a href="#"
-               title="${title}"
-               class="${id}">&nbsp;</a>
-        </script>
-        
+        <!-- editor templates -->
         <script type="text/html" id="string_property">
             <div class="field">
                 <label for="${name}">${title}</label>
@@ -59,43 +52,39 @@
             </div>
         </script>
         
-        <!-- activity editor -->
-        <div class="activity_editor"
-             id="level_0">
-            
-            <!-- properties -->
-            <div class="element_properties">
-                <strong>Properties</strong>
-                <div class="props">
+        <script type="text/html" id="editor_action">
+            <a href="#"
+               title="${title}"
+               class="${id}">&nbsp;</a>
+        </script>
+        
+        <script type="text/html" id="editor_template">
+            <div class="activity_editor" id="${name}">
+                <div class="element_properties">
+                    <strong>Properties</strong>
+                    <div class="props"></div>
+                    <div class="status hidden"></div>
+                    <input type="button"
+                           name="update"
+                           value="update"
+                           class="update" />
                 </div>
-                <div class="status hidden">
+                <div class="actions"></div>
+                <div class="activity_diagram" style="height:${height + 30}px;">
+                    <canvas class="control"
+                            id="control_${name}"
+                            width="${width}"
+                            height="${height}"></canvas>
+                    <canvas class="diagram"
+                            id="diagram_${name}"
+                            width="${width}"
+                            height="${height}"></canvas>
                 </div>
-                <input type="button"
-                       name="update"
-                       value="update"
-                       class="update" />
             </div>
-            
-            <!-- actions container -->
-            <div class="actions">
-            </div>
-            
-            <!-- diagram -->
-            <div class="activity_diagram"
-                 style="height:480px;">
-                
-                <!-- control layer -->
-                <canvas class="control"
-                        id="control_level_0"
-                        width="1200"
-                        height="450"></canvas>
-                <!-- visual layer -->
-                <canvas class="diagram"
-                        id="diagram_level_0"
-                        width="1200"
-                        height="450"></canvas>
-            </div>
-        </div>
+        </script>
+        
+        <!-- demo editor -->
+        <div id="demo_editor"></div>
         
         <!-- qunit related -->
         <div class="qunit">
@@ -108,7 +97,6 @@
         </div>
         
         <!-- bdajax related -->
-        <!-- temporary while development -->
         <div id="ajax-spinner">
           <img src="spinner.gif" alt="" />
         </div>

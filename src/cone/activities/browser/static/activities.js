@@ -21,41 +21,36 @@
  * - bdajax
  */
 
-var demo_editor = null;
-
-// dnd related
-var global_mousedown = 0;
-
-// notification related for keyup / keydown
-var global_X = 0;
-var global_Y = 0;
-
 (function($) {
     
     $(document).ready(function() {
-        // global mouse wheel binding
-        if (window.addEventListener) {
-            // mozilla
-            window.addEventListener('DOMMouseScroll',
-                                    activities.events.notify,
-                                    false);
-        }
-        // IE / Opera / Chrome
-        $(document).bind('mousewheel', activities.events.notify);
-        $(window).bind('mousewheel', activities.events.notify);
-        
-        // global mouse move binding
-        $(document).bind('mousemove', function(event) {
-            global_X = event.pageX;
-            global_Y = event.pageY;
+        $('#demo_editor').activities({
+            width: 1200,
+            height: 450,
         });
-        
-        demo_editor = new activities.ui.Editor('level_0');
-        demo_editor.newDiagram();
         
         //$('.qunit').show();
         //tests.run();
     });
+    
+    
+    /*
+     * jQuery activities editor plugin
+     */
+    $.fn.activities = function(opts) {
+        activities.glob.initialize();
+        var elem = $(this);
+        var name = elem.attr('id');
+        elem = elem.replaceWith($("#editor_template").tmpl({
+            name: name,
+            width: opts.width,
+            height: opts.height,
+        }));
+        editor = new activities.ui.Editor(name);
+        elem.data('activities_editor', editor);
+        editor.newDiagram();
+        return elem;
+    }
     
     
     // ************************************************************************
@@ -63,6 +58,33 @@ var global_Y = 0;
     // ************************************************************************
     
     activities = {
+        
+        /*
+         * global activity related
+         */
+        glob: {
+            
+            // public objects
+            keys: null,
+            mouse: null,
+            dnd: null,
+            
+            // flag wether globs were already initialized
+            _inizialized: 0,
+            
+            /*
+             * intialize globals
+             */
+            initialize: function() {
+                // already initialized, return
+                if (activities.glob._inizialized) {
+                    return;
+                }
+                activities.glob.keys = new activities.events.KeyListener();
+                activities.glob.mouse = new activities.events.MouseListener();
+                activities.glob._inizialized = 1;
+            }
+        },
         
         /*
          * editor settings
@@ -263,28 +285,6 @@ var global_Y = 0;
         },
         
         /*
-         * activities ui namespace and helpers
-         */
-        ui: {
-            
-            /*
-             * debugging helper
-             * toggles control canvas with diagram canvas
-             */
-            toggleCanvas: function(name) {
-                var canvas = $('#diagram_' + name);
-                var control = $('#control_' + name);
-                if (canvas.css('z-index') == 1) {
-                    canvas.css('z-index', 0);
-                    control.css('z-index', 1);
-                } else {
-                    canvas.css('z-index', 1);
-                    control.css('z-index', 0);
-                }
-            }
-        },
-        
-        /*
          * action handler for activities
          */
         actions: {
@@ -313,6 +313,27 @@ var global_Y = 0;
                 'flip_layers'   : -299,
                 'delete_element': -322,
                 'snap'          : -345
+            }
+        },
+        
+        /*
+         * activities ui namespace and helpers
+         */
+        ui: {
+            
+            /*
+             * toggles control canvas with diagram canvas
+             */
+            toggleCanvas: function(name) {
+                var canvas = $('#diagram_' + name);
+                var control = $('#control_' + name);
+                if (canvas.css('z-index') == 1) {
+                    canvas.css('z-index', 0);
+                    control.css('z-index', 1);
+                } else {
+                    canvas.css('z-index', 1);
+                    control.css('z-index', 0);
+                }
             }
         }
     }
@@ -434,7 +455,7 @@ var global_Y = 0;
         },
         
         perform: function() {
-            demo_editor.newDiagram();
+            this.actions.editor.newDiagram();
         }
     });
     
@@ -466,7 +487,7 @@ var global_Y = 0;
                 model = tests.create_test_model_2();
                 activities.actions.OpenDiagram._open = 1;
             }
-            demo_editor.openDiagram(model);
+            this.actions.editor.openDiagram(model);
         }
     });
     
@@ -811,7 +832,7 @@ var global_Y = 0;
         },
         
         perform: function() {
-            activities.ui.toggleCanvas(demo_editor.name);
+            activities.ui.toggleCanvas(this.actions.editor.name);
         }
     });
     
@@ -1183,21 +1204,62 @@ var global_Y = 0;
     activities.events.KeyListener.prototype = {
         
         bind: function() {
-            var keylisterer = this;
             $(document).unbind('keydown').bind('keydown', function (event) {
-                keylisterer.keyCode = event.keyCode;
-                keylisterer.charCode = event.charCode;
+                activities.glob.keys.keyCode = event.keyCode;
+                activities.glob.keys.charCode = event.charCode;
                 activities.events.notify(event);
             });
             $(document).unbind('keyup').bind('keyup', function (event) {
-                keylisterer.keyCode = null;
-                keylisterer.charCode = null;
+                activities.glob.keys.keyCode = null;
+                activities.glob.keys.charCode = null;
                 activities.events.notify(event);
             });
         },
         
         pressed: function(key) {
             return !(this.keyCode == key || this.charCode == key);
+        }
+    }
+    
+    
+    // ************************************************************************
+    // activities.events.MouseListener
+    // ************************************************************************
+    
+    activities.events.MouseListener = function() {
+        this.x = 0;
+        this.y = 0;
+        this.pressed = 0;
+        this.bind();
+    }
+    
+    activities.events.MouseListener.prototype = {
+        
+        bind: function() {
+            // global mouse wheel binding
+            if (window.addEventListener) {
+                // mozilla
+                window.addEventListener('DOMMouseScroll',
+                                        activities.events.notify,
+                                        false);
+            }
+            
+            // IE / Opera / Chrome
+            $(document).bind('mousewheel', activities.events.notify);
+            $(window).bind('mousewheel', activities.events.notify);
+            
+            // global mouse move binding
+            $(document).bind('mousemove', function(event) {
+                activities.glob.mouse.x = event.pageX;
+                activities.glob.mouse.y = event.pageY;
+            });
+            
+            $(document).bind('mousedown', function(event) {
+                ++activities.glob.mouse.pressed;
+            });
+            $(document).bind('mouseup', function(event) {
+                --activities.glob.mouse.pressed;
+            });
         }
     }
     
@@ -1214,7 +1276,8 @@ var global_Y = 0;
          || event.type == 'keyup') {
              
             // key events, check if x, y target is canvas, otherwise return
-            var target = document.elementFromPoint(global_X, global_Y);
+            var target = document.elementFromPoint(activities.glob.mouse.x,
+                                                   activities.glob.mouse.y);
             if (!target || target.tagName != 'CANVAS') {
                 return;
             }
@@ -2053,12 +2116,8 @@ var global_Y = 0;
         this.last_y = null;
         // XXX: multi editor support
         var dnd = this;
-        $(document).unbind('mousedown').bind('mousedown', function(event) {
-            ++global_mousedown;
-        });
-        $(document).unbind('mouseup').bind('mouseup', function(event) {
-            --global_mousedown;
-            if (global_mousedown <= 0) {
+        $(document).bind('mouseup', function(event) {
+            if (activities.glob.mouse.pressed <= 0) {
                 dnd.recent = null;
                 dnd.pan_active = false;
                 dnd.last_x = null;
@@ -2132,7 +2191,7 @@ var global_Y = 0;
          * switch pan on
          */
         panOn: function(obj, event) {
-            if (obj.keylistener.pressed(activities.events.CTL)) {
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
             obj.dnd.pan_active = true;
@@ -2144,7 +2203,7 @@ var global_Y = 0;
          */
         panOff: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
-            if (diagram.keylistener.pressed(activities.events.CTL)) {
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
             diagram.dnd.pan_active = false;
@@ -2158,11 +2217,11 @@ var global_Y = 0;
          */
         pan: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
-            if (diagram.keylistener.pressed(activities.events.CTL)) {
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
             var dnd = diagram.dnd;
-            if (!global_mousedown) {
+            if (!activities.glob.mouse.pressed) {
                 dnd.pan_active = false;
                 dnd.last_x = null;
                 dnd.last_y = null;
@@ -2198,7 +2257,7 @@ var global_Y = 0;
             var diagram = obj.dnd ? obj : obj.diagram;
             
             // check for global mousedown, if not set, reset dnd and return
-            if (!global_mousedown) {
+            if (!activities.glob.mouse.pressed) {
                 diagram.dnd.recent = null;
                 diagram.dnd.last_x = null;
                 diagram.dnd.last_y = null;
@@ -2206,7 +2265,7 @@ var global_Y = 0;
             }
             
             // check whether ctl key is pressed
-            var ctl_down = diagram.keylistener.pressed(activities.events.CTL);
+            var ctl_down = activities.glob.keys.pressed(activities.events.CTL);
             
             // if no recent object (single drag) and not ctl pressed, return
             var recent = diagram.dnd.recent;
@@ -2542,7 +2601,6 @@ var global_Y = 0;
         this.factories[activities.model.JOIN] = activities.ui.Join;
         
         this.dispatcher = new activities.events.Dispatcher(this);
-        this.keylistener = new activities.events.KeyListener();
         
         this.bind();
     }
@@ -2579,8 +2637,8 @@ var global_Y = 0;
             var px, py;
             if (event.type == 'keydown'
              || event.type == 'keyup') {
-                px = global_X;
-                py = global_Y;
+                px = activities.glob.mouse.x;
+                py = activities.glob.mouse.y;
             } else {
                 px = event.pageX;
                 py = event.pageY;
@@ -2667,7 +2725,7 @@ var global_Y = 0;
                 for (var idx in diagram.selected) {
                     diagram.selected[idx].render();
                 }
-                if (overlay && !global_mousedown) {
+                if (overlay && !activities.glob.mouse.pressed) {
                     overlay.render();
                 }
             });
@@ -2804,7 +2862,7 @@ var global_Y = 0;
          * set cursor for multi item pan if ctl key is pressed
          */
         setMultiPanCursor: function(obj, event) {
-            if (obj.keylistener.pressed(activities.events.CTL)) {
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
                 activities.handler.setMove(obj, event);
             }
         },
@@ -2813,7 +2871,7 @@ var global_Y = 0;
          * unset cursor for multi item pan if ctl key is released
          */
         unsetMultiPanCursor: function(obj, event) {
-            if (!obj.keylistener.pressed(activities.events.CTL)) {
+            if (!activities.glob.keys.pressed(activities.events.CTL)) {
                 activities.handler.setDefault(obj, event);
             }
         },
@@ -2883,7 +2941,7 @@ var global_Y = 0;
                 selected.push(obj);
             
             // case ctrl pressed
-            } else if (diagram.keylistener.pressed(activities.events.CTL)) {
+            } else if (activities.glob.keys.pressed(activities.events.CTL)) {
                 // case unselect
                 if (obj.selected) {
                     var idx = selected.indexOf(obj);
@@ -2912,7 +2970,7 @@ var global_Y = 0;
          * turn on info rendering
          */
         infoOn: function(obj, event) {
-            if (obj.diagram.keylistener.pressed(activities.events.CTL)) {
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
             obj.showOverlay = true;
@@ -3568,8 +3626,8 @@ var global_Y = 0;
             
             var diagram = element.diagram;
             var current = diagram.currentCursor({
-                pageX: global_X,
-                pageY: global_Y
+                pageX: activities.glob.mouse.x,
+                pageY: activities.glob.mouse.y
             });
             current = diagram.translateCursor(current[0], current[1]);
             
