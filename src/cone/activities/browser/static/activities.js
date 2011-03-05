@@ -1379,7 +1379,7 @@
             if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
-            obj.dnd.pan_active = true;
+            activities.glob.dnd.pan_active = true;
             activities.handler.setMove(obj, event);
         },
         
@@ -1391,9 +1391,10 @@
             if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
-            diagram.dnd.pan_active = false;
-            diagram.dnd.last_x = null;
-            diagram.dnd.last_y = null;
+            var dnd = activities.glob.dnd;
+            dnd.pan_active = false;
+            dnd.last_x = null;
+            dnd.last_y = null;
             activities.handler.setDefault(obj, event);
         },
         
@@ -1405,7 +1406,7 @@
             if (activities.glob.keys.pressed(activities.events.CTL)) {
                 return;
             }
-            var dnd = diagram.dnd;
+            var dnd = activities.glob.dnd;
             if (!activities.glob.mouse.pressed) {
                 dnd.pan_active = false;
                 dnd.last_x = null;
@@ -1432,7 +1433,7 @@
          * switch drag on
          */
         dragOn: function(obj, event) {
-            obj.diagram.dnd.recent = obj;
+            activities.glob.dnd.recent = obj;
         },
         
         /*
@@ -1440,12 +1441,13 @@
          */
         drag: function(obj, event) {
             var diagram = activities.ui.getDiagram(obj);
+            var dnd = activities.glob.dnd;
             
             // check for global mousedown, if not set, reset dnd and return
             if (!activities.glob.mouse.pressed) {
-                diagram.dnd.recent = null;
-                diagram.dnd.last_x = null;
-                diagram.dnd.last_y = null;
+                dnd.recent = null;
+                dnd.last_x = null;
+                dnd.last_y = null;
                 return;
             }
             
@@ -1453,7 +1455,7 @@
             var ctl_down = activities.glob.keys.pressed(activities.events.CTL);
             
             // if no recent object (single drag) and not ctl pressed, return
-            var recent = diagram.dnd.recent;
+            var recent = dnd.recent;
             if (!recent && !ctl_down) {
                 return;
             }
@@ -1487,7 +1489,6 @@
                 }
                 
                 // first drag loop. set last_x and last_y and return
-                var dnd = diagram.dnd;
                 if (dnd.last_x == null || dnd.last_y == null) {
                     dnd.last_x = x;
                     dnd.last_y = y;
@@ -1524,10 +1525,10 @@
          * do drop
          */
         drop: function(obj, event) {
-            var diagram = activities.ui.getDiagram(obj);
-            diagram.dnd.recent = null;
-            diagram.dnd.last_x = null;
-            diagram.dnd.last_y = null;
+            var dnd = activities.glob.dnd;
+            dnd.recent = null;
+            dnd.last_x = null;
+            dnd.last_y = null;
         }
     }
     
@@ -2580,8 +2581,6 @@
         this.grid = new activities.ui.Grid(editor.model);
         this.snap = false;
         
-        this.dnd = activities.glob.dnd;
-        
         // XXX: maybe move to seperate mapping object
         // trigger color to diagram element
         this.elements = new Object();
@@ -2634,15 +2633,16 @@
             var dsp = this.dispatcher;
             var events = activities.events;
             var handler = activities.handler;
+            var dnd = activities.glob.dnd;
             dsp.subscribe(events.MOUSE_IN, this, handler.setDefault);
             dsp.subscribe(events.MOUSE_UP, this, this.unselectAll);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
-            dsp.subscribe(events.MOUSE_WHEEL, this, this.dnd.zoom);
-            dsp.subscribe(events.MOUSE_DOWN, this, this.dnd.panOn);
-            dsp.subscribe(events.MOUSE_UP, this, this.dnd.panOff);
-            dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.pan);
-            dsp.subscribe(events.MOUSE_MOVE, this, this.dnd.drag);
-            dsp.subscribe(events.MOUSE_UP, this, this.dnd.drop);
+            dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
+            dsp.subscribe(events.MOUSE_DOWN, this, dnd.panOn);
+            dsp.subscribe(events.MOUSE_UP, this, dnd.panOff);
+            dsp.subscribe(events.MOUSE_MOVE, this, dnd.pan);
+            dsp.subscribe(events.MOUSE_MOVE, this, dnd.drag);
+            dsp.subscribe(events.MOUSE_UP, this, dnd.drop);
             dsp.subscribe(events.KEY_DOWN, this, this.setMultiPanCursor);
             dsp.subscribe(events.KEY_UP, this, this.unsetMultiPanCursor);
         },
@@ -2900,7 +2900,7 @@
          */
         unselectAll: function(obj, event) {
             // do not unselect if pan was performed
-            if (obj.dnd.last_x) {
+            if (activities.glob.dnd.last_x) {
                 return;
             }
             var selected = obj.selected;
@@ -3046,7 +3046,7 @@
         bind: function() {
             // event subscription
             var diagram = this.diagram;
-            var dnd = diagram.dnd;
+            var dnd = activities.glob.dnd;
             var dsp = diagram.dispatcher;
             var events = activities.events;
             var handler = activities.handler;
@@ -3069,7 +3069,7 @@
         unbind: function() {
             // event subscription
             var diagram = this.diagram;
-            var dnd = diagram.dnd;
+            var dnd = activities.glob.dnd;
             var dsp = diagram.dispatcher;
             var events = activities.events;
             dsp.unsubscribe(events.MOUSE_IN, this);
@@ -3392,6 +3392,7 @@
          */
         bind: function() {
             var dsp = this.diagram.dispatcher;
+            var dnd = activities.glob.dnd;
             var events = activities.events;
             var handler = activities.handler;
             dsp.subscribe(events.MOUSE_IN, this, this.infoOn);
@@ -3400,7 +3401,7 @@
             dsp.subscribe(events.MOUSE_IN, this, handler.setPointer);
             dsp.subscribe(events.MOUSE_DOWN, this, this.setSelected);
             dsp.subscribe(events.MOUSE_DOWN, this, handler.doAction);
-            dsp.subscribe(events.MOUSE_WHEEL, this, this.diagram.dnd.zoom);
+            dsp.subscribe(events.MOUSE_WHEEL, this, dnd.zoom);
         },
         
         /*
