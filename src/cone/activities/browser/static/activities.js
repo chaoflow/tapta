@@ -65,6 +65,55 @@ var global_Y = 0;
     activities = {
         
         /*
+         * editor settings
+         */
+        settings: {
+            
+            grid: {
+                res_x: 50,
+                res_y: 50
+            },
+            
+            rendering: {
+                shadowOffsetX   : 2.5,
+                shadowOffsetY   : 2.5,
+                shadowBlur      : 3.0,
+                shadowColor     : '#aaaaaa',
+                textColor       : '#000000',
+                textAlign       : 'center',
+                textBaseline    : 'middle',
+                lineHeight      : 14,
+                fontSize        : 12,
+                fontStyle       : 'sans-serif',
+                defaultRounding : 3
+            },
+            
+            node: {
+                edgeOffset          : 5,
+                borderWidth         : 2,
+                fillColor           : '#edf7ff',
+                borderColor         : '#b5d9ea',
+                selectedFillColor   : '#fff7ae',
+                selectedBorderColor : '#e3ca4b'
+            },
+            
+            edge: {
+                color         : '#333333',
+                lineWidth     : 3,
+                arrowLength   : 15,
+                selectedColor : '#bbbbbb'
+            },
+            
+            overlay: {
+                padding     : 10,
+                fillColor   : '#efefef',
+                borderColor : '#dddddd',
+                alpha       : 0.9,
+                textColor   : '#222222'
+            }
+        },
+        
+        /*
          * activity utils.
          */
         utils: {
@@ -1611,8 +1660,9 @@ var global_Y = 0;
     // ************************************************************************
     
     activities.ui.Grid = function(model) {
-        this.res_x = 50;
-        this.res_y = 50;
+        var settings = activities.settings.grid;
+        this.res_x = settings.res_x;
+        this.res_y = settings.res_y;
     }
     
     activities.ui.Grid.prototype = {
@@ -2242,18 +2292,41 @@ var global_Y = 0;
     // activities.ui.Rendering
     // ************************************************************************
     
-    activities.ui.Rendering = function() {}
+    activities.ui.Rendering = function() {
+        var settings = activities.settings.rendering;
+        this.shadowOffsetX = settings.shadowOffsetX;
+        this.shadowOffsetY = settings.shadowOffsetY;
+        this.shadowBlur = settings.shadowBlur;
+        this.shadowColor = settings.shadowColor;
+        
+        this.textColor = settings.textColor;
+        this.textAlign = settings.textAlign;
+        this.textBaseline = settings.textBaseline;
+        
+        this.lineHeight = settings.lineHeight;
+        this.fontSize = settings.fontSize;
+        this.fontStyle = settings.fontStyle;
+        
+        this.defaultRounding = settings.defaultRounding;
+    }
     
     activities.ui.Rendering.prototype = {
+        
+        /*
+         * return canvas context font configuration
+         */
+        font: function() {
+            return this.fontSize + 'px ' + this.fontStyle;
+        },
         
         /*
          * turn shadow drawing on.
          */
         shadowOn: function(ctx) {
-            ctx.shadowOffsetX = 2.5;
-            ctx.shadowOffsetY = 2.5;
-            ctx.shadowBlur = 3.0;
-            ctx.shadowColor = '#aaa';
+            ctx.shadowOffsetX = this.shadowOffsetX;
+            ctx.shadowOffsetY = this.shadowOffsetY;
+            ctx.shadowBlur = this.shadowBlur;
+            ctx.shadowColor = this.shadowColor;
         },
         
         /*
@@ -2266,7 +2339,7 @@ var global_Y = 0;
         },
         
         /*
-         * draw circle
+         * draw circle at x0,y0 with given radius
          */
         circle: function(ctx, r) {
             ctx.beginPath();
@@ -2292,11 +2365,17 @@ var global_Y = 0;
         /*
          * draw stroke circle 
          */
-        strokeCircle: function(ctx, color, radius, lineWidth) {
+        strokeCircle: function(ctx, color, radius, lineWidth, shadow) {
             ctx.strokeStyle = color;
             ctx.lineWidth = lineWidth;
+            if (shadow) {
+                this.shadowOn(ctx);
+            }
             this.circle(ctx, radius);
             ctx.stroke();
+            if (shadow) {
+                this.shadowOff(ctx);
+            }
         },
         
         /*
@@ -2304,14 +2383,17 @@ var global_Y = 0;
          */
         rect: function(ctx, x1, y1, x2, y2, r) {
             var r2d = Math.PI / 180;
+            
             //ensure that the radius isn't too large for x
             if ((x2 - x1) - (2 * r) < 0) {
                 r = ((x2 - x1) / 2);
             }
+            
             //ensure that the radius isn't too large for y
-            if((y2 - y1) - (2 * r) < 0 ) {
+            if((y2 - y1) - (2 * r) < 0) {
                 r = ((y2 - y1) / 2);
             }
+            
             ctx.beginPath();
             ctx.moveTo(x1 + r, y1);
             ctx.lineTo(x2 - r, y1);
@@ -2328,9 +2410,14 @@ var global_Y = 0;
         /*
          * draw filled rect
          */
-        fillRect: function(ctx, color, width, height, shadow, radius) {
+        fillRect: function(ctx,
+                           color,
+                           width,
+                           height,
+                           shadow,
+                           radius) {
             if (!radius && radius != 0) {
-                radius = 3;
+                radius = this.defaultRounding;
             }
             ctx.fillStyle = color;
             if (shadow) {
@@ -2338,7 +2425,7 @@ var global_Y = 0;
             }
             var x = width / 2;
             var y = height / 2;
-            this.rect(ctx, x * -1, y * -1, x, y, 3);
+            this.rect(ctx, x * -1, y * -1, x, y, radius);
             ctx.fill();
             if (shadow) {
                 this.shadowOff(ctx);
@@ -2348,23 +2435,38 @@ var global_Y = 0;
         /*
          * draw stroke rect
          */
-        strokeRect: function(ctx, color, lineWidth, width, height) {
+        strokeRect: function(ctx,
+                             color,
+                             lineWidth,
+                             width,
+                             height,
+                             shadow,
+                             radius) {
+            if (!radius && radius != 0) {
+                radius = this.defaultRounding;
+            }
             ctx.strokeStyle = color;
             ctx.lineWidth = lineWidth;
+            if (shadow) {
+                this.shadowOn(ctx);
+            }
             var x = width / 2;
             var y = height / 2;
-            this.rect(ctx, x * -1, y * -1, x, y, 3);
+            this.rect(ctx, x * -1, y * -1, x, y, radius);
             ctx.stroke();
+            if (shadow) {
+                this.shadowOff(ctx);
+            }
         },
         
         /*
          * draw label
          */
         drawLabel: function(ctx, label, width) {
-            ctx.fillStyle = '#000';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = '12px sans-serif';
+            ctx.fillStyle = this.textColor;
+            ctx.textAlign = this.textAlign;
+            ctx.textBaseline = this.textBaseline;
+            ctx.font = this.font();
             ctx.fillText(label, 0, 0, width);
         },
         
@@ -2591,6 +2693,8 @@ var global_Y = 0;
         /*
          * calculate next trigger color for diagram element
          * next color is calculated by step of 10 for r, g, b
+         * 
+         * XXX: buggy
          */
         nextTriggerColor: function() {
             var idx = 0;
@@ -2742,6 +2846,7 @@ var global_Y = 0;
     // ************************************************************************
     
     activities.ui.Element = function() {
+        activities.ui.Rendering.call(this);
         this.node = null;
         this.diagram = null;
         this.triggerColor = null;
@@ -2841,14 +2946,15 @@ var global_Y = 0;
         this.x = 0;
         this.y = 0;
         
-        this.edgeOffset = 5;
-        this.borderWidth = 2;
+        var settings = activities.settings.node;
+        this.edgeOffset = settings.edgeOffset;
+        this.borderWidth = settings.borderWidth;
         
-        this.fillColor = '#edf7ff';
-        this.borderColor = '#b5d9ea';
+        this.fillColor = settings.fillColor;
+        this.borderColor = settings.borderColor;
         
-        this.selectedFillColor = '#fff7ae';
-        this.selectedBorderColor = '#e3ca4b';
+        this.selectedFillColor = settings.selectedFillColor;
+        this.selectedBorderColor = settings.selectedBorderColor;
     }
     activities.ui.Node.prototype = new activities.ui.Element;
     
@@ -3190,10 +3296,11 @@ var global_Y = 0;
     
     activities.ui.Edge = function() {
         activities.ui.Element.call(this);
-        this.color = '#333333';
-        this.lineWidth = 3;
-        this.arrowLength = 15;
-        this.selectedColor = '#bbbbbb';
+        var settings = activities.settings.edge;
+        this.color = settings.color;
+        this.lineWidth = settings.lineWidth;
+        this.arrowLength = settings.arrowLength;
+        this.selectedColor = settings.selectedColor;
         this.source = null;
         this.target = null;
         this.renderLabel = true;
@@ -3400,16 +3507,18 @@ var global_Y = 0;
     // ************************************************************************
     
     activities.ui.Overlay = function(element) {
+        activities.ui.Rendering.call(this);
         this.element = element;
         this.diagram = element.diagram;
         
-        this.lineHeight = 14;
-        this.fontSize = 12;
-        this.padding = 10;
-        this.fillColor = '#efefef';
-        this.strokeColor = '#dddddd';
-        this.fontColor = '#222222';
-        this.alpha = 0.9;
+        var settings = activities.settings.overlay;
+        this.padding = settings.padding;
+        this.fillColor = settings.fillColor;
+        this.borderColor = settings.borderColor;
+        this.alpha = settings.alpha;
+        this.textColor = settings.textColor;
+        this.textAlign = 'left';
+        this.textBaseline = 'top';
     }
     activities.ui.Overlay.prototype = new activities.ui.Rendering;
     
@@ -3432,10 +3541,9 @@ var global_Y = 0;
             lines = lines.concat(description);
             
             var lineHeight = this.lineHeight;
-            var fontSize = this.fontSize;
             var padding = this.padding;
             
-            ctx.font = fontSize + 'px sans-serif';
+            ctx.font = this.font();
             var width = ctx.measureText(label).width + 2 * padding;
             var height = (lines.length * lineHeight) + 2 * padding;
             
@@ -3472,12 +3580,12 @@ var global_Y = 0;
             ctx.translate(x, y);
             ctx.globalAlpha = this.alpha;
             this.fillRect(ctx, this.fillColor, width, height, false, 3);
-            this.strokeRect(ctx, this.strokeColor, 3, width, height);
+            this.strokeRect(ctx, this.borderColor, 3, width, height);
             ctx.globalAlpha = 1.0;
             
-            ctx.fillStyle = this.fontColor;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
+            ctx.fillStyle = this.textColor;
+            ctx.textAlign = this.textAlign;
+            ctx.textBaseline = this.textBaseline;
             
             x = width / 2 * -1 + padding;
             y = height / 2 * -1 + padding;
