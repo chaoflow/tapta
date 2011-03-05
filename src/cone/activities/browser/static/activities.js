@@ -64,8 +64,8 @@
         }));
         
         // create editor
-        editor = new activities.ui.Editor(name);
-        elem.data('activities_editor', editor);
+        var editor = new activities.ui.Editor(name);
+        elem.data('editor', editor);
         editor.newDiagram();
         return elem;
     };
