@@ -1614,6 +1614,16 @@ var global_Y = 0;
         },
         
         /*
+         * translate grid position to coordinates
+         */
+        translate: function(x, y) {
+            return [
+                x * this.res_x,
+                y * this.res_y
+            ]
+        },
+        
+        /*
          * snap diagram elements to grid
          */
         snap: function(diagram) {
@@ -2122,6 +2132,8 @@ var global_Y = 0;
          */
         drag: function(obj, event) {
             var diagram = obj.dnd ? obj : obj.diagram;
+            
+            // check for global mousedown, if not set, reset dnd and return
             if (!global_mousedown) {
                 diagram.dnd.recent = null;
                 diagram.dnd.last_x = null;
@@ -2129,30 +2141,60 @@ var global_Y = 0;
                 return;
             }
             
+            // check whether ctl key is pressed
             var ctl_down = diagram.keylistener.pressed(activities.events.CTL);
             
+            // if no recent object (single drag) and not ctl pressed, return
             var recent = diagram.dnd.recent;
             if (!recent && !ctl_down) {
                 return;
             }
             
+            // get diagram cursor position 
             var current = diagram.currentCursor(event);
             var x = current[0];
             var y = current[1];
             
             // multi drag
             if (ctl_down) {
+                
+                // only perform multi drag if event object is diagram
+                if (!obj.dnd) {
+                    return;
+                }
+                
+                // return if no items are selected
                 var selected = diagram.selected;
                 if (!selected) {
                     return;
                 }
+                
+                // if diagram snap mode, translate x, y to next snap position
+                if (diagram.snap) {
+                    var grid = diagram.grid;
+                    var nearest = grid.nearest(current[0], current[1]);
+                    var translated = grid.translate(nearest[0], nearest[1]);
+                    x = translated[0];
+                    y = translated[1];
+                }
+                
+                // first drag loop. set last_x and last_y and return
                 var dnd = diagram.dnd;
                 if (dnd.last_x == null || dnd.last_y == null) {
                     dnd.last_x = x;
                     dnd.last_y = y;
                     return;
                 }
+                
+                // calculate element offset
                 var offset = dnd.offset(x, y);
+                
+                // return if no element offset
+                if (!offset[0] && !offset[1]) {
+                    return;
+                }
+                
+                // change selected objects position ba offset
                 var elem;
                 for (var idx in selected) {
                     elem = selected[idx];
@@ -2165,6 +2207,7 @@ var global_Y = 0;
                 var translated = diagram.translateCursor(x, y);
                 recent.x = translated[0];
                 recent.y = translated[1];
+                recent.selected = true;
             }
             diagram.render();
         },
@@ -2508,7 +2551,7 @@ var global_Y = 0;
                 for (var idx in diagram.selected) {
                     diagram.selected[idx].render();
                 }
-                if (overlay) {
+                if (overlay && !global_mousedown) {
                     overlay.render();
                 }
             });
