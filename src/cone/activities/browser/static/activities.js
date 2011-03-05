@@ -28,11 +28,7 @@
             width: 1200,
             height: 450,
         });
-        
-        //$('.qunit').show();
-        //tests.run();
     });
-    
     
     /*
      * jQuery activities editor plugin
@@ -82,6 +78,7 @@
                 }
                 activities.glob.keys = new activities.events.KeyListener();
                 activities.glob.mouse = new activities.events.MouseListener();
+                activities.glob.dnd = new activities.events.DnD();
                 activities.glob._inizialized = 1;
             }
         },
@@ -1265,6 +1262,249 @@
     
     
     // ************************************************************************
+    // activities.events.DnD
+    // ************************************************************************
+    
+    activities.events.DnD = function() {
+        this.recent = null;
+        this.pan_active = false;
+        this.last_x = null;
+        this.last_y = null;
+    }
+    
+    activities.events.DnD.prototype = {
+        
+        bind: function() {
+            $(document).bind('mouseup', function(event) {
+                if (activities.glob.mouse.pressed <= 0) {
+                    activities.glob.dnd.recent = null;
+                    activities.glob.dnd.pan_active = false;
+                    activities.glob.dnd.last_x = null;
+                    activities.glob.dnd.last_y = null;
+                }
+            });
+        },
+        
+        /*
+         * compute offset relative to xy
+         */
+        offset: function(x, y) {
+            var offset_x, offset_y;
+            if (x > 0) {
+                offset_x = this.last_x - x;
+            } else {
+                offset_x = this.last_x + x;
+            }
+            if (y > 0) {
+                offset_y = this.last_y - y;
+            } else {
+                offset_y = this.last_y + y;
+            }
+            this.last_x = x;
+            this.last_y = y;
+            return [offset_x, offset_y]
+        },
+        
+        // event handler. note that event handlers are called unbound, so
+        // working with ``this`` inside event handlers does not work.
+        
+        /*
+         * zoom diagram
+         */
+        zoom: function(obj, event) {
+            var delta = 0;
+            // IE
+            if (!event) {
+                event = window.event;
+            }
+            // IE / Opera
+            if (event.wheelDelta) {
+                delta = event.wheelDelta / 120;
+                // In Opera 9
+                if (window.opera) {
+                    delta = delta * -1;
+                }
+            // Mozilla
+            } else if (event.detail) {
+                delta = event.detail * -1 / 3;
+            }
+            var diagram = obj.dnd ? obj : obj.diagram;
+            var current = diagram.currentCursor(event);
+            var x = current[0];
+            var y = current[1];
+            if (delta > 0) {
+                diagram.scale += 0.05;
+                diagram.origin_x -= x * 0.05;
+                diagram.origin_y -= y * 0.05;
+            } else {
+                diagram.scale -= 0.05;
+                diagram.origin_x += x * 0.05;
+                diagram.origin_y += y * 0.05;
+            }
+            diagram.render();
+        },
+        
+        /*
+         * switch pan on
+         */
+        panOn: function(obj, event) {
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
+                return;
+            }
+            obj.dnd.pan_active = true;
+            activities.handler.setMove(obj, event);
+        },
+        
+        /*
+         * switch pan off
+         */
+        panOff: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
+                return;
+            }
+            diagram.dnd.pan_active = false;
+            diagram.dnd.last_x = null;
+            diagram.dnd.last_y = null;
+            activities.handler.setDefault(obj, event);
+        },
+        
+        /*
+         * do pan
+         */
+        pan: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            if (activities.glob.keys.pressed(activities.events.CTL)) {
+                return;
+            }
+            var dnd = diagram.dnd;
+            if (!activities.glob.mouse.pressed) {
+                dnd.pan_active = false;
+                dnd.last_x = null;
+                dnd.last_y = null;
+            }
+            if (!dnd.pan_active) {
+                return;
+            }
+            var current = diagram.currentCursor(event);
+            var x = current[0];
+            var y = current[1];
+            if (dnd.last_x == null || dnd.last_y == null) {
+                dnd.last_x = x;
+                dnd.last_y = y;
+                return;
+            }
+            var offset = dnd.offset(x, y);
+            diagram.origin_x -= offset[0];
+            diagram.origin_y -= offset[1];
+            diagram.render();
+        },
+        
+        /*
+         * switch drag on
+         */
+        dragOn: function(obj, event) {
+            obj.diagram.dnd.recent = obj;
+        },
+        
+        /*
+         * do drag
+         */
+        drag: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            
+            // check for global mousedown, if not set, reset dnd and return
+            if (!activities.glob.mouse.pressed) {
+                diagram.dnd.recent = null;
+                diagram.dnd.last_x = null;
+                diagram.dnd.last_y = null;
+                return;
+            }
+            
+            // check whether ctl key is pressed
+            var ctl_down = activities.glob.keys.pressed(activities.events.CTL);
+            
+            // if no recent object (single drag) and not ctl pressed, return
+            var recent = diagram.dnd.recent;
+            if (!recent && !ctl_down) {
+                return;
+            }
+            
+            // get diagram cursor position 
+            var current = diagram.currentCursor(event);
+            var x = current[0];
+            var y = current[1];
+            
+            // multi drag
+            if (ctl_down) {
+                
+                // only perform multi drag if event object is diagram
+                if (!obj.dnd) {
+                    return;
+                }
+                
+                // return if no items are selected
+                var selected = diagram.selected;
+                if (!selected) {
+                    return;
+                }
+                
+                // if diagram snap mode, translate x, y to next snap position
+                if (diagram.snap) {
+                    var grid = diagram.grid;
+                    var nearest = grid.nearest(current[0], current[1]);
+                    var translated = grid.translate(nearest[0], nearest[1]);
+                    x = translated[0];
+                    y = translated[1];
+                }
+                
+                // first drag loop. set last_x and last_y and return
+                var dnd = diagram.dnd;
+                if (dnd.last_x == null || dnd.last_y == null) {
+                    dnd.last_x = x;
+                    dnd.last_y = y;
+                    return;
+                }
+                
+                // calculate element offset
+                var offset = dnd.offset(x, y);
+                
+                // return if no element offset
+                if (!offset[0] && !offset[1]) {
+                    return;
+                }
+                
+                // change selected objects position ba offset
+                var elem;
+                for (var idx in selected) {
+                    elem = selected[idx];
+                    elem.x -= offset[0];
+                    elem.y -= offset[1];
+                }
+            
+            // single drag
+            } else {
+                var translated = diagram.translateCursor(x, y);
+                recent.x = translated[0];
+                recent.y = translated[1];
+                recent.selected = true;
+            }
+            diagram.render();
+        },
+        
+        /*
+         * do drop
+         */
+        drop: function(obj, event) {
+            var diagram = obj.dnd ? obj : obj.diagram;
+            diagram.dnd.recent = null;
+            diagram.dnd.last_x = null;
+            diagram.dnd.last_y = null;
+        }
+    }
+    
+    
+    // ************************************************************************
     // activities.events.notify
     // ************************************************************************
     
@@ -2106,248 +2346,6 @@
     
     
     // ************************************************************************
-    // activities.ui.DnD
-    // ************************************************************************
-    
-    activities.ui.DnD = function() {
-        this.recent = null;
-        this.pan_active = false;
-        this.last_x = null;
-        this.last_y = null;
-        // XXX: multi editor support
-        var dnd = this;
-        $(document).bind('mouseup', function(event) {
-            if (activities.glob.mouse.pressed <= 0) {
-                dnd.recent = null;
-                dnd.pan_active = false;
-                dnd.last_x = null;
-                dnd.last_y = null;
-            }
-        });
-    }
-    
-    activities.ui.DnD.prototype = {
-        
-        /*
-         * compute offset relative to xy
-         */
-        offset: function(x, y) {
-            var offset_x, offset_y;
-            if (x > 0) {
-                offset_x = this.last_x - x;
-            } else {
-                offset_x = this.last_x + x;
-            }
-            if (y > 0) {
-                offset_y = this.last_y - y;
-            } else {
-                offset_y = this.last_y + y;
-            }
-            this.last_x = x;
-            this.last_y = y;
-            return [offset_x, offset_y]
-        },
-        
-        // event handler. note that event handlers are called unbound, so
-        // working with ``this`` inside event handlers does not work.
-        
-        /*
-         * zoom diagram
-         */
-        zoom: function(obj, event) {
-            var delta = 0;
-            // IE
-            if (!event) {
-                event = window.event;
-            }
-            // IE / Opera
-            if (event.wheelDelta) {
-                delta = event.wheelDelta / 120;
-                // In Opera 9
-                if (window.opera) {
-                    delta = delta * -1;
-                }
-            // Mozilla
-            } else if (event.detail) {
-                delta = event.detail * -1 / 3;
-            }
-            var diagram = obj.dnd ? obj : obj.diagram;
-            var current = diagram.currentCursor(event);
-            var x = current[0];
-            var y = current[1];
-            if (delta > 0) {
-                diagram.scale += 0.05;
-                diagram.origin_x -= x * 0.05;
-                diagram.origin_y -= y * 0.05;
-            } else {
-                diagram.scale -= 0.05;
-                diagram.origin_x += x * 0.05;
-                diagram.origin_y += y * 0.05;
-            }
-            diagram.render();
-        },
-        
-        /*
-         * switch pan on
-         */
-        panOn: function(obj, event) {
-            if (activities.glob.keys.pressed(activities.events.CTL)) {
-                return;
-            }
-            obj.dnd.pan_active = true;
-            activities.handler.setMove(obj, event);
-        },
-        
-        /*
-         * switch pan off
-         */
-        panOff: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
-            if (activities.glob.keys.pressed(activities.events.CTL)) {
-                return;
-            }
-            diagram.dnd.pan_active = false;
-            diagram.dnd.last_x = null;
-            diagram.dnd.last_y = null;
-            activities.handler.setDefault(obj, event);
-        },
-        
-        /*
-         * do pan
-         */
-        pan: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
-            if (activities.glob.keys.pressed(activities.events.CTL)) {
-                return;
-            }
-            var dnd = diagram.dnd;
-            if (!activities.glob.mouse.pressed) {
-                dnd.pan_active = false;
-                dnd.last_x = null;
-                dnd.last_y = null;
-            }
-            if (!dnd.pan_active) {
-                return;
-            }
-            var current = diagram.currentCursor(event);
-            var x = current[0];
-            var y = current[1];
-            if (dnd.last_x == null || dnd.last_y == null) {
-                dnd.last_x = x;
-                dnd.last_y = y;
-                return;
-            }
-            var offset = dnd.offset(x, y);
-            diagram.origin_x -= offset[0];
-            diagram.origin_y -= offset[1];
-            diagram.render();
-        },
-        
-        /*
-         * switch drag on
-         */
-        dragOn: function(obj, event) {
-            obj.diagram.dnd.recent = obj;
-        },
-        
-        /*
-         * do drag
-         */
-        drag: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
-            
-            // check for global mousedown, if not set, reset dnd and return
-            if (!activities.glob.mouse.pressed) {
-                diagram.dnd.recent = null;
-                diagram.dnd.last_x = null;
-                diagram.dnd.last_y = null;
-                return;
-            }
-            
-            // check whether ctl key is pressed
-            var ctl_down = activities.glob.keys.pressed(activities.events.CTL);
-            
-            // if no recent object (single drag) and not ctl pressed, return
-            var recent = diagram.dnd.recent;
-            if (!recent && !ctl_down) {
-                return;
-            }
-            
-            // get diagram cursor position 
-            var current = diagram.currentCursor(event);
-            var x = current[0];
-            var y = current[1];
-            
-            // multi drag
-            if (ctl_down) {
-                
-                // only perform multi drag if event object is diagram
-                if (!obj.dnd) {
-                    return;
-                }
-                
-                // return if no items are selected
-                var selected = diagram.selected;
-                if (!selected) {
-                    return;
-                }
-                
-                // if diagram snap mode, translate x, y to next snap position
-                if (diagram.snap) {
-                    var grid = diagram.grid;
-                    var nearest = grid.nearest(current[0], current[1]);
-                    var translated = grid.translate(nearest[0], nearest[1]);
-                    x = translated[0];
-                    y = translated[1];
-                }
-                
-                // first drag loop. set last_x and last_y and return
-                var dnd = diagram.dnd;
-                if (dnd.last_x == null || dnd.last_y == null) {
-                    dnd.last_x = x;
-                    dnd.last_y = y;
-                    return;
-                }
-                
-                // calculate element offset
-                var offset = dnd.offset(x, y);
-                
-                // return if no element offset
-                if (!offset[0] && !offset[1]) {
-                    return;
-                }
-                
-                // change selected objects position ba offset
-                var elem;
-                for (var idx in selected) {
-                    elem = selected[idx];
-                    elem.x -= offset[0];
-                    elem.y -= offset[1];
-                }
-            
-            // single drag
-            } else {
-                var translated = diagram.translateCursor(x, y);
-                recent.x = translated[0];
-                recent.y = translated[1];
-                recent.selected = true;
-            }
-            diagram.render();
-        },
-        
-        /*
-         * do drop
-         */
-        drop: function(obj, event) {
-            var diagram = obj.dnd ? obj : obj.diagram;
-            diagram.dnd.recent = null;
-            diagram.dnd.last_x = null;
-            diagram.dnd.last_y = null;
-        }
-    }
-    
-    
-    // ************************************************************************
     // activities.ui.Rendering
     // ************************************************************************
     
@@ -2551,7 +2549,7 @@
         this.grid = new activities.ui.Grid(editor.model);
         this.snap = false;
         
-        this.dnd = new activities.ui.DnD();
+        this.dnd = activities.glob.dnd;
         
         // XXX: maybe move to seperate mapping object
         // trigger color to diagram element
