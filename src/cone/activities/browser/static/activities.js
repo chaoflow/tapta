@@ -532,6 +532,13 @@
         },
         
         perform: function() {
+            debugger;
+            data = this.actions.editor.model.context;
+            json = JSON.stringify(data);
+            localStorage.setItem('a', json);
+            json = localStorage.getItem('a');
+            data = JSON.parse(json);
+            this.actions.editor.openDiagram(model);
             bdajax.error('Not implemented');
         }
     });
