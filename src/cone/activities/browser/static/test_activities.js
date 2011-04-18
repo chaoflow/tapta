@@ -1,4 +1,4 @@
-define(['activities', 'cdn/qunit.js'], function($) {
+define(['activities/core', 'cdn/qunit.js'], function($) {
     
     tests = {
         
