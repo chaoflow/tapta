@@ -21,25 +21,7 @@
  * - bdajax 1.0.2
  */
 
-(function($) {
-    
-    $(document).ready(function() {
-        // initialie activities child factories
-        var ats = activities;
-        var model = ats.model;
-        var ui = ats.ui;
-        var factories = ats.settings.diagram.childFactories;
-        factories[model.INITIAL] = ui.Initial;
-        factories[model.FINAL] = ui.Final;
-        factories[model.ACTION] = ui.Action;
-        factories[model.DECISION] = ui.Decision;
-        factories[model.MERGE] = ui.Merge;
-        factories[model.FORK] = ui.Fork;
-        factories[model.JOIN] = ui.Join;
-        
-        // initialie activities globals
-        ats.glob.initialize();
-    });
+define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.js', 'order!bdajax/bdajax.js'], function() {
     
     /*
      * jQuery activities editor plugin
@@ -532,7 +514,6 @@
         },
         
         perform: function() {
-            debugger;
             data = this.actions.editor.model.context;
             json = JSON.stringify(data);
             localStorage.setItem('a', json);
@@ -3700,6 +3681,6 @@
             }
             ctx.restore();
         }
-    });
-    
-})(jQuery);
+    });  
+  
+});

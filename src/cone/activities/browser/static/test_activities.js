@@ -1,11 +1,4 @@
-(function($) {
-    
-    $(document).ready(function() {
-        $('#demo_editor').activities({
-            width: 1200,
-            height: 450,
-        });
-    });
+define(['activities', 'cdn/qunit.js'], function($) {
     
     tests = {
         
@@ -512,4 +505,4 @@
         }
     }
     
-})(jQuery);
+});
