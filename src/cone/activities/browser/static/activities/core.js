@@ -478,7 +478,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
         },
         
         perform: function() {
-            data = this.actions.editor.model.context;
+            data = this.actions.editor.model;
             json = JSON.stringify(data);
             localStorage.setItem('a', json);
             json = localStorage.getItem('a');
@@ -555,7 +555,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'initial_node',
                                            'Initial Node',
-                                           activities.model.INITIAL);
+                                           activities.model.Models.Initial);
     };
     activities.actions.InitialNode.prototype =
         new activities.actions.NodeAction;
@@ -570,7 +570,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'final_node',
                                            'Final Node',
-                                           activities.model.FINAL);
+                                           activities.model.Models.FinalNode);
     };
     activities.actions.FinalNode.prototype =
         new activities.actions.NodeAction;
@@ -585,7 +585,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'action_node',
                                            'Action Node',
-                                           activities.model.ACTION);
+                                           activities.model.Models.Action);
     };
     activities.actions.ActionNode.prototype =
         new activities.actions.NodeAction;
@@ -597,7 +597,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
     
     activities.actions.JoinNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'join_node', 'Join Node', activities.model.JOIN);
+            this, actions, 'join_node', 'Join Node', activities.model.Models.Join);
     };
     activities.actions.JoinNode.prototype =
         new activities.actions.NodeAction;
@@ -609,7 +609,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
     
     activities.actions.ForkNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'fork_node', 'Fork Node', activities.model.FORK);
+            this, actions, 'fork_node', 'Fork Node', activities.model.Models.Fork);
     };
     activities.actions.ForkNode.prototype =
         new activities.actions.NodeAction;
@@ -621,7 +621,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
     
     activities.actions.MergeNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'merge_node', 'Merge Node', activities.model.MERGE);
+            this, actions, 'merge_node', 'Merge Node', activities.model.Models.Merge);
     };
     activities.actions.MergeNode.prototype =
         new activities.actions.NodeAction;
@@ -636,7 +636,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'decision_node',
                                            'Decision Node',
-                                           activities.model.DECISION);
+                                           activities.model.Models.Decision);
     };
     activities.actions.DecisionNode.prototype =
         new activities.actions.NodeAction;
@@ -1584,7 +1584,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
             this.clear();
             var node;
             if (typeof(elem.diagram) == 'undefined') {
-                node = this.model.context;
+                node = this.model;
             } else {
                 var path = elem.diagram.mapping[elem.triggerColor];
                 node = this.model.node(path);

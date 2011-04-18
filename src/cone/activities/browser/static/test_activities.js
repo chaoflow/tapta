@@ -290,8 +290,8 @@ define(['activities/core', 'cdn/qunit.js'], function($) {
             
             var model = new activities.model.Model(
                 tests.create_test_model_1());
-            
             test("Model.node", function() {
+                debugger;
                 equals(model.node('decision').__name,
                        'decision', "model.node('decision').__name");
             });

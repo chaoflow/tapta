@@ -1,7 +1,20 @@
-define(['cdn/underscore.js'], function(){
+define(['cdn/underscore.js', "cdn/backbone.js"], function(){
     // ************************************************************************
     // activities.model.Model
     // ************************************************************************
+    // An UML Diagram contains a number different elements.
+    // There is an Activity, this contains a number of children and
+    // has a parent. The childrens are Nodes and Edges, the Parent is
+    // an Action Node. 
+    // The nodes are UML elements that have an Activity as their
+    // parent, and are connected via nodes. The Action Node can have
+    // an Activity as a detail.
+    // An Edge is an element that points from one node to another
+    // node.
+    // Nodes know which Edges point away from them and which point
+    // towards them. Edges know to which Node they point.
+    // All Elements are implemented with Backbone.Model objects.
+
     
     if (!window.activities){
         window.activities = {};
@@ -34,6 +47,108 @@ define(['cdn/underscore.js'], function(){
         ]
     }
 
+    Models = {}
+    
+    Models.Element = Backbone.Model.extend({
+        defaults : {parent: null},
+        initialize: function(){
+            var name = this.get("name") or createUID();
+        },
+        parent : function(){
+            return node.get("parent") or null;
+        }
+        
+    });
+
+    Models.Node = Models.Element.extend({
+        defaults : {
+            label : "",
+            description : ""
+        }
+        initialize : function(){
+            this.set({outgoing_edges : new Array(),
+                      incoming_edges : new Array()});
+        }
+    } , {});
+
+    Models.Activity = Models.Element.extend({
+        initialize : function(){
+            // Tell the children who their father is and give them names
+            for (var key in this.get("children")){
+                var node = this.node(key);
+                node.set({name : key,
+                          parent : this.name});
+            }
+            // Tell the nodes which edges are connected with them
+            _(this.get("children")).select(function(child){
+                return child.get("source") and child.get("target");
+            }.each)(function(edge){
+                var source = edge.get('source');
+                var outgoing_edges = source.get("outgoing_edges");
+                if(!outgoing_edges){
+                    outgoing_edges = new Array();
+                } 
+                outgoing_edges.push(edge);
+                source.set({outgoing_edges : outgoing_edges});
+                var target = edge.get("target");
+                var incoming_edges = target.get("incoming_edges");
+                if(!incoming_edges){
+                    incoming_edges = new Array();
+                }
+                incoming_edges.push(edge);
+                target.set({incoming_edges : incoming_edges});
+            })
+        },
+        initial : function(){
+            return _(this.get("children")).select(function(child){
+                return child.get("incoming_edges").length == 0;
+            }).first();
+        }
+    } , {});
+
+    Models.Initial = Models.Node.extend({} ,
+                                        {});
+
+    Models.Fork = Models.Node.extend({} ,
+                                     {});
+
+    Models.Join = Models.Node.extend({} ,
+                                     {});
+
+    Models.Decision = Models.Node.extend({} ,
+                                         {});
+
+    Models.Merge = Models.Node.extend({} ,
+                                      {});
+
+    Models.FinalNode = Models.Node.extend({} ,
+                                          {});
+
+    Models.Action = Models.Node.extend({} ,
+                                       {});
+
+    Models.Edge = Models.Element.extend({
+        defaults : {
+            label : "",
+            description : ""
+        }
+        initialize : function(){
+            var source = this.get('source');
+            var target = this.get('target');
+            var outgoing_edges = source.get("outgoing_edges");
+            var incoming_edges = target.get("incoming_edges");
+            outgoing_edges.push(this);
+            incoming_edges.push(this);
+            source.set({outgoing_edges : outgoing_edges});
+            target.set({incoming_edges : incoming_edges});
+        }
+    }, {});
+
+
+    /*
+     * create uid
+     * http://stackoverflow.com/questions/105034/
+     */ 
     function createUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
             .replace(/[xy]/g, function(c) {
@@ -44,63 +159,52 @@ define(['cdn/underscore.js'], function(){
     }
    
     /* 
-     * expects JSON serialized model as context.
+     * expects JSON serialized model as this.
      */
-    activities.model.Model = function(context) {
-
-        /*
-         * create uid
-         * http://stackoverflow.com/questions/105034/
-         */
-
-        if (!context) {
-            var context = {
-                __type: activities.model.ACTIVITY
-            }
-        }
-        this.context = context;
-        if (!this.context.__name) {
-            this.context.__name = createUID();
-        }
-        if (!this.context.__parent) {
-            this.context.__parent = null;
-        }
-        if (!this.context.children) {
-            this.context.children = {};
-        }
+    activities.model.Model = Backbone.Model.extend({
+        defaults : {__type : activities.model.ACTIVITY,
+                    __parent : null,
+                    children : {}} , 
         
-        // set __name and __parent
-        // XXX: recursion + dottedpath for parent
-        for (var key in this.context.children) {
-            var node = this.node(key);
-            node.__name = key;
-            node.__parent = this.context.__name;
-        }
-        
-        // set incoming_edges and outgoing_edges on model nodes
-        var edges = this.filtered(activities.model.EDGE);
-        var edge, source, target;
-        for (var idx in edges) {
-            // XXX: traversal by dottedpath if necessary
-            edge = edges[idx];
-            
-            source = this.node(edge.source);
-            if (!source.outgoing_edges) {
-                source.outgoing_edges = new Array();
+        initialize : function(){
+            if (!this.get('__name')){
+                this.set({"__name" : createUID()});
             }
-            // XXX: dottedpath
-            source.outgoing_edges.push(edge.__name);
             
-            target = this.node(edge.target);
-            if (!target.incoming_edges) {
-                target.incoming_edges = new Array();
+            // set __name and __parent
+            // XXX: recursion + dottedpath for parent
+            for (var key in this.get("children")) {
+                var node = this.node(key);
+                node.set({__name : key
+                          __parent : this.__name});
             }
-            // XXX: dottedpath
-            target.incoming_edges.push(edge.__name);
-        }
-    };
-    
-    activities.model.Model.prototype = {
+            
+            // set incoming_edges and outgoing_edges on model nodes
+            var edges = this.filtered(activities.model.EDGE);
+            var edge, source, target, incoming_edges, outgoing_edges;
+            for (var idx in edges) {
+                // XXX: traversal by dottedpath if necessary
+                edge = edges[idx];
+                
+                source = this.node(edge.source);
+                
+                outgoing_edges = source.get("outgoing_edges");
+                if (!outgoing_edges) {
+                    outgoing_edges = source.set({outgoing_edges : new Array()});
+                }
+                
+                // XXX: dottedpath
+                source.set({outgoing_edges: outgoing_edges});
+                
+                target = this.node(edge.target);
+                incoming_edges = target.get("incoming_edges");
+                if (!target.incoming_edges) {
+                    target.incoming_edges = new Array();
+                }
+                // XXX: dottedpath
+                target.set({incoming_edges: incoming_edges});
+            }
+        },
         
         /*
          * return initial node
@@ -120,41 +224,47 @@ define(['cdn/underscore.js'], function(){
          * return parent of node
          */
         parent: function(node) {
-            var parent = node.__parent;
-            if (parent == this.context.__name) {
-                return this.context;
+            var parent = node.get("__parent");
+            if (parent == this.get("__name")) {
+                return this;
             }
             return this.node(parent);
         },
         
         /*
-         * Create new child in parent by type. if parent is null, this.context
+         * Create new child in parent by type. if parent is null, this
          * is used.
          */
         create: function(type, parent) {
-            var context;
+            var node;
             if (parent) {
-                context = parent;
+                node = parent;
             } else {
-                context = this.context;
+                node = this;
             }
             
             // create UID
             var uid = createUID();
             
             // create children container if not exists
-            if (!context.children) {
-                context.children = new Object();
+            var children = node.get("children");
+            if (!children) {
+                children = new Object();
             }
             
-            // create child node in context.children and return created node
-            context.children[uid] = new Object();
-            var node = context.children[uid];
-            node.__name = uid;
-            node.__parent = context.__name;
-            node.__type = type;
-            node.label = node.description = '';
-            return node;
+            // create child node in this.children and return created node
+            children[uid] = activities.model.Model({
+                __name: uid,
+                __parent: get(node, '__name'),
+                __type: type,
+                label: '',
+                description: ''
+            });
+
+            this.set({children: children});
+
+            var child = node.children[uid];
+            return child;
         },
         
         
@@ -163,8 +273,8 @@ define(['cdn/underscore.js'], function(){
          */
         createNode: function(type, parent) {
             var node = this.create(type, parent);
-            node.outgoing_edges = new Array();
-            node.incoming_edges = new Array();
+            node.set({outgoing_edges: new Array(),
+                      incoming_edges: new Array()});
             return node;
         },
         
@@ -173,6 +283,7 @@ define(['cdn/underscore.js'], function(){
          */
         createEdge: function(source, target, parent) {
             var node = this.create(activities.model.EDGE, parent);
+            
             node.source = source;
             node.target = target;
             var source_node = this.node(source);
@@ -226,21 +337,21 @@ define(['cdn/underscore.js'], function(){
         },
         
         /*
-         * search context for child objects providing given model element type.
-         * optional node for searching could be given, otherwise this.context
+         * search child objects providing given model element type.
+         * optional node for searching could be given, otherwise this
          * is used.
          */
-        filtered: function(type, node) {
-            var context;
-            if (node) {
-                context = node;
+        filtered: function(type, default_node) {
+            var node;
+            if (default_node) {
+                node = default_node;
             } else {
-                context = this.context;
+                node = this;
             }
             var ret = new Array();
-            for (var key in context.children) {
-                if (context.children[key].__type == type) {
-                    ret.push(context.children[key]);
+            for (var key in this.children) {
+                if (this.children[key].__type == type) {
+                    ret.push(this.children[key]);
                 }
             }
             return ret;
@@ -304,23 +415,23 @@ define(['cdn/underscore.js'], function(){
                 return;
             }
             // XXX: traversal by dottedpath
-            return this.context.children[path];
+            return this.children[path];
         },
         
         /*
          * model as string for debugging purposes
          */
-        debug: function(context) {
+        debug: function(Model) {
             var ret = '';
-            if (!context) {
-                context = this.context;
+            if (!Model) {
+                Model = this;
             }
-            if (!context.children) {
+            if (!Model.children) {
                 return ret;
             }
             var child;
-            for (var key in context.children) {
-                child = context.children[key];
+            for (var key in Model.children) {
+                child = Model.children[key];
                 for (subkey in child) {
                     if (subkey == 'children') {
                         continue;
@@ -332,5 +443,5 @@ define(['cdn/underscore.js'], function(){
             }
             return ret;
         }
-    };
+    });
 });
