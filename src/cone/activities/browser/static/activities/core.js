@@ -27,7 +27,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
      * jQuery activities editor plugin
      */
     $.fn.activities = function(opts) {
-        debugger;
         // render editor template
         var elem = $(this);
         if (elem.length == 0) {
@@ -191,18 +190,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                      + String(c.charAt(dec - (Math.floor(dec / 16) * 16)));
             },
             
-            /*
-             * create uid
-             * http://stackoverflow.com/questions/105034/
-             */
-            createUID: function() {
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-                    .replace(/[xy]/g, function(c) {
-                        var r = Math.random() * 16 | 0, v = c == 'x' 
-                            ? r : (r & 0x3 | 0x8);
-                        return v.toString(16);
-                    }).toUpperCase();
-            },
             
             /*
              * remove array item
@@ -1366,7 +1353,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
          * create new diagram
          */
         newDiagram: function() {
-            debugger;
             this.model = new activities.model.Model(null);
             this.init();
         },
@@ -1375,7 +1361,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
          * open existing diagram
          */
         openDiagram: function(model) {
-            debugger;
             this.model = new activities.model.Model(model);
             this.init();
         }

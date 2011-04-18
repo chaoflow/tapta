@@ -1,4 +1,4 @@
-define([], function(){
+define(['cdn/underscore.js'], function(){
     // ************************************************************************
     // activities.model.Model
     // ************************************************************************
@@ -33,12 +33,26 @@ define([], function(){
             'Edge'
         ]
     }
-        
+
+    function createUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+            .replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' 
+                    ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            }).toUpperCase();
+    }
+   
     /* 
      * expects JSON serialized model as context.
      */
     activities.model.Model = function(context) {
-        debugger;
+
+        /*
+         * create uid
+         * http://stackoverflow.com/questions/105034/
+         */
+
         if (!context) {
             var context = {
                 __type: activities.model.ACTIVITY
@@ -46,7 +60,7 @@ define([], function(){
         }
         this.context = context;
         if (!this.context.__name) {
-            this.context.__name = activities.utils.createUID();
+            this.context.__name = createUID();
         }
         if (!this.context.__parent) {
             this.context.__parent = null;
@@ -126,7 +140,7 @@ define([], function(){
             }
             
             // create UID
-            var uid = activities.utils.createUID();
+            var uid = createUID();
             
             // create children container if not exists
             if (!context.children) {
@@ -182,12 +196,17 @@ define([], function(){
             if (node.__type == activities.model.EDGE) {
                 // if edge, remove from target.incoming_edges and 
                 // source.outgoing_edges
+                var source = this.source(node);
+                var target = this.target(node);
                 var edges = this.source(node).outgoing_edges;
-                activities.utils.removeArrayItem(
-                    edges, edges.indexOf(node.__name));
-                var edges = this.target(node).incoming_edges;
-                activities.utils.removeArrayItem(
-                    edges, edges.indexOf(node.__name));
+/*                activities.utils.removeArrayItem(
+                    edges, edges.indexOf(node.__name));*/
+                source.outgoing_edges = _.without(source.outgoing_edges,
+                                                  node.__name);
+                target.incoming_edges = _.without(target.incoming_edges, 
+                                                  node.__name);
+/*                activities.utils.removeArrayItem(
+                    edges, edges.indexOf(node.__name));*/
                 delete parent.children[node.__name];
             } else {
                 // if activity node, remove all edges defined by incoming_edges
