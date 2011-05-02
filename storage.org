@@ -1,0 +1,73 @@
+* Storage
+
+** library tree SHA
+Stores library nodes by UUID and assigns them level and name
+
+to be synced with server, kept in branches
+
+*** levels tree SHA
+**** level1 blob SHA(json)
+{ label: UUID, ... }
+**** level2 blob SHA
+**** level3 blob SHA
+**** level4 blob SHA
+**** level5 blob SHA
+**** level6 blob SHA
+
+*** nodes tree SHA
+nodes available in the library on the right side stored by UUID
+
+XXX: so far only activities, decisions might also be interesting here,
+in that case: keep decision/merge to be two things?
+
+**** UUID tree SHA(activity)
+***** attrs blob SHA(json attrs)
+{
+  "type": "activity",
+  "description": ...,
+  ...,
+}
+label is no attr, description is
+
+***** edges blob SHA
+or alphabetically sorted list:
+[
+  "UUID:label:UUID",
+  "UUID::UUID",
+maybe no UUID for initial and final nodes, except if we want UI hints
+  "initial":UUID,
+  "UUID:"final",
+]
+
+***** nodes tree SHA
+****** UUID tree/blob SHA(activitynode)
+All activitynodes of the activity
+
+by that we can identify that two activities contain the same
+activitynode but with different revision
+
+for blob: the attrs of the activitynode as json
+
+type attr indiciates type
+
+activity -> tree
+rest -> blob
+
+
+** ui_hints tree SHA
+stores user interface hints by UUID
+*** UUID blob SHA
+
+** local overlay
+something like stashes?
+i.e. things to keep only locally
+
+maybe also something like personal branches that are rebased but never
+merged into master, maybe cherry-picking anyway. Or master only merged
+into them.
+
+*** UUID: ui_hints
+**** which activities to display in level1
+**** which activities to select for the next level
+
+** uuid is UUID4
