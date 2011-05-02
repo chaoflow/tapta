@@ -555,7 +555,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'initial_node',
                                            'Initial Node',
-                                           activities.model.Models.Initial);
+                                           activities.model.Initial);
     };
     activities.actions.InitialNode.prototype =
         new activities.actions.NodeAction;
@@ -570,7 +570,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'final_node',
                                            'Final Node',
-                                           activities.model.Models.FinalNode);
+                                           activities.model.FinalNode);
     };
     activities.actions.FinalNode.prototype =
         new activities.actions.NodeAction;
@@ -585,7 +585,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'action_node',
                                            'Action Node',
-                                           activities.model.Models.Action);
+                                           activities.model.Action);
     };
     activities.actions.ActionNode.prototype =
         new activities.actions.NodeAction;
@@ -597,7 +597,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
     
     activities.actions.JoinNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'join_node', 'Join Node', activities.model.Models.Join);
+            this, actions, 'join_node', 'Join Node', activities.model.Join);
     };
     activities.actions.JoinNode.prototype =
         new activities.actions.NodeAction;
@@ -609,7 +609,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
     
     activities.actions.ForkNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'fork_node', 'Fork Node', activities.model.Models.Fork);
+            this, actions, 'fork_node', 'Fork Node', activities.model.Fork);
     };
     activities.actions.ForkNode.prototype =
         new activities.actions.NodeAction;
@@ -621,7 +621,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
     
     activities.actions.MergeNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'merge_node', 'Merge Node', activities.model.Models.Merge);
+            this, actions, 'merge_node', 'Merge Node', activities.model.Merge);
     };
     activities.actions.MergeNode.prototype =
         new activities.actions.NodeAction;
@@ -636,7 +636,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                                            actions,
                                            'decision_node',
                                            'Decision Node',
-                                           activities.model.Models.Decision);
+                                           activities.model.Decision);
     };
     activities.actions.DecisionNode.prototype =
         new activities.actions.NodeAction;
@@ -1353,7 +1353,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
          * create new diagram
          */
         newDiagram: function() {
-            this.model = new activities.model.Model(null);
+            this.model = new activities.model.Activity();
             this.init();
         },
         
@@ -1361,7 +1361,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
          * open existing diagram
          */
         openDiagram: function(model) {
-            this.model = new activities.model.Model(model);
+            this.model = new activities.model.Activity(model);
             this.init();
         }
     };
@@ -1568,8 +1568,8 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                           this.container).attr('value');
             var description = $('textarea[name="description"]',
                                 this.container).attr('value');
-            node.label = label;
-            node.description = description;
+            node.set({description: description,
+                      label: label});
             elem.label = label;
             elem.description = description;
             diagram.renderTranslated(function() {
@@ -1587,23 +1587,33 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                 node = this.model;
             } else {
                 var path = elem.diagram.mapping[elem.triggerColor];
-                node = this.model.node(path);
+                node = _.filter(this.model.get("children"), function(node){return node.get("uid") == path})[0];
             }
             this.recent_node = node;
             this.recent_element = elem;
             var model = activities.model;
-            this.displayProperty('Type:', model.TYPE_NAMES[node.__type]);
+            this.displayProperty('Type:', node.constructor.display_name);
             this.stringProperty('label', 'Label:', elem.label || '');
             this.textProperty('description',
                               'Description:',
                               elem.description || '');
-            if (node.__type == activities.model.EDGE) {
-                this.displayProperty('Source:', node.source || '');
-                this.displayProperty('Target:', node.target || '');
-            } else if (node.__type != activities.model.ACTIVITY) {
-                var val = node.incoming_edges ? node.incoming_edges.length : 0;
+            if (node instanceof activities.model.Edge) {
+                this.displayProperty('Source:', node.get("source") || '');
+                this.displayProperty('Target:', node.ger("target") || '');
+            } else if (node instanceof activities.model.Activity) {
+                var incoming = node.get("incoming_edges");
+                if(incoming == undefined){
+                    var val = 0;
+                }else{
+                    var val = incoming.length;
+                }
                 this.displayProperty('Incoming Edges:', val);
-                var val = node.outgoing_edges ? node.outgoing_edges.length : 0;
+                var outgoing = node.get("outgoing_edges");
+                if(outgoing == undefined){
+                    var val = 0;
+                }else{
+                    var val = outgoing.length;
+                }
                 this.displayProperty('Outgoing Edges:', val);
             }
             var properties = this;
@@ -1907,56 +1917,59 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
         },
         
         /*
-         * set tier for each node
+         * set tier for the node and every target of the nodes
+         * outgoing edges
          */
-        setNodeTier: function(tier, node) {
-            if (typeof(this.node2tier[node.__name]) == "undefined") {
-                this.node2tier[node.__name] = tier;
-            } else if (tier > this.node2tier[node.__name]) {
-                this.node2tier[node.__name] = tier;
+        fillNode2TierMap: function(node, tier) { 
+            if (tier === undefined){
+                tier = 0;
             }
-            var model = this.model;
-            var outgoing = model.outgoing(node);
-            var edge, target;
-            for (var idx in outgoing) {
-                edge = outgoing[idx];
-                target = model.target(edge);
-                this.setNodeTier(tier + 1, target);
+            uid = node.get("uid");
+            if(this.node2tier[uid] === undefined){
+                this.node2tier[uid] = tier;
+            }else if (tier > this.node2tier[uid]){
+                this.node2tier[uid] = tier;
             }
+            var outgoing_edges = node.get("outgoing_edges");
+            var here = this;
+            _.each(outgoing_edges, function(edge){
+                here.fillNode2TierMap(edge.get("target"), tier + 1);
+            });
         },
         
         /*
-         * Set tier nodes
+         * Fill the mapping of tiers to nodes
          */
-        setTierNodes: function() {
-            for (var key in this.node2tier) {
-                tier = this.node2tier[key];
-                if (typeof(this.tiers[tier]) == "undefined") {
+        fillTier2NodeMap: function() {
+            for (var uid in this.node2tier) {
+                tier = this.node2tier[uid];
+                if (this.tiers[tier] === undefined) {
                     this.tiers[tier] = new Array();
                 }
-                this.tiers[tier].push(key);
+                this.tiers[tier].push(_.select(this.model.get("children"), function(node){
+                    return node.get("uid") == uid;
+                })[0]);
             }
         },
         
         /*
-         * Set tier kinks
+         * Recursivly set tier kinks (What are tier kinks?)
          */
-        setTierKinks: function(tier, node) {
-            var model = this.model;
-            var outgoing = model.outgoing(node);
-            var edge, target, diff;
-            for (var idx in outgoing) {
-                edge = outgoing[idx];
-                target = model.target(edge);
-                diff = this.node2tier[target.__name] -
-                       this.node2tier[node.__name];
-                if (diff > 1) {
-                    for (var i = 1; i < diff; i++) {
-                        this.tiers[tier + i].push(edge.__name);
+        setTierKinks: function(node, tier) {
+            if(tier === undefined){
+                tier = 0;
+            }
+            var here = this;
+            _.each(node.get("outgoing_edges"), function(edge){
+                var target = edge.get("target");
+                diff = here.node2tier[target] - here.node2tier[node];
+                if (diff > 1){
+                    for(var i=1;i<diff;i++){
+                        here.tiers[tier+i].push(edge);
                     }
                 }
-                this.setTierKinks(tier + 1, target);
-            }
+                here.setTierKinks(target, tier + 1);
+            });
         },
         
         /*
@@ -1967,12 +1980,14 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
         createEdges: function() {
             var diagram = this.diagram;
             var model = this.model;
-            var edges = model.filtered(activities.model.EDGE);
+            var edges = _.filter(model.get("children"), function(node){
+                return node instanceof activities.model.Edge;
+            });
             for (var idx in edges) {
                 var edge = edges[idx];
                 var elem = new activities.ui.Edge();
-                elem.source = edge.source;
-                elem.target = edge.target;
+                elem.source = edge.get("source");
+                elem.target = edge.get("target");
                 diagram.map(edge, elem);
             }
         },
@@ -2004,7 +2019,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
             for (var i in this.tiers) {
                 yStart = yMax / 2 - this.tiers[i].length;
                 for (var j in this.tiers[i]) {
-                    node = this.model.node(this.tiers[i][j]);
+                    node = this.tiers[i][j];
                     elem = this.diagram.get(node);
                     this.matrix.set(i, yStart + (j * 2), elem);
                 }
@@ -2028,22 +2043,20 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
             this.tiers = new Array();
             
             // get initial node, if no initial node render empty diagram
-            var initial;
-            try {
-                initial = this.model.initial();
-            } catch (err) {
+
+            var initial = this.model.initial();
+            if(initial === undefined) {
                 diagram.render();
                 return;
             }
             
-            // check tier for each node and write to this.node2tier
-            this.setNodeTier(0, initial);
+            // recursivly add each node to the node2tier map
+            this.fillNode2TierMap(initial);
             
-            // set node ids for each tier
-            this.setTierNodes();
+            this.fillTier2NodeMap();
             
-            // set kink ids (edge) for each tier
-            this.setTierKinks(0, initial);
+            // set kink ids (edge) for each tier recursivly
+            this.setTierKinks(initial);
             
             // create edges
             this.createEdges();
@@ -2419,7 +2432,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
                     if (elem.selected) {
                         continue;
                     }
-                    if (elem.node.__type == activities.model.EDGE) {
+                    if (elem.node instanceof activities.model.Edge) {
                         edges.push(elem);
                         continue;
                     }
@@ -2448,11 +2461,11 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
             elem.triggerColor = triggerColor;
             this.elements[triggerColor] = elem;
             // XXX: dottedpath
-            this.mapping[triggerColor] = node.__name;
-            this.r_mapping[node.__name] = triggerColor;
+            this.mapping[triggerColor] = node.get("uid");
+            this.r_mapping[node.get("uid")] = triggerColor;
             elem.bind();
-            elem.label = node.label || '';
-            elem.description = node.description || '';
+            elem.label = node.get("label") || '';
+            elem.description = node.get("description") || '';
         },
         
         /*
@@ -2485,13 +2498,13 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
             if (!node) {
                 return;
             }
-            var triggerColor = this.r_mapping[node.__name];
+            var triggerColor = this.r_mapping[node.get("uid")];
             if (!triggerColor) {
                 return;
             }
             var elem = this.elements[triggerColor];
             elem.unbind();
-            if (node.__type != activities.model.EDGE) {
+            if (node instanceof activities.model.Edge) {
                 var edges = new Array();
                 for (idx in node.incoming_edges) {
                     edges.push(node.incoming_edges[idx]);
@@ -2505,7 +2518,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
             }
             delete this.elements[triggerColor];
             delete this.mapping[triggerColor];
-            delete this.r_mapping[node.__name];
+            delete this.r_mapping[node.get("uid")];
         },
         
         /*
@@ -2513,7 +2526,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
          */
         get: function(node) {
             // check if element already exists
-            var trigger = this.r_mapping[node.__name];
+            var trigger = this.r_mapping[node.get("uid")];
             if (trigger) {
                 return this.elements[trigger];
             }
@@ -2525,15 +2538,15 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
          */
         createNode: function(node) {
             var elem;
-            if (node.__type == activities.model.EDGE) {
+            if (node instanceof activities.model.Edge){
                 // this is a kink
                 elem = new activities.ui.Kink();
-                var trigger = this.r_mapping[node.__name];
+                var trigger = this.r_mapping[node.get("uid")];
                 var edge = this.elements[trigger];
                 edge.kinks.push(elem);
                 return kink;
             }
-            elem = new this.factories[node.__type]();
+            elem = new this.factories[node.constructor.display_name]();
             this.map(node, elem);
             return elem;
         },
@@ -3180,8 +3193,8 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
          */
         render: function() {
             var diagram = this.diagram;
-            var source = diagram.elements[diagram.r_mapping[this.source]];
-            var target = diagram.elements[diagram.r_mapping[this.target]];
+            var source = diagram.elements[diagram.r_mapping[this.source.get("uid")]];
+            var target = diagram.elements[diagram.r_mapping[this.target.get("uid")]];
             
             // do not render edge if source and target refer to same 
             // diagram position

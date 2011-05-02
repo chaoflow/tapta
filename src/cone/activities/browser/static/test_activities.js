@@ -1,412 +1,250 @@
 define(['activities/core', 'cdn/qunit.js'], function($) {
+    var Models = activities.model;
     
     tests = {
         
         create_test_model_1: function() {
+            var start = new Models.Initial({label: "Start",
+                                            description: "Description Start"});
+            var fork = new Models.Fork({label: 'Fork',
+                                        description: 'Description Fork'});
+            var action_1 = new Models.Decision ({label: 'Action 1',
+                                                 description: 'Description Action 1'});
+            var action_2 = new Models.Action ({label: 'Action 2',
+                                               description: 'Description Action 2'});
+            var action_3 = new Models.Action ({label: 'Action 3',
+                                               description: 'Description Action 3'});
+            var join = new Models.Join({label: 'Join',
+                                        description: 'Description Join'});
+            var end = new Models.Final({label: 'End',
+                                        description: 'Description End'});
+            var decision = new Models.Decision({label: 'Decision',
+                                                description: 'Description Decision'});
+            var merge = new Models.Merge ({label: 'Merge',
+                                           description: 'Description Merge'});
+            
             var model = {
-                __type: activities.model.ACTIVITY,
-                __name: 'model_1',
-                __parent: null,
-                children: {
-                    start: {
-                        __type: activities.model.INITIAL,
-                        label: 'Start',
-                        description: 'Description Start'
-                    },
-                    fork: {
-                        __type: activities.model.FORK,
-                        label: 'Fork',
-                        description: 'Description Fork'
-                    },
-                    join: {
-                        __type: activities.model.JOIN,
-                        label: 'Join',
-                        description: 'Description Join'
-                    },
-                    decision: {
-                        __type: activities.model.DECISION,
-                        label: 'Decision',
-                        description: 'Description Decision'
-                    },
-                    merge: {
-                        __type: activities.model.MERGE,
-                        label: 'Merge',
-                        description: 'Description Merge'
-                    },
-                    action_1: {
-                        __type: activities.model.ACTION,
-                        label: 'Action 1',
-                        description: 'Description Action 1'
-                    },
-                    action_2: {
-                        __type: activities.model.ACTION,
-                        label: 'Action 2',
-                        description: 'Description Action 2'
-                    },
-                    action_3: {
-                        __type: activities.model.ACTION,
-                        label: 'Action 3',
-                        description: 'Description Action 3'
-                    },
-                    end: {
-                        __type: activities.model.FINAL,
-                        label: 'End',
-                        description: 'Description End'
-                    },
-                    edge_1: {
-                        __type: activities.model.EDGE,
-                        source: 'start',
-                        target: 'fork',
-                        label: '',
-                        description: ''
-                    },
-                    edge_2: {
-                        __type: activities.model.EDGE,
-                        source: 'fork',
-                        target: 'action_1',
-                        label: '',
-                        description: ''
-                    },
-                    edge_3: {
-                        __type: activities.model.EDGE,
-                        source: 'fork',
-                        target: 'action_2',
-                        label: '',
-                        description: ''
-                    },
-                    edge_4: {
-                        __type: activities.model.EDGE,
-                        source: 'action_1',
-                        target: 'action_3',
-                        label: '',
-                        description: ''
-                    },
-                    edge_5: {
-                        __type: activities.model.EDGE,
-                        source: 'action_2',
-                        target: 'join',
-                        label: '',
-                        description: ''
-                    },
-                    edge_6: {
-                        __type: activities.model.EDGE,
-                        source: 'action_3',
-                        target: 'decision',
-                        label: '',
-                        description: ''
-                    },
-                    edge_7: {
-                        __type: activities.model.EDGE,
-                        source: 'action_3',
-                        target: 'join',
-                        label: '',
-                        description: ''
-                    },
-                    edge_8: {
-                        __type: activities.model.EDGE,
-                        source: 'decision',
-                        target: 'merge',
-                        label: '',
-                        description: ''
-                    },
-                    edge_9: {
-                        __type: activities.model.EDGE,
-                        source: 'join',
-                        target: 'merge',
-                        label: '',
-                        description: ''
-                    },
-                    edge_10: {
-                        __type: activities.model.EDGE,
-                        source: 'merge',
-                        target: 'end',
-                        label: '',
-                        description: ''
-                    }
-                }
+                name: 'model_1',
+                children: [
+                    start,
+                    fork,
+                    decision,
+                    merge,
+                    action_1,
+                    action_2,
+                    action_3,
+                    join,
+                    end,
+                    new Models.Edge({source: start,
+                                     target: fork,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: fork,
+                                     target: action_1,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: fork,
+                                     target: action_2,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: action_1,
+                                     target: action_3,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: action_2,
+                                     target: join,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: action_3,
+                                     target: decision,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: action_3,
+                                     target: join,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: decision,
+                                     target: merge,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: join,
+                                     target: merge,
+                                     label: '',
+                                     description: ''}),
+                    new Models.Edge({source: merge,
+                                     target: end,
+                                     label: '',
+                                     description: ''})
+                ],
+
             }
             return model;
         },
         
         create_test_model_2: function() {
+            var act_h = new Models.Final({label: 'Final',
+                                          description: 'Description Final'});
+            var act_g = new Models.Action({label: 'Action G',
+                                           description: 'Description Action G'});
+            var act_f = new Models.Action({label: 'Action F',
+                                           description: 'Description Action F'});
+            var act_e = new Models.Action({label: 'Action E',
+                                           description: 'Description Action E'});
+            var fork_a = new Models.Fork({label: 'Fork A',
+                                          description: 'Description Fork A'});
+            var act_d = new Models.Action({label: 'Action D',
+                                           description: 'Description Action D'});
+            var act_a = new Models.Initial({label: 'Action A',
+                                            description: 'Description Action A'});
+            var dec_a = new Models.Decision({label: 'Decision A',
+                                             description: 'Description Decision A'});
+            var act_b = new Models.Action({label: 'Action B',
+                                           description: 'Description Action B'});
+            var act_c = new Models.Action({label: 'Action C',
+                                           description: 'Description Action C'});
+            var mer_a = new Models.Merge({label: 'Merge A',
+                                          description: 'Description Merge A'});
+            var merge = new Models.Merge ({label: 'Merge',
+                                           description: 'Description Merge'});
+            var e_3 = new Models.Edge({source: dec_a,
+                                   target: act_c,
+                                   label: '',
+                                   description: ''});
+            var e_1 = new Models.Edge({source: act_a,
+                                   target: dec_a,
+                                   label: '',
+                                   description: ''});
+            var e_2 = new Models.Edge({source: dec_a,
+                                   target: act_b,
+                                   label: '',
+                                   description: ''});
+            var e_4 = new Models.Edge({source: act_b,
+                                   target: mer_a,
+                                   label: '',
+                                   description: ''});
+            var e_5 = new Models.Edge({source: act_c,
+                                   target: mer_a,
+                                   label: '',
+                                   description: ''});
+            var e_6 = new Models.Edge({source: mer_a,
+                                   target: act_d,
+                                   label: '',
+                                   description: ''});
+            var e_7 = new Models.Edge({source: act_d,
+                                   target: fork_a,
+                                   label: '',
+                                   description: ''});
+            var e_8 = new Models.Edge({source: fork_a,
+                                   target: act_e,
+                                   label: '',
+                                   description: ''});
+            var e_9 = new Models.Edge({source: fork_a,
+                                   target: act_f,
+                                   label: '',
+                                   description: ''});
+            var e_10 = new Models.Edge({source: fork_a,
+                                    target: act_g,
+                                    label: '',
+                                    description: ''});
+            var e_11 = new Models.Edge({source: act_e,
+                                    target: act_h,
+                                    label: '',
+                                    description: ''});
+            var e_12 = new Models.Edge({source: act_f,
+                                    target: act_h,
+                                    label: '',
+                                    description: ''});
+            var e_13 = new Models.Edge({source: act_g,
+                                    target: act_h,
+                                    label: '',
+                                    description: ''});
+            
             var model = {
-                __type: activities.model.ACTIVITY,
-                __name: 'model_2',
-                __parent: null,
-                children: {
-                    act_a: {
-                        __type: activities.model.INITIAL,
-                        label: 'Action A',
-                        description: 'Description Action A'
-                    },
-                    dec_a: {
-                        __type: activities.model.DECISION,
-                        label: 'Decision A',
-                        description: 'Description Decision A'
-                    },
-                    act_b: {
-                        __type: activities.model.ACTION,
-                        label: 'Action B',
-                        description: 'Description Action B'
-                    },
-                    act_c: {
-                        __type: activities.model.ACTION,
-                        label: 'Action C',
-                        description: 'Description Action C'
-                    },
-                    mer_a: {
-                        __type: activities.model.MERGE,
-                        label: 'Merge A',
-                        description: 'Description Merge A'
-                    },
-                    act_d: {
-                        __type: activities.model.ACTION,
-                        label: 'Action D',
-                        description: 'Description Action D'
-                    },
-                    fork_a: {
-                        __type: activities.model.FORK,
-                        label: 'Fork A',
-                        description: 'Description Fork A'
-                    },
-                    act_e: {
-                        __type: activities.model.ACTION,
-                        label: 'Action E',
-                        description: 'Description Action E'
-                    },
-                    act_f: {
-                        __type: activities.model.ACTION,
-                        label: 'Action F',
-                        description: 'Description Action F'
-                    },
-                    act_g: {
-                        __type: activities.model.ACTION,
-                        label: 'Action G',
-                        description: 'Description Action G'
-                    },
-                    act_h: {
-                        __type: activities.model.FINAL,
-                        label: 'Final',
-                        description: 'Description Final'
-                    },
-                    e_1: {
-                        __type: activities.model.EDGE,
-                        source: 'act_a',
-                        target: 'dec_a',
-                        label: '',
-                        description: ''
-                    },
-                    e_2: {
-                        __type: activities.model.EDGE,
-                        source: 'dec_a',
-                        target: 'act_b',
-                        label: '',
-                        description: ''
-                    },
-                    e_3: {
-                        __type: activities.model.EDGE,
-                        source: 'dec_a',
-                        target: 'act_c',
-                        label: '',
-                        description: ''
-                    },
-                    e_4: {
-                        __type: activities.model.EDGE,
-                        source: 'act_b',
-                        target: 'mer_a',
-                        label: '',
-                        description: ''
-                    },
-                    e_5: {
-                        __type: activities.model.EDGE,
-                        source: 'act_c',
-                        target: 'mer_a',
-                        label: '',
-                        description: ''
-                    },
-                    e_6: {
-                        __type: activities.model.EDGE,
-                        source: 'mer_a',
-                        target: 'act_d',
-                        label: '',
-                        description: ''
-                    },
-                    e_7: {
-                        __type: activities.model.EDGE,
-                        source: 'act_d',
-                        target: 'fork_a',
-                        label: '',
-                        description: ''
-                    },
-                    e_8: {
-                        __type: activities.model.EDGE,
-                        source: 'fork_a',
-                        target: 'act_e',
-                        label: '',
-                        description: ''
-                    },
-                    e_9: {
-                        __type: activities.model.EDGE,
-                        source: 'fork_a',
-                        target: 'act_f',
-                        label: '',
-                        description: ''
-                    },
-                    e_10: {
-                        __type: activities.model.EDGE,
-                        source: 'fork_a',
-                        target: 'act_g',
-                        label: '',
-                        description: ''
-                    },
-                    e_11: {
-                        __type: activities.model.EDGE,
-                        source: 'act_e',
-                        target: 'act_h',
-                        label: '',
-                        description: ''
-                    },
-                    e_12: {
-                        __type: activities.model.EDGE,
-                        source: 'act_f',
-                        target: 'act_h',
-                        label: '',
-                        description: ''
-                    },
-                    e_13: {
-                        __type: activities.model.EDGE,
-                        source: 'act_g',
-                        target: 'act_h',
-                        label: '',
-                        description: ''
-                    },
-                }
+                name: 'model_2',
+                children: [
+                    act_a,
+                    dec_a,
+                    act_b,
+                    act_c,
+                    mer_a,
+                    act_d,
+                    fork_a,
+                    act_e,
+                    act_f,
+                    act_g,
+                    act_h,
+                    e_1,
+                    e_2,
+                    e_3,
+                    e_4,
+                    e_5,
+                    e_6,
+                    e_7,
+                    e_8,
+                    e_9,
+                    e_10,
+                    e_11,
+                    e_12,
+                    e_13]
             }
             return model;
         },
         
         run: function() {
-            module("activities.model.Model");
+            module("Models.Activity");
             
-            var model = new activities.model.Model(
+            var model = new Models.Activity(
                 tests.create_test_model_1());
-            test("Model.node", function() {
-                debugger;
-                equals(model.node('decision').__name,
-                       'decision', "model.node('decision').__name");
-            });
-            
-            test("Model.filtered", function() {
-                equals(model.filtered(activities.model.EDGE).length,
-                       10, "model.filtered(activities.model.EDGE)");
-                equals(model.filtered(activities.model.ACTION).length,
-                       3, "filtered(activities.model.ACTION)");
-                var res = model.filtered(
-                    activities.model.EDGE,
-                    model.node('action_1'));
-                equals(res, 0,
-                       "filtered(activities.model.ACTION, " +
-                       "model.node('action_1'))");
-            });
-            
-            test("Model.incoming", function() {
-                var res = model.incoming(model.node('decision'));
-                equals(res.length,
-                       1, "model.incoming(model.node('decision'))");
-                res = model.incoming(model.node('merge'));
-                equals(res.length,
-                       2, "model.incoming(model.node('merge'))");
-                equals(!res[0].source || !res[0].target,
-                       false, "res[0].source && res[0].target");
-            });
-            
-            test("Model.outgoing", function() {
-                var res = model.outgoing(model.node('decision'));
-                // equals(2,
-                equals(res.length,
-                       1, "model.outgoing(model.node('decision'))");
-                res = model.outgoing(model.node('merge'));
-                equals(res.length,
-                       1, "model.outgoing(model.node('merge'))");
-                equals(!res[0].source || !res[0].target,
-                       false, "res[0].source && res[0].target");
-            });
-            
-            test("Model.source", function() {
-                var source = model.source(model.node('edge_1'));
-                equals(source.__type == activities.model.INITIAL,
-                       true, "source.__type == activities.model.INITIAL");
-                equals(source.__name == 'start',
-                       true, "source.__name == 'start'");
-                equals(source.__parent == 'model_1',
-                       true, "source.__parent == 'model_1'");
-            });
-            
-            test("Model.target", function() {
-                var target = model.target(model.node('edge_1'));
-                equals(target.__type == activities.model.FORK,
-                       true, "target.__type == activities.model.FORK");
-                equals(target.__name == 'fork',
-                       true, "target.__name == 'fork'");
-                equals(target.__parent == 'model_1',
-                       true, "target.__parent == 'model_1'");
-            });
-            
             test("Model.initial", function() {
-                equals(model.initial().__name,
-                       'start', "model.initial().__name");
+                equals(model.initial().get("label"),
+                       'Start', "model.initial().get(label)");
             });
             
             test("Model.create[Node|Edge]", function() {
-                var source = model.createNode(activities.model.ACTION);
-                equals(source.__name.length, 36, "source.__name.length");
-                equals(source.__parent, 'model_1', "source.__parent");
-                equals(source.incoming_edges.length,
+                var source = model.create(Models.Action);
+                equals(source.get("name").length, 36, "source.get(name).length");
+                equals(source.get("incoming_edges").length,
                        0, "source.incoming_edges");
-                equals(source.outgoing_edges.length,
+                equals(source.get("outgoing_edges").length,
                        0, "source.outgoing_edges");
-                var target = model.createNode(activities.model.ACTION);
-                var edge = model.createEdge(source.__name, target.__name);
-                equals(edge.__name.length, 36, "edge.__name.length");
-                equals(edge.source.length, 36, "edge.source.length");
-                equals(edge.target.length, 36, "edge.target.length");
-                equals(edge.__name == source.outgoing_edges[0],
-                       true, "edge.__name == source.outgoing_edges[0]");
-                equals(edge.__name == target.incoming_edges[0],
-                       true, "edge.__name == target.incoming_edges[0]");
-                equals(edge.source == source.__name,
+                var target = model.create(Models.Action);
+                var edge = model.createEdge(source, target);
+                equals(edge.get("name").length, 36, "edge.get(name).length");
+                equals(edge.get("source") instanceof Models.Element, true, 
+                       "edge.source instanceof Models.Element");
+                equals(edge.get("target") instanceof Models.Element, true, 
+                       "edge.target instanceof Models.Element");
+                equals(edge === source.get("outgoing_edges")[0],
+                       true, "edge === source.get(outgoing_edges)[0]");
+                equals(edge === target.get("incoming_edges")[0],
+                       true, "edge.__name == target.incoming_edges[0");
+                equals(edge.get("source") == source,
                        true, "edge.source == source.__name");
-                equals(edge.target == target.__name,
+                equals(edge.get("target") == target,
                        true, "edge.target == target.__name");
             });
-            
+                 
             test("Model.remove", function() {
-                var model = new activities.model.Model();
-                var a1 = model.createNode(activities.model.ACTION);
-                var a2 = model.createNode(activities.model.ACTION);
-                var a3 = model.createNode(activities.model.ACTION);
-                var a4 = model.createNode(activities.model.ACTION);
-                var a5 = model.createNode(activities.model.ACTION);
-                var e1 = model.createEdge(a1.__name, a2.__name);
-                var e2 = model.createEdge(a1.__name, a3.__name);
-                var e3 = model.createEdge(a1.__name, a4.__name);
-                var e4 = model.createEdge(a1.__name, a5.__name);
-                equals(model.filtered(activities.model.ACTION).length,
-                       5, "model.filtered(activities.model.ACTION).length");
-                equals(model.filtered(activities.model.EDGE).length,
-                       4, "model.filtered(activities.model.EDGE).length");
+                var model = new Models.Activity();
+                var a1 = model.create(Models.Action);
+                var a2 = model.create(Models.Action);
+                var a3 = model.create(Models.Action);
+                var a4 = model.create(Models.Action);
+                var a5 = model.create(Models.Action);
+                var e1 = model.createEdge(a1, a2);
+                var e2 = model.createEdge(a1, a3);
+                var e3 = model.createEdge(a1, a4);
+                var e4 = model.createEdge(a1, a5);
+                equals(model.get("children").length,
+                       9, "model.filtered(Models.Action).length");
                 // XXX: dottedpath
-                model.remove(a5.__name);
-                equals(model.filtered(activities.model.ACTION).length,
-                       4, "model.filtered(activities.model.ACTION).length");
-                equals(model.filtered(activities.model.EDGE).length,
-                       3, "model.filtered(activities.model.EDGE).length");
+                model.remove(a5);
+                equals(model.get("children").length,
+                       7, "model.filtered(Models.Action).length");
                 // XXX: dottedpath
-                model.remove(a1.__name);
-                equals(model.filtered(activities.model.ACTION).length,
-                       3, "model.filtered(activities.model.ACTION).length");
-                equals(model.filtered(activities.model.EDGE).length,
-                       0, "model.filtered(activities.model.EDGE).length");
+                model.remove(a1);
+                equals(model.get("children").length,
+                       3, "model.filtered(Models.Action).length");
             });
             
             module("activities.ui.ElementMatrix");
