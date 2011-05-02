@@ -21,7 +21,9 @@
  * - bdajax 1.0.2
  */
 
-define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.js', 'order!bdajax/bdajax.js', './model'], function() {
+define(['order!jquery', 'order!cdn/jquery.tools.min.js', 
+        'order!cdn/jquery.tmpl.js', 'order!bdajax/bdajax.js', 
+        './model', "./storage"], function() {
     
     /*
      * jQuery activities editor plugin
@@ -479,12 +481,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js', 'order!cdn/jquery.tmpl.
         
         perform: function() {
             data = this.actions.editor.model;
-            json = JSON.stringify(data);
-            localStorage.setItem('a', json);
-            json = localStorage.getItem('a');
-            data = JSON.parse(json);
-            this.actions.editor.openDiagram(model);
-            bdajax.error('Not implemented');
+            data.save();
         }
     });
     
