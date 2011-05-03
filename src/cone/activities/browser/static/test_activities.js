@@ -203,10 +203,6 @@ define(['activities/core', 'cdn/qunit.js'], function($) {
             test("Model.create[Node|Edge]", function() {
                 var source = model.create(Models.Action);
                 equals(source.get("name").length, 36, "source.get(name).length");
-                equals(source.get("incoming_edges").length,
-                       0, "source.incoming_edges");
-                equals(source.get("outgoing_edges").length,
-                       0, "source.outgoing_edges");
                 var target = model.create(Models.Action);
                 var edge = model.createEdge(source, target);
                 equals(edge.get("name").length, 36, "edge.get(name).length");
@@ -214,14 +210,14 @@ define(['activities/core', 'cdn/qunit.js'], function($) {
                        "edge.source instanceof Models.Element");
                 equals(edge.get("target") instanceof Models.Element, true, 
                        "edge.target instanceof Models.Element");
-                equals(edge === source.get("outgoing_edges")[0],
-                       true, "edge === source.get(outgoing_edges)[0]");
-                equals(edge === target.get("incoming_edges")[0],
-                       true, "edge.__name == target.incoming_edges[0");
                 equals(edge.get("source") == source,
                        true, "edge.source == source.__name");
                 equals(edge.get("target") == target,
                        true, "edge.target == target.__name");
+                equals(model.getEdgesFor(source).length, 1);
+                equals(model.getEdgesFor(target).length, 1);
+                equals(model.getEdgesFor(source)[0], edge);
+                equals(model.getEdgesFor(target)[0], edge);
             });
                  
             test("Model.remove", function() {

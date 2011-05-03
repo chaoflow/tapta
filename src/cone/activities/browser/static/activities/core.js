@@ -427,7 +427,9 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
         },
         
         perform: function() {
-            this.actions.editor.newDiagram();
+            var model = this.actions.editor.model.fetch();
+            this.actions.editor.openDiagram(model);
+            //this.actions.editor.newDiagram();
         }
     });
     
@@ -459,6 +461,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                 model = tests.create_test_model_2();
                 activities.actions.OpenDiagram._open = 1;
             }
+            model = new activities.model.Activity(model);
             this.actions.editor.openDiagram(model);
         }
     });
@@ -1358,7 +1361,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          * open existing diagram
          */
         openDiagram: function(model) {
-            this.model = new activities.model.Activity(model);
+            this.model = model;
             this.init();
         }
     };
@@ -1598,20 +1601,18 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                 this.displayProperty('Source:', node.get("source") || '');
                 this.displayProperty('Target:', node.ger("target") || '');
             } else if (node instanceof activities.model.Activity) {
-                var incoming = node.get("incoming_edges");
-                if(incoming == undefined){
-                    var val = 0;
-                }else{
-                    var val = incoming.length;
-                }
-                this.displayProperty('Incoming Edges:', val);
-                var outgoing = node.get("outgoing_edges");
-                if(outgoing == undefined){
-                    var val = 0;
-                }else{
-                    var val = outgoing.length;
-                }
-                this.displayProperty('Outgoing Edges:', val);
+                var incoming_count = 0;
+                var outgoing_count = 0;
+                _.each(this.model.getEdgesFor(node), function(edge){
+                    if(node.get("source") === node){
+                        outgoing_count += 1;
+                    }
+                    if(node.get("target") === node){
+                        incoming_count += 1;
+                    }
+                });
+                this.displayProperty('Incoming Edges:', incoming_count);
+                this.displayProperty('Outgoing Edges:', outgoing_count);
             }
             var properties = this;
             $('.update', this.container).unbind().bind('click', function(evt) {
@@ -1926,12 +1927,16 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                 this.node2tier[uid] = tier;
             }else if (tier > this.node2tier[uid]){
                 this.node2tier[uid] = tier;
-            }
-            var outgoing_edges = node.get("outgoing_edges");
+            } 
             var here = this;
-            _.each(outgoing_edges, function(edge){
-                here.fillNode2TierMap(edge.get("target"), tier + 1);
-            });
+            _(this.model.getEdgesFor(node))
+                .chain()
+                .select(function(edge){                
+                    return edge.get("source") === node;
+                })
+                .each(function(edge){
+                    here.fillNode2TierMap(edge.get("target"), tier + 1);
+                });
         },
         
         /*
@@ -1951,22 +1956,31 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
         
         /*
          * Recursivly set tier kinks (What are tier kinks?)
+         * Kinks are the endpoints of edges
          */
         setTierKinks: function(node, tier) {
             if(tier === undefined){
                 tier = 0;
             }
             var here = this;
-            _.each(node.get("outgoing_edges"), function(edge){
-                var target = edge.get("target");
-                diff = here.node2tier[target] - here.node2tier[node];
-                if (diff > 1){
-                    for(var i=1;i<diff;i++){
-                        here.tiers[tier+i].push(edge);
+            /* For each edge, look how big is the difference between
+             * source and target endpoint and add the edge to all
+             * tiers inbetween source and target */
+            _(this.model.getEdgesFor(node))
+                .chain()
+                .select(function(edge){                
+                    return edge.get("source") === node;
+                })
+                .each(function(edge){
+                    var target = edge.get("target");
+                    diff = here.node2tier[target] - here.node2tier[node];
+                    if (diff > 1){
+                        for(var i=1;i<diff;i++){
+                            here.tiers[tier+i].push(edge);
+                        }
                     }
-                }
-                here.setTierKinks(target, tier + 1);
-            });
+                    here.setTierKinks(target, tier + 1);
+                });
         },
         
         /*
@@ -2052,6 +2066,11 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             
             this.fillTier2NodeMap();
             
+            // pg: This is kind of strange, it seems that the
+            // Node2TierMap is no longer used at this point, it was
+            // used by the fillTier2NodeMap to fill this.tiers, but
+            // setTierKinks adds more entries to the Node2Tier map
+            // which apparently isnt used any longer
             // set kink ids (edge) for each tier recursivly
             this.setTierKinks(initial);
             

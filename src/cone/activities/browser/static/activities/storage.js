@@ -10,23 +10,23 @@ define(["cdn/backbone.js"], function(){
             localStorage.setItem(this.name, JSON.stringify(this.data));
         },
         create: function(model) {
-            this.data[model.get("uid")] = model;
+            this.data[model.get("id")] = model;
             this.save();
             return model;
         },
         update: function(model) {
-            this.data[model.get("uid")] = model;
+            this.data[model.get("id")] = model;
             this.save();
             return model;
         },
         find: function(model) {
-            return this.data[model.get("uid")];
+            return this.data[model.get("id")];
         },
         findAll: function() {
             return _.values(this.data);
         },
         destroy: function(model) {
-            delete this.data[model.get("uid")];
+            delete this.data[model.get("id")];
             this.save();
             return model;
         }
