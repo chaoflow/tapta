@@ -529,7 +529,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
         
         perform: function(editor, obj, event) {
             this.unselect();
-            var node = editor.model.createNode(this.type);
+            var node = editor.model.create(this.type);
             var diagram = editor.diagram;
             var elem = diagram.get(node);
             var current = diagram.currentCursor(event);
@@ -570,7 +570,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                                            actions,
                                            'final_node',
                                            'Final Node',
-                                           activities.model.FinalNode);
+                                           activities.model.Final);
     };
     activities.actions.FinalNode.prototype =
         new activities.actions.NodeAction;
@@ -681,7 +681,14 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             if (typeof(this.target) == "undefined") {
                 return;
             }
-            var node = editor.model.createEdge(this.source, this.target);
+            var source_id = this.source;
+            var source_ob = _.select(editor.model.get("children"), 
+                                     function(node){return node.id === source_id;
+                                            })[0];
+            var target_id = this.target;
+            var target_ob = _.select(editor.model.get("children"),
+                                    function(node){return node.id === target_id;})[0];
+            var node = editor.model.createEdge(source_ob, target_ob);
             diagram.createEdge(node);
             this.source = null;
             this.target = null;
@@ -1587,7 +1594,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                 node = this.model;
             } else {
                 var path = elem.diagram.mapping[elem.triggerColor];
-                node = _.filter(this.model.get("children"), function(node){return node.get("uid") == path})[0];
+                node = _.filter(this.model.get("children"), function(node){return node.id == path})[0];
             }
             this.recent_node = node;
             this.recent_element = elem;
@@ -1922,11 +1929,11 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             if (tier === undefined){
                 tier = 0;
             }
-            uid = node.get("uid");
-            if(this.node2tier[uid] === undefined){
-                this.node2tier[uid] = tier;
-            }else if (tier > this.node2tier[uid]){
-                this.node2tier[uid] = tier;
+            var id = node.id;
+            if(this.node2tier[id] === undefined){
+                this.node2tier[id] = tier;
+            }else if (tier > this.node2tier[id]){
+                this.node2tier[id] = tier;
             } 
             var here = this;
             _(this.model.getEdgesFor(node))
@@ -1943,13 +1950,13 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          * Fill the mapping of tiers to nodes
          */
         fillTier2NodeMap: function() {
-            for (var uid in this.node2tier) {
-                tier = this.node2tier[uid];
+            for (var id in this.node2tier) {
+                tier = this.node2tier[id];
                 if (this.tiers[tier] === undefined) {
                     this.tiers[tier] = new Array();
                 }
                 this.tiers[tier].push(_.select(this.model.get("children"), function(node){
-                    return node.get("uid") == uid;
+                    return node.id == id;
                 })[0]);
             }
         },
@@ -1989,6 +1996,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          * XXX: maybe in diagram
          */
         createEdges: function() {
+            debugger;
             var diagram = this.diagram;
             var model = this.model;
             var edges = _.filter(model.get("children"), function(node){
@@ -2477,8 +2485,8 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             elem.triggerColor = triggerColor;
             this.elements[triggerColor] = elem;
             // XXX: dottedpath
-            this.mapping[triggerColor] = node.get("uid");
-            this.r_mapping[node.get("uid")] = triggerColor;
+            this.mapping[triggerColor] = node.id;
+            this.r_mapping[node.id] = triggerColor;
             elem.bind();
             elem.label = node.get("label") || '';
             elem.description = node.get("description") || '';
@@ -2509,12 +2517,14 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          * remove diagram elements
          */
         remove: function(path) {
+            debugger;
             var model = this.editor.model;
-            var node = model.node(path);
+            var node = _.filter(this.editor.model.get("children"), 
+                                function(node){return node.id == path})[0];
             if (!node) {
                 return;
             }
-            var triggerColor = this.r_mapping[node.get("uid")];
+            var triggerColor = this.r_mapping[node.id];
             if (!triggerColor) {
                 return;
             }
@@ -2534,7 +2544,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             }
             delete this.elements[triggerColor];
             delete this.mapping[triggerColor];
-            delete this.r_mapping[node.get("uid")];
+            delete this.r_mapping[node.id];
         },
         
         /*
@@ -2542,7 +2552,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          */
         get: function(node) {
             // check if element already exists
-            var trigger = this.r_mapping[node.get("uid")];
+            var trigger = this.r_mapping[node.id];
             if (trigger) {
                 return this.elements[trigger];
             }
@@ -2557,7 +2567,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             if (node instanceof activities.model.Edge){
                 // this is a kink
                 elem = new activities.ui.Kink();
-                var trigger = this.r_mapping[node.get("uid")];
+                var trigger = this.r_mapping[node.id];
                 var edge = this.elements[trigger];
                 edge.kinks.push(elem);
                 return kink;
@@ -2571,9 +2581,10 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          * create diagram edge
          */
         createEdge: function(node) {
+            debugger;
             var elem = new activities.ui.Edge();
-            elem.source = node.source;
-            elem.target = node.target;
+            elem.source = node.get("source");
+            elem.target = node.get("target");
             this.map(node, elem);
             return elem;
         },
@@ -3209,8 +3220,8 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          */
         render: function() {
             var diagram = this.diagram;
-            var source = diagram.elements[diagram.r_mapping[this.source.get("uid")]];
-            var target = diagram.elements[diagram.r_mapping[this.target.get("uid")]];
+            var source = diagram.elements[diagram.r_mapping[this.source.id]];
+            var target = diagram.elements[diagram.r_mapping[this.target.id]];
             
             // do not render edge if source and target refer to same 
             // diagram position

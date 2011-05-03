@@ -26,7 +26,7 @@ define(['cdn/underscore.js', "cdn/backbone.js"], function(){
     Models.Element = Backbone.Model.extend({
         initialize: function(){
             this.set({name: this.get("name") || createUID(),
-                      uid: createUID()});
+                      id: createUID()});
         },
     });
 
@@ -45,8 +45,8 @@ define(['cdn/underscore.js', "cdn/backbone.js"], function(){
         initialize : function(){
             // Tell the children who their father is and give them
             // names
-            this.set({id:'test'})
             Models.Element.prototype.initialize.call(this);
+            this.set({id:'test'})
         },
         initial : function(){
             return _(this.get("children")).chain()
