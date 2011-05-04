@@ -6,7 +6,7 @@
   or adding an action (Model action) to an editor view.
   */
 
-define([''], function(){
+define([], function(){
 
     if (!window.activities){
         window.activities = {};
