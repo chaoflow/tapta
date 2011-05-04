@@ -1,4 +1,4 @@
-define(['cdn/underscore.js', "cdn/backbone.js"], function(){
+define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views"], function(){
     // ************************************************************************
     // activities.model.Model
     // ************************************************************************
@@ -93,25 +93,46 @@ define(['cdn/underscore.js', "cdn/backbone.js"], function(){
         },
     } , {display_name : "Activity"});
 
-    Models.Initial = Models.Node.extend({} ,
+    Models.Initial = Models.Node.extend({
+        createView: function(){
+            return new activities.ui.Initial();
+        }} ,
                                         {display_name : "Initial Node"});
 
-    Models.Fork = Models.Node.extend({} ,
+    Models.Fork = Models.Node.extend({
+        createView: function(){
+            return new activities.ui.Fork();
+        }} ,
                                      {display_name : "Fork"});
 
-    Models.Join = Models.Node.extend({} ,
+    Models.Join = Models.Node.extend({ 
+        createView: function(){
+            return new activities.ui.Join();
+        }} ,
                                      {display_name : "Join"});
 
-    Models.Decision = Models.Node.extend({} ,
+    Models.Decision = Models.Node.extend({
+        createView: function(){
+            return new activities.ui.Decision();
+        }} ,
                                          {display_name : "Decision"});
 
-    Models.Merge = Models.Node.extend({} ,
+    Models.Merge = Models.Node.extend({  
+        createView: function(){
+            return new activities.ui.Merge();
+        }} ,
                                       {display_name : "Merge"});
 
-    Models.Final = Models.Node.extend({} ,
+    Models.Final = Models.Node.extend({
+        createView: function(){
+            return new activities.ui.Final();
+        }} ,
                                       {display_name : "Final Node"});
 
-    Models.Action = Models.Node.extend({} ,
+    Models.Action = Models.Node.extend({
+        createView: function(){
+            return new activities.ui.Action();
+        }} ,
                                        {display_name : "Action"});
 
     Models.Edge = Models.Element.extend({

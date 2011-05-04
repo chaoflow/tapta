@@ -1,8 +1,34 @@
-require(["settings"], function(){
-    // ************************************************************************
-    // activities.ui.Element
-    // ************************************************************************
-    
+require(["activities/settings"], function(){
+
+    if (!window.activities.ui){
+        window.activities.ui = {};
+    }
+
+    activities.ui = {
+        
+        /*
+         * lookup diagram on object.
+         * object is either diagram or diagram element
+         */
+        getDiagram: function(obj) {
+            return obj.isDiag ? obj : obj.diagram;
+        },
+        
+        /*
+         * toggles control canvas with diagram canvas
+         */
+        toggleCanvas: function(name) {
+            var canvas = $('#diagram_' + name);
+            var control = $('#control_' + name);
+            if (canvas.css('z-index') == 1) {
+                canvas.css('z-index', 0);
+                control.css('z-index', 1);
+            } else {
+                canvas.css('z-index', 1);
+                control.css('z-index', 0);
+            }
+        }
+    }
 
     // ************************************************************************
     // activities.ui.Rendering
@@ -849,4 +875,102 @@ require(["settings"], function(){
         this.x = null;
         this.y = null;
     };
+
+    // ************************************************************************
+    // activities.ui.Overlay
+    // ************************************************************************
+    
+    activities.ui.Overlay = function(element) {
+        activities.ui.Rendering.call(this);
+        this.element = element;
+        this.diagram = element.diagram;
+        
+        var settings = activities.settings.overlay;
+        this.padding = settings.padding;
+        this.fillColor = settings.fillColor;
+        this.borderColor = settings.borderColor;
+        this.alpha = settings.alpha;
+        this.textColor = settings.textColor;
+        this.textAlign = 'left';
+        this.textBaseline = 'top';
+    };
+    activities.ui.Overlay.prototype = new activities.ui.Rendering;
+    
+    $.extend(activities.ui.Overlay.prototype, {
+        
+        /*
+         * render info overlay
+         */
+        render: function() {
+            var ctx = this.diagram.diag_ctx;
+            ctx.save();
+            
+            var element = this.element;
+            var label = element.label;
+            var description = element.description.split('\n');
+            
+            var lines = ['Label:'];
+            lines = lines.concat([label]);
+            lines = lines.concat(['', 'Description:']);
+            lines = lines.concat(description);
+            
+            var lineHeight = this.lineHeight;
+            var padding = this.padding;
+            
+            ctx.font = this.font();
+            var width = ctx.measureText(label).width + 2 * padding;
+            var height = (lines.length * lineHeight) + 2 * padding;
+            
+            var line, line_width;
+            for (var i in lines) {
+                line = lines[i];
+                line_width = ctx.measureText(line).width;
+                if (line_width > width) {
+                    width = line_width + 2 * padding;
+                }
+            }
+            
+            var x, y;
+            if (element.zero) {
+                var zero = element.zero();
+                x = zero[0];
+                y = zero[1];
+            } else {
+                x = element.x;
+                y = element.y;
+            }
+            
+            var diagram = element.diagram;
+            var current = diagram.currentCursor({
+                pageX: activities.glob.mouse.x,
+                pageY: activities.glob.mouse.y
+            });
+            current = diagram.translateCursor(current[0], current[1]);
+            
+            var offset = [current[0] - x, current[1] - y];
+            x = x + offset[0] + width / 2;
+            y = y + offset[1] + height / 2;
+            
+            ctx.translate(x, y);
+            ctx.globalAlpha = this.alpha;
+            this.fillRect(ctx, this.fillColor, width, height, false, 3);
+            this.strokeRect(ctx, this.borderColor, 3, width, height);
+            ctx.globalAlpha = 1.0;
+            
+            ctx.fillStyle = this.textColor;
+            ctx.textAlign = this.textAlign;
+            ctx.textBaseline = this.textBaseline;
+            
+            x = width / 2 * -1 + padding;
+            y = height / 2 * -1 + padding;
+            ctx.translate(x, y);
+            y = 0;
+            for (var i in lines) {
+                ctx.fillText(lines[i], 0, y, width);
+                y = y + lineHeight;
+            }
+            ctx.restore();
+        }
+    });  
+
 });
