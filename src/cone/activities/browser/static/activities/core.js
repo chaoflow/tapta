@@ -86,17 +86,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                      + String(c.charAt(dec - (Math.floor(dec / 16) * 16)));
             },
             
-            
-            /*
-             * remove array item
-             * 
-             * http://ejohn.org/blog/javascript-array-remove/
-             */
-            removeArrayItem: function(arr, from, to) {
-                var rest = arr.slice((to || from) + 1 || arr.length);
-                arr.length = from < 0 ? arr.length + from : from;
-                return arr.push.apply(arr, rest);
-            }
         },
         
         
