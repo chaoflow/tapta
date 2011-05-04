@@ -1,3 +1,11 @@
+/*
+  In this file, action means a user action.
+  The action repsonsability consists of:
+  Rendering a button for itself, 
+  and performing the action, like saving everything
+  or adding an action (Model action) to an editor view.
+  */
+
 define([''], function(){
 
     if (!window.activities){
@@ -29,6 +37,8 @@ define([''], function(){
             return section;
         }
     }
+
+    
 
     // ************************************************************************
     // activities.actions.Action
