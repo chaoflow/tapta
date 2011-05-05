@@ -1632,7 +1632,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          * remove diagram elements
          */
         remove: function(path) {
-            debugger;
             var model = this.editor.model;
             var node = _.filter(this.editor.model.get("children"), 
                                 function(node){return node.id == path})[0];

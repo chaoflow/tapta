@@ -737,24 +737,21 @@ require(["activities/settings"], function(){
          */
         translate: function(source, target) {
             var x, y;
+            var coords;
             if (this.kinks.length != 0) {
-                x = this.kinks[0].x;
-                y = this.kinks[0].y;
+                coords = [this.kinks[0].x, this.kinks[0].y]
             } else {
-                x = target.x;
-                y = target.y;
+                coords = target.getCoordinates();
             }
-            this._start = source.translateEdge(x, y);
+            this._start = source.translateEdge(coords.x, coords.y);
             
             if (this.kinks.length != 0) {
                 var last = this.kinks.length - 1;
-                x = this.kinks[last].x;
-                y = this.kinks[last].y;
+                coords = [this.kinks[last].x, this.kinks[last].y];
             } else {
-                x = source.x;
-                y = source.y;
+                coords = source.getCoordinates();
             }
-            this._end = target.translateEdge(x, y);
+            this._end = target.translateEdge(coords.x, coords.y);
         },
         
         /*
@@ -814,7 +811,7 @@ require(["activities/settings"], function(){
             
             // do not render edge if source and target refer to same 
             // diagram position
-            if (source.x == target.x && source.y == target.y) {
+            if (_.isEqual(source.getCoordinates(), target.getCoordinates())) {
                 return;
             }
             
