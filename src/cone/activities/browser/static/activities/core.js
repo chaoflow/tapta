@@ -492,15 +492,13 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                 var elem;
                 for (var idx in selected) {
                     elem = selected[idx];
-                    elem.x -= offset[0];
-                    elem.y -= offset[1];
+                    elem.setCoordinates(offset[0], offset[1]);
                 }
             
             // single drag
             } else {
                 var translated = diagram.translateCursor(x, y);
-                recent.x = translated[0];
-                recent.y = translated[1];
+                recent.setCoordinates(translated[0], translated[1]);
                 recent.selected = true;
             }
             diagram.render();
@@ -1043,8 +1041,8 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             for (var idx in diagram.elements) {
                 elem = diagram.elements[idx];
                 nearest = this.nearest(elem.x, elem.y);
-                elem.x = nearest[0] * this.res_x;
-                elem.y = nearest[1] * this.res_y;
+                elem.setCoordinates(nearest[0] * this.res_x, 
+                                    nearest[1] * this.res_y);
             }
         }
     };
@@ -1123,8 +1121,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
                 for (var j = 0; j < size[1]; j++) {
                     elem = this.get(i, j);
                     if (elem) {
-                        elem.x = x;
-                        elem.y = y;
+                        elem.setCoordinates(x, y);
                     }
                     y += this.grid.res_y;
                 }

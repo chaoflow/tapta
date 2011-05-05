@@ -319,8 +319,7 @@ require(["activities/settings"], function(){
     
     activities.ui.Node = function() {
         activities.ui.Element.call(this);
-        this.x = 0;
-        this.y = 0;
+        this.setCoordinates(0, 0);
         
         var settings = activities.settings.node;
         this.edgeOffset = settings.edgeOffset;
@@ -338,6 +337,16 @@ require(["activities/settings"], function(){
         
         SHAPE_RECT: 0,
         SHAPE_CIRCLE: 1,
+
+        getCoordinates: function(){
+            return {x: this._x,
+                    y: this._y};
+        },
+
+        setCoordinates: function(x, y){
+            this._x = x;
+            this._y = y;
+        },
         
         /*
          * bind node to dispatcher
@@ -381,17 +390,18 @@ require(["activities/settings"], function(){
          * translation.
          */
         translateDirection: function(x, y, x_diff, y_diff, angle) {
-            if (x - this.x >= 0 && y - this.y >= 0) {
-                return [this.x + x_diff, this.y + y_diff, angle - 180];
+            var coords = this.getCoordinates();
+            if (x - coords.x >= 0 && y - coords.y >= 0) {
+                return [coords.x + x_diff, coords.y + y_diff, angle - 180];
             }
-            if (x - this.x >= 0 && y - this.y <= 0) {
-                return [this.x + x_diff, this.y - y_diff, 180 - angle];
+            if (x - coords.x >= 0 && y - coords.y <= 0) {
+                return [coords.x + x_diff, coords.y - y_diff, 180 - angle];
             }
-            if (x - this.x <= 0 && y - this.y <= 0) {
-                return [this.x - x_diff, this.y - y_diff, angle];
+            if (x - coords.x <= 0 && y - coords.y <= 0) {
+                return [coords.x - x_diff, coords.y - y_diff, angle];
             }
-            if (x - this.x <= 0 && y - this.y >= 0) {
-                return [this.x - x_diff, this.y + y_diff, angle * -1];
+            if (x - coords.x <= 0 && y - coords.y >= 0) {
+                return [coords.x - x_diff, coords.y + y_diff, angle * -1];
             }
         }
     });
@@ -414,8 +424,9 @@ require(["activities/settings"], function(){
          * point coordinate.
          */
         translateEdge: function(x, y) {
-            var gk = y - this.y;
-            var ak = this.x - x;
+            var coords = this.getCoordinates();
+            var gk = y - coords.y;
+            var ak = coords.x - x;
             var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
             var rad = this.radius + this.edgeOffset;
             var cos = Math.cos(Math.PI * angle / 180.0);
@@ -431,7 +442,8 @@ require(["activities/settings"], function(){
         renderCtl: function() {
             var ctx = this.diagram.ctl_ctx;
             ctx.save();
-            ctx.translate(this.x, this.y);
+            var coords = this.getCoordinates();
+            ctx.translate(coords.x, coords.y);
             this.fillCircle(ctx, this.triggerColor, this.radius);
             ctx.restore();
         },
@@ -450,7 +462,8 @@ require(["activities/settings"], function(){
             }
             var ctx = this.diagram.diag_ctx;
             ctx.save();
-            ctx.translate(this.x, this.y);
+            var coords = this.getCoordinates();
+            ctx.translate(coords.x, coords.y);
             this.fillCircle(ctx, fillColor, this.radius, true);
             this.strokeCircle(ctx, borderColor, this.radius, this.borderWidth);
             ctx.restore();
@@ -479,11 +492,12 @@ require(["activities/settings"], function(){
         translateEdge: function(x, y) {
             var width = this.width;
             var height = this.height;
+            var coords = this.getCoordinates();
             var gk = height / 2;
             var ak = width / 2;
             var marker = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
-            gk = y - this.y;
-            ak = this.x - x;
+            gk = y - coords.y;
+            ak = coords.x - x;
             var angle = Math.abs(Math.atan(gk / ak) * 90 / (Math.PI / 2));
             var angle_orgin = angle;
             if (this.rotation > 0) {
@@ -523,7 +537,8 @@ require(["activities/settings"], function(){
         renderCtl: function() {
             var ctx = this.diagram.ctl_ctx;
             ctx.save();
-            ctx.translate(this.x, this.y);
+            var coords = this.getCoordinates();
+            ctx.translate(coords.x, coords.y);
             if (this.rotation) {
                 ctx.rotate(this.rotation * Math.PI / 180);
             }
@@ -546,7 +561,8 @@ require(["activities/settings"], function(){
             }
             var ctx = this.diagram.diag_ctx;
             ctx.save();
-            ctx.translate(this.x, this.y);
+            var coords = this.getCoordinates();
+            ctx.translate(coords.x, coords.y);
             if (this.rotation) {
                 ctx.rotate(this.rotation * Math.PI / 180);
             }
@@ -559,7 +575,8 @@ require(["activities/settings"], function(){
             if (this.renderLabel) {
                 var label = this.label;
                 ctx.save();
-                ctx.translate(this.x, this.y);
+                var coords = this.getCoordinates();
+                ctx.translate(coords.x, coords.y);
                 this.drawLabel(ctx, label, 200);
                 ctx.restore();
             }
@@ -602,7 +619,8 @@ require(["activities/settings"], function(){
             }
             ctx = this.diagram.diag_ctx;
             ctx.save();
-            ctx.translate(this.x, this.y);
+            var coords = this.getCoordinates();
+            ctx.translate(coords.x, coords.y);
             this.fillCircle(ctx, borderColor, this.radius, true);
             this.fillCircle(ctx, fillColor, this.radius - this.borderWidth);
             this.fillCircle(ctx, borderColor, this.radius / 2);
