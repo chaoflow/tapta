@@ -695,7 +695,6 @@ require(["activities/settings"], function(){
         this.source = null;
         this.target = null;
         this.renderLabel = true;
-        this.kinks = new Array();
     };
     activities.ui.Edge.prototype = new activities.ui.Element;
     
@@ -738,19 +737,10 @@ require(["activities/settings"], function(){
         translate: function(source, target) {
             var x, y;
             var coords;
-            if (this.kinks.length != 0) {
-                coords = [this.kinks[0].x, this.kinks[0].y]
-            } else {
-                coords = target.getCoordinates();
-            }
+            coords = target.getCoordinates();
             this._start = source.translateEdge(coords.x, coords.y);
             
-            if (this.kinks.length != 0) {
-                var last = this.kinks.length - 1;
-                coords = [this.kinks[last].x, this.kinks[last].y];
-            } else {
-                coords = source.getCoordinates();
-            }
+            coords = source.getCoordinates();
             this._end = target.translateEdge(coords.x, coords.y);
         },
         
@@ -770,11 +760,6 @@ require(["activities/settings"], function(){
         renderPath: function(ctx) {
             ctx.beginPath();
             ctx.moveTo(this._start[0], this._start[1]);
-            var kink;
-            for (var idx in this.kinks) {
-                kink = this.kinks[idx];
-                ctx.lineTo(kink.x, kink.y);
-            }
             ctx.lineTo(this._end[0], this._end[1]);
             ctx.closePath();
         },
@@ -879,18 +864,6 @@ require(["activities/settings"], function(){
     });
     
     
-    // ************************************************************************
-    // activities.ui.Kink
-    // ************************************************************************
-    
-    /*
-     * represents a kink of an edge.
-     */
-    activities.ui.Kink = function() {
-        this.x = null;
-        this.y = null;
-    };
-
     // ************************************************************************
     // activities.ui.Overlay
     // ************************************************************************

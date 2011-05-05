@@ -1270,35 +1270,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
         },
         
         /*
-         * Recursivly set tier kinks (What are tier kinks?)
-         * Kinks are the endpoints of edges
-         */
-        setTierKinks: function(node, tier) {
-            if(tier === undefined){
-                tier = 0;
-            }
-            var here = this;
-            /* For each edge, look how big is the difference between
-             * source and target endpoint and add the edge to all
-             * tiers inbetween source and target */
-            _(this.model.getEdgesFor(node))
-                .chain()
-                .select(function(edge){                
-                    return edge.get("source") === node;
-                })
-                .each(function(edge){
-                    var target = edge.get("target");
-                    diff = here.node2tier[target] - here.node2tier[node];
-                    if (diff > 1){
-                        for(var i=1;i<diff;i++){
-                            here.tiers[tier+i].push(edge);
-                        }
-                    }
-                    here.setTierKinks(target, tier + 1);
-                });
-        },
-        
-        /*
          * create edges
          * 
          * XXX: maybe in diagram
@@ -1380,14 +1351,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             this.fillNode2TierMap(initial);
             
             this.fillTier2NodeMap();
-            
-            // pg: This is kind of strange, it seems that the
-            // Node2TierMap is no longer used at this point, it was
-            // used by the fillTier2NodeMap to fill this.tiers, but
-            // setTierKinks adds more entries to the Node2Tier map
-            // which apparently isnt used any longer
-            // set kink ids (edge) for each tier recursivly
-            this.setTierKinks(initial);
             
             // create edges
             this.createEdges();
@@ -1678,14 +1641,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          */
         createNode: function(node) {
             var elem;
-            if (node instanceof activities.model.Edge){
-                // this is a kink
-                elem = new activities.ui.Kink();
-                var trigger = this.r_mapping[node.id];
-                var edge = this.elements[trigger];
-                edge.kinks.push(elem);
-                return kink;
-            }
             elem = node.createView();
             this.map(node, elem);
             return elem;
