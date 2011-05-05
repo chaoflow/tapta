@@ -1311,7 +1311,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
             });
             for (var idx in edges) {
                 var edge = edges[idx];
-                var elem = new activities.ui.Edge();
+                var elem = new activities.ui.Edge(edge);
                 elem.source = edge.get("source");
                 elem.target = edge.get("target");
                 diagram.map(edge, elem);
@@ -1596,7 +1596,6 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          */
         map: function(node, elem) {
             var triggerColor = this.nextTriggerColor();
-            elem.node = node;
             elem.diagram = this;
             elem.triggerColor = triggerColor;
             this.elements[triggerColor] = elem;
@@ -1697,8 +1696,7 @@ define(['order!jquery', 'order!cdn/jquery.tools.min.js',
          * create diagram edge
          */
         createEdge: function(node) {
-            debugger;
-            var elem = new activities.ui.Edge();
+            var elem = new activities.ui.Edge(node);
             elem.source = node.get("source");
             elem.target = node.get("target");
             this.map(node, elem);

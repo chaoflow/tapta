@@ -95,43 +95,43 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views"], fun
 
     Models.Initial = Models.Node.extend({
         createView: function(){
-            return new activities.ui.Initial();
+            return new activities.ui.Initial(this);
         }} ,
                                         {display_name : "Initial Node"});
 
     Models.Fork = Models.Node.extend({
         createView: function(){
-            return new activities.ui.Fork();
+            return new activities.ui.Fork(this);
         }} ,
                                      {display_name : "Fork"});
 
     Models.Join = Models.Node.extend({ 
         createView: function(){
-            return new activities.ui.Join();
+            return new activities.ui.Join(this);
         }} ,
                                      {display_name : "Join"});
 
     Models.Decision = Models.Node.extend({
         createView: function(){
-            return new activities.ui.Decision();
+            return new activities.ui.Decision(this);
         }} ,
                                          {display_name : "Decision"});
 
     Models.Merge = Models.Node.extend({  
         createView: function(){
-            return new activities.ui.Merge();
+            return new activities.ui.Merge(this);
         }} ,
                                       {display_name : "Merge"});
 
     Models.Final = Models.Node.extend({
         createView: function(){
-            return new activities.ui.Final();
+            return new activities.ui.Final(this);
         }} ,
                                       {display_name : "Final Node"});
 
     Models.Action = Models.Node.extend({
         createView: function(){
-            return new activities.ui.Action();
+            return new activities.ui.Action(this);
         }} ,
                                        {display_name : "Action"});
 

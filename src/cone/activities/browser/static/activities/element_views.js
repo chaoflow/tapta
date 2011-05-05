@@ -221,9 +221,9 @@ require(["activities/settings"], function(){
         }
     };
 
-    activities.ui.Element = function() {
+    activities.ui.Element = function(node) {
         activities.ui.Rendering.call(this);
-        this.node = null;
+        this.node = node;
         this.diagram = null;
         this.triggerColor = null;
         
@@ -317,8 +317,8 @@ require(["activities/settings"], function(){
     // activities.ui.Node
     // ************************************************************************
     
-    activities.ui.Node = function() {
-        activities.ui.Element.call(this);
+    activities.ui.Node = function(node) {
+        activities.ui.Element.call(this, node);
         this.setCoordinates(0, 0);
         
         var settings = activities.settings.node;
@@ -411,8 +411,8 @@ require(["activities/settings"], function(){
     // activities.ui.CircleNode
     // ************************************************************************
     
-    activities.ui.CircleNode = function(radius) {
-        activities.ui.Node.call(this);
+    activities.ui.CircleNode = function(radius, node) {
+        activities.ui.Node.call(this, node);
         this.radius = radius;
     };
     activities.ui.CircleNode.prototype = new activities.ui.Node;
@@ -475,8 +475,8 @@ require(["activities/settings"], function(){
     // activities.ui.RectNode
     // ************************************************************************
     
-    activities.ui.RectNode = function(width, height, rotation) {
-        activities.ui.Node.call(this);
+    activities.ui.RectNode = function(width, height, rotation, node) {
+        activities.ui.Node.call(this, node);
         this.width = width;
         this.height = height;
         this.rotation = rotation;
@@ -588,8 +588,8 @@ require(["activities/settings"], function(){
     // activities.ui.Initial
     // ************************************************************************
     
-    activities.ui.Initial = function() {
-        activities.ui.CircleNode.call(this, 20);
+    activities.ui.Initial = function(node) {
+        activities.ui.CircleNode.call(this, 20, node);
     };
     activities.ui.Initial.prototype = new activities.ui.CircleNode;
     
@@ -598,8 +598,8 @@ require(["activities/settings"], function(){
     // activities.ui.Final
     // ************************************************************************
     
-    activities.ui.Final = function() {
-        activities.ui.CircleNode.call(this, 20);
+    activities.ui.Final = function(node) {
+        activities.ui.CircleNode.call(this, 20, node);
     };
     activities.ui.Final.prototype = new activities.ui.CircleNode;
     
@@ -633,8 +633,8 @@ require(["activities/settings"], function(){
     // activities.ui.Action
     // ************************************************************************
     
-    activities.ui.Action = function() {
-        activities.ui.RectNode.call(this, 100, 70, 0);
+    activities.ui.Action = function(node) {
+        activities.ui.RectNode.call(this, 100, 70, 0, node);
         this.renderLabel = true;
     };
     activities.ui.Action.prototype = new activities.ui.RectNode;
@@ -644,8 +644,8 @@ require(["activities/settings"], function(){
     // activities.ui.Decision
     // ************************************************************************
     
-    activities.ui.Decision = function() {
-        activities.ui.RectNode.call(this, 40, 40, 45);
+    activities.ui.Decision = function(node) {
+        activities.ui.RectNode.call(this, 40, 40, 45, node);
         this.renderLabel = true;
     };
     activities.ui.Decision.prototype = new activities.ui.RectNode;
@@ -655,8 +655,8 @@ require(["activities/settings"], function(){
     // activities.ui.Merge
     // ************************************************************************
     
-    activities.ui.Merge = function() {
-        activities.ui.RectNode.call(this, 40, 40, 45);
+    activities.ui.Merge = function(node) {
+        activities.ui.RectNode.call(this, 40, 40, 45, node);
     };
     activities.ui.Merge.prototype = new activities.ui.RectNode;
     
@@ -665,8 +665,8 @@ require(["activities/settings"], function(){
     // activities.ui.Join
     // ************************************************************************
     
-    activities.ui.Join = function() {
-        activities.ui.RectNode.call(this, 10, 80, 0);
+    activities.ui.Join = function(node) {
+        activities.ui.RectNode.call(this, 10, 80, 0, node);
     };
     activities.ui.Join.prototype = new activities.ui.RectNode;
     
@@ -675,8 +675,8 @@ require(["activities/settings"], function(){
     // activities.ui.Fork
     // ************************************************************************
     
-    activities.ui.Fork = function() {
-        activities.ui.RectNode.call(this, 10, 80, 0);
+    activities.ui.Fork = function(node) {
+        activities.ui.RectNode.call(this, 10, 80, 0, node);
     };
     activities.ui.Fork.prototype = new activities.ui.RectNode;
     
@@ -685,8 +685,8 @@ require(["activities/settings"], function(){
     // activities.ui.Edge
     // ************************************************************************
     
-    activities.ui.Edge = function() {
-        activities.ui.Element.call(this);
+    activities.ui.Edge = function(node) {
+        activities.ui.Element.call(this, node);
         var settings = activities.settings.edge;
         this.color = settings.color;
         this.lineWidth = settings.lineWidth;
