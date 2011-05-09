@@ -11,7 +11,187 @@ define([], function(){
     if (!window.activities){
         window.activities = {};
     }
+
     window.activities.actions = {};
+    /*
+      This builds up the complete action menu
+    */
+
+    activities.actions.Menubar = function(id) {
+        this.selector = '#' + id + ' div.actions';
+        this.sections = new Array();
+        var section, action;
+        
+        // diagram management actions
+        section = new activities.actions.Section();
+        section.add(new activities.actions.NewDiagram(this));
+        section.add(new activities.actions.OpenDiagram(this));
+        section.add(new activities.actions.SaveDiagram(this));
+        this.sections.push(section);
+        
+        // diagram behavior releated
+        section = new activities.actions.Section();
+        section.add(new activities.actions.Snap(this));
+        this.sections.push(section);
+        
+        // diagram element related actions
+        section = new activities.actions.Section();
+        section.add(new activities.actions.InitialNode(this));
+        section.add(new activities.actions.FinalNode(this));
+        section.add(new activities.actions.ActionNode(this));
+        section.add(new activities.actions.JoinNode(this));
+        section.add(new activities.actions.ForkNode(this));
+        section.add(new activities.actions.MergeNode(this));
+        section.add(new activities.actions.DecisionNode(this));
+        section.add(new activities.actions.Edge(this));
+        section.add(new activities.actions.DeleteElement(this));
+        this.sections.push(section);
+        
+        // debugging and development actions
+        section = new activities.actions.Section(this);
+        section.add(new activities.actions.Monitor(this));
+        section.add(new activities.actions.RunTests(this));
+        section.add(new activities.actions.FlipLayers(this));
+        this.sections.push(section);
+        
+    };
+    
+    activities.actions.Menubar.prototype = {
+        
+        /*
+         * bind toolbar actions
+         */
+        bind: function() {
+            var elements = $(this.selector + ' a');
+            var actions = this;
+            var action, id, elem;
+            elements.each(function() {
+                elem = $(this);
+                id = elem.attr('class');
+                action = actions.get(id);
+                action.element = elem;
+            });
+            elements.unbind();
+            $(window.document).bind("clicked_on_empty_space", 
+                                    function(event, activity, position){
+                if(actions.pending()){
+                    actions.perform(event, activity, position);
+                }
+            });
+            elements.bind('click', function(event) {
+                event.preventDefault();
+                elem = $(this);
+                id = elem.attr('class');
+                action = actions.get(id);
+                action.click();
+            });
+            elements.hover(
+                function(event) {
+                    var elem = $(this);
+                    var id = elem.attr('class');
+                    var css_sprite = 
+                        activities.settings.actions.icon_css_sprite;
+                    var val = '-23px ' + css_sprite[id] + 'px';
+                    elem.css('background-position', val);
+                },
+                function(event) {
+                    var elem = $(this);
+                    var id = elem.attr('class');
+                    if (actions.get(id).active) {
+                        return;
+                    }
+                    var css_sprite = 
+                        activities.settings.actions.icon_css_sprite;
+                    var val = '0px ' + css_sprite[id] + 'px';
+                    elem.css('background-position', val);
+                });
+        },
+        
+        /*
+         * return true whether an action is pending
+         */
+        pending: function() {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (action.active && !action.steady && !action.busy) {
+                    return true;
+                }
+            }
+        },
+        
+        /*
+         * reset actions.
+         */
+        reset: function(unsteady_only) {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (unsteady_only && action.steady) {
+                    continue;
+                }
+                action.unselect();
+            }
+        },
+        
+        /*
+         * search for active action and perform
+         */
+        perform: function(event, activity, position) {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (action.active && !action.steady) {
+                    action.perform(event, activity, position);
+                }
+            }
+        },
+        
+        /*
+         * return all actions as array
+         */
+        actions: function() {
+            var ret = new Array();
+            for (var i in this.sections) {
+                for (var j in this.sections[i].actions) {
+                    ret.push(this.sections[i].actions[j]);
+                }
+            }
+            return ret;
+        },
+        
+        /*
+         * return action by id
+         */
+        get: function(id) {
+            var actions = this.actions();
+            var action;
+            for (var idx in actions) {
+                action = actions[idx];
+                if (action.id == id) {
+                    return action;
+                }
+            }
+            throw "No Action found with id '" + id + "'";
+        },
+        
+        /*
+         * render actions
+         */
+        render: function() {
+            var elements = $(this.selector);
+            $('a', elements).unbind();
+            elements.empty();
+            for (var idx in this.sections) {
+                this.sections[idx].render().appendTo(elements);
+            }
+            this.bind();
+        }
+    };
+
 
     /* 
        Section
@@ -241,21 +421,10 @@ define([], function(){
     
     $.extend(activities.actions.NodeAction.prototype, {
         
-        perform: function(editor, obj, event) {
+        perform: function(event, activity, position) {
+            jQuery(event.target).trigger("add_new_element", [this.type,
+                                         position]);
             this.unselect();
-            var node = editor.model.create(this.type);
-            var diagram = editor.diagram;
-            var elem = diagram.get(node);
-            var current = diagram.currentCursor(event);
-            var x = current[0];
-            var y = current[1];
-            var translated = diagram.translateCursor(x, y);
-            node.x = elem.x = translated[0];
-            node.y = elem.y = translated[1];
-            diagram.unselect();
-            elem.selected = true;
-            diagram.selected.push(elem);
-            diagram.render();
         }
     });
     

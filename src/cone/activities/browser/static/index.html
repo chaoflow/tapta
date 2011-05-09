@@ -22,62 +22,49 @@
     </head>
     
     <body>
+
+      <script type="text/html" id="action">
+        <rect width="${width}" 
+              height="${height}" 
+              x="${x}" 
+              y="${y}" 
+              rx="${rounding}" 
+              fill="${fillColor}" 
+              stroke="${borderColor}" 
+              stroke-width="${borderWidth}" />
+      </script>
         
-        <!-- editor templates -->
-        <script type="text/html" id="string_property">
-            <div class="field">
-                <label for="${name}">${title}</label>
-                <input type="text" name="${name}" value="${value}" />
-            </div>
-        </script>
-        
-        <script type="text/html" id="text_property">
-            <div class="field">
-                <label for="${name}">${title}</label>
-                <textarea name="${name}" rows="6" cols="27">${value}</textarea>
-            </div>
-        </script>
-        
-        <script type="text/html" id="display_property">
-            <div class="field">
-                <strong>${title}</strong>
-                <span>${value}</span>
-            </div>
-        </script>
-        
+          <!-- editor templates -->
         <script type="text/html" id="editor_action">
             <a href="#"
                title="${title}"
                class="${id}">&nbsp;</a>
         </script>
-        
-        <script type="text/html" id="editor_template">
-            <div class="activity_editor" id="${name}">
-                <div class="element_properties">
-                    <strong>Properties</strong>
-                    <div class="props"></div>
-                    <div class="status hidden"></div>
-                    <input type="button"
-                           name="update"
-                           value="update"
-                           class="update" />
-                </div>
-                <div class="actions"></div>
-                <div class="activity_diagram" style="height:${height + 30}px;">
-                    <canvas class="control"
-                            id="control_${name}"
-                            width="${width}"
-                            height="${height}"></canvas>
-                    <canvas class="diagram"
-                            id="diagram_${name}"
-                            width="${width}"
-                            height="${height}"></canvas>
-                </div>
+
+        <script type="text/html" id="diagram_template">
+          <div class="diagram_container" id="${name}"  style="height:${height}px;">
+            <div class="element_properties"  style="height:${height - 10}px;">
+              <stong>Properties</strong>
+              <div class="props"></div>
+              <div class="status hidden"></div>
+              <input type="button"
+                     name="update"
+                     value="update"
+                     class="update" />
             </div>
+            <div class="activity_diagram">
+            </div>
+          </div>
+        </script>
+      
+        <script type="text/html" id="canvas">
+          <svg xmlns="http://www.w3.org/2000/svg" 
+               class="canvas" width="${width}" height="${height}">
+          </svg>
         </script>
         
         <!-- demo editor -->
-        <div id="demo_editor"></div>
+        <div id="demo_editor" class="activity_editor"></div>
         
         <!-- qunit related -->
         <div class="qunit">
