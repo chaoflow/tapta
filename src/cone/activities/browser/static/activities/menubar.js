@@ -1,10 +1,30 @@
 /*
-  In this file, action means a user action.
-  The action repsonsability consists of:
-  Rendering a button for itself, 
-  and performing the action, like saving everything
-  or adding an action (Model action) to an editor view.
-  */
+ *  In this file, action means a user action. The action 
+ * repsonsability consists of: Rendering a button for 
+ * itself, and performing the action, like saving everything 
+ * or adding an action (Model action) to an editor view. 
+ * 
+ * Communication occurs via events, the menubar listens
+ * to events on document level and reissues event on the
+ * target of the original event.
+ * An example:
+ * 1. A user clicks on some empty space in the canvas
+ * 2. The canvas registers this event and triggers a
+ *    "clicked_on_empty_space" event.
+ * 3. The event gets bubbled up until it reaches the
+ *    document. Here the menubar catches the event
+ *    and decides what to do.
+ * 4. The menubar decides the trigger a add_new_element
+ *    event, triggered on the original target (the canvas)
+ * 5. The diagram listens to this element, and adds a new
+ *    element to the active activity, based on the type
+ *    The menubar provided with the event
+ * 6. The collection where the element got added triggers
+ *    an add event.
+ * 7. The diagram listens to the add event and renders
+ *    the new element.
+ * 
+ */
 
 define([], function(){
 
@@ -72,12 +92,6 @@ define([], function(){
                 action.element = elem;
             });
             elements.unbind();
-            $(window.document).bind("clicked_on_empty_space", 
-                                    function(event, activity, position){
-                if(actions.pending()){
-                    actions.perform(event, activity, position);
-                }
-            });
             elements.bind('click', function(event) {
                 event.preventDefault();
                 elem = $(this);
@@ -105,6 +119,14 @@ define([], function(){
                     var val = '0px ' + css_sprite[id] + 'px';
                     elem.css('background-position', val);
                 });
+            // Custom events we listen on
+            $(window.document).bind("clicked_on_empty_space", 
+                                    function(event, activity, position){
+                if(actions.pending()){
+                    actions.perform(event, activity, position);
+                }
+            });
+
         },
         
         /*
@@ -201,8 +223,8 @@ define([], function(){
        representation of its UI Elements
     */
     var Section = function(){
-        this.actions = new Array()
-    }
+        this.actions = new Array();
+    };
     window.activities.actions.Section = Section;
 
     Section.prototype = {
@@ -216,9 +238,7 @@ define([], function(){
             }
             return section;
         }
-    }
-
-    
+    };
 
     // ************************************************************************
     // activities.actions.Action

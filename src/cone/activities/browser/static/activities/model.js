@@ -1,28 +1,17 @@
-define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "activities/storage"], function(){
-    // ************************************************************************
-    // activities.model.Model
-    // ************************************************************************
-    // An UML Diagram contains a number different elements.
-    // There is an Activity, this contains a number of children and
-    // has a parent. The childrens are Nodes and Edges, the Parent is
-    // an Action Node. 
-    // The nodes are UML elements that have an Activity as their
-    // parent, and are connected via nodes. The Action Node can have
-    // an Activity as a detail.
-    // An Edge is an element that points from one node to another
-    // node.
-    // Nodes know which Edges point away from them and which point
-    // towards them. Edges know to which Node they point.
-    // All Elements are implemented with Backbone.Model objects.
+define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", 
+        "activities/storage"], function(){
 
-    
     if (!window.activities){
         window.activities = {};
     }
 
+    /* 
+       Layers are responsible for remembering what the currenct
+       active activity is.
+    */
+    
     var Models = {}
     activities.model = Models;
-
 
     Models.Layer = Backbone.Model.extend({
     })
@@ -31,10 +20,11 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "act
         localStorage: new activities.Store("activities.Layers"),
         model: Models.Layer,
     });
-    
-    Models.Element = Backbone.Model.extend({
-    });
 
+    /*
+      The Appmodel stores global app data
+    */
+    
     var AppModel = Backbone.Model.extend({
         localStorage: new activities.Store("activities.AppModel"),
 
@@ -53,6 +43,27 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "act
     });
     activities.app_model = AppModel;
 
+
+    // ************************************************************************
+    // activities.model.Model
+    // ************************************************************************
+    // An UML Diagram contains a number different elements.
+    // There is an Activity, this contains a number of children and
+    // has a parent. The childrens are Nodes and Edges, the Parent is
+    // an Action Node. 
+    // The nodes are UML elements that have an Activity as their
+    // parent, and are connected via nodes. The Action Node can have
+    // an Activity as a detail.
+    // An Edge is an element that points from one node to another
+    // node.
+    // Nodes know which Edges point away from them and which point
+    // towards them. Edges know to which Node they point.
+    // All Elements are implemented with Backbone.Model objects.
+
+
+    Models.Element = Backbone.Model.extend({
+    });
+
     Models.Node = Models.Element.extend({
         defaults : {
             label : "",
@@ -65,34 +76,41 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "act
 
     Models.Activity = Models.Element.extend({
         initialize : function(){
-            // Tell the children who their father is and give them
-            // names
             Models.Element.prototype.initialize.call(this);
             _.bindAll(this, "eventForwarder");
+
             this.set({id:'test'});
+
             this.initial = undefined;
             this.final_node = undefined;
-            this.fork_join_collection = new Models.ForkJoinCollection([],
+            this.fork_join_collection = new Models.ForkJoinCollection(
+                [], 
                 {localStorage: new activities.Store("activities.activity[" 
                                                     + this.id 
                                                     + "].fork_join_collection")}).fetch();
             this.fork_join_collection.bind("all", this.eventForwarder);
-            this.decision_merge_collection = new Models.DecisionMergeCollection([],
+            this.decision_merge_collection = new Models.DecisionMergeCollection(
+                [],
                 {localStorage: new activities.Store("activities.activity[" 
                                                     + this.id 
                                                     + "].decision_merge_collection")}).fetch();
             this.decision_merge_collection.bind("all", this.eventForwarder);
-            this.action_collection = new Models.ActionCollection([],
+            this.action_collection = new Models.ActionCollection(
+                [],
                 {localStorage: new activities.Store("activities.activity[" 
                                                     + this.id 
                                                     + "].action_collection")}).fetch();
             this.action_collection.bind("all", this.eventForwarder);
-            this.edge_collection = new Models.EdgeCollection([],
+            this.edge_collection = new Models.EdgeCollection(
+                [],
                 {localStorage: new activities.Store("activities.activity[" 
                                                     + this.id 
                                                     + "].edge_collection")}).fetch();
             this.edge_collection.bind("all", this.eventForwarder);
         },
+        /* 
+           Bubble up the event from your collections
+        */
         eventForwarder: function(event, context){
             this.trigger(event, context);
         },
@@ -138,7 +156,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "act
         createEdge : function(source, target){
             var edge = this.create(Models.Edge);
             edge.set({source: source,
-                       target: target});
+                      target: target});
             return edge;
         },
         remove: function(node){
@@ -180,7 +198,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "act
         createView: function(){
             return new activities.ui.ForkJoin(this);
         }} ,
-                                     {display_name : "Fork and Join"});
+                                         {display_name : "Fork and Join"});
     Models.ForkJoinCollection = Backbone.Collection.extend({
         model: Models.ForkJoin,
         initialize: function(models, options){
@@ -192,7 +210,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "act
         createView: function(){
             return new activities.ui.DecisionMerge(this);
         }} ,
-                                      {display_name : "Decision and Merge"});
+                                              {display_name : "Decision and Merge"});
     Models.DecisionMergeCollection = Backbone.Collection.extend({
         model: Models.DecisionMerge,
         initialize: function(models, options){
@@ -208,42 +226,8 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", "act
 
     Models.Action = Models.Node.extend({
         createView: function(ui_context){
-            var View = Backbone.View.extend({
-                initialize: function(){
-                    this.tmpl = $.template(null, $("#action"));
-                    this.defaults = $.extend(activities.settings.rendering,
-                                             activities.settings.node);
-                },
-                render: function(){
-                    args = $.extend(this.defaults, this.model.get("ui_data"));
-                    var elem = this.options.parent_canvas.rect(args.x, args.y, 
-                                                    args.width, args.height, 
-                                                    args.rounding);
-                    elem.attr({fill: args.fillColor,
-                              stroke: args.borderColor,
-                              "stroke-width": args.borderWidth});
-
-                    var start = function () {
-                        // storing original coordinates
-                        this.ox = this.attr("x");
-                        this.oy = this.attr("y");
-                        this.attr({opacity: 1});
-                    },
-                    move = function (dx, dy) {
-                        // move will be called with dx and dy
-                        this.attr({x: this.ox + dx, y: this.oy + dy});
-                    },
-                    up = function () {
-                        // restoring state
-
-                        this.attr({opacity: .5});
-                    };
-                    elem.drag(move, start, up);
-                    
-                }
-            });
-            return new View({parent_canvas: ui_context,
-                             model: this});
+            return  new activities.ui.action_view({canvas: ui_context,
+                                                   model: this});
         }} ,
                                        {display_name : "Action"});
 

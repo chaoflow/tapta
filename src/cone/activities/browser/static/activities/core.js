@@ -1,34 +1,10 @@
-/*
- * activities
- * ==========
- * 
- * An Activity diagram Editor.
- * 
- * Copyright (c) 2011, BlueDynamics Alliance, Austria, Germany, Switzerland
- * All rights reserved.
- * 
- * Contributors
- * ------------
- * 
- * - Robert Niederreiter
- * 
- * Requires
- * --------
- * 
- * - jQuery 1.4.2
- * - jQuery Tools 1.2.5
- * - jQuery templates beta 1
- * - bdajax 1.0.2
- */
-
-define(['order!jquery',  
-        'order!cdn/jquery.tmpl.js', "cdn/raphael.js",
+define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
         './model', "./storage", "./menubar", "./settings",
-       "./element_views"], function() {
+       "./element_views", "./strategies"], function() {
 
            var diagram_template = $.template(null, $("#diagram_template"));
-           var canvas = $.template(null, $("#canvas"));
 
+           /* The Menubar sets up the menu actions and renders their button representations */
            activities.MenubarPanel = Backbone.View.extend({
                initialize: function(id){
                    this.id = id;
@@ -39,29 +15,9 @@ define(['order!jquery',
                }
            });
 
-           var DiagramCanvasView = Backbone.View.extend({
-               initialize:function(){
-                   Backbone.View.prototype.initialize.call(this);
-                   this.el.append('<div id="' + this.options.name + '" />');
-                   this.canvas = Raphael(this.options.name, 600, 300);
-               },
-               events: {
-                   "click" : "canvas_clicked",
-                   "add_new_element" : "add_new_element"
-               },
-               render:function(){
-               },
-               canvas_clicked: function(event){
-                   this.el.trigger('clicked_on_empty_space', 
-                                   [this.model, {x: event.offsetX,
-                                                 y: event.offsetY}]);
-               },
-               add_new_element: function(event, type, position){
-                   this.options.strategy.add_new_element(event, type, position);
-               }
-
-           });
-
+           /* The Diagram maintains the diagram with its canvas and local menu bars
+            * It also decides which strategy to use
+            */
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
                    this.activity = this.model.activity;
@@ -72,10 +28,21 @@ define(['order!jquery',
                    this.strategy = {};
                    if(this.activity)
                        this.activity.bind("add", this.render_element);
-
+               },
+               events: {
+                   "click" : "canvas_clicked",
+                   "add_new_element" : "add_new_element"
+               },
+               canvas_clicked: function(event){
+                   this.el.trigger('clicked_on_empty_space', 
+                                   [this.model, {x: event.offsetX,
+                                                 y: event.offsetY}]);
+               },
+               add_new_element: function(event, type, position){
+                   this.strategy.add_new_element(event, type, position);
                },
                render_element: function(elem){
-                   elem.createView(this.canvas.canvas).render();
+                   elem.createView(this.canvas).render();
                },
                render:function(){
                    if(this.activity === undefined){
@@ -84,13 +51,8 @@ define(['order!jquery',
                    $.tmpl(diagram_template, {name: this.name,
                                              width: this.width,
                                              height: this.height}).appendTo(this.el);
-                   this.canvas = new DiagramCanvasView({width: this.width,
-                                                        height: this.height,
-                                                        name: 'canvas-' + this.name,
-                                                        strategy: this.strategy,
-                                                        el:this.$(".activity_diagram"),
-                                                        model:this.activity});
-                   this.canvas.render();
+                   var canvas_container = this.el.find('.activity_diagram')[0];
+                   this.canvas = Raphael(canvas_container, this.height, this.width);
                    return this;
                }
            });
@@ -102,16 +64,11 @@ define(['order!jquery',
                        this.model.activity = new activities.model.Activity();
                    }
                    DiagramView.prototype.initialize.call(this, "top_level_diagram");
-                   this.strategy = {
-                       activity: this.model.activity,
-                       add_new_element: function(event, type, position){
-                           var elem = this.activity.create(type, {ui_data: position});
-                       }
-                   };
+                   this.strategy = activities.strategy.simple(this.model.activity);
                }
            });
 
-           
+           /* Global view class */
            window.ActivitiesView = Backbone.View.extend({
 
                initialize: function(selector) {
