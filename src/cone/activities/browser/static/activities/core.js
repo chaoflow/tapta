@@ -21,17 +21,29 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
                    this.activity = this.model.activity;
-                   _.bindAll(this, "render_element");
+                   _.bindAll(this, "render_element", "element_drag");
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
                    this.strategy = {};
-                   if(this.activity)
+                   if(this.activity){
                        this.activity.bind("add", this.render_element);
+                       this.activity.bind("elem_click", this.element_clicked);
+                       this.activity.bind("activity_click", this.activity_clicked);
+                       this.activity.bind("elem_drag", this.element_drag);
+                   }
                },
                events: {
                    "click" : "canvas_clicked",
                    "add_new_element" : "add_new_element"
+               },
+               activity_clicked: function(event){
+               },
+               element_clicked: function(event){
+               },
+               element_drag: function(data){
+                   this.strategy.dragging(data.context, data.rel_movement, 
+                                          data.abs_movement);
                },
                canvas_clicked: function(event){
                    this.el.trigger('clicked_on_empty_space', 
