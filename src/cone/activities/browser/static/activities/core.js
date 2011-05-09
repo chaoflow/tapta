@@ -21,11 +21,15 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
                    this.activity = this.model.activity;
-                   _.bindAll(this, "render_element", "element_drag");
+                   _.bindAll(this, "render_element", "element_drag",
+                            "activity_clicked");
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
                    this.strategy = {};
+                   this.bind_events();
+               },
+               bind_events: function(){
                    if(this.activity){
                        this.activity.bind("add", this.render_element);
                        this.activity.bind("elem_click", this.element_clicked);
@@ -33,11 +37,18 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        this.activity.bind("elem_drag", this.element_drag);
                    }
                },
+               reset: function(activity){
+                   this.activity = activity;
+                   this.bind_events();
+                   this.el.empty();
+                   this.render();
+               },
                events: {
                    "click" : "canvas_clicked",
                    "add_new_element" : "add_new_element"
                },
-               activity_clicked: function(event){
+               activity_clicked: function(node){
+                   this.trigger("update_activity", node.get("activity"));
                },
                element_clicked: function(event){
                },
@@ -90,25 +101,35 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    var app_model = new activities.app_model();
                    this.app_model = app_model;
 
-                   app_model.bind("change", this.render);
                    app_model.bind("change:top_panel", this.reset_top_panel);
 
                    this.el.append($('<div id="toppanel"></div><div id="toplayer" />'));
 
                    app_model.fetch();
 
-                   new TopLevelDiagramView({model:app_model.get("layers").at(0),
-                                            el:this.$("#toplayer")}).render();
+                   var diagrams = [];
 
+                   diagrams[0] = new TopLevelDiagramView(
+                       {model:app_model.get("layers").at(0),
+                        el:this.$("#toplayer")});
+                   
                    for(var i=1;i<6;i++){
                        
-                       new DiagramView({model:app_model.get("layers").at(i),
-                                        el:this.$("#toplayer")
-                                        .after('<div id="layer-' + i + '" />')
-                                        .next()})
-                           .render();
+                       diagrams[i] = new DiagramView({model:app_model.get("layers").at(i),
+                                                      el:this.$("#toplayer")
+                                                      .after('<div id="layer-' + i + '" />')
+                                                      .next()});
                    }
-
+                   for(var i=0;i<6;i++){
+                       if(i<5){
+                           diagrams[i].bind("update_activity", (function(index){
+                               return function(activity){
+                                   diagrams[index + 1].reset(activity);
+                               };
+                           })(i));
+                       }
+                       diagrams[i].render();
+                   }
                    // New computer
                    if(app_model.get("top_panel") === undefined){
                        app_model.set({top_panel:[{class: "MenubarPanel",
@@ -124,6 +145,6 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        var panel_item = new activities[panel.class](panel.args);
                        panel_item.render();
                    });
-               }
+               },
            });
        });

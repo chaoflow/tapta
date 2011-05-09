@@ -225,6 +225,12 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
                                       {display_name : "Final Node"});
 
     Models.Action = Models.Node.extend({
+        initialize: function(nodels, options){
+            if(! this.get("activity")){
+                this.set({activity : new Models.Activity()
+                         })
+            }
+        },
         createView: function(ui_context){
             return  new activities.ui.action_view({canvas: ui_context,
                                                    model: this});
