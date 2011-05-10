@@ -10,6 +10,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
 
                         _.bindAll(this, "translate_event");
                         this.model.bind("change:ui_data", this.translate_event);
+                    },
+                    render: function(){
 
                         var args = $.extend(this.defaults, this.model.get("ui_data"));
                         var c = this.options.canvas;
@@ -77,10 +79,15 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         }, this);
                         elem.dblclick(this.eventPropagator("elem_dblclick"), this);
                         elem.mousedown(function(evt){
-                            evt.stopPropagation();
                             this.drag_start = [evt.offsetX, evt.offsetY];
                             this.drag_progress = [evt.offsetX, evt.offsetY];
                             this.elem.mousemove(this.drag, this);
+                            this.elem.mouseout(function(evt){
+                                this.elem.unmousemove(this.drag);
+                            }, this);
+                        }, this);
+                        elem.mouseout(function(evt){
+                            this.elem.unmousemove(this.drag);
                         }, this);
                         elem.mouseup(function(evt){
                             this.elem.unmousemove(this.drag);
@@ -93,6 +100,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                                        new_ui.y - old_ui.y);
                     },
                     drag: function(evt){
+                        console.log('drag');
                         var drag_x = evt.offsetX - this.drag_start[0];
                         var drag_y = evt.offsetY - this.drag_start[1];
                         var rel_x = evt.offsetX - this.drag_progress[0];

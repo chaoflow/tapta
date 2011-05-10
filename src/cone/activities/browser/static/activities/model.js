@@ -195,14 +195,22 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
     } , {display_name : "Activity"});
 
     Models.Initial = Models.Node.extend({
-        createView: function(){
-            return new activities.ui.Initial(this);
+        getView: function(ui_context){
+            if(this.view){
+                this.view.options.canvas = ui_context;
+                return this.view;
+            }
+            return this.view = new activities.ui.Initial(this);
         }} ,
                                         {display_name : "Initial Node"});
 
     Models.ForkJoin = Models.Node.extend({ 
-        createView: function(){
-            return new activities.ui.ForkJoin(this);
+        getView: function(ui_context){
+            if(this.view){
+                this.view.options.canvas = ui_context;
+                return this.view;
+            }
+            return this.view = new activities.ui.ForkJoin(this);
         }} ,
                                          {display_name : "Fork and Join"});
     Models.ForkJoinCollection = Backbone.Collection.extend({
@@ -213,8 +221,12 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
     });
 
     Models.DecisionMerge = Models.Node.extend({  
-        createView: function(){
-            return new activities.ui.DecisionMerge(this);
+        getView: function(ui_context){
+            if(this.view){
+                this.view.options.canvas = ui_context;
+                return this.view;
+            }
+            return this.view = new activities.ui.DecisionMerge(this);
         }} ,
                                               {display_name : "Decision and Merge"});
     Models.DecisionMergeCollection = Backbone.Collection.extend({
@@ -225,8 +237,12 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
     });
 
     Models.Final = Models.Node.extend({
-        createView: function(){
-            return new activities.ui.Final(this);
+        getView: function(ui_context){
+            if(this.view){
+                this.view.options.canvas = ui_context;
+                return this.view;
+            }
+            return this.view = new activities.ui.Final(this);
         }} ,
                                       {display_name : "Final Node"});
 
@@ -234,11 +250,15 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
         initialize: function(nodels, options){
             if(! this.get("activity")){
                 this.set({activity : new Models.Activity()
-                         })
+                         });
             }
         },
-        createView: function(ui_context){
-            return  new activities.ui.action_view({canvas: ui_context,
+        getView: function(ui_context){
+            if(this.view){
+                this.view.options.canvas = ui_context;
+                return this.view;
+            }
+            return this.view = new activities.ui.action_view({canvas: ui_context,
                                                    model: this});
         }} ,
                                        {display_name : "Action"});

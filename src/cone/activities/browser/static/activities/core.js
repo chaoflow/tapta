@@ -21,7 +21,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
                    this.activity = this.model.get("activity");
-                   _.bindAll(this, "render_element", "element_drag",
+                   _.bindAll(this, "render_child", "element_drag",
                             "activity_clicked", "reset");
                    this.name = name;
                    this.width = 600;
@@ -33,7 +33,8 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                },
                bind_events: function(){
                    if(this.activity){
-                       this.activity.bind("add", this.render_element);
+                       this.activity.unbind();
+                       this.activity.bind("add", this.render_child);
                        this.activity.bind("elem_click", this.element_clicked);
                        this.activity.bind("activity_click", this.activity_clicked);
                        this.activity.bind("elem_drag", this.element_drag);
@@ -67,8 +68,8 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                add_new_element: function(event, type, position){
                    this.strategy.add_new_element(event, type, position);
                },
-               render_element: function(elem){
-                   elem.createView(this.canvas).render();
+               render_child: function(elem){
+                   elem.getView(this.canvas).render();
                },
                render:function(){
                    if(this.activity === undefined){
@@ -81,7 +82,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    this.canvas = Raphael(canvas_container, this.height, this.width);
                    var here = this;
                    _.each(this.activity.children(), function(child){
-                       here.render_element(child);
+                       here.render_child(child);
                    });
                    return this;
                }
