@@ -20,14 +20,16 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
             */
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
-                   this.activity = this.model.activity;
+                   this.activity = this.model.get("activity");
                    _.bindAll(this, "render_element", "element_drag",
-                            "activity_clicked");
+                            "activity_clicked", "reset");
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
                    this.strategy = activities.strategy.simple(this.activity);
                    this.bind_events();
+                   this.model.bind("change", this.reset);
+
                },
                bind_events: function(){
                    if(this.activity){
@@ -37,9 +39,9 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        this.activity.bind("elem_drag", this.element_drag);
                    }
                },
-               reset: function(activity){
-                   this.activity = activity;
-                   this.strategy = activities.strategy.simple(activity);
+               reset: function(model){
+                   this.activity = this.model.get("activity");
+                   this.strategy = activities.strategy.simple(this.activity);
                    this.bind_events();
                    this.el.empty();
                    this.render();
@@ -77,6 +79,10 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                                              height: this.height}).appendTo(this.el);
                    var canvas_container = this.el.find('.activity_diagram')[0];
                    this.canvas = Raphael(canvas_container, this.height, this.width);
+                   var here = this;
+                   _.each(this.activity.children(), function(child){
+                       here.render_element(child);
+                   });
                    return this;
                }
            });
@@ -84,11 +90,11 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
            var TopLevelDiagramView = DiagramView.extend({
                initialize:function(){
                    // New computer
-                   if(this.model.activity === undefined){
-                       this.model.activity = new activities.model.Activity();
+                   if(this.model.get("activity") === undefined){
+                       this.model.set({activity: new activities.model.Activity()});
                    }
                    DiagramView.prototype.initialize.call(this, "top_level_diagram");
-                   this.strategy = activities.strategy.simple(this.model.activity);
+                   this.strategy = activities.strategy.simple(this.model.get("activity"));
                }
            });
 
@@ -125,7 +131,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        if(i<5){
                            diagrams[i].bind("update_activity", (function(index){
                                return function(activity){
-                                   diagrams[index + 1].reset(activity);
+                                   app_model.get("layers").at(index + 1).set({activity: activity});
                                };
                            })(i));
                        }
@@ -146,6 +152,6 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        var panel_item = new activities[panel.class](panel.args);
                        panel_item.render();
                    });
-               },
+               }
            });
        });

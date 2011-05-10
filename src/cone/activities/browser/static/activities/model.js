@@ -10,15 +10,15 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
        active activity is.
     */
     
-    var Models = {}
+    var Models = {};
     activities.model = Models;
 
     Models.Layer = Backbone.Model.extend({
-    })
+    });
 
     Models.Layers = Backbone.Collection.extend({
         localStorage: new activities.Store("activities.Layers"),
-        model: Models.Layer,
+        model: Models.Layer
     });
 
     /*
@@ -115,11 +115,17 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             this.trigger(event, context);
         },
         children: function(){
-            return this.fork_join_collection.concat(
-                this.decision_merge_collection,
-                this.action_collection,
-                this.edge_collection,
-                [this.initial, this.final_node]);
+            var children = this.fork_join_collection.models.concat(
+                this.decision_merge_collection.models,
+                this.action_collection.models,
+                this.edge_collection.models);
+            if(this.initial){
+                children = children.concat([this.initial]);
+            }
+            if(this.final_node){
+                children = children.concat([this.final_node]);
+            }
+            return children;
         },
         getEdgesFor : function(node){
             return this.node_collection.select(function(child){
