@@ -26,7 +26,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
-                   this.strategy = {};
+                   this.strategy = activities.strategy.simple(this.activity);
                    this.bind_events();
                },
                bind_events: function(){
@@ -39,6 +39,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                },
                reset: function(activity){
                    this.activity = activity;
+                   this.strategy = activities.strategy.simple(activity);
                    this.bind_events();
                    this.el.empty();
                    this.render();
@@ -113,7 +114,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        {model:app_model.get("layers").at(0),
                         el:this.$("#toplayer")});
                    
-                   for(var i=1;i<6;i++){
+                   for(var i=5;i!=0;i--){
                        
                        diagrams[i] = new DiagramView({model:app_model.get("layers").at(i),
                                                       el:this.$("#toplayer")
