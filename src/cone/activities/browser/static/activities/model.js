@@ -14,6 +14,14 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
     activities.model = Models;
 
     Models.Layer = Backbone.Model.extend({
+        initialize: function(){
+            this.activity = new Models.Activity({id: this.id});
+            this.activity.localStorage =  new activities.Store("activities.layer.activity[" 
+                                                               + this.id
+                                                               + "]");
+            this.activity.fetch();
+            this.activity.save();
+        }
     });
 
     Models.Layers = Backbone.Collection.extend({
@@ -33,7 +41,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             // New computer
             if(layers.length == 0){
                 for(var i=0;i<6;i++){
-                    layers.create({});
+                    layers.create({id:i});
                 };
             }
             this.layers = layers;
@@ -83,25 +91,29 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             this.final_node = undefined;
             this.fork_join_collection = new Models.ForkJoinCollection(
                 [],
-                {localStorage: new activities.Store("activities.activity[" 
+                {id: this.id, 
+                 localStorage: new activities.Store("activities.activity[" 
                                                     + this.id
                                                     + "].fork_join_collection")}).fetch();
             this.fork_join_collection.bind("all", this.eventForwarder);
             this.decision_merge_collection = new Models.DecisionMergeCollection(
                 [],
-                {localStorage: new activities.Store("activities.activity[" 
+                {id: this.id,
+                 localStorage: new activities.Store("activities.activity[" 
                                                     + this.id
                                                     + "].decision_merge_collection")}).fetch();
             this.decision_merge_collection.bind("all", this.eventForwarder);
             this.action_collection = new Models.ActionCollection(
                 [],
-                {localStorage: new activities.Store("activities.activity["
+                {id: this.id,
+                 localStorage: new activities.Store("activities.activity["
                                                     + this.id
                                                     + "].action_collection")}).fetch();
             this.action_collection.bind("all", this.eventForwarder);
             this.edge_collection = new Models.EdgeCollection(
                 [],
-                {localStorage: new activities.Store("activities.activity[" 
+                {id: this.id,
+                 localStorage: new activities.Store("activities.activity[" 
                                                     + this.id 
                                                     + "].edge_collection")}).fetch();
             this.edge_collection.bind("all", this.eventForwarder);
@@ -157,6 +169,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             default:
                 throw "Unknown node type. Bad programmer";
             }
+            node.save();
             return node;
         },
         createEdge : function(source, target){

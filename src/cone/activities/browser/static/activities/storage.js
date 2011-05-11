@@ -46,8 +46,6 @@ define(["activities/settings", "cdn/backbone.js"], function(){
         }
     });
 
-    globalStore = new Store("test");
-
     Backbone.sync = function(method, model, success, error) {
         
         var resp;

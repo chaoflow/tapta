@@ -397,8 +397,7 @@ define([], function(){
         },
         
         perform: function() {
-            data = this.actions.editor.model;
-            data.save();
+            $(document).trigger("save");
         }
     });
     

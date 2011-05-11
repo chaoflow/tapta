@@ -100,9 +100,9 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         elem.push(activity);
 
                         // Write name
-                        this.model.name = "test";
-                        if(this.model.name){
-                            var name = c.text(args.x + args.width / 2, args.y + 10, this.model.name);
+                        this.model.set({name: "test"});
+                        if(this.model.get("name")){
+                            var name = c.text(args.x + args.width / 2, args.y + 10, this.model.get("name"));
                             elem.push(name);
                         }
                         this.elem = elem;

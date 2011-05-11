@@ -19,7 +19,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
             */
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
-                   this.activity = this.model.get("activity");
+                   this.activity = this.model.activity;
                    _.bindAll(this, "render_child", "element_drag",
                             "activity_clicked", "reset");
                    this.name = name;
@@ -39,7 +39,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    }
                },
                reset: function(model){
-                   this.activity = this.model.get("activity");
+                   this.activity = this.model.activity;
                    this.bind_events();
                    this.el.empty();
                    this.render();
@@ -49,7 +49,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    "add_new_element" : "add_new_element"
                },
                activity_clicked: function(node){
-                   this.trigger("update_activity", node.get("activity"));
+                   this.trigger("update_activity", node.activity);
                },
                element_clicked: function(event){
                },
@@ -88,8 +88,8 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
            var TopLevelDiagramView = DiagramView.extend({
                initialize:function(){
                    // New computer
-                   if(this.model.get("activity") === undefined){
-                       this.model.set({activity: new activities.model.Activity()});
+                   if(this.model.activity === undefined){
+                       this.model.activity = new activities.model.Activity();
                    }
                    DiagramView.prototype.initialize.call(this, "top_level_diagram");
                }
@@ -100,7 +100,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
 
                initialize: function(selector) {
 
-                   _.bindAll(this, "render", "reset_top_panel");
+                   _.bindAll(this, "render", "reset_top_panel", "save");
                    
                    var app_model = new activities.app_model();
                    this.app_model = app_model;
@@ -110,6 +110,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    this.el.append($('<div id="toppanel"></div><div id="toplayer" />'));
 
                    app_model.fetch();
+                   $(document).bind("save", this.save);
 
                    var diagrams = [];
 
@@ -129,7 +130,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        if(i<5){
                            diagrams[i].bind("update_activity", (function(index){
                                return function(activity){
-                                   app_model.layers.at(index + 1).set({activity: activity});
+                                   app_model.layers.at(index + 1).activity = activity;
                                };
                            })(i));
                        }
@@ -150,6 +151,9 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        var panel_item = new activities[panel.class](panel.args);
                        panel_item.render();
                    });
+               },
+               save: function(){
+                   this.app_model.save();
                }
            });
        });
