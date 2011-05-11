@@ -1,6 +1,6 @@
 define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
         './model', "./storage", "./menubar", "./settings",
-       "./element_views", "./strategies"], function() {
+       "./element_views"], function() {
 
            var diagram_template = $.template(null, $("#diagram_template"));
 
@@ -16,7 +16,6 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
            });
 
            /* The Diagram maintains the diagram with its canvas and local menu bars
-            * It also decides which strategy to use
             */
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
@@ -26,7 +25,6 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
-                   this.strategy = activities.strategy.simple(this.activity);
                    this.bind_events();
                    this.model.bind("change", this.reset);
 
@@ -42,7 +40,6 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                },
                reset: function(model){
                    this.activity = this.model.get("activity");
-                   this.strategy = activities.strategy.simple(this.activity);
                    this.bind_events();
                    this.el.empty();
                    this.render();
@@ -57,7 +54,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                element_clicked: function(event){
                },
                element_drag: function(data){
-                   this.strategy.dragging(data.context, data.rel_movement, 
+                   this.model.dragging(data.context, data.rel_movement, 
                                           data.abs_movement);
                },
                canvas_clicked: function(event){
@@ -66,7 +63,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                                                  y: event.offsetY}]);
                },
                add_new_element: function(event, type, position){
-                   this.strategy.add_new_element(event, type, position);
+                   this.activity.create(type, position);
                },
                render_child: function(elem){
                    elem.getView(this.canvas).render();
@@ -95,7 +92,6 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        this.model.set({activity: new activities.model.Activity()});
                    }
                    DiagramView.prototype.initialize.call(this, "top_level_diagram");
-                   this.strategy = activities.strategy.simple(this.model.get("activity"));
                }
            });
 

@@ -82,21 +82,21 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             this.initial = undefined;
             this.final_node = undefined;
             this.fork_join_collection = new Models.ForkJoinCollection(
-                [], 
+                [],
                 {localStorage: new activities.Store("activities.activity[" 
-                                                    + this.id 
+                                                    + this.id
                                                     + "].fork_join_collection")}).fetch();
             this.fork_join_collection.bind("all", this.eventForwarder);
             this.decision_merge_collection = new Models.DecisionMergeCollection(
                 [],
                 {localStorage: new activities.Store("activities.activity[" 
-                                                    + this.id 
+                                                    + this.id
                                                     + "].decision_merge_collection")}).fetch();
             this.decision_merge_collection.bind("all", this.eventForwarder);
             this.action_collection = new Models.ActionCollection(
                 [],
-                {localStorage: new activities.Store("activities.activity[" 
-                                                    + this.id 
+                {localStorage: new activities.Store("activities.activity["
+                                                    + this.id
                                                     + "].action_collection")}).fetch();
             this.action_collection.bind("all", this.eventForwarder);
             this.edge_collection = new Models.EdgeCollection(
@@ -131,8 +131,8 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
                         || child.get("source") === node);
             });
         },
-        create : function(nodeType, args){
-            var node = new nodeType(args);
+        create : function(nodeType, position){
+            var node = new nodeType({ui_data: position});
             switch(nodeType){
             case Models.Initial:
                 this.initial = node;
@@ -191,6 +191,12 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
                     }
                 });
             }
+        },
+        dragging: function(element, rel_movement, abs_movement){
+            var old_ui = element.get("ui_data");
+            element.set({ui_data: 
+                         {x: old_ui.x + rel_movement.x,
+                          y: old_ui.y + rel_movement.y}});
         }
     } , {display_name : "Activity"});
 
