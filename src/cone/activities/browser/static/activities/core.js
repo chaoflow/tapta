@@ -54,7 +54,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                element_clicked: function(event){
                },
                element_drag: function(data){
-                   this.model.dragging(data.context, data.rel_movement, 
+                   this.activity.dragging(data.context, data.rel_movement, 
                                           data.abs_movement);
                },
                canvas_clicked: function(event){
