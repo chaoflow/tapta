@@ -117,13 +117,14 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
 
                    var diagrams = [];
 
-                   diagrams[0] = new TopLevelDiagramView(
-                       {model:app_model.get("layers").at(0),
-                        el:this.$("#toplayer")});
+                   diagrams[0] = new TopLevelDiagramView({
+                       model:app_model.layers.at(0),
+                       el:this.$("#toplayer")
+                   });
                    
                    for(var i=5;i!=0;i--){
                        
-                       diagrams[i] = new DiagramView({model:app_model.get("layers").at(i),
+                       diagrams[i] = new DiagramView({model:app_model.layers.at(i),
                                                       el:this.$("#toplayer")
                                                       .after('<div id="layer-' + i + '" />')
                                                       .next()});
@@ -132,7 +133,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        if(i<5){
                            diagrams[i].bind("update_activity", (function(index){
                                return function(activity){
-                                   app_model.get("layers").at(index + 1).set({activity: activity});
+                                   app_model.layers.at(index + 1).set({activity: activity});
                                };
                            })(i));
                        }

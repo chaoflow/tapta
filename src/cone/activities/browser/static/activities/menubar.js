@@ -56,13 +56,13 @@ define([], function(){
         
         // diagram element related actions
         section = new activities.actions.Section();
-        section.add(new activities.actions.InitialNode(this));
-        section.add(new activities.actions.FinalNode(this));
+//        section.add(new activities.actions.InitialNode(this));
+//        section.add(new activities.actions.FinalNode(this));
         section.add(new activities.actions.ActionNode(this));
         section.add(new activities.actions.JoinNode(this));
-        section.add(new activities.actions.ForkNode(this));
+//        section.add(new activities.actions.ForkNode(this));
         section.add(new activities.actions.MergeNode(this));
-        section.add(new activities.actions.DecisionNode(this));
+//        section.add(new activities.actions.DecisionNode(this));
         section.add(new activities.actions.Edge(this));
         section.add(new activities.actions.DeleteElement(this));
         this.sections.push(section);
@@ -462,8 +462,7 @@ define([], function(){
     };
     activities.actions.InitialNode.prototype =
         new activities.actions.NodeAction;
-    
-    
+
     // ************************************************************************
     // activities.actions.FinalNode
     // ************************************************************************
@@ -500,7 +499,7 @@ define([], function(){
     
     activities.actions.JoinNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'join_node', 'Join Node', activities.model.Join);
+            this, actions, 'join_node', 'Join Node', activities.model.ForkJoin);
     };
     activities.actions.JoinNode.prototype =
         new activities.actions.NodeAction;
@@ -524,7 +523,7 @@ define([], function(){
     
     activities.actions.MergeNode = function(actions) {
         activities.actions.NodeAction.call(
-            this, actions, 'merge_node', 'Merge Node', activities.model.Merge);
+            this, actions, 'merge_node', 'Merge Node', activities.model.DecisionMerge);
     };
     activities.actions.MergeNode.prototype =
         new activities.actions.NodeAction;
