@@ -26,6 +26,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                 },
                 eventPropagator: function(name){
                     return function(evt){
+
                         this.model.trigger(name, this.model);
                         evt.stopPropagation();
                     };

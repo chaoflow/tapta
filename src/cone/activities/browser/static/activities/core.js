@@ -89,7 +89,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                initialize:function(){
                    // New computer
                    if(this.model.activity === undefined){
-                       this.model.activity = new activities.model.Activity();
+                       this.model.updateActivity(new activities.model.Activity());
                    }
                    DiagramView.prototype.initialize.call(this, "top_level_diagram");
                }
@@ -130,7 +130,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        if(i<5){
                            diagrams[i].bind("update_activity", (function(index){
                                return function(activity){
-                                   app_model.layers.at(index + 1).activity = activity;
+                                   app_model.layers.at(index + 1).updateActivity(activity);
                                };
                            })(i));
                        }

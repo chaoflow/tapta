@@ -15,12 +15,22 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
 
     Models.Layer = Backbone.Model.extend({
         initialize: function(){
-            this.activity = new Models.Activity({id: this.id});
-            this.activity.localStorage =  new activities.Store("activities.layer.activity[" 
-                                                               + this.id
-                                                               + "]");
+            var id = this.get("activity_id");
+            var activities_storage_name = "activities.layer.activity[" 
+                + this.id
+                + "]";
+            this.activity = new Models.Activity({id:id,
+                                                 storage_name: activities_storage_name});
+            this.activity.localStorage =  new activities.Store(activities_storage_name);
             this.activity.fetch();
             this.activity.save();
+            this.set({activity_id: this.activity.id});
+            this.save();
+        },
+        updateActivity: function(activity){
+            this.activity = activity;
+            this.set({activity_id: activity.id});
+            this.save();
         }
     });
 
@@ -144,7 +154,8 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             });
         },
         create : function(nodeType, position){
-            var node = new nodeType({ui_data: position});
+            var node = new nodeType({ui_data: position,
+                                     activity_storage_name: this.get("storage_name")});
             switch(nodeType){
             case Models.Initial:
                 this.initial = node;
@@ -210,6 +221,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             element.set({ui_data: 
                          {x: old_ui.x + rel_movement.x,
                           y: old_ui.y + rel_movement.y}});
+            element.save();
         }
     } , {display_name : "Activity"});
 
@@ -270,9 +282,15 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
 
     Models.Action = Models.Node.extend({
         initialize: function(nodels, options){
-            if(! this.get("activity")){
-                this.set({activity : new Models.Activity()
-                         });
+            if(! this.get("activity_id")){
+                this.activity = new Models.Activity();
+                this.activity.localStorage = new activities.Store(this.get("activity_storage_name"));
+                this.activity.save();
+                this.set({activity_id: this.activity.id});
+            } else{
+                this.activity = new Models.Activity({id: this.get("activity_id")});
+                this.activity.localStorage = new activities.Store(this.get("activity_storage_name"));
+                this.activity.fetch();
             }
         },
         getView: function(ui_context){
