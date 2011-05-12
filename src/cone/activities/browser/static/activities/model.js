@@ -62,19 +62,6 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
     });
     activities.app_model = AppModel;
 
-    // There is an Activity, this contains a number of children and
-    // has a parent. The childrens are Nodes and Edges, the Parent is
-    // an Action Node. 
-    // The nodes are UML elements that have an Activity as their
-    // parent, and are connected via nodes. The Action Node can have
-    // an Activity as a detail.
-    // An Edge is an element that points from one node to another
-    // node.
-    // Nodes know which Edges point away from them and which point
-    // towards them. Edges know to which Node they point.
-    // All Elements are implemented with Backbone.Model objects.
-
-
     Models.Element = Backbone.Model.extend({
     });
 
