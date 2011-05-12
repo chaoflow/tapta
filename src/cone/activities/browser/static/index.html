@@ -41,19 +41,32 @@
                class="${id}">&nbsp;</a>
         </script>
 
+        <script type="text/html" id="properties_template">
+          <strong>Properties</strong>
+          <div class="props">
+            {{each hidden}}
+            <input type="hidden" name="${$index}" value="${$value}" >
+            {{/each}}
+            {{each singleline}}
+            <input type="input" name="${$index}" value="${$value}" >
+            {{/each}}
+            {{each multiline}}
+            <textarea name="${$index}">${$value}</textarea>
+            {{/each}}
+          <input type="button"
+                 name="update"
+                 value="update"
+                 class="update" />
+        </script>
+
         <script type="text/html" id="diagram_template">
           <div class="diagram_container" id="${name}"  style="height:${height}px;">
             <div class="element_properties"  style="height:${height - 10}px;">
-              <stong>Properties</strong>
-              <div class="props"></div>
-              <div class="status hidden"></div>
-              <input type="button"
-                     name="update"
-                     value="update"
-                     class="update" />
+              No Element selected
             </div>
             <div class="activity_diagram">
             </div>
+            <div class="actionbar" />
           </div>
         </script>
       

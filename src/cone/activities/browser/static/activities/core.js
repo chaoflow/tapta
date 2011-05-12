@@ -3,6 +3,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
        "./element_views"], function() {
 
            var diagram_template = $.template(null, $("#diagram_template"));
+           var properties_template = $.template(null, $("#properties_template"));
 
            /* The Menubar sets up the menu actions and renders their button representations */
            activities.MenubarPanel = Backbone.View.extend({
@@ -12,6 +13,45 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                },
                render: function(){
                    this.actions.render();
+               }
+           });
+
+           var PropertiesView = Backbone.View.extend({
+               initialize: function(){
+                   _.bindAll(this, "handle_click", "handle_update");
+                   this.options.activity.bind("elem_click", this.handle_click);
+               },
+               handle_click: function(elem){
+                   var attrs = {};
+                   this.elem = elem;
+                   if(elem instanceof activities.model.Action){
+                       attrs.hidden = {
+                           activity_id: elem.get("activity_id"),
+                           id: elem.id,
+                           cid: elem.cid
+                       };
+                       attrs.singleline = {
+                           name: elem.get("name") || ""
+                       };
+                       attrs.multiline = {
+                           description: elem.get("description") || ""
+                       };
+                   }
+                   this.render(attrs);
+                   this.el.find('input[type=button]').unbind().bind("click", this.handle_update);
+               },
+               handle_update: function(a,b,c,d){
+                   if(this.elem instanceof activities.model.Action){
+                       this.elem.set({
+                           name: this.el.find("input[name=name]").val(),
+                           description: this.el.find("input[name=description").val()
+                       });
+                       this.elem.save();
+                   }
+               },
+               render: function(attrs){
+                   this.el.empty();
+                   $.tmpl(properties_template, attrs).appendTo(this.el);
                }
            });
 
@@ -25,14 +65,23 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
+                   $.tmpl(diagram_template, {name: this.name,
+                                             width: this.width,
+                                             height: this.height}).appendTo(this.el);
                    this.bind_events();
                    this.model.bind("change", this.reset);
+                   this.properties_view = new PropertiesView({
+                       el:$(this.el.find(".element_properties")[0]),
+                       activity: this.activity
+                   });
 
                },
                bind_events: function(){
                    if(this.activity){
                        this.activity.unbind();
                        this.activity.bind("add", this.render_child);
+                       this.activity.bind("change:name", this.render_child);
+                       this.activity.bind("change:description", this.render_child);
                        this.activity.bind("elem_click", this.element_clicked);
                        this.activity.bind("activity_click", this.activity_clicked);
                        this.activity.bind("elem_drag", this.element_drag);
@@ -40,6 +89,9 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                },
                reset: function(model){
                    this.activity = this.model.activity;
+                   this.properties_view = new PropertiesView({
+                       el:$(this.el.find(".element_properties")[0]),
+                       activity: this.activity});
                    this.bind_events();
                    this.el.empty();
                    this.render();
@@ -72,9 +124,6 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    if(this.activity === undefined){
                        return this;
                    }
-                   $.tmpl(diagram_template, {name: this.name,
-                                             width: this.width,
-                                             height: this.height}).appendTo(this.el);
                    var canvas_container = this.el.find('.activity_diagram')[0];
                    this.canvas = Raphael(canvas_container, this.height, this.width);
                    var here = this;
