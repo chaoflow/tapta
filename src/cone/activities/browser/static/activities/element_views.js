@@ -164,8 +164,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         }, this);
                         this.elem.dblclick(this.eventPropagator("elem_dblclick"), this);
                         this.elem.mousedown(function(evt){
-                            this.drag_start = [evt.offsetX, evt.offsetY];
-                            this.drag_progress = [evt.offsetX, evt.offsetY];
+                            this.drag_start = [evt.screenX, evt.screenY];
+                            this.drag_progress = [evt.screenX, evt.screenY];
                             this.elem.mousemove(this.drag, this);
                             this.elem.mouseout(function(evt){
                                 this.elem.unmousemove(this.drag);
@@ -205,8 +205,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         }, this);
                         this.elem.dblclick(this.eventPropagator("elem_dblclick"), this);
                         this.elem.mousedown(function(evt){
-                            this.drag_start = [evt.offsetX, evt.offsetY];
-                            this.drag_progress = [evt.offsetX, evt.offsetY];
+                            this.drag_start = [evt.screenX, evt.screenY];
+                            this.drag_progress = [evt.screenX, evt.screenY];
                             this.elem.mousemove(this.drag, this);
                             this.elem.mouseout(function(evt){
                                 this.elem.unmousemove(this.drag);
