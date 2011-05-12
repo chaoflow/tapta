@@ -415,14 +415,8 @@ define([], function(){
     $.extend(activities.actions.Snap.prototype, {
         
         click: function() {
-            var diagram = this.actions.editor.diagram;
-            if (this.active) {
-                this.unselect();
-                diagram.snap = false;
-            } else {
-                this.select();
-                diagram.snap = true;
-                diagram.render();
+            for(i in localStorage){
+                localStorage.removeItem(i);
             }
         }
     });
