@@ -61,7 +61,6 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
     });
     activities.app_model = AppModel;
 
-tains a number different elements.
     // There is an Activity, this contains a number of children and
     // has a parent. The childrens are Nodes and Edges, the Parent is
     // an Action Node. 
