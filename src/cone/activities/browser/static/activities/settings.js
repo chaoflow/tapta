@@ -75,12 +75,11 @@ define (["jquery"], function(){
                 lineHeight      : 14,
                 fontSize        : 12,
                 fontStyle       : 'sans-serif',
-                rounding        : 3
+                rounding        : 3,
+                gridsize        : 50,
             },
             
             node: {
-                width               : 50,
-                height              : 50,
                 edgeOffset          : 5,
                 borderWidth         : 2,
                 fillColor           : '#edf7ff',

@@ -53,7 +53,10 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                             this.elem.remove();
                         }
                         // Setup
-                        var args = $.extend(this.defaults, this.model.get("ui_data"));
+                        var args = $.extend(this.defaults, {x: this.defaults.gridsize * this.model.get("ui_data").x,
+                                                            y: this.defaults.gridsize * this.model.get("ui_data").y,
+                                                            width: this.defaults.gridsize * this.model.get("ui_data").width,
+                                                            height: this.defaults.gridsize * this.model.get("ui_data").height});
                         var c = this.options.canvas;
                         var elem = c.set();
 
