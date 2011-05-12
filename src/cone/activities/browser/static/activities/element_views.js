@@ -12,8 +12,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                 translate_event: function(node){
                     var new_ui = node.get("ui_data");
                     var old_ui = node.previous("ui_data");
-                    this.translate(new_ui.x - old_ui.x,
-                                   new_ui.y - old_ui.y);
+                    this.translate((new_ui.x - old_ui.x) * this.defaults.gridsize,
+                                   (new_ui.y - old_ui.y) * this.defaults.gridsize);
                 },
                 translate: function(x, y){
                     if(this.elem){

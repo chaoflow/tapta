@@ -137,10 +137,10 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             });
         },
         create : function(nodeType, position){
-            var node = new nodeType({ui_data: {x: position.x / activities.settings.gridsize,
-                                               y: position.y / activities.settings.gridsize,
-                                               width: position.width / activities.settings.gridsize,
-                                               height: position.height / activities.settings.gridsize},
+            var node = new nodeType({ui_data: {x: position.x / activities.settings.rendering.gridsize,
+                                               y: position.y / activities.settings.rendering.gridsize,
+                                               width: 50 / activities.settings.rendering.gridsize,
+                                               height: 50 / activities.settings.rendering.gridsize},
                                      activity_storage_name: this.get("storage_name")});
             switch(nodeType){
             case Models.Initial:
@@ -205,8 +205,10 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
         dragging: function(element, rel_movement, abs_movement){
             var old_ui = element.get("ui_data");
             element.set({ui_data: 
-                         {x: old_ui.x * activities.settings.gridsize + rel_movement.x,
-                          y: old_ui.y * activities.settings.gridsize + rel_movement.y}});
+                         {x: old_ui.x + rel_movement.x / activities.settings.rendering.gridsize,
+                          y: old_ui.y + rel_movement.y / activities.settings.rendering.gridsize,
+                          width: old_ui.width,
+                          height: old_ui.height}});
             element.save();
         }
     } , {display_name : "Activity"});
