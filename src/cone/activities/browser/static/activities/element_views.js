@@ -134,7 +134,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                             this.model.trigger("elem_click", this.model);
                             evt.stopPropagation();
                         }, this);
-                        this.glass.dblclick(this.eventPropagator("elem_dblclick"), this);
+                        this.glass.dblclick(this.eventPropagator("elem_click_right_drop_target"), this);
                         this.glass.mousedown(function(evt){
                             this.glass.toFront();
                             this.drag_start = [evt.screenX, evt.screenY];
