@@ -14,6 +14,8 @@ define(["activities/settings", "cdn/backbone.js"], function(){
         this.data = (store && JSON.parse(store)) || {};
     };
 
+    Store.guid = guid;
+
     activities.Store = Store;
     
     _.extend(Store.prototype, {

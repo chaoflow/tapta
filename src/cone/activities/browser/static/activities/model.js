@@ -28,7 +28,6 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             this.save();
         },
         updateActivity: function(activity){
-            console.log(activity.id)
             this.activity = activity;
             this.set({activity_id: activity.id});
             this.save();
@@ -52,7 +51,8 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             // New computer
             if(layers.length == 0){
                 for(var i=0;i<6;i++){
-                    layers.create({id:i});
+                    layers.create({id:"x" + i,
+                                   activity_id: "x" + i});
                 };
             }
             this.layers = layers;
@@ -128,7 +128,6 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
            Bubble up the event from your collections
         */
         eventForwarder: function(event, context){
-            console.log(event);
             this.trigger(event, context);
         },
         children: function(){
@@ -280,7 +279,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
     Models.Action = Models.Node.extend({
         initialize: function(nodels, options){
             if(! this.get("activity_id")){
-                this.activity = new Models.Activity();
+                this.activity = new Models.Activity({id: activities.Store.guid()});
                 this.activity.localStorage = new activities.Store(this.get("activity_storage_name"));
                 this.activity.save();
                 this.set({activity_id: this.activity.id});

@@ -123,15 +123,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         this.bind();
                     },
                     bind: function(){
-                        console.log("binding events");
                         this.activity_button.click(this.eventPropagator("activity_click"), this);
                         this.glass.click(function(evt){
-                            // Event bubbling is not stopped in svg
-                            if(_.detect(this.activity_button, function(elem){
-                                return evt.target == elem.node;
-                                })){
-                                return;
-                            }
                             this.model.trigger("elem_click", this.model);
                             evt.stopPropagation();
                         }, this);
