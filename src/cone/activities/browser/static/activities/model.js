@@ -264,7 +264,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
                                       {display_name : "Final Node"});
 
     Models.Action = Models.Node.extend({
-        initialize: function(nodels, options){
+        initialize: function(models, options){
             if(! this.get("activity_id")){
                 this.activity = new Models.Activity({id: activities.Store.guid()});
                 this.activity.localStorage = new activities.Store(this.get("activity_storage_name"));
