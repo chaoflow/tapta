@@ -7,6 +7,9 @@ body {
     display:none;
 }
 
+.diagram_container {
+    padding-bottom: 1em;
+}
 /* editor */
 .activity_editor {
     position:relative;
@@ -60,6 +63,11 @@ body {
 /* diagram */
 .activity_diagram {
     margin-bottom:1em;
+}
+.activity_diagram svg {
+    border-style: solid;
+    border-width: 1px;
+    height: 300px;
 }
 .activity_diagram .control {
     position: absolute;

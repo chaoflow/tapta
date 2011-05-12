@@ -12,7 +12,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                 initialize: function(){
                     this.defaults = $.extend(activities.settings.rendering,
                                              activities.settings.node);
-                    _.bindAll(this, "translate_event");
+                    _.bindAll(this, "translate_event", "drag");
                     this.model.bind("change:ui_data", this.translate_event);
                 },
                 translate_event: function(node){
@@ -37,11 +37,11 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                     };
                 },
                 drag: function(evt){
-                    var drag_x = evt.offsetX - this.drag_start[0];
-                    var drag_y = evt.offsetY - this.drag_start[1];
-                    var rel_x = evt.offsetX - this.drag_progress[0];
-                    var rel_y = evt.offsetY - this.drag_progress[1];
-                    this.drag_progress = [evt.offsetX, evt.offsetY];
+                    var drag_x = evt.screenX - this.drag_start[0];
+                    var drag_y = evt.screenY - this.drag_start[1];
+                    var rel_x = evt.screenX - this.drag_progress[0];
+                    var rel_y = evt.screenY - this.drag_progress[1];
+                    this.drag_progress = [evt.screenX, evt.screenY];
                     this.model.trigger("elem_drag", {context: this.model, 
                                                      abs_movement: {x: drag_x,
                                                                     y: drag_y},
@@ -74,21 +74,12 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
 
                         // Draw activity symbol with outer frame for catching
                         // click events
-                        var activity = c.set();
-                        activity.activity = true;
                         var activity_button_size = 10;
                         var a_b_c = {
                             x: args.x + 3,
                             y: args.y + args.height - 10 - 7,
                             height: 14,
                             width: 14};
-                        var activity_button = c.rect(a_b_c.x,
-                                                     a_b_c.y,                   
-                                                     a_b_c.width,  
-                                                     a_b_c.height);
-                        activity_button.attr({fill: args.fillColor,
-                                             stroke: args.fillColor});
-                        activity.push(activity_button);
                         var path = _([["M", 0, 0],
                                       ["L", 0, 1], 
                                       ["L", 2, 1],
@@ -105,27 +96,37 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                             }, "")
                             .value();
                         var activity_fork = c.path(path);
-                        activity.push(activity_fork);
-                        elem.push(activity);
+                        elem.push(activity_fork);
 
                         if(this.model.get("name")){
 
-                            var name = c.print(args.x + 5, 
-                                               args.y + 10, 
-                                               this.model.get("name"),
-                                               c.getFont("Vegur"),
-                                               12);
+                            var name = c.text(args.x + args.width / 2, 
+                                               args.y + 7, 
+                                               this.model.get("name"));
                             elem.push(name);
                         }
+                        var glass = c.rect(args.x, args.y, args.width, args.height);
+                        glass.attr({fill: 'white',
+                                   opacity: 0});
+                        elem.push(glass);
+                        var activity_button = c.rect(a_b_c.x,
+                                                     a_b_c.y,                   
+                                                     a_b_c.width,  
+                                                     a_b_c.height);
+                        activity_button.attr({fill: 'red',
+                                              opacity: 0});
+                        elem.push(activity_button);
+                        this.activity_button = activity_button;
+
+                        this.glass = glass;
                         this.elem = elem;
-                        this.activity = activity;
                         this.bind();
                     },
                     bind: function(){
-                        this.activity.click(this.eventPropagator("activity_click"), this);
-                        this.elem.click(function(evt){
+                        this.activity_button.click(this.eventPropagator("activity_click"), this);
+                        this.glass.click(function(evt){
                             // Event bubbling is not stopped in svg
-                            if(_.detect(this.activity, function(elem){
+                            if(_.detect(this.activity_button, function(elem){
                                 return evt.target == elem.node;
                                 })){
                                 return;
@@ -133,20 +134,20 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                             this.model.trigger("elem_click", this.model);
                             evt.stopPropagation();
                         }, this);
-                        this.elem.dblclick(this.eventPropagator("elem_dblclick"), this);
-                        this.elem.mousedown(function(evt){
-                            this.drag_start = [evt.offsetX, evt.offsetY];
-                            this.drag_progress = [evt.offsetX, evt.offsetY];
-                            this.elem.mousemove(this.drag, this);
-                            this.elem.mouseout(function(evt){
-                                this.elem.unmousemove(this.drag);
-                            }, this);
+                        this.glass.dblclick(this.eventPropagator("elem_dblclick"), this);
+                        this.glass.mousedown(function(evt){
+                            this.glass.toFront();
+                            this.drag_start = [evt.screenX, evt.screenY];
+                            this.drag_progress = [evt.screenX, evt.screenY];
+                            $(document).mousemove(this.drag, this);
                         }, this);
-                        this.elem.mouseout(function(evt){
-                            this.elem.unmousemove(this.drag);
-                        }, this);
-                        this.elem.mouseup(function(evt){
-                            this.elem.unmousemove(this.drag);
+                        this.glass.mouseup(function(evt){
+                            try{
+                                $(document).unbind("mousemove");
+                                $(document).unbind("mousemove");
+                                $(document).unbind("mousemove");
+                                }
+                            catch(e){};
                         }, this);
                     }
                     
