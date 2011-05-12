@@ -65,9 +65,13 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
+                   this.el.height(this.height + 12);
                    $.tmpl(diagram_template, {name: this.name,
                                              width: this.width,
                                              height: this.height}).appendTo(this.el);
+                   this.canvas_container = this.el.find(".canvas_container");
+                   var canvas_width = innerWidth - 240;
+                   this.canvas_container.width(canvas_width);
                    this.bind_events();
                    this.model.bind("change", this.reset);
                    this.properties_view = new PropertiesView({
@@ -93,7 +97,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        el:$(this.el.find(".element_properties")[0]),
                        activity: this.activity});
                    this.bind_events();
-                   this.el.empty();
+                   this.canvas_container.empty();
                    this.render();
                },
                events: {
@@ -124,8 +128,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    if(this.activity === undefined){
                        return this;
                    }
-                   var canvas_container = this.el.find('.activity_diagram')[0];
-                   this.canvas = Raphael(canvas_container, this.height, this.width);
+                   this.canvas = Raphael(this.canvas_container[0], this.canvas_container.width(), this.height);
                    var here = this;
                    _.each(this.activity.children(), function(child){
                        here.render_child(child);
