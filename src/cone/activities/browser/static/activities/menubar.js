@@ -16,9 +16,9 @@
  *    and decides what to do.
  * 4. The menubar decides the trigger a add_new_element
  *    event, triggered on the original target (the canvas)
- * 5. The diagram listens to this element, and adds a new
+ * 5. The diagramview listens to this element, and adds a new
  *    element to the active activity, based on the type
- *    The menubar provided with the event
+ *    the menubar provided with the event
  * 6. The collection where the element got added triggers
  *    an add event.
  * 7. The diagram listens to the add event and renders

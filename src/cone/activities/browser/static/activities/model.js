@@ -142,6 +142,10 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
                                                width: 50 / activities.settings.rendering.gridsize,
                                                height: 50 / activities.settings.rendering.gridsize},
                                      activity_storage_name: this.get("storage_name")});
+            // depending on the type, the new node is added to a
+            // collection. This will trigger an event, which in turn
+            // triggers redrawing. That means, at this point, the
+            // element needs to know its coordinates.
             switch(nodeType){
             case Models.Initial:
                 this.initial = node;
