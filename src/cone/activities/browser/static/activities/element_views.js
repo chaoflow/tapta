@@ -46,28 +46,34 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                                                      rel_movement: {x: rel_x,
                                                                     y: rel_y}});
                 }
-
-
             });
 
             $.extend(this.activities.ui, {
                 action_view: base_view.extend({
+                    initialize: function(){
+                        base_view.prototype.initialize.call(this);
+                        this.args = $.extend({},
+                                             this.defaults, 
+                                             {x: this.defaults.gridsize * this.model.get("ui_data").x,
+                                              y: this.defaults.gridsize * this.model.get("ui_data").y,
+                                              activity_button_size: 14,
+                                              fork_size: 4,
+                                              width: this.defaults.gridsize * this.model.get("ui_data").width,
+                                              height: this.defaults.gridsize * this.model.get("ui_data").height});
+                    },
                     render: function(){
                         if(this.elem){
                             this.elem.remove();
                         }
+                        var args = this.args;
                         // Setup
-                        var args = $.extend({},
-                                            this.defaults, {x: this.defaults.gridsize * this.model.get("ui_data").x,
-                                                            y: this.defaults.gridsize * this.model.get("ui_data").y,
-                                                            width: this.defaults.gridsize * this.model.get("ui_data").width,
-                                                            height: this.defaults.gridsize * this.model.get("ui_data").height});
                         var c = this.options.canvas;
                         var elem = c.set();
 
                         // Draw outer border
-                        var frame = c.rect(args.x, args.y, 
-                                           args.width, args.height, 
+                        var frame = c.rect(args.x + (args.gridsize - args.element_size) / 2 + (args.width - args.gridsize) / 2, 
+                                           args.y + (args.gridsize - args.element_size) / 2, 
+                                           args.element_size, args.element_size, 
                                            args.rounding);
                         frame.attr({fill: args.fillColor,
                                    stroke: args.borderColor,
@@ -76,12 +82,11 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
 
                         // Draw activity symbol with outer frame for catching
                         // click events
-                        var activity_button_size = 10;
                         var a_b_c = {
-                            x: args.x + 3,
-                            y: args.y + args.height - 10 - 7,
-                            height: 14,
-                            width: 14};
+                            x: args.x + (args.width - args.gridsize) / 2 + (args.gridsize - args.element_size) / 2 + args.activity_button_size / 4,
+                            y: args.y + (args.gridsize - args.element_size) / 2 + args.element_size - args.activity_button_size - args.activity_button_size / 4,
+                            height: args.activity_button_size,
+                            width: args.activity_button_size};
                         var path = _([["M", 0, 0],
                                       ["L", 0, 1], 
                                       ["L", 2, 1],
@@ -90,9 +95,9 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                                       ["L", 1, 2]])
                             .chain()
                             .map(function(row){
-                                return [row[0], row[1] * 4, row[2] * 4];
+                                return [row[0], row[1] * args.fork_size, row[2] * args.fork_size];
                             }).map(function(row){
-                                return [row[0], row[1] + a_b_c.x + 3, row[2] + a_b_c.y + 3];
+                                return [row[0], row[1] + a_b_c.x + (args.activity_button_size - args.fork_size) / 2, row[2] + a_b_c.y + (args.activity_button_size - args.fork_size) / 2];
                             }).reduce(function(memo, row){
                                 return memo + row[0] + row[1] + " " + row[2] + " ";
                             }, "")
@@ -103,7 +108,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         if(this.model.get("name")){
 
                             var name = c.text(args.x + args.width / 2, 
-                                               args.y + 7, 
+                                               args.y + (args.height / 2) - args.element_size / 2 + 7, 
                                                this.model.get("name"));
                             elem.push(name);
                         }
@@ -146,23 +151,43 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                                 }
                             catch(e){};
                         }, this);
+                    },
+                    getStartPoint: function(){
+                        return {x: this.args.x + this.args.width / 2 + this.args.element_size / 2,
+                                y: this.args.y + this.args.height / 2};
+                    },
+                    getEndPoint: function(){
+                        return {x: this.args.x + this.args.width / 2 - this.args.element_size / 2,
+                                y: this.args.y + this.args.height / 2};
                     }
+
                     
                 }),
                 fork_join_view: base_view.extend({
+                    initialize: function(){
+                        base_view.prototype.initialize.call(this);
+                        this.args = $.extend({},
+                                             this.defaults, this.model.get("ui_data"),
+                                             {x: this.defaults.gridsize * this.model.get("ui_data").x,
+                                              y: this.defaults.gridsize * this.model.get("ui_data").y,
+                                              elem_width: 10,
+                                              padding: 10,
+                                              width: this.defaults.gridsize * this.model.get("ui_data").width,
+                                              height: this.defaults.gridsize * this.model.get("ui_data").height});
+
+                    },
                     render: function(){
-                        var args = $.extend({},
-                                            this.defaults, this.model.get("ui_data"),
-                                            {width: 10});
                         var c = this.options.canvas;
                         var elem = c.set();
                         
-                        var frame = c.rect(args.x, args.y, 
-                                           args.width, args.height,
+                        var frame = c.rect(this.args.x + (this.args.width) / 2 - this.args.elem_width / 2, 
+                                           this.args.y + this.args.padding, 
+                                           this.args.elem_width, 
+                                           this.args.height - this.args.padding * 2,
                                            0);
-                        frame.attr({fill: args.fillColor,
-                                   stroke: args.borderColor,
-                                   "stroke-width": args.borderWidth});
+                        frame.attr({fill: this.args.fillColor,
+                                   stroke: this.args.borderColor,
+                                   "stroke-width": this.args.borderWidth});
                         elem.push(frame);
                         this.elem = elem;
                         this.bind();
@@ -187,6 +212,14 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         this.elem.mouseup(function(evt){
                             this.elem.unmousemove(this.drag);
                         }, this);
+                    },
+                    getStartPoint: function(position, height){
+                        return {x: this.args.x + this.args.width / 2 + this.args.elem_width / 2, 
+                                y: this.args.y + position * this.args.gridsize + (height * this.args.gridsize) / 2};
+                    },
+                    getEndPoint: function(position, height){
+                        return {x: this.args.x + this.args.width / 2 - this.args.elem_width / 2, 
+                                y: this.args.y + position * this.args.gridsize + (height * this.args.gridsize) / 2};
                     }
 
                 }),
@@ -194,20 +227,20 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                     initialize: function(){
                         base_view.prototype.initialize.call(this);
                         this.args = $.extend({},
-                                             this.defaults, {x: this.defaults.gridsize * this.model.get("ui_data").x,
-                                                             y: this.defaults.gridsize * this.model.get("ui_data").y,
-                                                             rect_size : 35,
-                                                             width: this.defaults.gridsize * this.model.get("ui_data").width,
-                                                             height: this.defaults.gridsize * this.model.get("ui_data").height});
-                        this.rect_size = this.args.rect_size;
-                        this.square = Math.sqrt(Math.pow(this.rect_size, 2) / 2);
+                                             this.defaults, 
+                                             {x: this.defaults.gridsize * this.model.get("ui_data").x,
+                                              y: this.defaults.gridsize * this.model.get("ui_data").y,
+                                              width: this.defaults.gridsize * this.model.get("ui_data").width,
+                                              height: this.defaults.gridsize * this.model.get("ui_data").height});
+                        this.args.rect_size = this.args.element_size;
+                        this.square = Math.sqrt(Math.pow(this.args.rect_size, 2) / 2);
                     },
                     render: function(){
                         var c = this.options.canvas;
                         var elem = c.set();
                          
-                        var frame = c.rect(this.args.x + 7.5 + (this.rect_size - this.square) / 2 + (this.args.width - this.args.gridsize) / 2, 
-                                           this.args.y + 7.5 + (this.rect_size - this.square) / 2 + (this.args.height - this.args.gridsize) / 2, 
+                        var frame = c.rect(this.args.x + (this.args.gridsize - this.args.element_size) / 2 + (this.args.rect_size - this.square) / 2 + (this.args.width - this.args.gridsize) / 2, 
+                                           this.args.y + (this.args.gridsize - this.args.element_size) / 2 + (this.args.rect_size - this.square) / 2 + (this.args.height - this.args.gridsize) / 2, 
                                            this.square, this.square, 0);
                         frame.attr({fill: this.args.fillColor,
                                    stroke: this.args.borderColor,
@@ -215,8 +248,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         frame.rotate(45);
                         elem.push(frame);
                         if(this.options.end_points > 1){
-                            var left_path = "M " + (this.args.x + 5) + " " + (this.args.y + this.args.gridsize / 2);
-                            left_path +=   " L " + (this.args.x + 5) + " " + (this.args.y + this.args.height - this.args.gridsize / 2);
+                            var left_path = "M " + (this.args.x + this.args.width / 2 - this.args.element_size / 2) + " " + (this.args.y + this.args.gridsize / 2);
+                            left_path +=   " L " + (this.args.x + this.args.width / 2 - this.args.element_size / 2) + " " + (this.args.y + this.args.height - this.args.gridsize / 2);
                             var left_path_elem = c.path(left_path);
                             left_path_elem.attr({fill: this.args.fillColor,
                                                  stroke: this.args.borderColor,
@@ -224,8 +257,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                             elem.push(left_path_elem);
                         }
                         if(this.options.start_points > 1){
-                            var right_path = "M " + (this.args.x + this.args.width - 5) + " " + (this.args.y + this.args.gridsize / 2);
-                            right_path +=   " L " + (this.args.x + this.args.width - 5) + " " + (this.args.y + this.args.height - this.args.gridsize / 2);
+                            var right_path = "M " + (this.args.x + this.args.width - (this.args.gridsize - this.args.element_size) / 2) + " " + (this.args.y + this.args.gridsize / 2);
+                            right_path +=   " L " + (this.args.x + this.args.width - (this.args.gridsize - this.args.element_size) / 2) + " " + (this.args.y + this.args.height - this.args.gridsize / 2);
                             var right_path_elem = c.path(right_path);
                             right_path_elem.attr({fill: this.args.fillColor,
                                                   stroke: this.args.borderColor,
@@ -257,23 +290,13 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                             this.elem.unmousemove(this.drag);
                         }, this);
                     },
-                    getStartPoint: function(position){
-                        if (this.options.start_points > 1){
-                            return {x: this.args.x + this.args.width - 5, 
-                                    y: this.args.y + this.args.gridsize / 2 + ((this.args.height - this.args.gridsize) / (this.options.start_points - 1)) * position};
-                        }else{
-                            return {x: this.args.x + this.args.width - (this.args.gridsize - this.args.rect_size) / 2, 
-                                    y: this.args.y + this.args.height / 2};
-                        }
+                    getStartPoint: function(position, height){
+                        return {x: this.args.x + this.args.width / 2 + this.args.element_size / 2, 
+                                y: this.args.y + position * this.args.gridsize + (height * this.args.gridsize) / 2};
                     },
-                    getEndPoint: function(position){
-                        if(this.options.end_points > 1){
-                            return {x: this.args.x + 5, 
-                                    y: this.args.y + this.args.gridsize / 2 + ((this.args.height - this.args.gridsize) / (this.options.end_points - 1)) * position};
-                        }else{
-                            return {x: this.args.x +  (this.args.gridsize - this.args.rect_size) / 2,
-                                    y: this.args.y + this.args.height / 2};
-                        }
+                    getEndPoint: function(position, height){
+                        return {x: this.args.x + this.args.width / 2 - this.args.element_size / 2, 
+                                y: this.args.y + position * this.args.gridsize + (height * this.args.gridsize) / 2};
                     }
                 }),
                 initial_view: base_view.extend({
@@ -290,14 +313,14 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                     render: function(){
                         var c = this.options.canvas;
                         var elem = c.set();
-                        var frame = c.circle(this.x, this.y, this.args.circle_radius);
+                        var frame = c.circle(this.x, this.y, this.args.element_size / 2);
                         frame.attr({fill: this.args.borderColor,
                                    stroke: this.args.borderColor,
                                    "stroke-width": this.args.borderWidth});
                         elem.push(frame);
                     },
                     getStartPoint: function(){
-                        return {x: this.x + this.args.circle_radius,
+                        return {x: this.x + this.args.element_size / 2,
                                 y: this.y};
                     }
                       
@@ -316,19 +339,19 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                     render: function(){
                         var c = this.options.canvas;
                         var elem = c.set();
-                        var outer = c.circle(this.x, this.y, this.defaults.circle_radius);
+                        var outer = c.circle(this.x, this.y, this.defaults.element_size / 2);
                         outer.attr({fill: this.args.fillColor,
                                    stroke: this.args.borderColor,
                                    "stroke-width": this.args.borderWidth});
                         elem.push(outer);
-                        var inner = c.circle(this.x, this.y, this.defaults.circle_radius - this.args.borderWidth * 3);
+                        var inner = c.circle(this.x, this.y, this.defaults.element_size / 2 - this.args.borderWidth * 3);
                         inner.attr({fill: this.args.borderColor,
                                    stroke: this.args.borderColor,
                                    "stroke-width": this.args.borderWidth});
                         elem.push(inner);
                     },
                     getEndPoint: function(){
-                        return {x: this.x - this.args.circle_radius,
+                        return {x: this.x - this.args.element_size / 2,
                                 y: this.y};
                     }
 

@@ -76,8 +76,8 @@ define (["jquery"], function(){
                 fontSize        : 12,
                 fontStyle       : 'sans-serif',
                 rounding        : 3,
-                gridsize        : 50,
-                circle_radius  : 20,
+                gridsize        : 70,
+                element_size    : 50,
             },
             
             node: {
