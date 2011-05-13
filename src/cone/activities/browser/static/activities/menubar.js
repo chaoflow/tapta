@@ -148,6 +148,7 @@ define([], function(){
                     return true;
                 }
             }
+            return false;
         },
         
         /*
