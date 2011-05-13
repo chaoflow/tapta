@@ -1,3 +1,4 @@
+// XXX: old - unused
 define(['activities/core', 'cdn/qunit.js'], function($) {
     var Models = activities.model;
     
