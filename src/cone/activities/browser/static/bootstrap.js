@@ -3,7 +3,6 @@ require(["jquery", "activities/core", "test_activities"], function(){
     require.ready(function(){
         (function($){
             window.demo = new ActivitiesView({el: jQuery("#demo_editor")});
-                                    console.log("go");
             window.canvas = demo.diagrams[0].canvas;
             window.ui_data = {x:0,y:0,width:1,height:4};
             window.views = activities.ui;

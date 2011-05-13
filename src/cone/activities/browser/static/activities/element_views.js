@@ -34,7 +34,6 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                     };
                 },
                 drag: function(evt){
-                    console.log("dragging");
                     var drag_x = evt.screenX - this.drag_start[0];
                     var drag_y = evt.screenY - this.drag_start[1];
                     var rel_x = evt.screenX - this.drag_progress[0];
@@ -137,7 +136,6 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         }, this);
                         this.glass.dblclick(this.eventPropagator("elem_click_right_drop_target"), this);
                         this.glass.mousedown(function(evt){
-                            console.log("mouse down");
                             this.glass.toFront();
                             this.drag_start = [evt.screenX, evt.screenY];
                             this.drag_progress = [evt.screenX, evt.screenY];
