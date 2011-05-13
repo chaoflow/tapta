@@ -55,6 +55,14 @@ body {
     height:60px;
 }
 
+.diagram_container .selectable_actions {
+    vertical-align: top;
+    display: inline-block;
+}
+.diagram_container .selectable_actions .highlight {
+    background-color: red;
+}
+
 
 .diagram_container .canvas_container {
     display: inline-block;

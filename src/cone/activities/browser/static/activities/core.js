@@ -4,6 +4,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
 
            var diagram_template = $.template(null, $("#diagram_template"));
            var properties_template = $.template(null, $("#properties_template"));
+           var actions_template = $.template(null, $("#actions_template"));
 
            /* The Menubar sets up the menu actions and renders their button representations */
            activities.MenubarPanel = Backbone.View.extend({
@@ -55,6 +56,47 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                }
            });
 
+           var ActionView = Backbone.View.extend({
+               initialize: function(){
+                   _.bindAll(this, "add");
+                   this.model.activity.action_collection.bind("add", this.add);
+               },
+               events: {
+                   "click li": "clicked"
+               },
+               render: function(){
+                   this.el.empty();
+                   var bla = _(this.model.activity.localStorage.data).chain()
+                       .values()
+                       .map(function(activity){
+                           if(activity.action_collection === undefined){
+                               return [];
+                           }
+                           return activity.action_collection.models;
+                       })
+                       .flatten()
+                       .value();
+                   var unique_actions = [];
+                   var unique_activities = [];
+                   _(bla).each(function(action){
+                       if(!(action.activity in unique_activities)){
+                           unique_activities.push(action.activity);
+                           unique_actions.push(action);
+                       }
+                   });
+                   $.tmpl(actions_template, {actions: unique_actions}).appendTo(this.el);
+               },
+               clicked: function(event){
+                   $(event.target).addClass("highlight");
+               },
+               add: function(action){
+                   action.set({activity_id: 123,
+                               name: "we do something"});
+                   action.activity = 123;
+               }
+           });
+           
+
            /* The Diagram maintains the diagram with its canvas and local menu bars
             */
            var DiagramView = Backbone.View.extend({
@@ -63,14 +105,13 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    _.bindAll(this, "render_child", "element_drag", 
                              "element_clicked", "activity_clicked", "reset");
                    this.name = name;
-                   this.width = 600;
-                   this.height = 300;
+                   this.height = 600;
                    this.el.height(this.height + 12);
                    $.tmpl(diagram_template, {name: this.name,
                                              width: this.width,
                                              height: this.height}).appendTo(this.el);
                    this.canvas_container = this.el.find(".canvas_container");
-                   var canvas_width = innerWidth - 240;
+                   var canvas_width = innerWidth - 440;
                    this.canvas_container.width(canvas_width);
                    this.bind_events();
                    this.model.bind("change", this.reset);
@@ -78,6 +119,11 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                        el:$(this.el.find(".element_properties")[0]),
                        activity: this.activity
                    });
+                   this.actions_view = new ActionView({
+                       el:$(this.el.find(".selectable_actions")[0]),
+                       model: this.model
+                   });
+                   this.actions_view.render();
 
                },
                bind_events: function(){

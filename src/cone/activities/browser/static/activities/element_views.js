@@ -107,7 +107,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         if(this.model.get("name")){
 
                             var name = c.text(args.x + args.width / 2, 
-                                               args.y + (args.height / 2) - args.element_size / 2 + 7, 
+                                               args.y + (args.height / 2) - args.element_size / 2 + 12, 
                                                this.model.get("name"));
                             elem.push(name);
                         }
@@ -378,7 +378,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         line.attr({stroke: this.defaults.borderColor,
                                    "stroke-width": this.defaults.borderWidth});
                         var glass = this.options.canvas.path(path);
-                        glass.attr({stroke: "red",
+                        glass.attr({stroke: "yellow",
                                     "stroke-width": 20,
                                     opacity: 0});
                         glass.click(function(){console.log("Clicked on path");});

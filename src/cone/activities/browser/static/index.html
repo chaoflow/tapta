@@ -45,7 +45,8 @@
           <strong>Properties</strong>
           <div class="props">
             {{each hidden}}
-            <input type="input" name="${$index}" value="${$value}" >
+            <input type="input
+" name="${$index}" value="${$value}" >
             {{/each}}
             {{each singleline}}
             <input type="input" name="${$index}" value="${$value}" >
@@ -58,6 +59,14 @@
                  value="update"
                  class="update" />
         </script>
+      
+        <script type="text/html" id="actions_template">
+          <ul>
+              {{each actions}}
+              <li id="${$value.id}">${$value.get("name")}</li>
+              {{/each}}
+          </ul>
+        </script>
 
         <script type="text/html" id="diagram_template">
           <div class="diagram_container" id="${name}">
@@ -65,6 +74,8 @@
               No Element selected
             </div>
             <div class="canvas_container">
+            </div>
+            <div class="selectable_actions">
             </div>
             
           </div>
