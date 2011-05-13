@@ -1,5 +1,11 @@
-define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views", 
-        "activities/storage"], function(){
+define([
+    'require',
+    'cdn/underscore.js',
+    'cdn/backbone.js',
+    './settings',
+    './element_views',
+    './storage'
+], function(require) {
 
     if (!window.activities){
         window.activities = {};

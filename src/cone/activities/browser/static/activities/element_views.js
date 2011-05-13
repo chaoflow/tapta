@@ -1,5 +1,10 @@
-require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"], 
-        function(){
+define([
+    'require',
+    'jquery',
+    'cdn/backbone.js',
+    'cdn/underscore.js',
+    './settings'
+], function(require) {
             activities.ui = {};
 
             var base_view = Backbone.View.extend({
