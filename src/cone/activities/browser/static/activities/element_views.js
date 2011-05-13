@@ -4,10 +4,13 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
 
             var base_view = Backbone.View.extend({
                 initialize: function(){
-                    this.defaults = $.extend(activities.settings.rendering,
+                    this.defaults = $.extend({},
+                                             activities.settings.rendering,
                                              activities.settings.node);
                     _.bindAll(this, "translate_event", "drag");
-                    this.model.bind("change:ui_data", this.translate_event);
+                    if(this.model !== undefined){
+                        this.model.bind("change:ui_data", this.translate_event);
+                    }
                 },
                 translate_event: function(node){
                     var new_ui = node.get("ui_data");
@@ -31,6 +34,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                     };
                 },
                 drag: function(evt){
+                    console.log("dragging");
                     var drag_x = evt.screenX - this.drag_start[0];
                     var drag_y = evt.screenY - this.drag_start[1];
                     var rel_x = evt.screenX - this.drag_progress[0];
@@ -53,7 +57,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                             this.elem.remove();
                         }
                         // Setup
-                        var args = $.extend(this.defaults, {x: this.defaults.gridsize * this.model.get("ui_data").x,
+                        var args = $.extend({},
+                                            this.defaults, {x: this.defaults.gridsize * this.model.get("ui_data").x,
                                                             y: this.defaults.gridsize * this.model.get("ui_data").y,
                                                             width: this.defaults.gridsize * this.model.get("ui_data").width,
                                                             height: this.defaults.gridsize * this.model.get("ui_data").height});
@@ -127,6 +132,7 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         }, this);
                         this.glass.dblclick(this.eventPropagator("elem_click_right_drop_target"), this);
                         this.glass.mousedown(function(evt){
+                            console.log("mouse down");
                             this.glass.toFront();
                             this.drag_start = [evt.screenX, evt.screenY];
                             this.drag_progress = [evt.screenX, evt.screenY];
@@ -145,7 +151,8 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                 }),
                 fork_join_view: base_view.extend({
                     render: function(){
-                        var args = $.extend(this.defaults, this.model.get("ui_data"),
+                        var args = $.extend({},
+                                            this.defaults, this.model.get("ui_data"),
                                             {width: 10});
                         var c = this.options.canvas;
                         var elem = c.set();
@@ -184,19 +191,47 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
 
                 }),
                 decision_merge_view: base_view.extend({
+                    initialize: function(){
+                        base_view.prototype.initialize.call(this);
+                        this.args = $.extend({},
+                                             this.defaults, {x: this.defaults.gridsize * this.model.get("ui_data").x,
+                                                             y: this.defaults.gridsize * this.model.get("ui_data").y,
+                                                             rect_size : 35,
+                                                             width: this.defaults.gridsize * this.model.get("ui_data").width,
+                                                             height: this.defaults.gridsize * this.model.get("ui_data").height});
+                        this.rect_size = this.args.rect_size;
+                        this.square = Math.sqrt(Math.pow(this.rect_size, 2) / 2);
+                    },
                     render: function(){
-                        var args = $.extend(this.defaults, this.model.get("ui_data"));
                         var c = this.options.canvas;
                         var elem = c.set();
-                        var square = Math.sqrt(Math.pow(Math.min(args.height, args.width), 2) / 2);
                          
-                        var frame = c.rect(args.x, args.y, 
-                                           square, square, 0);
-                        frame.attr({fill: args.fillColor,
-                                   stroke: args.borderColor,
-                                   "stroke-width": args.borderWidth});
+                        var frame = c.rect(this.args.x + 7.5 + (this.rect_size - this.square) / 2 + (this.args.width - this.args.gridsize) / 2, 
+                                           this.args.y + 7.5 + (this.rect_size - this.square) / 2 + (this.args.height - this.args.gridsize) / 2, 
+                                           this.square, this.square, 0);
+                        frame.attr({fill: this.args.fillColor,
+                                   stroke: this.args.borderColor,
+                                   "stroke-width": this.args.borderWidth});
                         frame.rotate(45);
                         elem.push(frame);
+                        if(this.options.end_points > 1){
+                            var left_path = "M " + (this.args.x + 5) + " " + (this.args.y + this.args.gridsize / 2);
+                            left_path +=   " L " + (this.args.x + 5) + " " + (this.args.y + this.args.height - this.args.gridsize / 2);
+                            var left_path_elem = c.path(left_path);
+                            left_path_elem.attr({fill: this.args.fillColor,
+                                                 stroke: this.args.borderColor,
+                                                 "stroke-width": this.args.borderWidth});
+                            elem.push(left_path_elem);
+                        }
+                        if(this.options.start_points > 1){
+                            var right_path = "M " + (this.args.x + this.args.width - 5) + " " + (this.args.y + this.args.gridsize / 2);
+                            right_path +=   " L " + (this.args.x + this.args.width - 5) + " " + (this.args.y + this.args.height - this.args.gridsize / 2);
+                            var right_path_elem = c.path(right_path);
+                            right_path_elem.attr({fill: this.args.fillColor,
+                                                  stroke: this.args.borderColor,
+                                                  "stroke-width": this.args.borderWidth});
+                            elem.push(right_path_elem);
+                        }
                         this.elem = elem;
                         this.bind();
                     },
@@ -221,8 +256,109 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         this.elem.mouseup(function(evt){
                             this.elem.unmousemove(this.drag);
                         }, this);
+                    },
+                    getStartPoint: function(position){
+                        if (this.options.start_points > 1){
+                            return {x: this.args.x + this.args.width - 5, 
+                                    y: this.args.y + this.args.gridsize / 2 + ((this.args.height - this.args.gridsize) / (this.options.start_points - 1)) * position};
+                        }else{
+                            return {x: this.args.x + this.args.width - (this.args.gridsize - this.args.rect_size) / 2, 
+                                    y: this.args.y + this.args.height / 2};
+                        }
+                    },
+                    getEndPoint: function(position){
+                        if(this.options.end_points > 1){
+                            return {x: this.args.x + 5, 
+                                    y: this.args.y + this.args.gridsize / 2 + ((this.args.height - this.args.gridsize) / (this.options.end_points - 1)) * position};
+                        }else{
+                            return {x: this.args.x +  (this.args.gridsize - this.args.rect_size) / 2,
+                                    y: this.args.y + this.args.height / 2};
+                        }
+                    }
+                }),
+                initial_view: base_view.extend({
+                    initialize: function(){
+                        base_view.prototype.initialize.call(this);
+                        this.args = $.extend({}, 
+                                             this.defaults, {x: this.defaults.gridsize * this.options.ui_data.x,
+                                                             y: this.defaults.gridsize * this.options.ui_data.y,
+                                                             width: this.defaults.gridsize * this.options.ui_data.width,
+                                                             height: this.defaults.gridsize * this.options.ui_data.height});
+                        this.x = this.args.x + this.args.width / 2;
+                        this.y = this.args.y + this.args.height / 2;
+                    },
+                    render: function(){
+                        var c = this.options.canvas;
+                        var elem = c.set();
+                        var frame = c.circle(this.x, this.y, this.args.circle_radius);
+                        frame.attr({fill: this.args.borderColor,
+                                   stroke: this.args.borderColor,
+                                   "stroke-width": this.args.borderWidth});
+                        elem.push(frame);
+                    },
+                    getStartPoint: function(){
+                        return {x: this.x + this.args.circle_radius,
+                                y: this.y};
+                    }
+                      
+                }),
+                final_view: base_view.extend({
+                    initialize: function(){
+                        base_view.prototype.initialize.call(this);
+                        this.args = $.extend({},
+                                             this.defaults, {x: this.defaults.gridsize * this.options.ui_data.x,
+                                                             y: this.defaults.gridsize * this.options.ui_data.y,
+                                                             width: this.defaults.gridsize * this.options.ui_data.width,
+                                                             height: this.defaults.gridsize * this.options.ui_data.height});
+                        this.x = this.args.x + this.args.width / 2;
+                        this.y = this.args.y + this.args.height / 2;
+                    },
+                    render: function(){
+                        var c = this.options.canvas;
+                        var elem = c.set();
+                        var outer = c.circle(this.x, this.y, this.defaults.circle_radius);
+                        outer.attr({fill: this.args.fillColor,
+                                   stroke: this.args.borderColor,
+                                   "stroke-width": this.args.borderWidth});
+                        elem.push(outer);
+                        var inner = c.circle(this.x, this.y, this.defaults.circle_radius - this.args.borderWidth * 3);
+                        inner.attr({fill: this.args.borderColor,
+                                   stroke: this.args.borderColor,
+                                   "stroke-width": this.args.borderWidth});
+                        elem.push(inner);
+                    },
+                    getEndPoint: function(){
+                        return {x: this.x - this.args.circle_radius,
+                                y: this.y};
+                    }
+
+                }),
+                edge_view: Backbone.View.extend({
+                    initialize: function(){
+                        this.defaults = $.extend({},
+                                                 activities.settings.rendering,
+                                                 activities.settings.node);
+                    },
+                    render: function(){
+                        var path = "";
+                        var arrow_length = 10;
+                        var arrow_height = 10;
+                        path += "M " + this.options.start.x + " " + this.options.start.y;
+                        if (this.options.start.y != this.options.end.y){
+                            var middle = (this.options.start.x + this.options.end.x) / 2;
+                            path += " L " + middle + " " + this.options.start.y;
+                            path += " L " + middle + " " + this.options.end.y;
+                        }
+                        path += " L " + this.options.end.x + " " + this.options.end.y;
+                        path += " L " + (this.options.end.x - arrow_length) + " " + (this.options.end.y + arrow_height / 2);
+                        path += " M " + (this.options.end.x - arrow_length) + " " + (this.options.end.y - arrow_height / 2);
+                        path += " L " + this.options.end.x + " " + this.options.end.y;
+                        var line = this.options.canvas.path(path);
+                        line.attr({stroke: this.defaults.borderColor,
+                                   "stroke-width": this.defaults.borderWidth});
                     }
                 })
+
             });
         });
 

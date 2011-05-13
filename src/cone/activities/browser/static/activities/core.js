@@ -165,6 +165,7 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                    $(document).bind("save", this.save);
 
                    var diagrams = [];
+                   this.diagrams = diagrams;
 
                    diagrams[0] = new TopLevelDiagramView({
                        model:app_model.layers.at(0),
