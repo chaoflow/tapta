@@ -81,7 +81,13 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             _.bindAll(this, "eventForwarder");
 
             this.initial = undefined;
-            this.final_node = undefined;
+            this.final_node_collection = new Models.FinalNodeCollection(
+                [],
+                {id: this.id,
+                 localStorage: new activities.Store("activities.activity["
+                                                    + this.id
+                                                    + "].final_node_collection")}).fetch();
+            this.final_node_collection.bind("all", this.eventForwarder);
             this.fork_join_collection = new Models.ForkJoinCollection(
                 [],
                 {id: this.id, 
@@ -119,14 +125,12 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
         },
         children: function(){
             var children = this.fork_join_collection.models.concat(
+                this.final_node_collection.models,
                 this.decision_merge_collection.models,
                 this.action_collection.models,
                 this.edge_collection.models);
             if(this.initial){
                 children = children.concat([this.initial]);
-            }
-            if(this.final_node){
-                children = children.concat([this.final_node]);
             }
             return children;
         },
@@ -154,8 +158,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
                 this.trigger("add", node);
                 break;
             case Models.Final:
-                this.final_node = node;
-                this.trigger("add", node);
+                this.final_node_collection.add(node);
                 break;
             case Models.ForkJoin:
                 this.fork_join_collection.add(node);
@@ -186,7 +189,7 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
                 return ;
             }
             if (node instanceof Models.Final){
-                this.final_node = undefined;
+                this.final_node_collection.remove(node).destroy();
             } else if (node instanceof Models.ForkJoin){
                 this.fork_join_collection.remove(node).destroy();
             } else if (node instanceof Models.DecisionMerge){
@@ -264,6 +267,12 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             return this.view = new activities.ui.Final(this);
         }} ,
                                       {display_name : "Final Node"});
+    Models.FinalNodeCollection = Backbone.Collection.extend({
+        model: Models.Final,
+        initialize: function(models, options){
+            this.localStorage = options.localStorage;
+        }
+    });
 
     Models.Action = Models.Node.extend({
         initialize: function(models, options){
