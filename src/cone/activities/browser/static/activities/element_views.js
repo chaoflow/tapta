@@ -377,6 +377,11 @@ require(["jquery", "activities/settings", "cdn/backbone.js", "cdn/underscore.js"
                         var line = this.options.canvas.path(path);
                         line.attr({stroke: this.defaults.borderColor,
                                    "stroke-width": this.defaults.borderWidth});
+                        var glass = this.options.canvas.path(path);
+                        glass.attr({stroke: "red",
+                                    "stroke-width": 20,
+                                    opacity: 0});
+                        glass.click(function(){console.log("Clicked on path");});
                     }
                 })
 
