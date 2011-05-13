@@ -60,8 +60,8 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
            var DiagramView = Backbone.View.extend({
                initialize:function(name){
                    this.activity = this.model.activity;
-                   _.bindAll(this, "render_child", "element_drag",
-                            "activity_clicked", "reset");
+                   _.bindAll(this, "render_child", "element_drag", 
+                             "element_clicked", "activity_clicked", "reset");
                    this.name = name;
                    this.width = 600;
                    this.height = 300;
@@ -107,7 +107,8 @@ define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
                activity_clicked: function(node){
                    this.trigger("update_activity", node.activity);
                },
-               element_clicked: function(event){
+               element_clicked: function(node){
+                   this.el.trigger("elem_click", node);
                },
                element_drag: function(data){
                    this.activity.dragging(data.context, data.rel_movement, 

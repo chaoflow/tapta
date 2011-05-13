@@ -126,6 +126,13 @@ define([], function(){
                     actions.perform(event, activity, position);
                 }
             });
+            $(window.document).bind("elem_click", function(event, node){
+                var action = actions.get("delete_element");
+                if(action.active && !action.steady && !action.busy){
+                    // screw it
+                    node.activity.remove(node);
+                }
+            });
 
         },
         
@@ -606,38 +613,9 @@ define([], function(){
     $.extend(activities.actions.DeleteElement.prototype, {
         
         perform: function(editor, obj, event) {
+            jQuery(event.target).trigger("remove_element", [this.type,
+                                         position]);
             this.unselect();
-            var diagram = editor.diagram;
-            var model = editor.model;
-            if (!diagram.selected) {
-                return;
-            }
-            var opts = {
-                message: 'Do you really want to delete this Item?',
-                model: model,
-                diagram: diagram
-            };
-            bdajax.dialog(opts, function(options) {
-                var diagram = options.diagram;
-                var model = options.model;
-                var elem, path;
-                var paths = new Array();
-                for (var idx in diagram.selected) {
-                    elem = diagram.selected[idx];
-                    path = diagram.mapping[elem.triggerColor];
-                    paths.push(path);
-                }
-                for (var idx in paths) {
-                    path = paths[idx];
-                    diagram.remove(path);
-                }
-                for (var idx in paths) {
-                    path = paths[idx];
-                    model.remove(path);
-                }
-                diagram.selected = new Array();
-                diagram.render();
-            });
         }
     });
     

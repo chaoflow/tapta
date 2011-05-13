@@ -185,27 +185,18 @@ define(['cdn/underscore.js', "cdn/backbone.js", "activities/element_views",
             if (!node) {
                 return ;
             }
-            if (node instanceof Models.Edge){
-                this.edge_collection.remove(node);
+            if (node instanceof Models.Final){
+                this.final_node = undefined;
+            } else if (node instanceof Models.ForkJoin){
+                this.fork_join_collection.remove(node).destroy();
+            } else if (node instanceof Models.DecisionMerge){
+                this.decision_merge_collection.remove(node).destroy();
+            } else if (node instanceof Models.Action){
+                this.action_collection.remove(node).destroy();
+            } else if (node instanceof Models.EdgeCollection){
+                this.edge_collection.remove(node).destroy();
             } else {
-                var obsolete = this.getEdgesFor(node).concat([node]);
-                _.each(obsolete, function(node){
-                    if(node instanceof Models.Initial){
-                        this.initial = undefined;
-                    } else if (node instanceof Models.Final){
-                        this.final_node = undefined;
-                    } else if (node instanceof Models.ForkJoin){
-                        this.fork_join_collection.remove(node);
-                    } else if (node instanceof Models.DecisionMerge){
-                        this.decision_merge_collection.remove(node);
-                    } else if (node instanceof Models.ActionCollection){
-                        this.action_collection(node);
-                    } else if (node instanceof Models.EdgeCollection){
-                        this.edge_collection.remove(node);
-                    } else {
-                        throw "Unknown node type. Bad programmer";
-                    }
-                });
+                throw "Unknown node type. Bad programmer";
             }
         },
         dragging: function(element, rel_movement, abs_movement){
