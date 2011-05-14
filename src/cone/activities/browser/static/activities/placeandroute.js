@@ -32,19 +32,18 @@ define([
             };
             var longest = paths.longest();
             var nodes_of_longest = [].concat(longest.get('nodes'));
-            _.each(nodes_of_longest, function(node) {
+            _.forEach(nodes_of_longest, function(node) {
                 if (node.get('y_req') > 1) {
                     throw 'Vertical node size != 1 unspported';
                 };
-                node.size = {};
-                node.size.x = node.get('x_req');
-                node.size.y = node.get('y_req');
+                node.ui.size.x = node.get('x_req');
+                node.ui.size.y = node.get('y_req');
 
                 // The longest path, i.e. the path that needs the most
                 // space defines how much horizontal space to allocate
                 // to its nodes, beyond their needs.
                 var xadd = (longest.x_avail - longest.xReq()) / longest.count();
-                node.size.x += Math.round(xadd * 1000) / 1000;
+                node.ui.size.x += Math.round(xadd * 1000) / 1000;
 
                 // The vertical space given to a node depends on its
                 // presence in paths. Additional space is given if a
@@ -52,16 +51,16 @@ define([
                 // node is present in.
                 var yadd = 0;
                 var seen = false;
-                paths.each(function(path) {
+                paths.forEach(function(path) {
                     if (path.include(node)) {
                         seen = true;
                         if (path !== longest) {
-                            node.size.y += path.yReq();
+                            node.ui.size.y += path.yReq();
                         };
-                        node.size.y += yadd;
+                        node.ui.size.y += yadd;
                         yadd = 0;
                         path.remove(node);
-                        path.x_avail -= node.size.x;
+                        path.x_avail -= node.ui.size.x;
                     } else if (seen && (path.last() !== longest.last())) {
                         // The node is not present in this path, but
                         // its paths may enclose a path ending
@@ -81,9 +80,23 @@ define([
             paths.remove(longest);
             recurse(paths, allnodes);
         };
-        allnodes = recurse(paths_wc);
+        var allnodes = recurse(paths_wc);
 
-        
+        // position all nodes
+        // all nodes in the first path receive vertical position 0
+        // all nodes in the second path that have no position yet, receive 1
+        // ...
+        paths.forEach(function(path) {
+            _.forEach(path.get('nodes'), function(node) {
+                
+            });
+        });
+
+
+        // find all edges
+        // the vertical size of an edge is determined by its target node
+
+
         return allnodes;
     };
 

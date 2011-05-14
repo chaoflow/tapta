@@ -79,8 +79,12 @@ define([
             x_req: 1, // varibale sizes are supported
             y_req: 1  // only size 1 supported for now
         },
-        initialize : function(){
+        initialize : function() {
             Models.Element.prototype.initialize.call(this);
+            this.ui = {
+                size: {x:-1, y:-1},
+                pos: {x:-1, y:-1}
+            };
         }
     } , {});
 
@@ -285,6 +289,7 @@ define([
 
     Models.Action = Models.Node.extend({
         initialize: function(models, options){
+            Models.Node.prototype.initialize.call(this);
             if(! this.get("activity_id")){
                 this.activity = new Models.Activity({id: activities.Store.guid()});
                 this.activity.localStorage = new activities.Store(this.get("activity_storage_name"));
