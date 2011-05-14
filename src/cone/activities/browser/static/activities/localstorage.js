@@ -28,30 +28,53 @@ define([
             localStorage.setItem(this.name, JSON.stringify(this.data));
         },
         create: function(model) {
-            if(!model.id){
-                if (model.name) {
-                    model.id = model.attributes.id = model.name;
-                } else {
-                    model.id = model.attributes.id = model.name = guid();
+            if (model.abspath) {
+                if (!model.id) {
+                    if (model.name) {
+                        model.id = model.attributes.id = model.name;
+                    } else {
+                        model.id = model.attributes.id = model.name = guid();
+                    }
                 }
+                this.data[model.name] = model;
+            } else {
+                // XXX: compat
+                if(!model.id){
+                    model.id = model.attributes.id = guid();
+                }
+                this.data[model.id] = model;
             }
-            this.data[model.name] = model;
             this.save();
             return model;
         },
         update: function(model) {
-            this.data[model.name] = model;
+            if (model.abspath) {
+                this.data[model.name] = model;
+            } else {
+                // XXX: compat
+                this.data[model.id] = model;
+            }
             this.save();
             return model;
         },
         find: function(model) {
-            return this.data[model.name];
+            if (model.abspath) {
+                return this.data[model.name];
+            } else {
+                // XXX: compat
+                return this.data[model.id];
+            }
         },
         findAll: function() {
             return _.values(this.data);
         },
         destroy: function(model) {
-            delete this.data[model.name];
+            if (model.abspath) {
+                delete this.data[model.name];
+            } else {
+                // XXX: compat
+                delete this.data[model.id];
+            }
             this.save();
             return model;
         }
@@ -123,10 +146,15 @@ define([
             resp = store.create(model);
             break;
         case "read":
-            if (model instanceof Collection) {
-                resp = store.findAll();
+            if (model.abspath) {
+                if (model instanceof Collection) {
+                    resp = store.findAll();
+                } else {
+                    resp = store.find(model);
+                }
             } else {
-                resp = store.find(model);
+                // XXX: compat
+                resp = model.id ? store.find(model) : store.findAll();
             }
             break;
         case "update":
