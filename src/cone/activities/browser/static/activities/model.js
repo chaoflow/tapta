@@ -24,7 +24,26 @@ define([
     var Models = {};
     activities.model = Models;
 
-    ////////////// functionality already reproduced ///////////////////////////
+    Models.Layer = Backbone.Model.extend({
+        initialize: function(){
+            var id = this.get("activity_id");
+            var activities_storage_name = "activities.layer.activity[" 
+                    + this.id
+                    + "]";
+            this.activity = new Models.Activity({id:id,
+                                                 storage_name: activities_storage_name});
+            this.activity.localStorage =  new Store(activities_storage_name);
+            this.activity.fetch();
+            this.activity.save();
+            this.set({activity_id: this.activity.id});
+            this.save();
+        },
+        updateActivity: function(activity){
+            this.activity = activity;
+            this.set({activity_id: activity.id});
+            this.save();
+        }
+    });
 
     Models.Layers = Backbone.Collection.extend({
         localStorage: new Store("activities.Layers"),
@@ -75,57 +94,6 @@ define([
         }
     } , {});
 
-    Models.ForkJoinCollection = Backbone.Collection.extend({
-        model: Models.ForkJoin,
-        initialize: function(models, options){
-            this.localStorage = options.localStorage;
-        }
-    });
-
-    Models.DecisionMergeCollection = Backbone.Collection.extend({
-        model: Models.DecisionMerge,
-        initialize: function(models, options){
-            this.localStorage = options.localStorage;
-        }
-    });
-
-    Models.FinalNodeCollection = Backbone.Collection.extend({
-        model: Models.Final,
-        initialize: function(models, options){
-            this.localStorage = options.localStorage;
-        }
-    });
-
-    Models.ActionCollection = Backbone.Collection.extend({
-        model: Models.Action,
-        initialize: function(models, options){
-            this.localStorage = options.localStorage;
-        }
-    });
-
-    ////////////// TODO //////////////////////////////////////////////////////
-
-    Models.Layer = Backbone.Model.extend({
-        initialize: function(){
-            var id = this.get("activity_id");
-            var activities_storage_name = "activities.layer.activity[" 
-                    + this.id
-                    + "]";
-            this.activity = new Models.Activity({id:id,
-                                                 storage_name: activities_storage_name});
-            this.activity.localStorage =  new Store(activities_storage_name);
-            this.activity.fetch();
-            this.activity.save();
-            this.set({activity_id: this.activity.id});
-            this.save();
-        },
-        updateActivity: function(activity){
-            this.activity = activity;
-            this.set({activity_id: activity.id});
-            this.save();
-        }
-    });
-
     Models.Activity = Models.Element.extend({
         initialize : function(){
             Models.Element.prototype.initialize.call(this);
@@ -136,29 +104,29 @@ define([
                 [],
                 {id: this.id,
                  localStorage: new Store("activities.activity["
-                                         + this.id
-                                         + "].final_node_collection")}).fetch();
+                                                    + this.id
+                                                    + "].final_node_collection")}).fetch();
             this.final_node_collection.bind("all", this.eventForwarder);
             this.fork_join_collection = new Models.ForkJoinCollection(
                 [],
                 {id: this.id, 
                  localStorage: new Store("activities.activity[" 
-                                         + this.id
-                                         + "].fork_join_collection")}).fetch();
+                                                    + this.id
+                                                    + "].fork_join_collection")}).fetch();
             this.fork_join_collection.bind("all", this.eventForwarder);
             this.decision_merge_collection = new Models.DecisionMergeCollection(
                 [],
                 {id: this.id,
                  localStorage: new Store("activities.activity[" 
-                                         + this.id
-                                         + "].decision_merge_collection")}).fetch();
+                                                    + this.id
+                                                    + "].decision_merge_collection")}).fetch();
             this.decision_merge_collection.bind("all", this.eventForwarder);
             this.action_collection = new Models.ActionCollection(
                 [],
                 {id: this.id,
                  localStorage: new Store("activities.activity["
-                                         + this.id
-                                         + "].action_collection")}).fetch();
+                                                    + this.id
+                                                    + "].action_collection")}).fetch();
             this.action_collection.bind("all", this.eventForwarder);
         },
         /* 
@@ -236,7 +204,8 @@ define([
                           width: old_ui.width,
                           height: old_ui.height}});
             element.save();
-        }}, {display_name : "Activity"});
+        }
+    } , {display_name : "Activity"});
 
     Models.Initial = Models.Node.extend({
         getView: function(ui_context){
@@ -246,7 +215,8 @@ define([
             }
             return this.view = new activities.ui.initial_view({canvas: ui_context,
                                                                model: this});
-        }}, {display_name : "Initial Node"});
+        }} ,
+                                        {display_name : "Initial Node"});
 
     Models.ForkJoin = Models.Node.extend({ 
         getView: function(ui_context){
@@ -256,7 +226,14 @@ define([
             }
             return this.view = new activities.ui.fork_join_view({canvas: ui_context,
                                                                  model: this});
-        }}, {display_name : "Fork and Join"});
+        }} ,
+                                         {display_name : "Fork and Join"});
+    Models.ForkJoinCollection = Backbone.Collection.extend({
+        model: Models.ForkJoin,
+        initialize: function(models, options){
+            this.localStorage = options.localStorage;
+        }
+    });
 
     Models.DecisionMerge = Models.Node.extend({  
         getView: function(ui_context){
@@ -266,7 +243,14 @@ define([
             }
             return this.view = new activities.ui.decision_merge_view({canvas: ui_context,
                                                                       model: this});
-        }}, {display_name : "Decision and Merge"});
+        }} ,
+                                              {display_name : "Decision and Merge"});
+    Models.DecisionMergeCollection = Backbone.Collection.extend({
+        model: Models.DecisionMerge,
+        initialize: function(models, options){
+            this.localStorage = options.localStorage;
+        }
+    });
 
     Models.Final = Models.Node.extend({
         getView: function(ui_context){
@@ -275,7 +259,14 @@ define([
                 return this.view;
             }
             return this.view = new activities.ui.Final(this);
-        }}, {display_name : "Final Node"});
+        }} ,
+                                      {display_name : "Final Node"});
+    Models.FinalNodeCollection = Backbone.Collection.extend({
+        model: Models.Final,
+        initialize: function(models, options){
+            this.localStorage = options.localStorage;
+        }
+    });
 
     Models.Action = Models.Node.extend({
         initialize: function(models, options){
@@ -298,7 +289,15 @@ define([
             }
             return this.view = new activities.ui.action_view({canvas: ui_context,
                                                               model: this});
-        }}, {display_name : "Action"});
+        }} ,
+                                       {display_name : "Action"});
+
+    Models.ActionCollection = Backbone.Collection.extend({
+        model: Models.Action,
+        initialize: function(models, options){
+            this.localStorage = options.localStorage;
+        }
+    });
 
     /////////////// new-style below here ////////////////////////////////////
 
