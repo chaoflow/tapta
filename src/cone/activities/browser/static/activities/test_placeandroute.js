@@ -2,9 +2,8 @@
 define([
     'require',
     'cdn/qunit.js',
-    './settings',
-    './placeandroute',
-    './model'
+    './model',
+    './placeandroute'
 ], function(require) {
     // dependencies we need a handle for
     var placeandroute = require('./placeandroute');
