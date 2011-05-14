@@ -6,6 +6,7 @@ define([
     './element_views',
     './localstorage'
 ], function(require) {
+    var settings = require('./settings');
     var storage = require('./localstorage');
     var Store = storage.Store;
 
@@ -297,9 +298,35 @@ define([
     });
 
     // new-style below here
+    var Model = storage.Model;
+    var Collection = storage.Collection;
 
-    var Path = Backbone.Model.extend({
-        // a path is stored by a collection
+    // root object is based on a Backbone.Model, but the save and
+    // fetch functions are disabled. You can give it a custom name:
+    // var app = new App({name: "myApp"});
+    // This is used for testing. The name is used as top-level
+    // database key.
+    var App = storage.Root.extend({
+        initialize: function(attributes) {
+            this.name = attributes.name || settings.localstorage_key;
+            this.layers = [];
+            for (i = 0; i < 6; i++) {
+                this.layers.push(this.defchild(Layer, "layer"+i));
+            }
+        }
+    });
+
+    var Layer = Model.extend({
+        
+    });
+
+    var Activity = Model.extend({
+        initialize: function() {
+            this.paths = this.defchild(Paths, 'paths');
+        }
+    });
+
+    var Path = Model.extend({
         copy: function() {
             return new Path({
                 nodes: [].concat(this.get('nodes'))
@@ -332,8 +359,7 @@ define([
         }
     });
 
-    var Paths = Backbone.Collection.extend({
-        // XXX; TODO: storage
+    var Paths = Collection.extend({
         model: Path,
         deep: function() {
             // return a "deep" copy, nodes are still the same as in the original
@@ -355,7 +381,6 @@ define([
     return {
         Action: Models.Action,
         Actions: Models.ActionCollection,
-        Activity: Models.Activity,
         DecisionMerge: Models.DecisionMerge,
         DecisionMerges: Models.DecisionMergeCollection,
         ForkJoin: Models.ForkJoin,
@@ -363,6 +388,9 @@ define([
         Final: Models.Final,
         Finals: Models.FinalNodeCollection,
         Initial: Models.Initial,
+
+        App: App,
+        Activity: Activity,
         Path: Path,
         Paths: Paths
     };
