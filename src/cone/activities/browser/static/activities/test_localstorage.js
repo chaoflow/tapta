@@ -10,6 +10,33 @@ define([
 
     module('Storage');
 
+    test("location iterator", function() {
+        var A = {id:'A'};
+        var B = {id:'B', parent:A};
+        var C = {id:'C', parent:B};
+        deepEqual(_.pluck(storage.locationIterator(C), 'id'), ['A', 'B', 'C']);
+    });
+
+    test("Model/Collection location", function() {
+        var A = new Model();
+        var B = new Collection();
+        var C = new Model();
+        var D = new Model();
+        var E = new Collection();
+        A.id = 'A';
+        B.id = 'B';
+        B.parent = A;
+        C.id = 'C';
+        C.parent = B;
+        D.id = 'D';
+        D.parent = C;
+        E.id = 'E';
+        E.parent = D;
+        deepEqual(_.pluck(A.location(), 'id'), ['A']);
+        deepEqual(_.pluck(D.location(), 'id'), ['A', 'B', 'C', 'D']);
+        deepEqual(_.pluck(E.location(), 'id'), ['A', 'B', 'C', 'D', 'E']);
+    });
+
     test("Collection without name fails", function() {
         var collection = new Collection();
         raises(collection.fetch, "Collection needs name!");

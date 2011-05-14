@@ -57,7 +57,18 @@ define([
     // - sometimes not all models are deleted from a collection
     // - the collection key is not deleted
 
+    var locationIterator = function(obj) {
+        if (!obj) { obj = this; }
+        if (obj.parent) {
+            return locationIterator(obj.parent).concat(obj);
+        } else {
+            return [obj];
+        }
+    };
+
     var Model = Backbone.Model.extend({
+        location: locationIterator,
+
         getKey: function() {
             if (!this.collection) {
                 if (!this.KEY) {
@@ -71,6 +82,8 @@ define([
     });
 
     var Collection = Backbone.Collection.extend({
+        location: locationIterator,
+
         destroyAll: function() {
             _.forEach(this.toArray(), function(model) { model.destroy(); });
         },
@@ -128,6 +141,7 @@ define([
     };
 
     return {
+        locationIterator: locationIterator,
         Collection: Collection,
         Model: Model,
         Store: Store
