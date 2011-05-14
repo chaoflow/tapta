@@ -24,11 +24,11 @@ define([
         // allocate space to the nodes and register them in an array
         // to be returned
         var recurse = function(paths, allnodes) {
-            if (paths.length === 0) {
-                return;
-            };
             if (allnodes === undefined) {
                 allnodes = [];
+            };
+            if (paths.length === 0) {
+                return allnodes;
             };
             var longest = paths.longest();
             var nodes_of_longest = [].concat(longest.get('nodes'));
@@ -78,7 +78,7 @@ define([
                 throw "Unallocated space left!";
             };
             paths.remove(longest);
-            recurse(paths, allnodes);
+            return recurse(paths, allnodes);
         };
         var allnodes = recurse(paths_wc);
 
