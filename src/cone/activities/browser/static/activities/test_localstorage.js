@@ -44,11 +44,10 @@ define([
 
     var test_root = new Model();
     test_root.name = 'test_root';
-    var clean = function() {
-        localStorage.removeItem(test_root.abspath());
-    };
+    localStorage.removeItem(test_root.abspath());
 
     test("CRUD named models", function() {
+        // create
         var model1 = new Model({a: 1});
         var model2 = new Model({a: 2});
         model1.name = "model1";
@@ -56,6 +55,8 @@ define([
         model1.parent = model2.parent = test_root;
         model1.save();
         model2.save();
+
+        // read
         var model1n = new Model();
         var model2n = new Model();
         model1n.name = "model1";
@@ -63,11 +64,29 @@ define([
         model1n.parent = model2n.parent = test_root;
         model1n.fetch();
         model2n.fetch();
-        equal(model1n.get('a'), 1);
-        equal(model2n.get('a'), 2);
+        equal(model1n.get('a'), 1, "Create and read 1");
+        equal(model2n.get('a'), 2, "Create and read 2");
 
-        // XXX update
-        // XXX delete
+        // update
+        model1n.set({a: 10});
+        model1.fetch();
+        equal(model1.get('a'), 1, "Not updated without save");
+        model1n.save();
+        model1.fetch();
+        equal(model1.get('a'), 10, "Updated after save");
+
+        // delete
+        model1.destroy();
+        model2.destroy();
+        var model1nn = new Model();
+        var model2nn = new Model();
+        model1nn.name = "model1";
+        model2nn.name = "model2";
+        model1nn.parent = model2nn.parent = test_root;
+        model1nn.fetch();
+        model2nn.fetch();
+        equal(model1nn.get('a'), undefined, "Gone after delete 1");
+        equal(model2nn.get('a'), undefined, "Gone after delete 2");
     });
 
     test("CRUD named collections with unnamed models", function() {
@@ -140,6 +159,8 @@ define([
         // XXX: proper cleanup
     });
 
+
+    // XXX: fix this
     test("Collection, Model, Collection, Model", function() {
         var Parent = Model.extend({
             initialize: function() {
@@ -163,4 +184,6 @@ define([
         pcol.destroyAll();
         // XXX: proper cleanup
     });
+    
+    localStorage.removeItem(test_root.abspath());
 }); 
