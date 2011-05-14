@@ -86,10 +86,14 @@ define([
         // all nodes in the first path receive vertical position 0
         // all nodes in the second path that have no position yet, receive 1
         // ...
+        var i = 0;
         paths.forEach(function(path) {
             _.forEach(path.get('nodes'), function(node) {
-                
+                if (node.ui.pos.y === -1) {
+                    node.ui.pos.y = i;
+                };
             });
+            i++;
         });
 
 
