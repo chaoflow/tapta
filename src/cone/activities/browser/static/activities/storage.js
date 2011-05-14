@@ -1,7 +1,11 @@
 define([
     'require',
-    'cdn/backbone.js'
+    'cdn/underscore.js',
+    'cdn/backbone.js',
+    './settings'
 ], function(require) {
+    var settings = require('./settings');
+    var KEY = settings.localstorage_key;
 
     function S4() {
         return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
@@ -49,11 +53,66 @@ define([
         }
     });
 
+    // XXX: proper cleanup is missing:
+    // - sometimes not all models are deleted from a collection
+    // - the collection key is not deleted
+
+    var Model = Backbone.Model.extend({
+        getKey: function() {
+            if (!this.collection) {
+                if (!this.KEY) {
+                    throw "Model without collection and KEY";
+                };
+                // not sure how much sense this makes
+                return this.KEY;
+            }
+            return this.collection.getKey();
+        }
+    });
+
+    var Collection = Backbone.Collection.extend({
+        destroyAll: function() {
+            _.forEach(this.toArray(), function(model) { model.destroy(); });
+        },
+        getKey: function() {
+            if (!this.name) {
+                throw "Collection needs a name!";
+            }
+            var prefix;
+            if (!this.parent) {
+                prefix = KEY;
+            } else if (this.parent.KEY) {
+                prefix = KEY + "/" + this.parent.KEY;
+            } else {
+                prefix = this.parent.getKey();
+                if (!prefix) {
+                    throw "Parent returned undefined key";
+                }
+                if (!this.parent.id) {
+                    this.parent.id = this.parent.attributes.id = guid();
+                }
+                prefix = prefix + "/" + this.parent.id;
+            }
+            return prefix + "/" + this.name;
+        },
+        model: Model
+    });
+
     Backbone.sync = function(method, model, success, error) {
-        
+        // model is either a collection or a model
         var resp;
-        var store = model.localStorage || model.collection.localStorage;
-        
+        var store;
+        try {
+            store = model.localStorage || model.collection.localStorage;
+        } catch (e) {
+            if (e.type !== "non_object_property_load") {
+                throw e;
+            }
+        }
+        if (!store) {
+            store = new Store(model.getKey());
+        }
+
         switch (method) {
         case "read":    resp = model.id ? store.find(model) : store.findAll(); break;
         case "create":  resp = store.create(model);                            break;
@@ -69,6 +128,8 @@ define([
     };
 
     return {
+        Collection: Collection,
+        Model: Model,
         Store: Store
     };
 });

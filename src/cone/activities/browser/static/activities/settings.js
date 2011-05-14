@@ -130,6 +130,10 @@ define([
                 }
             }
         }
-        
     });
+
+    // XXX: eventually all settings are returned here
+    return {
+        localstorage_key: 'tapta0'
+    };
 });
