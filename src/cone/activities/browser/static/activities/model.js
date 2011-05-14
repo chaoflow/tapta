@@ -4,8 +4,10 @@ define([
     'cdn/backbone.js',
     './settings',
     './element_views',
-    './localstorage'
+    './localstorage',
+    './placeandroute'
 ], function(require) {
+    var placeandroute = require('./placeandroute');
     var settings = require('./settings');
     var storage = require('./localstorage');
     var Store = storage.Store;
@@ -297,7 +299,8 @@ define([
         }
     });
 
-    // new-style below here
+    /////////////// new-style below here ////////////////////////////////////
+
     var Model = storage.Model;
     var Collection = storage.Collection;
 
@@ -317,12 +320,71 @@ define([
     });
 
     var Layer = Model.extend({
-        
+        initialize: function() {
+            this.initials = this.defchild(Initials, 'initials');
+            this.finals = this.defchild(Finals, 'finals');
+            this.actions = this.defchild(Actions, 'actions');
+            this.decmers = this.defchild(DecMers, "decmers");
+            this.forkjoins = this.defchild(ForkJoins, 'forkjoins');
+            this.activities = this.defchild(Activities, 'activities');
+        }
     });
+    
+    var Initials = Collection.extend({
+        model: Initial
+    });
+
+    var Finals = Collection.extend({
+        model: Final
+    });
+
+    var Actions = Collection.extend({
+        model: Action
+    });
+
+    var DecMers = Collection.extend({
+        model: DecMer
+    });
+
+    var ForkJoins = Collection.extend({
+        model: ForkJoin
+    });
+
+    var Activities = Collection.extend({
+        model: Activity
+    });
+
+    var Initial = Model.extend({});
+    var Final = Model.extend({});
+    var Action = Model.extend({});
+    var DecMer = Model.extend({});
+    var ForkJoin = Model.extend({});
 
     var Activity = Model.extend({
         initialize: function() {
             this.paths = this.defchild(Paths, 'paths');
+        },
+        placeandroute: function() {
+            return placeandroute(this.paths);
+        }
+    });
+
+    var Paths = Collection.extend({
+        model: Path,
+        deep: function() {
+            // return a "deep" copy, nodes are still the same as in the original
+            return new Paths(
+                this.map(function (path) { return path.copy(); })
+            );
+        },
+        longest: function() {
+            return this.max(function(path) { return path.xReq(); });
+        },
+        xReq: function() {
+            return this.longest().xReq();
+        },
+        yReq: function() {
+            return this.reduce(function(memo, path) { return memo + path.yReq(); }, 0);
         }
     });
 
@@ -356,25 +418,6 @@ define([
             return _.max(this.get('nodes'), function (node) {
                 return node.get('y_req');
             }).get('y_req');
-        }
-    });
-
-    var Paths = Collection.extend({
-        model: Path,
-        deep: function() {
-            // return a "deep" copy, nodes are still the same as in the original
-            return new Paths(
-                this.map(function (path) { return path.copy(); })
-            );
-        },
-        longest: function() {
-            return this.max(function(path) { return path.xReq(); });
-        },
-        xReq: function() {
-            return this.longest().xReq();
-        },
-        yReq: function() {
-            return this.reduce(function(memo, path) { return memo + path.yReq(); }, 0);
         }
     });
 
