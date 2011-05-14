@@ -1,8 +1,9 @@
 "use strict";
-require([
-    "jquery",
-    "activities/core"
-], function() {
+define([
+    'require',
+    'jquery',
+    'activities/core'
+], function(require) {
     require.ready(function(){
         (function($){
             window.demo = new ActivitiesView({el: jQuery("#demo_editor")});

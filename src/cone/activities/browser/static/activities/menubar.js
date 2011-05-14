@@ -26,7 +26,9 @@
  * 
  */
 
-define([], function(){
+define([
+    'require',
+], function(require) {
 
     if (!window.activities){
         window.activities = {};

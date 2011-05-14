@@ -1,7 +1,14 @@
-define(['jquery', 'cdn/jquery.tmpl', "cdn/raphael.js",
-        './model', "./storage", "./menubar", "./settings",
-       "./element_views"], function() {
-
+define([
+    'require',
+    'jquery',
+    'cdn/jquery.tmpl',
+    'cdn/raphael.js',
+    './model',
+    './storage',
+    './menubar',
+    './settings',
+    './element_views'
+], function(require) {
            var diagram_template = $.template(null, $("#diagram_template"));
            var properties_template = $.template(null, $("#properties_template"));
            var actions_template = $.template(null, $("#actions_template"));

@@ -1,7 +1,10 @@
 /*
   Any global constants go here
   */
-define (["jquery"], function(){
+define([
+    'require',
+    'jquery'
+], function(require) {
     if (!window.activities){
         window.activities = {};
     }
