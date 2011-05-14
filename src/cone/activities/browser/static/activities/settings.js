@@ -1,6 +1,6 @@
 /*
-  Any global constants go here
-  */
+ Any global constants go here
+ */
 define([
     'require',
     'jquery'

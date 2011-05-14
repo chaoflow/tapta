@@ -12,9 +12,9 @@ define([
     }
 
     /* 
-       Layers are responsible for remembering what the currenct
-       active activity is.
-    */
+     Layers are responsible for remembering what the currenct
+     active activity is.
+     */
     
     var Models = {};
     activities.model = Models;
@@ -23,8 +23,8 @@ define([
         initialize: function(){
             var id = this.get("activity_id");
             var activities_storage_name = "activities.layer.activity[" 
-                + this.id
-                + "]";
+                    + this.id
+                    + "]";
             this.activity = new Models.Activity({id:id,
                                                  storage_name: activities_storage_name});
             this.activity.localStorage =  new activities.Store(activities_storage_name);
@@ -46,8 +46,8 @@ define([
     });
 
     /*
-      The Appmodel stores global app data
-    */
+     The Appmodel stores global app data
+     */
     
     var AppModel = Backbone.Model.extend({
         localStorage: new activities.Store("activities.AppModel"),
@@ -126,8 +126,8 @@ define([
             this.edge_collection.bind("all", this.eventForwarder);
         },
         /* 
-           Bubble up the event from your collections
-        */
+         Bubble up the event from your collections
+         */
         eventForwarder: function(event, context){
             this.trigger(event, context);
         },
@@ -256,7 +256,7 @@ define([
                 return this.view;
             }
             return this.view = new activities.ui.decision_merge_view({canvas: ui_context,
-                                                                 model: this});
+                                                                      model: this});
         }} ,
                                               {display_name : "Decision and Merge"});
     Models.DecisionMergeCollection = Backbone.Collection.extend({
@@ -301,7 +301,7 @@ define([
                 return this.view;
             }
             return this.view = new activities.ui.action_view({canvas: ui_context,
-                                                   model: this});
+                                                              model: this});
         }} ,
                                        {display_name : "Action"});
 

@@ -36,8 +36,8 @@ define([
 
     window.activities.actions = {};
     /*
-      This builds up the complete action menu
-    */
+     This builds up the complete action menu
+     */
 
     activities.actions.Menubar = function(id) {
         this.selector = '#' + id + ' div.actions';
@@ -58,13 +58,13 @@ define([
         
         // diagram element related actions
         section = new activities.actions.Section();
-//        section.add(new activities.actions.InitialNode(this));
-//        section.add(new activities.actions.FinalNode(this));
+        //        section.add(new activities.actions.InitialNode(this));
+        //        section.add(new activities.actions.FinalNode(this));
         section.add(new activities.actions.ActionNode(this));
         section.add(new activities.actions.JoinNode(this));
-//        section.add(new activities.actions.ForkNode(this));
+        //        section.add(new activities.actions.ForkNode(this));
         section.add(new activities.actions.MergeNode(this));
-//        section.add(new activities.actions.DecisionNode(this));
+        //        section.add(new activities.actions.DecisionNode(this));
         section.add(new activities.actions.Edge(this));
         section.add(new activities.actions.DeleteElement(this));
         this.sections.push(section);
@@ -106,7 +106,7 @@ define([
                     var elem = $(this);
                     var id = elem.attr('class');
                     var css_sprite = 
-                        activities.settings.actions.icon_css_sprite;
+                            activities.settings.actions.icon_css_sprite;
                     var val = '-23px ' + css_sprite[id] + 'px';
                     elem.css('background-position', val);
                 },
@@ -117,17 +117,17 @@ define([
                         return;
                     }
                     var css_sprite = 
-                        activities.settings.actions.icon_css_sprite;
+                            activities.settings.actions.icon_css_sprite;
                     var val = '0px ' + css_sprite[id] + 'px';
                     elem.css('background-position', val);
                 });
             // Custom events we listen on
             $(window.document).bind("clicked_on_empty_space", 
                                     function(event, activity, position){
-                if(actions.pending()){
-                    actions.perform(event, activity, position);
-                }
-            });
+                                        if(actions.pending()){
+                                            actions.perform(event, activity, position);
+                                        }
+                                    });
             $(window.document).bind("elem_click", function(event, node){
                 var action = actions.get("delete_element");
                 if(action.active && !action.steady && !action.busy){
@@ -226,12 +226,12 @@ define([
 
 
     /* 
-       Section
-       =======
-       A Section is a container for actions. 
-       Additionally it is responsible for return the html
-       representation of its UI Elements
-    */
+     Section
+     =======
+     A Section is a container for actions. 
+     Additionally it is responsible for return the html
+     representation of its UI Elements
+     */
     var Section = function(){
         this.actions = new Array();
     };
@@ -240,7 +240,7 @@ define([
     Section.prototype = {
         add: function(action){
             this.actions.push(action);}
-             ,
+        ,
         render: function(){
             var section = $('<div class="section"></div>');
             for (var idx in this.actions){
@@ -446,7 +446,7 @@ define([
         
         perform: function(event, activity, position) {
             jQuery(event.target).trigger("add_new_element", [this.type,
-                                         position]);
+                                                             position]);
             this.unselect();
         }
     });
@@ -576,7 +576,7 @@ define([
         perform: function(editor, obj, event) {
             var diagram = editor.diagram;
             if (this.source == null
-             || typeof(this.source) == "undefined") {
+                || typeof(this.source) == "undefined") {
                 var node_name = diagram.mapping[obj.triggerColor];
                 this.source = node_name;
                 this.busy = true;
@@ -589,10 +589,10 @@ define([
             var source_id = this.source;
             var source_ob = _.select(editor.model.get("children"), 
                                      function(node){return node.id === source_id;
-                                            })[0];
+                                                   })[0];
             var target_id = this.target;
             var target_ob = _.select(editor.model.get("children"),
-                                    function(node){return node.id === target_id;})[0];
+                                     function(node){return node.id === target_id;})[0];
             var node = editor.model.createEdge(source_ob, target_ob);
             diagram.createEdge(node);
             this.source = null;
@@ -617,7 +617,7 @@ define([
         
         perform: function(editor, obj, event) {
             jQuery(event.target).trigger("remove_element", [this.type,
-                                         position]);
+                                                            position]);
             this.unselect();
         }
     });
