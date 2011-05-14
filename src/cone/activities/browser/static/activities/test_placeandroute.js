@@ -53,7 +53,7 @@ define([
 
         var nodes = placeandroute(paths);
 
-        test("Path set 0 all node process order", function() {
+        test("Path set 0: all node process order", function() {
             deepEqual(_.map(nodes, function(node) { return node.get('name'); }),
                       ["I", "A", "R", "E", "Q",
                        "H", "J", "K", "L", "M",
@@ -63,7 +63,7 @@ define([
                        "C"]);
         });
 
-        test("Path set 0 sizes", function() {
+        test("Path set 0: sizes", function() {
             // call place and route
 
             // check size of nodes - the blocks are sorted by path
@@ -91,7 +91,7 @@ define([
             deepEqual(R.ui.size, {x:7, y:1}, 'R size');
         });
 
-        test("Path set 0 positions", function() {
+        test("Path set 0: positions", function() {
             // check position of nodes - the blocks are sorted by path
             deepEqual(I.ui.pos, {x:0, y:0}, 'I pos');
             deepEqual(A.ui.pos, {x:1, y:0}, 'A pos');
@@ -124,7 +124,7 @@ define([
             });
         };
 
-        test("Path set 0 edges", function() {
+        test("Path set 0: edges", function() {
             deepEqual(edges(I), [
                 {"source": "I", "target": "A"}
             ], 'I edges');
