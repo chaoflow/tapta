@@ -13,9 +13,9 @@ define([
 
     var path_set_0 = function() {
         var A = new model.ForkJoin({name: 'A'});
-        var B = new model.DecisionMerge({name: 'B'});
+        var B = new model.DecMer({name: 'B'});
         var C = new model.Action({name: 'C'});
-        var D = new model.DecisionMerge({name: 'D'});
+        var D = new model.DecMer({name: 'D'});
         var E = new model.ForkJoin({name: 'E'});
         var F = new model.Action({name: 'F'});
         var G = new model.Action({name: 'G'});

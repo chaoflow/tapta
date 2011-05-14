@@ -354,11 +354,25 @@ define([
         model: Activity
     });
 
-    var Initial = Model.extend({});
-    var Final = Model.extend({});
-    var Action = Model.extend({});
-    var DecMer = Model.extend({});
-    var ForkJoin = Model.extend({});
+    var Node = Model.extend({
+        defaults: {
+            x_req: 1, // varibale size supported
+            y_req: 1  // fixed for now
+        },
+        initialize: function() {
+            this.ui = {
+                edges: [],
+                pos: {x:-1, y:-1},
+                size: {x:-1, y:-1}
+            };
+        }
+    });
+
+    var Initial = Node.extend({});
+    var Final = Node.extend({});
+    var Action = Node.extend({});
+    var DecMer = Node.extend({});
+    var ForkJoin = Node.extend({});
 
     var Activity = Model.extend({
         initialize: function() {
@@ -422,18 +436,20 @@ define([
     });
 
     return {
-        Action: Models.Action,
-        Actions: Models.ActionCollection,
-        DecisionMerge: Models.DecisionMerge,
-        DecisionMerges: Models.DecisionMergeCollection,
-        ForkJoin: Models.ForkJoin,
-        ForkJoinCollection: Models.ForkJoinCollection,
-        Final: Models.Final,
-        Finals: Models.FinalNodeCollection,
-        Initial: Models.Initial,
-
         App: App,
+        Layer: Layer,
+        Initial: Initial,
+        Initials: Initials,
+        Final: Final,
+        Finals: Finals,
+        Action: Action,
+        Actions: Actions,
+        DecMer: DecMer,
+        DecMers: DecMers,
+        ForkJoin: ForkJoin,
+        ForkJoins: ForkJoins,
         Activity: Activity,
+        Activities: Activities,
         Path: Path,
         Paths: Paths
     };
