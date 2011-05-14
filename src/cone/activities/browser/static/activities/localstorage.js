@@ -66,7 +66,16 @@ define([
         }
     };
 
+    var abspath = function(location) {
+        var pathsep = '/';
+        if (!location) { location = this.location(); }
+        return _.reduce(location, function(memo, obj) {
+            return memo + pathsep + obj.name;
+        }, '');
+    };
+
     var Model = Backbone.Model.extend({
+        abspath: abspath,
         location: locationIterator,
 
         getKey: function() {
@@ -82,6 +91,7 @@ define([
     });
 
     var Collection = Backbone.Collection.extend({
+        abspath: abspath,
         location: locationIterator,
 
         destroyAll: function() {
@@ -141,6 +151,7 @@ define([
     };
 
     return {
+        abspath: abspath,
         locationIterator: locationIterator,
         Collection: Collection,
         Model: Model,

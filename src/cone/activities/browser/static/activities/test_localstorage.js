@@ -10,31 +10,35 @@ define([
 
     module('Storage');
 
-    test("location iterator", function() {
-        var A = {id:'A'};
-        var B = {id:'B', parent:A};
-        var C = {id:'C', parent:B};
-        deepEqual(_.pluck(storage.locationIterator(C), 'id'), ['A', 'B', 'C']);
+    test("location iterator and abspath", function() {
+        var A = {name:'A'};
+        var B = {name:'B', parent:A};
+        var C = {name:'C', parent:B};
+        equal(storage.abspath(storage.locationIterator(A)), '/A');
+        equal(storage.abspath(storage.locationIterator(B)), '/A/B');
+        equal(storage.abspath(storage.locationIterator(C)), '/A/B/C');
     });
 
-    test("Model/Collection location", function() {
+    test("Model/Collection abspath", function() {
         var A = new Model();
         var B = new Collection();
         var C = new Model();
         var D = new Model();
         var E = new Collection();
-        A.id = 'A';
-        B.id = 'B';
+        A.name = 'A';
+        B.name = 'B';
         B.parent = A;
-        C.id = 'C';
+        C.name = 'C';
         C.parent = B;
-        D.id = 'D';
+        D.name = 'D';
         D.parent = C;
-        E.id = 'E';
+        E.name = 'E';
         E.parent = D;
-        deepEqual(_.pluck(A.location(), 'id'), ['A']);
-        deepEqual(_.pluck(D.location(), 'id'), ['A', 'B', 'C', 'D']);
-        deepEqual(_.pluck(E.location(), 'id'), ['A', 'B', 'C', 'D', 'E']);
+        deepEqual(A.abspath(), '/A');
+        deepEqual(B.abspath(), '/A/B');
+        deepEqual(C.abspath(), '/A/B/C');
+        deepEqual(D.abspath(), '/A/B/C/D');
+        deepEqual(E.abspath(), '/A/B/C/D/E');
     });
 
     test("Collection without name fails", function() {
