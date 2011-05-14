@@ -4,7 +4,6 @@ define([
     'cdn/jquery.tmpl',
     'cdn/raphael.js',
     './model',
-    './storage',
     './menubar',
     './settings',
     './element_views'
