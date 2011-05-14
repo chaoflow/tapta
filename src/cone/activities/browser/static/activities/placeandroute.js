@@ -5,10 +5,8 @@
 //  - only vertical element size of 1
 define([
     'require',
-    'cdn/underscore.js',
-    './model'
+    'cdn/underscore.js'
 ], function(require) {
-    var model = require('./model');
 
     var placeandroute = function(paths) {
         // sets sizes and positions on paths and nodes in the paths
