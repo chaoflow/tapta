@@ -111,6 +111,14 @@ define([
         return child;
     };
 
+    var Root = Backbone.Model.extend({
+        abspath: abspath,
+        defchild: defchild,
+        fetch: undefined,
+        location: location,
+        save: undefined
+    });
+
     var Model = Backbone.Model.extend({
         abspath: abspath,
         defchild: defchild,
@@ -187,6 +195,7 @@ define([
         location: location,
         Collection: Collection,
         Model: Model,
+        Root: Root,
         Store: Store
     };
 });
