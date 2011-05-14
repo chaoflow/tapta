@@ -73,7 +73,8 @@ define([
 
     Models.Node = Models.Element.extend({
         defaults : {
-            label : "",
+            label: "", // XXX: old, to be removed
+            name: "", 
             description : "",
             x_req: 1, // varibale sizes are supported
             y_req: 1  // only size 1 supported for now
