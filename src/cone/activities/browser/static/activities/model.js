@@ -123,13 +123,6 @@ define([
                                                     + this.id
                                                     + "].action_collection")}).fetch();
             this.action_collection.bind("all", this.eventForwarder);
-            this.edge_collection = new Models.EdgeCollection(
-                [],
-                {id: this.id,
-                 localStorage: new activities.Store("activities.activity[" 
-                                                    + this.id 
-                                                    + "].edge_collection")}).fetch();
-            this.edge_collection.bind("all", this.eventForwarder);
         },
         /* 
          Bubble up the event from your collections
@@ -141,18 +134,11 @@ define([
             var children = this.fork_join_collection.models.concat(
                 this.final_node_collection.models,
                 this.decision_merge_collection.models,
-                this.action_collection.models,
-                this.edge_collection.models);
+                this.action_collection.models);
             if(this.initial){
                 children = children.concat([this.initial]);
             }
             return children;
-        },
-        getEdgesFor : function(node){
-            return this.node_collection.select(function(child){
-                return (child.get("target") === node 
-                        || child.get("source") === node);
-            });
         },
         create : function(nodeType, position){
             var node = new nodeType(
@@ -183,20 +169,11 @@ define([
             case Models.Action:
                 this.action_collection.add(node);
                 break;
-            case Models.Edge:
-                this.edge_collection.add(node);
-                break;
             default:
                 throw "Unknown node type. Bad programmer";
             }
             node.save();
             return node;
-        },
-        createEdge : function(source, target){
-            var edge = this.create(Models.Edge);
-            edge.set({source: source,
-                      target: target});
-            return edge;
         },
         remove: function(node){
             if (!node) {
@@ -210,8 +187,6 @@ define([
                 this.decision_merge_collection.remove(node).destroy();
             } else if (node instanceof Models.Action){
                 this.action_collection.remove(node).destroy();
-            } else if (node instanceof Models.EdgeCollection){
-                this.edge_collection.remove(node).destroy();
             } else {
                 throw "Unknown node type. Bad programmer";
             }
@@ -319,26 +294,10 @@ define([
         }
     });
 
-    Models.Edge = Models.Element.extend({
-        defaults : {
-            label : "",
-            description : ""
-        },
-        initialize : function(){
-            Models.Element.prototype.initialize.call(this);
-        }
-    }, {display_name : "Edge"});
+    // new-style below here
 
-    Models.EdgeCollection = Backbone.Collection.extend({
-        model: Models.Edge,
-        initialize: function(models, options){
-            this.localStorage = options.localStorage;
-        }
-    });
-
-
-    // new-style
     var Path = Backbone.Model.extend({
+        // a path is stored by a collection
         copy: function() {
             return new Path({
                 nodes: [].concat(this.get('nodes'))
