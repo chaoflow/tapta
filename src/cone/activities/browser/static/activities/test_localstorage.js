@@ -1,10 +1,10 @@
 define([
     'require',
     'cdn/qunit.js',
-    './storage'
+    './localstorage'
 ], function(require) {
     // dependencies we need a handle for
-    var storage = require('./storage');
+    var storage = require('./localstorage');
     var Collection = storage.Collection;
     var Model = storage.Model;
 

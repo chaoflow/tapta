@@ -4,9 +4,9 @@ define([
     'cdn/backbone.js',
     './settings',
     './element_views',
-    './storage'
+    './localstorage'
 ], function(require) {
-    var storage = require('./storage');
+    var storage = require('./localstorage');
     var Store = storage.Store;
 
     if (!window.activities){
