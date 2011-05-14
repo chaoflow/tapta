@@ -103,13 +103,23 @@ define([
         }, '');
     };
 
+    var defchild = function(Proto, name, parent) {
+        var child = new Proto();
+        child.name = name;
+        child.parent = parent || this;
+        child.fetch();
+        return child;
+    };
+
     var Model = Backbone.Model.extend({
         abspath: abspath,
+        defchild: defchild,
         location: location
     });
 
     var Collection = Backbone.Collection.extend({
         abspath: abspath,
+        defchild: defchild,
         location: location,
         model: Model,
         destroyAll: function() {
