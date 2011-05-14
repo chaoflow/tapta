@@ -3,6 +3,7 @@
  */
 define([
     'require',
+    'cdn/underscore.js',
     'jquery'
 ], function(require) {
     if (!window.activities){
@@ -19,22 +20,15 @@ define([
             mouse: null,
             dnd: null,
             
-            // flag wether globs were already initialized
-            _inizialized: 0,
-            
             /*
              * intialize globals
              */
-            initialize: function() {
-                // already initialized, return
-                if (activities.glob._inizialized) {
-                    return;
-                }
+            initialize: _.once(function() {
                 activities.glob.keys = new activities.events.KeyListener();
                 activities.glob.mouse = new activities.events.MouseListener();
                 activities.glob.dnd = new activities.events.DnD();
                 activities.glob._inizialized = 1;
-            }
+            })
         },
 
         /*
