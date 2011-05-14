@@ -29,25 +29,29 @@ define([
         },
         create: function(model) {
             if(!model.id){
-                model.id = model.attributes.id = guid();
+                if (model.name) {
+                    model.id = model.attributes.id = model.name;
+                } else {
+                    model.id = model.attributes.id = model.name = guid();
+                }
             }
-            this.data[model.id] = model;
+            this.data[model.name] = model;
             this.save();
             return model;
         },
         update: function(model) {
-            this.data[model.id] = model;
+            this.data[model.name] = model;
             this.save();
             return model;
         },
         find: function(model) {
-            return this.data[model.id];
+            return this.data[model.name];
         },
         findAll: function() {
             return _.values(this.data);
         },
         destroy: function(model) {
-            delete this.data[model.id];
+            delete this.data[model.name];
             this.save();
             return model;
         }
@@ -57,10 +61,12 @@ define([
     // - sometimes not all models are deleted from a collection
     // - the collection key is not deleted
 
-    var locationIterator = function(obj) {
+    var location = function(obj) {
         if (!obj) { obj = this; }
         if (obj.parent) {
-            return locationIterator(obj.parent).concat(obj);
+            return location(obj.parent).concat(obj);
+        } else if (obj.collection) {
+            return location(obj.collection).concat(obj);
         } else {
             return [obj];
         }
@@ -76,49 +82,16 @@ define([
 
     var Model = Backbone.Model.extend({
         abspath: abspath,
-        location: locationIterator,
-
-        getKey: function() {
-            if (!this.collection) {
-                if (!this.KEY) {
-                    throw "Model without collection and KEY";
-                };
-                // not sure how much sense this makes
-                return this.KEY;
-            }
-            return this.collection.getKey();
-        }
+        location: location
     });
 
     var Collection = Backbone.Collection.extend({
         abspath: abspath,
-        location: locationIterator,
-
+        location: location,
+        model: Model,
         destroyAll: function() {
             _.forEach(this.toArray(), function(model) { model.destroy(); });
-        },
-        getKey: function() {
-            if (!this.name) {
-                throw "Collection needs a name!";
-            }
-            var prefix;
-            if (!this.parent) {
-                prefix = KEY;
-            } else if (this.parent.KEY) {
-                prefix = KEY + "/" + this.parent.KEY;
-            } else {
-                prefix = this.parent.getKey();
-                if (!prefix) {
-                    throw "Parent returned undefined key";
-                }
-                if (!this.parent.id) {
-                    this.parent.id = this.parent.attributes.id = guid();
-                }
-                prefix = prefix + "/" + this.parent.id;
-            }
-            return prefix + "/" + this.name;
-        },
-        model: Model
+        }
     });
 
     Backbone.sync = function(method, model, success, error) {
@@ -133,7 +106,16 @@ define([
             }
         }
         if (!store) {
-            store = new Store(model.getKey());
+            // XXX: persist store on the models instead of recreating?
+            if (model.collection) {
+                store = new Store(model.collection.abspath());
+            } else if (model instanceof Collection) {
+                // Collections don't store anything themselves, they
+                // are only a container for their models
+                store = new Store(model.abspath());
+            } else {
+                store = new Store(model.parent.abspath());
+            }
         }
 
         switch (method) {
@@ -141,7 +123,11 @@ define([
             resp = store.create(model);
             break;
         case "read":
-            resp = model.id ? store.find(model) : store.findAll();
+            if (model instanceof Collection) {
+                resp = store.findAll();
+            } else {
+                resp = store.find(model);
+            }
             break;
         case "update":
             resp = store.update(model);
@@ -160,7 +146,7 @@ define([
 
     return {
         abspath: abspath,
-        locationIterator: locationIterator,
+        location: location,
         Collection: Collection,
         Model: Model,
         Store: Store

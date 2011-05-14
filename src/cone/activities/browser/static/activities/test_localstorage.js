@@ -10,13 +10,13 @@ define([
 
     module('Storage');
 
-    test("location iterator and abspath", function() {
+    test("location and abspath", function() {
         var A = {name:'A'};
         var B = {name:'B', parent:A};
         var C = {name:'C', parent:B};
-        equal(storage.abspath(storage.locationIterator(A)), '/A');
-        equal(storage.abspath(storage.locationIterator(B)), '/A/B');
-        equal(storage.abspath(storage.locationIterator(C)), '/A/B/C');
+        equal(storage.abspath(storage.location(A)), '/A');
+        equal(storage.abspath(storage.location(B)), '/A/B');
+        equal(storage.abspath(storage.location(C)), '/A/B/C');
     });
 
     test("Model/Collection abspath", function() {
@@ -41,9 +41,69 @@ define([
         deepEqual(E.abspath(), '/A/B/C/D/E');
     });
 
-    test("Collection without name fails", function() {
-        var collection = new Collection();
-        raises(collection.fetch, "Collection needs name!");
+
+    var test_root = new Model();
+    test_root.name = 'test_root';
+    var clean = function() {
+        localStorage.removeItem(test_root.abspath());
+    };
+
+    test("CRUD named models", function() {
+        var model1 = new Model({a: 1});
+        var model2 = new Model({a: 2});
+        model1.name = "model1";
+        model2.name = "model2";
+        model1.parent = model2.parent = test_root;
+        model1.save();
+        model2.save();
+        var model1n = new Model();
+        var model2n = new Model();
+        model1n.name = "model1";
+        model2n.name = "model2";
+        model1n.parent = model2n.parent = test_root;
+        model1n.fetch();
+        model2n.fetch();
+        equal(model1n.get('a'), 1);
+        equal(model2n.get('a'), 2);
+
+        // XXX update
+        // XXX delete
+    });
+
+    test("CRUD named collections with unnamed models", function() {
+        var coll1 = new Collection();
+        var coll2 = new Collection();
+        coll1.name = 'coll1';
+        coll2.name = 'coll2';
+        coll1.parent = coll2.parent = test_root;
+        coll1.fetch();
+        coll2.fetch();
+        var model11 = coll1.create({a: 1});
+        var model12 = coll1.create({a: 2});
+        var model21 = coll2.create({b: 1});
+        var model22 = coll2.create({b: 2});
+
+        var coll1n = new Collection();
+        var coll2n = new Collection();
+        coll1n.name = 'coll1';
+        coll2n.name = 'coll2';
+        coll1n.parent = coll2n.parent = test_root;
+        coll1n.fetch();
+        coll2n.fetch();
+
+        var map = function(model) {
+            return model.attributes;
+        };
+        deepEqual(
+            _.map(coll1.toArray(), map),
+            _.map(coll1n.toArray(), map)
+        );
+        deepEqual(
+            _.map(coll2.toArray(), map),
+            _.map(coll2n.toArray(), map)
+        );
+        // XXX update
+        // XXX delete
     });
 
     test("Collection with name and model", function() {
