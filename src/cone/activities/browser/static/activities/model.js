@@ -6,6 +6,8 @@ define([
     './element_views',
     './storage'
 ], function(require) {
+    var storage = require('./storage');
+    var Store = storage.Store;
 
     if (!window.activities){
         window.activities = {};
@@ -27,7 +29,7 @@ define([
                     + "]";
             this.activity = new Models.Activity({id:id,
                                                  storage_name: activities_storage_name});
-            this.activity.localStorage =  new activities.Store(activities_storage_name);
+            this.activity.localStorage =  new Store(activities_storage_name);
             this.activity.fetch();
             this.activity.save();
             this.set({activity_id: this.activity.id});
@@ -41,7 +43,7 @@ define([
     });
 
     Models.Layers = Backbone.Collection.extend({
-        localStorage: new activities.Store("activities.Layers"),
+        localStorage: new Store("activities.Layers"),
         model: Models.Layer
     });
 
@@ -50,7 +52,7 @@ define([
      */
     
     var AppModel = Backbone.Model.extend({
-        localStorage: new activities.Store("activities.AppModel"),
+        localStorage: new Store("activities.AppModel"),
 
         initialize: function(){
             var layers = new Models.Layers().fetch();
@@ -98,28 +100,28 @@ define([
             this.final_node_collection = new Models.FinalNodeCollection(
                 [],
                 {id: this.id,
-                 localStorage: new activities.Store("activities.activity["
+                 localStorage: new Store("activities.activity["
                                                     + this.id
                                                     + "].final_node_collection")}).fetch();
             this.final_node_collection.bind("all", this.eventForwarder);
             this.fork_join_collection = new Models.ForkJoinCollection(
                 [],
                 {id: this.id, 
-                 localStorage: new activities.Store("activities.activity[" 
+                 localStorage: new Store("activities.activity[" 
                                                     + this.id
                                                     + "].fork_join_collection")}).fetch();
             this.fork_join_collection.bind("all", this.eventForwarder);
             this.decision_merge_collection = new Models.DecisionMergeCollection(
                 [],
                 {id: this.id,
-                 localStorage: new activities.Store("activities.activity[" 
+                 localStorage: new Store("activities.activity[" 
                                                     + this.id
                                                     + "].decision_merge_collection")}).fetch();
             this.decision_merge_collection.bind("all", this.eventForwarder);
             this.action_collection = new Models.ActionCollection(
                 [],
                 {id: this.id,
-                 localStorage: new activities.Store("activities.activity["
+                 localStorage: new Store("activities.activity["
                                                     + this.id
                                                     + "].action_collection")}).fetch();
             this.action_collection.bind("all", this.eventForwarder);
@@ -267,13 +269,13 @@ define([
         initialize: function(models, options){
             Models.Node.prototype.initialize.call(this);
             if(! this.get("activity_id")){
-                this.activity = new Models.Activity({id: activities.Store.guid()});
-                this.activity.localStorage = new activities.Store(this.get("activity_storage_name"));
+                this.activity = new Models.Activity({id: Store.guid()});
+                this.activity.localStorage = new Store(this.get("activity_storage_name"));
                 this.activity.save();
                 this.set({activity_id: this.activity.id});
             } else{
                 this.activity = new Models.Activity({id: this.get("activity_id")});
-                this.activity.localStorage = new activities.Store(this.get("activity_storage_name"));
+                this.activity.localStorage = new Store(this.get("activity_storage_name"));
                 this.activity.fetch();
             }
         },

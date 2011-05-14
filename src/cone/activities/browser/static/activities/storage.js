@@ -1,7 +1,6 @@
 define([
     'require',
-    'cdn/backbone.js',
-    './settings'
+    'cdn/backbone.js'
 ], function(require) {
 
     function S4() {
@@ -20,8 +19,6 @@ define([
 
     Store.guid = guid;
 
-    activities.Store = Store;
-    
     _.extend(Store.prototype, {
         save: function() {
             localStorage.setItem(this.name, JSON.stringify(this.data));
@@ -69,6 +66,10 @@ define([
         } else {
             error("Record not found");
         }
+    };
+
+    return {
+        Store: Store
     };
 });
 
