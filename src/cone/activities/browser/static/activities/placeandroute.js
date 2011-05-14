@@ -88,10 +88,21 @@ define([
         // ...
         var i = 0;
         paths.forEach(function(path) {
+            var prev_node = undefined;
             _.forEach(path.get('nodes'), function(node) {
                 if (node.ui.pos.y === -1) {
                     node.ui.pos.y = i;
                 };
+                if (node.ui.pos.x === -1) {
+                    if (prev_node) {
+                        node.ui.pos.x = Math.round(
+                            (prev_node.ui.pos.x + prev_node.ui.size.x) * 1000
+                        ) / 1000;
+                    } else {
+                        node.ui.pos.x = 0;
+                    };
+                };
+                prev_node = node;
             });
             i++;
         });
