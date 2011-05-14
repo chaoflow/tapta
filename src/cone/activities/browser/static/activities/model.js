@@ -394,12 +394,13 @@ define([
     return {
         Action: Models.Action,
         Actions: Models.ActionCollection,
+        Activity: Models.Activity,
         DecisionMerge: Models.DecisionMerge,
         DecisionMerges: Models.DecisionMergeCollection,
         ForkJoin: Models.ForkJoin,
         ForkJoinCollection: Models.ForkJoinCollection,
         Final: Models.Final,
-        // Finals:
+        Finals: Models.FinalNodeCollection,
         Initial: Models.Initial,
         Path: Path,
         Paths: Paths
