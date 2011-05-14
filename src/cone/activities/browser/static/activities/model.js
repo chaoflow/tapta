@@ -74,7 +74,9 @@ define([
     Models.Node = Models.Element.extend({
         defaults : {
             label : "",
-            description : ""
+            description : "",
+            x_req: 1, // varibale sizes are supported
+            y_req: 1  // only size 1 supported for now
         },
         initialize : function(){
             Models.Element.prototype.initialize.call(this);
@@ -326,4 +328,73 @@ define([
             this.localStorage = options.localStorage;
         }
     });
+
+
+    // new-style
+    var Path = Backbone.Model.extend({
+        copy: function() {
+            return new Path({
+                nodes: [].concat(this.get('nodes'))
+            });
+        },
+        count: function() {
+            return _.size(this.get('nodes'));
+        },
+        include: function(node) {
+            return _.include(this.get('nodes'), node);
+        },
+        last: function() {
+            return _.last(this.get('nodes'));
+        },
+        remove: function(node) {
+            var nodes = this.get('nodes');
+            node = nodes.splice(_.indexOf(nodes, node), 1);
+            // XXX: what to return, the node or the remaining nodes?
+        },
+        xReq: function() {
+            return _.reduce(this.get('nodes'), function (memo, node) {
+                return memo + node.get('x_req');
+            }, 0 );
+        },
+        yReq: function() {
+            return 1;
+            return _.max(this.get('nodes'), function (node) {
+                return node.get('y_req');
+            }).get('y_req');
+        }
+    });
+
+    var Paths = Backbone.Collection.extend({
+        // XXX; TODO: storage
+        model: Path,
+        deep: function() {
+            // return a "deep" copy, nodes are still the same as in the original
+            return new Paths(
+                this.map(function (path) { return path.copy(); })
+            );
+        },
+        longest: function() {
+            return this.max(function(path) { return path.xReq(); });
+        },
+        xReq: function() {
+            return this.longest().xReq();
+        },
+        yReq: function() {
+            return this.reduce(function(memo, path) { return memo + path.yReq(); }, 0);
+        }
+    });
+
+    return {
+        Action: Models.Action,
+        Actions: Models.ActionCollection,
+        DecisionMerge: Models.DecisionMerge,
+        DecisionMerges: Models.DecisionMergeCollection,
+        ForkJoin: Models.ForkJoin,
+        ForkJoinCollection: Models.ForkJoinCollection,
+        Final: Models.Final,
+        // Finals:
+        Initial: Models.Initial,
+        Path: Path,
+        Paths: Paths
+    };
 });
