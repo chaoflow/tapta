@@ -117,8 +117,71 @@ define([
 
             deepEqual(R.ui.pos, {x:2, y:5}, 'R pos');
         });
+
+        var edges = function(node) {
+            return _.map(node.ui.edges, function(edge) {
+                return {source: edge.source.get('name'),
+                        target: edge.target.get('name')};
+            });
+        };
+
+        test("Path set 0 edges", function() {
+            deepEqual(edges(I), [
+                {"source": "I", "target": "A"}
+            ], 'I edges');
+            deepEqual(edges(A), [
+                {"source": "A", "target": "B"},
+                {"source": "A", "target": "H"},
+                {"source": "A", "target": "P"},
+                {"source": "A", "target": "R"},
+            ], 'A edges');
+            deepEqual(edges(B), [
+                {"source": "B", "target": "C"},
+                {"source": "B", "target": "F"},
+                {"source": "B", "target": "N"},
+            ], 'B edges');
+            deepEqual(edges(C), [
+                {"source": "C", "target": "D"},
+            ], 'C edges');
+            deepEqual(edges(D), [
+                {"source": "D", "target": "E"}
+            ], 'D edges');
+            deepEqual(edges(E), [
+                {"source": "E", "target": "Q"},
+            ], 'E edges');
+            deepEqual(edges(F), [
+                {"source": "F", "target": "G"},
+            ], 'F edges');
+            deepEqual(edges(G), [
+                {"source": "G", "target": "D"},
+            ], 'G edges');
+            deepEqual(edges(H), [
+                {"source": "H", "target": "J"},
+            ], 'H edges');
+            deepEqual(edges(J), [
+                {"source": "J", "target": "K"},
+            ], 'J edges');
+            deepEqual(edges(K), [
+                {"source": "K", "target": "L"},
+            ], 'K edges');
+            deepEqual(edges(L), [
+                {"source": "L", "target": "M"},
+            ], 'L edges');
+            deepEqual(edges(M), [
+                {"source": "M", "target": "E"},
+            ], 'M edges');
+            deepEqual(edges(N), [
+            ], 'N edges');
+            deepEqual(edges(P), [
+                {"source": "P", "target": "E"},
+            ], 'P edges');
+            deepEqual(edges(Q), [
+            ], 'Q edges');
+            deepEqual(edges(R), [
+                {"source": "R", "target": "E"},
+            ], 'R edges');
+        });
     };
 
     path_set_0();
 });
-       

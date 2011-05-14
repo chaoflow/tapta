@@ -102,16 +102,24 @@ define([
                         node.ui.pos.x = 0;
                     };
                 };
+
+                // generate edge and store it on the previous node
+                // the vertical position and size of an edge are taken
+                // from the target node. Horizontal position and size
+                // is queried from source and target node.
+                if (prev_node) {
+                    var seen = _.any(prev_node.ui.edges, function(edge) {
+                        return edge.target === node;
+                    });
+                    if (!seen) {
+                        prev_node.ui.edges.push({source: prev_node,
+                                                 target: node});
+                    };
+                };
                 prev_node = node;
             });
             i++;
         });
-
-
-        // find all edges
-        // the vertical size of an edge is determined by its target node
-
-
         return allnodes;
     };
 
