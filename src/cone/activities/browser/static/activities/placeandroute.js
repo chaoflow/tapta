@@ -10,7 +10,7 @@ define([
 ], function(require) {
     var model = require('./model');
 
-    var place = function(paths) {
+    var placeandroute = function(paths) {
         // sets sizes and positions on paths and nodes in the paths
         // returns list of edges
 
@@ -123,7 +123,5 @@ define([
         return allnodes;
     };
 
-    return {
-        place: place
-    };
+    return placeandroute;
 });

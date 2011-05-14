@@ -51,7 +51,7 @@ define([
             nodes: [I, A, R, E, Q]
         }));
 
-        var nodes = placeandroute.place(paths);
+        var nodes = placeandroute(paths);
 
         test("Path set 0 all node process order", function() {
             deepEqual(_.map(nodes, function(node) { return node.get('name'); }),
