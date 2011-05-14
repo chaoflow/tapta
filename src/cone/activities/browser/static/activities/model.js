@@ -82,8 +82,8 @@ define([
         initialize : function() {
             Models.Element.prototype.initialize.call(this);
             this.ui = {
-                size: {x:-1, y:-1},
-                pos: {x:-1, y:-1}
+                pos: {x:-1, y:-1},
+                size: {x:-1, y:-1}
             };
         }
     } , {});
