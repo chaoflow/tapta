@@ -149,8 +149,8 @@ define([
             var node = new nodeType(
                 {ui_data: {x: position.x / activities.settings.rendering.gridsize,
                            y: position.y / activities.settings.rendering.gridsize,
-                           width: 50 / activities.settings.rendering.gridsize,
-                           height: 50 / activities.settings.rendering.gridsize},
+                           width: 1,
+                           height: 1},
                  activity_storage_name: this.get("storage_name")});
 
             // depending on the type, the new node is added to a

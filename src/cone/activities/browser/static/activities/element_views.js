@@ -9,7 +9,7 @@ define([
 
     var base_view = Backbone.View.extend({
         initialize: function(){
-            this.defaults = $.extend({},
+            this.defaults = $.extend({opacity: 0},
                                      activities.settings.rendering,
                                      activities.settings.node);
             _.bindAll(this, "translate_event", "drag");
@@ -60,8 +60,8 @@ define([
                                      this.defaults, 
                                      {x: this.defaults.gridsize * this.model.get("ui_data").x,
                                       y: this.defaults.gridsize * this.model.get("ui_data").y,
-                                      activity_button_size: 14,
-                                      fork_size: 4,
+                                      activity_button_size: 28,
+                                      fork_size: 8,
                                       width: this.defaults.gridsize * this.model.get("ui_data").width,
                                       height: this.defaults.gridsize * this.model.get("ui_data").height});
             },
@@ -101,7 +101,10 @@ define([
                         .map(function(row){
                             return [row[0], row[1] * args.fork_size, row[2] * args.fork_size];
                         }).map(function(row){
-                            return [row[0], row[1] + a_b_c.x + (args.activity_button_size - args.fork_size) / 2, row[2] + a_b_c.y + (args.activity_button_size - args.fork_size) / 2];
+                            return [row[0], 
+                                    // Despite its name the fork_size is actually only half the forksize
+                                    row[1] + a_b_c.x + (args.activity_button_size - args.fork_size * 2) / 2, 
+                                    row[2] + a_b_c.y + (args.activity_button_size - args.fork_size * 2) / 2];
                         }).reduce(function(memo, row){
                             return memo + row[0] + row[1] + " " + row[2] + " ";
                         }, "")
@@ -116,16 +119,17 @@ define([
                                       this.model.get("name"));
                     elem.push(name);
                 }
+                console.log(args.width, args.height);
                 var glass = c.rect(args.x, args.y, args.width, args.height);
                 glass.attr({fill: 'white',
-                            opacity: 0});
+                            opacity: args.opacity});
                 elem.push(glass);
                 var activity_button = c.rect(a_b_c.x,
                                              a_b_c.y,                   
                                              a_b_c.width,  
                                              a_b_c.height);
                 activity_button.attr({fill: 'red',
-                                      opacity: 0});
+                                      opacity: args.opacity});
                 elem.push(activity_button);
                 this.activity_button = activity_button;
 
