@@ -1,122 +1,106 @@
 <html>
+  <head>
+    <title>Activities</title>
+    <script data-main="bootstrap" src="cdn/require-jquery.js"></script>
+    <link href="bdajax/bdajax.css"
+          rel="stylesheet"
+          type="text/css"
+          media="screen" />
+    <link href="activities.css"
+          rel="stylesheet"
+          type="text/css"
+          media="screen" />
+    <link href="cdn/qunit.css"
+          rel="stylesheet"
+          type="text/css"
+          media="screen" />
+  </head>
+  <body>
+    <script type="text/html" id="action">
+      <rect width="${width}" 
+            height="${height}" 
+            x="${x}" 
+            y="${y}" 
+            rx="${rounding}" 
+            fill="${fillColor}" 
+            stroke="${borderColor}" 
+            stroke-width="${borderWidth}" />
+    </script>
+
+    <!-- editor templates -->
+    <script type="text/html" id="editor_action">
+      <a href="#"
+         title="${title}"
+         class="${id}">&nbsp;</a>
+    </script>
+    <script type="text/html" id="properties_template">
+      <strong>Properties</strong>
+      <div class="props">
+        {{each hidden}}
+        <input type="input
+                     " name="${$index}" value="${$value}" >
+        {{/each}}
+        {{each singleline}}
+        <input type="input" name="${$index}" value="${$value}" >
+        {{/each}}
+        {{each multiline}}
+        <textarea name="${$index}">${$value}</textarea>
+        {{/each}}
+        <input type="button"
+               name="update"
+               value="update"
+               class="update" />
+    </script>
+    <script type="text/html" id="actions_template">
+      <ul>
+        {{each actions}}
+        <li id="${$value.id}">${$value.get("name")}</li>
+        {{/each}}
+      </ul>
+    </script>
+    <script type="text/html" id="diagram_template">
+      <div class="diagram_container" id="${name}">
+        <div class="element_properties">
+          No Element selected
+        </div>
+        <div class="canvas_container">
+        </div>
+        <div class="selectable_actions">
+        </div>
+      </div>
+    </script>
     
-    <head>
-        
-        <title>Activities</title>
-        
-        <script data-main="bootstrap" src="cdn/require-jquery.js"></script>
+    <!-- demo editor -->
+    <div id="demo_editor" class="activity_editor"></div>
 
-        <link href="bdajax/bdajax.css"
-              rel="stylesheet"
-              type="text/css"
-              media="screen" />
-        <link href="activities.css"
-              rel="stylesheet"
-              type="text/css"
-              media="screen" />
-        
-        <link href="cdn/qunit.css"
-              rel="stylesheet"
-              type="text/css"
-              media="screen" />
-    </head>
+    <!-- qunit related -->
+    <div class="qunit">
+      <h1 id="qunit-header">cone.activities QUnit</h1>
+      <h2 id="qunit-banner"></h2>
+      <div id="qunit-testrunner-toolbar"></div>
+      <h2 id="qunit-userAgent"></h2>
+      <ol id="qunit-tests"></ol>
+      <div id="qunit-fixture"></div>
+    </div>
     
-    <body>
-
-      <script type="text/html" id="action">
-        <rect width="${width}" 
-              height="${height}" 
-              x="${x}" 
-              y="${y}" 
-              rx="${rounding}" 
-              fill="${fillColor}" 
-              stroke="${borderColor}" 
-              stroke-width="${borderWidth}" />
-      </script>
-        
-          <!-- editor templates -->
-        <script type="text/html" id="editor_action">
-            <a href="#"
-               title="${title}"
-               class="${id}">&nbsp;</a>
-        </script>
-
-        <script type="text/html" id="properties_template">
-          <strong>Properties</strong>
-          <div class="props">
-            {{each hidden}}
-            <input type="input
-" name="${$index}" value="${$value}" >
-            {{/each}}
-            {{each singleline}}
-            <input type="input" name="${$index}" value="${$value}" >
-            {{/each}}
-            {{each multiline}}
-            <textarea name="${$index}">${$value}</textarea>
-            {{/each}}
-          <input type="button"
-                 name="update"
-                 value="update"
-                 class="update" />
-        </script>
-      
-        <script type="text/html" id="actions_template">
-          <ul>
-              {{each actions}}
-              <li id="${$value.id}">${$value.get("name")}</li>
-              {{/each}}
-          </ul>
-        </script>
-
-        <script type="text/html" id="diagram_template">
-          <div class="diagram_container" id="${name}">
-            <div class="element_properties">
-              No Element selected
-            </div>
-            <div class="canvas_container">
-            </div>
-            <div class="selectable_actions">
-            </div>
-            
-          </div>
-        </script>
-      
-        <!-- demo editor -->
-        <div id="demo_editor" class="activity_editor"></div>
-        
-        <!-- qunit related -->
-        <div class="qunit">
-            <h1 id="qunit-header">cone.activities QUnit</h1>
-            <h2 id="qunit-banner"></h2>
-            <div id="qunit-testrunner-toolbar"></div>
-            <h2 id="qunit-userAgent"></h2>
-            <ol id="qunit-tests"></ol>
-            <div id="qunit-fixture"></div>
-        </div>
-        
-        <!-- bdajax related -->
-        <div id="ajax-spinner">
-          <img src="spinner.gif" alt="" />
-        </div>
-        
-        <div class="ajax-overlay" id="ajax-overlay">
-          <div id="ajax-overlay-content"></div>
-        </div>
-        
-        <div class="ajax-message" id="ajax-message">
-          <div class="message">Message</div>
-          <button class="close allowMultiSubmit">OK</button>
-        </div>
-        
-        <div class="ajax-dialog" id="ajax-dialog">
-            <div class="text">
-            </div>
-            <div class="buttons">
-              <button class="submit allowMultiSubmit">OK</button> 
-              <button class="cancel allowMultiSubmit">Cancel</button> 
-            </div>
-        </div>
-        
-    </body>
-    
+    <!-- bdajax related -->
+    <div id="ajax-spinner">
+      <img src="spinner.gif" alt="" />
+    </div>
+    <div class="ajax-overlay" id="ajax-overlay">
+      <div id="ajax-overlay-content"></div>
+    </div>
+    <div class="ajax-message" id="ajax-message">
+      <div class="message">Message</div>
+      <button class="close allowMultiSubmit">OK</button>
+    </div>
+    <div class="ajax-dialog" id="ajax-dialog">
+      <div class="text">
+      </div>
+      <div class="buttons">
+        <button class="submit allowMultiSubmit">OK</button> 
+        <button class="cancel allowMultiSubmit">Cancel</button> 
+      </div>
+    </div>
+  </body>
 </html>
