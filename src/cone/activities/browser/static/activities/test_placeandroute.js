@@ -63,62 +63,34 @@ define([
                        "C"]);
         });
 
-        test("Path set 0: sizes", function() {
-            // call place and route
+        test("Path set 0: size and position", function() {
+            // the blocks are sorted by path
+            deepEqual(I.ui, {x:0,    y:0, dx:1,    dy:6}, 'I');
+            deepEqual(A.ui, {x:1,    y:0, dx:1,    dy:6}, 'A');
+            deepEqual(B.ui, {x:2,    y:0, dx:1.75, dy:3}, 'B');
+            deepEqual(C.ui, {x:3.75, y:0, dx:3.5,  dy:1}, 'C');
+            deepEqual(D.ui, {x:7.25, y:0, dx:1.75, dy:2}, 'D');
+            deepEqual(E.ui, {x:9,    y:0, dx:1,    dy:6}, 'E');
+            deepEqual(Q.ui, {x:10,   y:0, dx:1,    dy:6}, 'Q');
 
-            // check size of nodes - the blocks are sorted by path
-            deepEqual(I.ui.size, {x:1, y:6}, 'I size');
-            deepEqual(A.ui.size, {x:1, y:6}, 'A size');
-            deepEqual(B.ui.size, {x:1.75, y:3}, 'B size');
-            deepEqual(C.ui.size, {x:3.5, y:1}, 'C size');
-            deepEqual(D.ui.size, {x:1.75, y:2}, 'D size');
-            deepEqual(E.ui.size, {x:1, y:6}, 'E size');
-            deepEqual(Q.ui.size, {x:1, y:6}, 'Q size');
+            deepEqual(F.ui, {x:3.75, y:1, dx:1.75, dy:1}, 'F');
+            deepEqual(G.ui, {x:5.5,  y:1, dx:1.75, dy:1}, 'G');
 
-            deepEqual(F.ui.size, {x:1.75, y:1}, 'F size');
-            deepEqual(G.ui.size, {x:1.75, y:1}, 'G size');
+            deepEqual(N.ui, {x:3.75, y:2, dx:7.25, dy:1}, 'N');
 
-            deepEqual(N.ui.size, {x:7.25, y:1}, 'N size');
+            deepEqual(H.ui, {x:2,    y:3, dx:1.4,  dy:1}, 'H');
+            deepEqual(J.ui, {x:3.4,  y:3, dx:1.4,  dy:1}, 'J');
+            deepEqual(K.ui, {x:4.8,  y:3, dx:1.4,  dy:1}, 'K');
+            deepEqual(L.ui, {x:6.2,  y:3, dx:1.4,  dy:1}, 'L');
+            deepEqual(M.ui, {x:7.6,  y:3, dx:1.4,  dy:1}, 'M');
 
-            deepEqual(H.ui.size, {x:1.4, y:1}, 'H size');
-            deepEqual(J.ui.size, {x:1.4, y:1}, 'J size');
-            deepEqual(K.ui.size, {x:1.4, y:1}, 'K size');
-            deepEqual(L.ui.size, {x:1.4, y:1}, 'L size');
-            deepEqual(M.ui.size, {x:1.4, y:1}, 'M size');
+            deepEqual(P.ui, {x:2,    y:4, dx:7,    dy:1}, 'P');
 
-            deepEqual(P.ui.size, {x:7, y:1}, 'P size');
-
-            deepEqual(R.ui.size, {x:7, y:1}, 'R size');
-        });
-
-        test("Path set 0: positions", function() {
-            // check position of nodes - the blocks are sorted by path
-            deepEqual(I.ui.pos, {x:0, y:0}, 'I pos');
-            deepEqual(A.ui.pos, {x:1, y:0}, 'A pos');
-            deepEqual(B.ui.pos, {x:2, y:0}, 'B pos');
-            deepEqual(C.ui.pos, {x:3.75, y:0}, 'C pos');
-            deepEqual(D.ui.pos, {x:7.25, y:0}, 'D pos');
-            deepEqual(E.ui.pos, {x:9, y:0}, 'E pos');
-            deepEqual(Q.ui.pos, {x:10, y:0}, 'Q pos');
-
-            deepEqual(F.ui.pos, {x:3.75, y:1}, 'F pos');
-            deepEqual(G.ui.pos, {x:5.5, y:1}, 'G pos');
-
-            deepEqual(N.ui.pos, {x:3.75, y:2}, 'N pos');
-
-            deepEqual(H.ui.pos, {x:2, y:3}, 'H pos');
-            deepEqual(J.ui.pos, {x:3.4, y:3}, 'J pos');
-            deepEqual(K.ui.pos, {x:4.8, y:3}, 'K pos');
-            deepEqual(L.ui.pos, {x:6.2, y:3}, 'L pos');
-            deepEqual(M.ui.pos, {x:7.6, y:3}, 'M pos');
-
-            deepEqual(P.ui.pos, {x:2, y:4}, 'P pos');
-
-            deepEqual(R.ui.pos, {x:2, y:5}, 'R pos');
+            deepEqual(R.ui, {x:2,    y:5, dx:7,    dy:1}, 'R');
         });
 
         var edges = function(node) {
-            return _.map(node.ui.edges, function(edge) {
+            return _.map(node.edges, function(edge) {
                 return {source: edge.source.get('name'),
                         target: edge.target.get('name')};
             });

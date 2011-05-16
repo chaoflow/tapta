@@ -34,14 +34,14 @@ define([
                 if (node.get('y_req') > 1) {
                     throw 'Vertical node size != 1 unspported';
                 };
-                node.ui.size.x = node.get('x_req');
-                node.ui.size.y = node.get('y_req');
+                node.ui.dx = node.get('x_req');
+                node.ui.dy = node.get('y_req');
 
                 // The longest path, i.e. the path that needs the most
                 // space defines how much horizontal space to allocate
                 // to its nodes, beyond their needs.
                 var xadd = (longest.x_avail - longest.xReq()) / longest.count();
-                node.ui.size.x += Math.round(xadd * 1000) / 1000;
+                node.ui.dx += Math.round(xadd * 1000) / 1000;
 
                 // The vertical space given to a node depends on its
                 // presence in paths. Additional space is given if a
@@ -53,12 +53,12 @@ define([
                     if (path.include(node)) {
                         seen = true;
                         if (path !== longest) {
-                            node.ui.size.y += path.yReq();
+                            node.ui.dy += path.yReq();
                         };
-                        node.ui.size.y += yadd;
+                        node.ui.dy += yadd;
                         yadd = 0;
                         path.remove(node);
-                        path.x_avail -= node.ui.size.x;
+                        path.x_avail -= node.ui.dx;
                     } else if (seen && (path.last() !== longest.last())) {
                         // The node is not present in this path, but
                         // its paths may enclose a path ending
@@ -88,16 +88,16 @@ define([
         paths.forEach(function(path) {
             var prev_node = undefined;
             _.forEach(path.get('nodes'), function(node) {
-                if (node.ui.pos.y === -1) {
-                    node.ui.pos.y = i;
+                if (node.ui.y === -1) {
+                    node.ui.y = i;
                 };
-                if (node.ui.pos.x === -1) {
+                if (node.ui.x === -1) {
                     if (prev_node) {
-                        node.ui.pos.x = Math.round(
-                            (prev_node.ui.pos.x + prev_node.ui.size.x) * 1000
+                        node.ui.x = Math.round(
+                            (prev_node.ui.x + prev_node.ui.dx) * 1000
                         ) / 1000;
                     } else {
-                        node.ui.pos.x = 0;
+                        node.ui.x = 0;
                     };
                 };
 
@@ -106,12 +106,12 @@ define([
                 // from the target node. Horizontal position and size
                 // is queried from source and target node.
                 if (prev_node) {
-                    var seen = _.any(prev_node.ui.edges, function(edge) {
+                    var seen = _.any(prev_node.edges, function(edge) {
                         return edge.target === node;
                     });
                     if (!seen) {
-                        prev_node.ui.edges.push({source: prev_node,
-                                                 target: node});
+                        prev_node.edges.push({source: prev_node,
+                                              target: node});
                     };
                 };
                 prev_node = node;
