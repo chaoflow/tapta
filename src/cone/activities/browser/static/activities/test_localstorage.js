@@ -149,7 +149,6 @@ define([
         deepEqual(E.abspath(), '/A/B/C/D/E');
     });
 
-
     var test_root = new Model();
     test_root.name = 'test_root';
     localStorage.removeItem(test_root.abspath());
@@ -267,32 +266,5 @@ define([
         // XXX: proper cleanup
     });
 
-
-    // XXX: fix this
-    test("Collection, Model, Collection, Model", function() {
-        var Parent = Model.extend({
-            initialize: function() {
-                this.col = new Collection();
-                this.col.name = "col";
-                this.col.parent = this;
-            }
-        });
-        var pcol = new Collection();
-        pcol.name = "parent_collection";
-
-        pcol.model = Parent;
-        pcol.create({c: 3});
-        pcol.last().col.create({d: 4});
-        var newpcol = new Collection();
-        newpcol.name = "parent_collection";
-        newpcol.model = Parent;
-        newpcol.fetch();
-//        equal(newpcol.last().get('c'), 3);
-        newpcol.last().col.fetch();
-  //      equal(newpcol.last().col.last().get('d'), 4);
-        pcol.destroyAll();
-        // XXX: proper cleanup
-    });
-    
     localStorage.removeItem(test_root.abspath());
 }); 
