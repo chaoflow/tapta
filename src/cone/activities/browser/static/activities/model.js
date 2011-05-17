@@ -510,11 +510,11 @@ define([
         parse: function(response) {
             // this.activity.layers XXX: needs better solution
             var layer = this.parent.parent;
-            ids = response[0];
+            var ids = response[0];
             nodes = _.map(ids, function(id) {
                 return layer.obj(id);
             });
-            path = new Path({nodes: nodes});
+            var path = nodes.length ? new Path({nodes: nodes}) : undefined;
             return path;
         },
         xReq: function() {
