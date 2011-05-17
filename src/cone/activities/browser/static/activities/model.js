@@ -104,29 +104,29 @@ define([
                 [],
                 {id: this.id,
                  localStorage: new Store("activities.activity["
-                                                    + this.id
-                                                    + "].final_node_collection")}).fetch();
+                                         + this.id
+                                         + "].final_node_collection")}).fetch();
             this.final_node_collection.bind("all", this.eventForwarder);
             this.fork_join_collection = new Models.ForkJoinCollection(
                 [],
                 {id: this.id, 
                  localStorage: new Store("activities.activity[" 
-                                                    + this.id
-                                                    + "].fork_join_collection")}).fetch();
+                                         + this.id
+                                         + "].fork_join_collection")}).fetch();
             this.fork_join_collection.bind("all", this.eventForwarder);
             this.decision_merge_collection = new Models.DecisionMergeCollection(
                 [],
                 {id: this.id,
                  localStorage: new Store("activities.activity[" 
-                                                    + this.id
-                                                    + "].decision_merge_collection")}).fetch();
+                                         + this.id
+                                         + "].decision_merge_collection")}).fetch();
             this.decision_merge_collection.bind("all", this.eventForwarder);
             this.action_collection = new Models.ActionCollection(
                 [],
                 {id: this.id,
                  localStorage: new Store("activities.activity["
-                                                    + this.id
-                                                    + "].action_collection")}).fetch();
+                                         + this.id
+                                         + "].action_collection")}).fetch();
             this.action_collection.bind("all", this.eventForwarder);
         },
         /* 
