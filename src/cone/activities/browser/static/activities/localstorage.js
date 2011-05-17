@@ -103,17 +103,8 @@ define([
         }, '');
     };
 
-    var defchild = function(Proto, name, parent) {
-        var child = new Proto();
-        child.name = name;
-        child.parent = parent || this;
-        child.fetch();
-        return child;
-    };
-
     var Root = Backbone.Model.extend({
         abspath: abspath,
-        defchild: defchild,
         fetch: undefined,
         location: location,
         save: undefined
@@ -121,7 +112,6 @@ define([
 
     var Model = Backbone.Model.extend({
         abspath: abspath,
-        defchild: defchild,
         location: location,
         constructor: function(attr, opts) {
             this.name = opts && opts.name;
@@ -132,7 +122,6 @@ define([
 
     var Collection = Backbone.Collection.extend({
         abspath: abspath,
-        defchild: defchild,
         location: location,
         model: Model,
         constructor: function(attr, opts) {
