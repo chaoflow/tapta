@@ -2,16 +2,28 @@
 define([
     'require',
     'jquery',
-    'activities/core'
+    'activities/core',
+    'activities/model',
+    'activities/view'
 ], function(require) {
     require.ready(function(){
         (function($){
-            window.demo = new ActivitiesView({el: jQuery("#demo_editor")});
-            window.canvas = demo.diagrams[0].canvas;
-            window.ui_data = {x:0,y:0,width:1,height:4};
-            window.views = activities.ui;
-            window.models = activities.model;
-            if(true)
+            // create an application
+            var view = require('./activities/view');
+            var model = require('./activities/model');
+            var app = new model.App();
+            var appview = new view.App({model: app});
+            appview.render();
+
+            // old 
+            //window.demo = new ActivitiesView({el: jQuery("#demo_editor")});
+            // window.canvas = demo.diagrams[0].canvas;
+            // window.ui_data = {x:0,y:0,width:1,height:4};
+            // window.views = activities.ui;
+            // window.models = activities.model;
+
+            // just draw some pure view based sample diagram
+            if(false)
             {
                 var initial = new views.initial_view({canvas: canvas, ui_data: ui_data});
                 initial.render();
