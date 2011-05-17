@@ -127,6 +127,11 @@ define([
         location: location,
         model: Model,
         // XXX: hook into create to set parent
+        // create: function() {
+        //     var model = Backbone.Collection.create.apply(this, arguments);
+        //     model.parent = parent;
+        //     return model;
+        // },
         constructor: function(attr, opts) {
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
