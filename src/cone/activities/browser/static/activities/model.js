@@ -312,9 +312,16 @@ define([
     var App = storage.Root.extend({
         initialize: function(attributes) {
             this.name = attributes.name || settings.localstorage_key;
+            // XXX: consider using a collection for this
             this.layers = [];
+            var prev;
             for (i = 0; i < 6; i++) {
-                this.layers.push(this.defchild(Layer, "layer"+i));
+                var layer = new Layer({}, {name:"layer"+i, parent:this});
+                layer.prev = prev;
+                if (prev) {
+                    prev.next = layer;
+                }
+                this.layers.push(layer);
             }
         }
     });
