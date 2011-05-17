@@ -330,6 +330,27 @@ define([
         }
     });
     
+    var Node = Model.extend({
+        defaults: {
+            x_req: 1, // varibale size supported
+            y_req: 1  // fixed for now
+        },
+        initialize: function() {
+            this.ui = {
+                x: -1,
+                y: -1,
+                dx: -1,
+                dy: -1
+            };
+            this.edges = [];
+        }
+    });
+    var Final = Node.extend({});
+    var Initial = Node.extend({});
+    var Action = Node.extend({});
+    var DecMer = Node.extend({});
+    var ForkJoin = Node.extend({});
+
     var Initials = Collection.extend({
         model: Initial
     });
@@ -354,51 +375,12 @@ define([
         model: Activity
     });
 
-    var Node = Model.extend({
-        defaults: {
-            x_req: 1, // varibale size supported
-            y_req: 1  // fixed for now
-        },
-        initialize: function() {
-            this.ui = {
-                edges: [],
-                pos: {x:-1, y:-1},
-                size: {x:-1, y:-1}
-            };
-        }
-    });
-
-    var Initial = Node.extend({});
-    var Final = Node.extend({});
-    var Action = Node.extend({});
-    var DecMer = Node.extend({});
-    var ForkJoin = Node.extend({});
-
     var Activity = Model.extend({
         initialize: function() {
             this.paths = this.defchild(Paths, 'paths');
         },
         placeandroute: function() {
             return placeandroute(this.paths);
-        }
-    });
-
-    var Paths = Collection.extend({
-        model: Path,
-        deep: function() {
-            // return a "deep" copy, nodes are still the same as in the original
-            return new Paths(
-                this.map(function (path) { return path.copy(); })
-            );
-        },
-        longest: function() {
-            return this.max(function(path) { return path.xReq(); });
-        },
-        xReq: function() {
-            return this.longest().xReq();
-        },
-        yReq: function() {
-            return this.reduce(function(memo, path) { return memo + path.yReq(); }, 0);
         }
     });
 
@@ -432,6 +414,25 @@ define([
             return _.max(this.get('nodes'), function (node) {
                 return node.get('y_req');
             }).get('y_req');
+        }
+    });
+
+    var Paths = Collection.extend({
+        model: Path,
+        deep: function() {
+            // return a "deep" copy, nodes are still the same as in the original
+            return new Paths(
+                this.map(function (path) { return path.copy(); })
+            );
+        },
+        longest: function() {
+            return this.max(function(path) { return path.xReq(); });
+        },
+        xReq: function() {
+            return this.longest().xReq();
+        },
+        yReq: function() {
+            return this.reduce(function(memo, path) { return memo + path.yReq(); }, 0);
         }
     });
 
