@@ -61,6 +61,18 @@ define([
         equal(coll.e, undefined, "Other option was ignored");
     });
 
+    test("storage.Collection uses storage.Model as default model", function() {
+        var coll = new Collection();
+        equal(coll.model, Model, "Collection model is default Model");
+    });
+
+    test("Its possible to define a custom model for collections", function() {
+        var Mod = Model.extend();
+        var Coll = Collection.extend({model: Mod});
+        var coll = new Coll();
+        equal(coll.model, Mod, "Collection model is our model");
+    });
+
     test("location and abspath", function() {
         var A = {name:'A'};
         var B = {name:'B', parent:A};
