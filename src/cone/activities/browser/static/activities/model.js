@@ -425,7 +425,23 @@ define([
 
     var Activity = Model.extend({
         initialize: function() {
-            this.paths = this.defchild(Paths, 'paths');
+            this.paths = new Paths([], {name:'paths', parent:this});
+            this.paths.fetch();
+            if (!this.paths.length) {
+                var source;
+                var target;
+                if (this.collection) {
+                    source = this.collection.parent.initials.create();
+                    target = this.collection.parent.finals.create();
+                } else {
+                    source = this.parent.initials.create();
+                    target = this.parent.finals.create();
+                }
+                // XXX: objects are serialized and restored and then have no type
+                // XXX: now code is needed to store paths properly,
+                // ie. only the UUID of the nodes
+//                this.paths.create({nodes: [source, target]});
+            }
         },
         placeandroute: function() {
             return placeandroute(this.paths);
