@@ -369,15 +369,27 @@ define([
 
     var Layer = Model.extend({
         initialize: function() {
-            this.initials = new Initials([], {name: 'initials', parent:this});
-            this.finals = new Finals([], {name:'finals', parent:this});
-            this.actions = new Actions([], {name:'actions', parent:this});
-            this.decmers = new DecMers([], {name:"decmers", parent:this});
-            this.forkjoins = new ForkJoins([], {name:'forkjoins', parent:this});
-            this.activities = new Activities([], {name:'activities', parent:this});
+            this.initials = new Initials([], {name: 'initials', parent:this}).fetch();
+            this.finals = new Finals([], {name:'finals', parent:this}).fetch();
+            this.actions = new Actions([], {name:'actions', parent:this}).fetch();
+            this.decmers = new DecMers([], {name:"decmers", parent:this}).fetch();
+            this.forkjoins = new ForkJoins([], {name:'forkjoins', parent:this}).fetch();
+            this.activities = new Activities([], {name:'activities', parent:this}).fetch();
             // XXX: temp hack
-            this.activity = new Activity([], {name:'theonlyone', parent:this});
- 
+            this.activity = new Activity([], {name:'theonlyone', parent:this}).fetch();
+            
+            //  testpaths(this.activity);
+        },
+        obj: function(id) {
+            var res;
+            res = this.initials.get(id); if (res) { return res; }
+            res = this.finals.get(id); if (res) { return res; }
+            res = this.actions.get(id); if (res) { return res; }
+            res = this.decmers.get(id); if (res) { return res; }
+            res = this.forkjoins.get(id); if (res) { return res; }
+            res = this.activities.get(id); if (res) { return res; }
+            debugger;
+            throw "Could not find node for id "+id;
         }
     });
     
