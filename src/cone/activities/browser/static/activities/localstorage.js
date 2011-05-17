@@ -113,6 +113,8 @@ define([
     var Model = Backbone.Model.extend({
         abspath: abspath,
         location: location,
+        // XXX: define create in analogy to coll.create with addition
+        // factory.
         constructor: function(attr, opts) {
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
@@ -124,6 +126,7 @@ define([
         abspath: abspath,
         location: location,
         model: Model,
+        // XXX: hook into create to set parent
         constructor: function(attr, opts) {
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
