@@ -328,12 +328,12 @@ define([
 
     var Layer = Model.extend({
         initialize: function() {
-            this.initials = this.defchild(Initials, 'initials');
-            this.finals = this.defchild(Finals, 'finals');
-            this.actions = this.defchild(Actions, 'actions');
-            this.decmers = this.defchild(DecMers, "decmers");
-            this.forkjoins = this.defchild(ForkJoins, 'forkjoins');
-            this.activities = this.defchild(Activities, 'activities');
+            this.initials = new Initials([], {name: 'initials', parent:this});
+            this.finals = new Finals([], {name:'finals', parent:this});
+            this.actions = new Actions([], {name:'actions', parent:this});
+            this.decmers = new DecMers([], {name:"decmers", parent:this});
+            this.forkjoins = new ForkJoins([], {name:'forkjoins', parent:this});
+            this.activities = new Activities([], {name:'activities', parent:this});
         }
     });
     
