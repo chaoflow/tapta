@@ -1,6 +1,8 @@
 define([
     'require',
     'cdn/qunit.js',
+    'cdn/underscore.js',
+    'cdn/backbone.js',
     './localstorage'
 ], function(require) {
     // dependencies we need a handle for
@@ -9,6 +11,55 @@ define([
     var Model = storage.Model;
 
     module('Storage');
+
+    test("Backbone.Model.extend behaves as expected", function() {
+        // a custom constructor
+        Mod = Backbone.Model.extend({
+            a: 1,
+            constructor: function(attrs, opts) {
+                this.b = opts && opts.b;
+                // it is important to pass the arguments list, not the
+                // names we gave its components
+                Backbone.Model.apply(this, arguments);
+            },
+            initialize: function(attrs, opts) {
+                this.d = 4;
+            }
+        });
+        mod = new Mod({c:3}, {b:2, e:5});
+        equal(Mod.prototype.a, 1, "Extended attr ended up on prototype");
+        equal(mod.a, 1, "Extended attr is visible as proprty on model");
+        equal(mod.b, 2, "Custom constructor was used");
+        equal(mod.get('c'), 3,
+              "Model has initial attribute, i.e original constructor was called"
+             );
+        equal(mod.d, 4, "Custom initialized was called");
+        equal(mod.e, undefined, "Other option was ignored");
+    });
+
+    test("Backbone.Collection.extend behaves as expected", function() {
+        // a custom constructor
+        Coll = Backbone.Collection.extend({
+            a: 1,
+            constructor: function(attrs, opts) {
+                this.b = opts && opts.b;
+                // it is important to pass the arguments list, not the
+                // names we gave its components
+                Backbone.Collection.apply(this, arguments);
+            },
+            initialize: function(attrs, opts) {
+                this.d = 4;
+            }
+        });
+        coll = new Coll({c:3}, {b:2, e:5});
+        equal(Coll.prototype.a, 1, "Extended attr ended up on prototype");
+        equal(coll.a, 1, "Extended attr is visible as proprty on collel");
+        equal(coll.b, 2, "Custom constructor was used");
+        equal(coll.first().get('c'), 3,
+              "Member model based on intial data was created");
+        equal(coll.d, 4, "Custom initialized was called");
+        equal(coll.e, undefined, "Other option was ignored");
+    });
 
     test("location and abspath", function() {
         var A = {name:'A'};
