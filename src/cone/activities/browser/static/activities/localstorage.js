@@ -122,7 +122,12 @@ define([
     var Model = Backbone.Model.extend({
         abspath: abspath,
         defchild: defchild,
-        location: location
+        location: location,
+        constructor: function(attr, opts) {
+            this.name = opts && opts.name;
+            this.parent = opts && opts.parent;
+            Backbone.Model.apply(this, arguments);
+        }
     });
 
     var Collection = Backbone.Collection.extend({
@@ -130,6 +135,11 @@ define([
         defchild: defchild,
         location: location,
         model: Model,
+        constructor: function(attr, opts) {
+            this.name = opts && opts.name;
+            this.parent = opts && opts.parent;
+            Backbone.Collection.apply(this, arguments);
+        },
         destroyAll: function() {
             _.forEach(this.toArray(), function(model) { model.destroy(); });
         }

@@ -73,6 +73,51 @@ define([
         equal(coll.model, Mod, "Collection model is our model");
     });
 
+    test("Name and parent are picked from opts", function() {
+        var mod = new Model(undefined, {name: 'mod', parent: 'par'});
+        equal(mod.name, 'mod', "Name made it for model");
+        equal(mod.parent, 'par', "Parent made it for model");
+
+        mod = new Model({a:1}, {name: 'mod', parent: 'par'});
+        equal(mod.get('a'), 1, "Initial attribute made it");
+        equal(mod.name, 'mod', "Name made it for model alongside attr");
+        equal(mod.parent, 'par', "Parent made it for model alongside attr");
+
+        var coll = new Collection(undefined, {name: 'coll', parent: 'par'});
+        equal(coll.name, 'coll', "Name made it for collection");
+        equal(coll.parent, 'par', "Parent made it for collection");
+
+        coll = new Collection({a:1}, {name: 'coll', parent: 'par'});
+        equal(coll.first().get('a'), 1, "Initial attribute ended up in model");
+        equal(coll.name, 'coll', "Name made it for collection alongside attr");
+        equal(coll.parent, 'par', "Parent made it for collection alongside attr");
+
+        // now with another level of extend
+        var Mod = Model.extend({prop:1});
+        var Coll = Collection.extend({model:Mod});
+
+        mod = new Mod({}, {name: 'mod', parent: 'par'});
+        equal(mod.prop, 1, "Property is there");
+        equal(mod.name, 'mod', "Name made it for model");
+        equal(mod.parent, 'par', "Parent made it for model");
+
+        mod = new Mod({a:1}, {name: 'mod', parent: 'par'});
+        equal(mod.prop, 1, "Property is there");
+        equal(mod.get('a'), 1, "Initial attribute made it");
+        equal(mod.name, 'mod', "Name made it for model alongside attr");
+        equal(mod.parent, 'par', "Parent made it for model alongside attr");
+
+        coll = new Coll([], {name: 'coll', parent: 'par'});
+        equal(coll.name, 'coll', "Name made it for collection");
+        equal(coll.parent, 'par', "Parent made it for collection");
+
+        coll = new Coll({a:1}, {name: 'coll', parent: 'par'});
+        equal(coll.first().get('a'), 1, "Initial attribute ended up in model");
+        ok(coll.first() instanceof Mod, "Auto-created model is correct type");
+        equal(coll.name, 'coll', "Name made it for collection alongside attr");
+        equal(coll.parent, 'par', "Parent made it for collection alongside attr");
+    });
+
     test("location and abspath", function() {
         var A = {name:'A'};
         var B = {name:'B', parent:A};
