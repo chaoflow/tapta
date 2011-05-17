@@ -132,8 +132,46 @@ define([
         }
     });
 
-    // XXX: eventually all settings are returned here
+    // new-style
     return {
-        localstorage_key: 'tapta0'
+        localstorage_key: 'tapta0',
+        gridsize: {
+            x: 80,
+            y: 60
+        },
+        canvas: {
+            width: 1000,
+            height: 500,
+            r: 10
+        },
+        edge: {
+            arrow: {
+                dx: 6,
+                dy: 5
+            },
+            color: "#202020",
+            strokewidth: 2
+        },
+        node: {
+            initial: {
+                r: 16
+            },
+            final: {
+                r: 18,
+                dr: 5
+            },
+            action: {
+                dx: 60,
+                dy: 40,
+                r: 4
+            },
+            forkjoin: {
+                dx: 15,
+                pad: 10
+            },
+            borderwidth: 2,
+            bordercolor: '#b5d9ea',
+            fillcolor: '#edf7ff'
+        }
     };
 });
