@@ -423,10 +423,6 @@ define([
         model: ForkJoin
     });
 
-    var Activities = Collection.extend({
-        model: Activity
-    });
-
     var Activity = Model.extend({
         initialize: function() {
             this.paths = this.defchild(Paths, 'paths');
@@ -434,6 +430,10 @@ define([
         placeandroute: function() {
             return placeandroute(this.paths);
         }
+    });
+
+    var Activities = Collection.extend({
+        model: Activity
     });
 
     var Path = Model.extend({
