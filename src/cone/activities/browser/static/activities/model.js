@@ -439,19 +439,15 @@ define([
             this.paths = new Paths([], {name:'paths', parent:this});
             this.paths.fetch();
             if (!this.paths.length) {
-                var source;
-                var target;
+                var layer;
                 if (this.collection) {
-                    source = this.collection.parent.initials.create();
-                    target = this.collection.parent.finals.create();
+                    layer = this.collection.parent;
                 } else {
-                    source = this.parent.initials.create();
-                    target = this.parent.finals.create();
+                    layer = this.parent;
                 }
-                // XXX: objects are serialized and restored and then have no type
-                // XXX: now code is needed to store paths properly,
-                // ie. only the UUID of the nodes
-//                this.paths.create({nodes: [source, target]});
+                var source = layer.initials.create();
+                var target = layer.finals.create();
+                this.paths.create({nodes: [source, target]});
             }
         },
         placeandroute: function() {
@@ -483,6 +479,9 @@ define([
             node = nodes.splice(_.indexOf(nodes, node), 1);
             // XXX: what to return, the node or the remaining nodes?
         },
+        toJSON: function() {
+            return _.pluck(this.get('nodes'), 'id');
+        },
         xReq: function() {
             return _.reduce(this.get('nodes'), function (memo, node) {
                 return memo + node.get('x_req');
@@ -499,7 +498,8 @@ define([
     var Paths = Collection.extend({
         model: Path,
         deep: function() {
-            // return a "deep" copy, nodes are still the same as in the original
+            // return a "deep" copy, nodes are still the same as in
+            // the original
             return new Paths(
                 this.map(function (path) { return path.copy(); })
             );
@@ -507,11 +507,23 @@ define([
         longest: function() {
             return this.max(function(path) { return path.xReq(); });
         },
+        parse: function(response) {
+            // this.activity.layers XXX: needs better solution
+            var layer = this.parent.parent;
+            ids = response[0];
+            nodes = _.map(ids, function(id) {
+                return layer.obj(id);
+            });
+            path = new Path({nodes: nodes});
+            return path;
+        },
         xReq: function() {
             return this.longest().xReq();
         },
         yReq: function() {
-            return this.reduce(function(memo, path) { return memo + path.yReq(); }, 0);
+            return this.reduce(function(memo, path) {
+                return memo + path.yReq();
+            }, 0);
         }
     });
 
