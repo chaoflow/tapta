@@ -300,6 +300,47 @@ define([
     });
 
     /////////////// new-style below here ////////////////////////////////////
+    // XXX: temp for testing
+    var testpaths = function(activity) {
+        var A = new ForkJoin({name: 'A'});
+        var B = new DecMer({name: 'B'});
+        var C = new Action({name: 'C'});
+        var D = new DecMer({name: 'D'});
+        var E = new ForkJoin({name: 'E'});
+        var F = new Action({name: 'F'});
+        var G = new Action({name: 'G'});
+        var H = new Action({name: 'H'});
+        var I = new Initial({name: 'I'});
+        var J = new Action({name: 'J'});
+        var K = new Action({name: 'K'});
+        var L = new Action({name: 'L'});
+        var M = new Action({name: 'M'});
+        var N = new Final({name: 'N'});
+        var P = new Action({name: 'P'});
+        var Q = new Final({name: 'Q'});
+        var R = new Action({name: 'R', x_req: 1});
+
+        // build paths
+        var paths = activity.paths;
+        paths.add(new Path({
+            nodes: [I, A, B, C, D, E, Q]
+        }));
+        paths.add(new Path({
+            nodes: [I, A, B, F, G, D, E, Q]
+        }));
+        paths.add(new Path({
+            nodes: [I, A, B, N]
+        }));
+        paths.add(new Path({
+            nodes: [I, A, H, J, K, L, M, E, Q]
+        }));
+        paths.add(new Path({
+            nodes: [I, A, P, E, Q]
+        }));
+        paths.add(new Path({
+            nodes: [I, A, R, E, Q]
+        }));
+    };
 
     var Model = storage.Model;
     var Collection = storage.Collection;
@@ -337,48 +378,6 @@ define([
             // XXX: temp hack
             this.activity = new Activity([], {name:'theonlyone', parent:this});
  
-            // XXX: temp for testing
-            var testpaths = function(activity) {
-                var A = new ForkJoin({name: 'A'});
-                var B = new DecMer({name: 'B'});
-                var C = new Action({name: 'C'});
-                var D = new DecMer({name: 'D'});
-                var E = new ForkJoin({name: 'E'});
-                var F = new Action({name: 'F'});
-                var G = new Action({name: 'G'});
-                var H = new Action({name: 'H'});
-                var I = new Initial({name: 'I'});
-                var J = new Action({name: 'J'});
-                var K = new Action({name: 'K'});
-                var L = new Action({name: 'L'});
-                var M = new Action({name: 'M'});
-                var N = new Final({name: 'N'});
-                var P = new Action({name: 'P'});
-                var Q = new Final({name: 'Q'});
-                var R = new Action({name: 'R', x_req: 7});
-
-                // build paths
-                var paths = activity.paths;
-                paths.add(new Path({
-                    nodes: [I, A, B, C, D, E, Q]
-                }));
-                paths.add(new Path({
-                    nodes: [I, A, B, F, G, D, E, Q]
-                }));
-                paths.add(new Path({
-                    nodes: [I, A, B, N]
-                }));
-                paths.add(new Path({
-                    nodes: [I, A, H, J, K, L, M, E, Q]
-                }));
-                paths.add(new Path({
-                    nodes: [I, A, P, E, Q]
-                }));
-                paths.add(new Path({
-                    nodes: [I, A, R, E, Q]
-                }));
-            };
-            testpaths(this.activity);
         }
     });
     
