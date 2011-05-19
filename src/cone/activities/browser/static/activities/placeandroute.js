@@ -23,8 +23,8 @@ define([
             _.each(this.paths, function(path) {
                 var nodes = path.get('nodes');
                 var idx = _.indexOf(nodes, source);
-                var head = _.head(nodes, idx+1);
-                var tail = _.tail(nodes, idx+1);
+                var head = _.head(nodes, idx);
+                var tail = _.tail(nodes, idx);
                 path.set({nodes: head.concat(node).concat(tail)},
                          {silent: true});
             });
@@ -32,84 +32,110 @@ define([
         }
     };
 
-    var placeandroute = function(paths) {
-        // sets sizes and positions on paths and nodes in the paths
-        // returns list of edges
+    // UINodes wrap normal nodes to carry information for the UI. In
+    // our case this is position and size in grid coordinates
+    // (fractions are ok) and the outgoing edges of a node.
+    var UINode = function(model) {
+        _.bindAll(model, "get", "set");
+        _.extend(this, {
+            edges: [],
+            model: model,
+            ui: {
+                x: -1,
+                y: -1,
+                dx: -1,
+                dy: -1
+            }, 
+            get: model.get,
+            set: model.set
+        });
+    };
+    
+    // this will work on a working copy of the original paths
+    // collection and destroy it in the process. the size is stored on
+    // the nodes contained in paths and a list of all seen nodes is
+    // returned.
+    var size = function(paths, all) {
+        if (all === undefined) {
+            all = [];
+        };
+        if (paths.length === 0) {
+            return all;
+        };
+        var longest = paths.longest();
+        var nodes_of_longest = [].concat(longest.get('nodes'));
+        _.forEach(nodes_of_longest, function(node) {
+            if (node.get('y_req') > 1) {
+                throw 'Vertical node size != 1 unspported';
+            };
+            node.ui.dx = node.get('x_req');
+            node.ui.dy = node.get('y_req');
 
-        // A deep working copy (wc), the nodes in there are still the very same.
-        var paths_wc = paths.deep();
-        
+            // The longest path, i.e. the path that needs the most
+            // space defines how much horizontal space to allocate
+            // to its nodes, beyond their needs.
+            var xadd = (longest.x_avail - longest.xReq()) / longest.count();
+            node.ui.dx += Math.round(xadd * 1000) / 1000;
+
+            // The vertical space given to a node depends on its
+            // presence in paths. Additional space is given if a
+            // prematurely ending path is enclosed by paths the
+            // node is present in.
+            var yadd = 0;
+            var seen = false;
+            paths.forEach(function(path) {
+                if (path.include(node)) {
+                    seen = true;
+                    if (path !== longest) {
+                        node.ui.dy += path.yReq();
+                    };
+                    node.ui.dy += yadd;
+                    yadd = 0;
+                    path.remove(node);
+                    path.x_avail -= node.ui.dx;
+                } else if (seen && (path.last() !== longest.last())) {
+                    // The node is not present in this path, but
+                    // its paths may enclose a path ending
+                    // earlier.
+                    // XXX: this will currently fail, if the first
+                    // path is such a path.
+                    yadd = path.yReq();
+                };
+            });
+            all = all.concat([node]);
+        });
+        // we are using floats...
+        if (longest.x_avail > 0.001) {
+            throw "Unallocated space left!";
+        };
+        paths.remove(longest);
+        return size(paths, all);        
+    };
+
+    // return nodes of all paths wrapped in UINodes with their
+    // position, size and outgoing edges.
+    var placeandroute = function(paths) {
+        // A working copy of paths containing UINodes instead of
+        // nodes. paths_wc2 is a copy of paths_wc, having its own path
+        // objects but based on the same node objects as paths_wc.
+        // paths_wc is used during sizing and gets killed in the process,
+        // paths_wc2 is then used to add position information to the same
+        // ui nodes.
+        var paths_wc = paths.workingCopy(UINode);
+        var paths_wc2 = paths_wc.workingCopy();
+
         // The longest path defines the size of the whole diagram
         // (paths.xReq), this space is available for all paths,
-        paths_wc.each(function(path) { path.x_avail = paths_wc.xReq(); });
+        paths_wc2.each(function(path) { path.x_avail = paths_wc.xReq(); });
 
-        // allocate space to the nodes and register them in an array
-        // to be returned
-        var recurse = function(paths, allnodes) {
-            if (allnodes === undefined) {
-                allnodes = [];
-            };
-            if (paths.length === 0) {
-                return allnodes;
-            };
-            var longest = paths.longest();
-            var nodes_of_longest = [].concat(longest.get('nodes'));
-            _.forEach(nodes_of_longest, function(node) {
-                if (node.get('y_req') > 1) {
-                    throw 'Vertical node size != 1 unspported';
-                };
-                node.ui.dx = node.get('x_req');
-                node.ui.dy = node.get('y_req');
-
-                // The longest path, i.e. the path that needs the most
-                // space defines how much horizontal space to allocate
-                // to its nodes, beyond their needs.
-                var xadd = (longest.x_avail - longest.xReq()) / longest.count();
-                node.ui.dx += Math.round(xadd * 1000) / 1000;
-
-                // The vertical space given to a node depends on its
-                // presence in paths. Additional space is given if a
-                // prematurely ending path is enclosed by paths the
-                // node is present in.
-                var yadd = 0;
-                var seen = false;
-                paths.forEach(function(path) {
-                    if (path.include(node)) {
-                        seen = true;
-                        if (path !== longest) {
-                            node.ui.dy += path.yReq();
-                        };
-                        node.ui.dy += yadd;
-                        yadd = 0;
-                        path.remove(node);
-                        path.x_avail -= node.ui.dx;
-                    } else if (seen && (path.last() !== longest.last())) {
-                        // The node is not present in this path, but
-                        // its paths may enclose a path ending
-                        // earlier.
-                        // XXX: this will currently fail, if the first
-                        // path is such a path.
-                        yadd = path.yReq();
-                    };
-                });
-                allnodes = allnodes.concat([node]);
-            });
-            // we are using floats...
-            if (longest.x_avail > 0.001) {
-                debugger;
-                throw "Unallocated space left!";
-            };
-            paths.remove(longest);
-            return recurse(paths, allnodes);
-        };
-        var allnodes = recurse(paths_wc);
+        var all = size(paths_wc2);
 
         // position all nodes
         // all nodes in the first path receive vertical position 0
         // all nodes in the second path that have no position yet, receive 1
         // ...
         var i = 0;
-        paths.forEach(function(path) {
+        paths_wc.forEach(function(path) {
             var prev_node = undefined;
             _.forEach(path.get('nodes'), function(node) {
                 if (node.ui.y === -1) {
@@ -142,13 +168,15 @@ define([
                                              target: node});
                         prev_node.edges.push(existing);
                     }
-                    existing.paths.push(path);
+                    // the edge needs access to the real path object
+                    // to insert nodes - XXX: I don't like this
+                    existing.paths.push(path.orig);
                 };
                 prev_node = node;
             });
             i++;
         });
-        return allnodes;
+        return all;
     };
 
     return placeandroute;
