@@ -28,53 +28,36 @@ define([
             localStorage.setItem(this.name, JSON.stringify(this.data));
         },
         create: function(model) {
-            if (model.abspath) {
-                if (!model.id) {
-                    if (model.name) {
-                        model.id = model.attributes.id = model.name;
-                    } else {
-                        model.id = model.attributes.id = model.name = guid();
-                    }
+            // id is used by backbone internally to figure out what
+            // was added to the storage already. name is used by us to
+            // implement a hierarchical storage on top of the flat
+            // localStorage.
+            if (!model.id) {
+                if (model.name) {
+                    model.id = model.attributes.id = model.name;
+                } else {
+                    model.id = model.attributes.id = model.name = guid();
                 }
-                this.data[model.name] = model;
-            } else {
-                // XXX: compat
-                if(!model.id){
-                    model.id = model.attributes.id = guid();
-                }
-                this.data[model.id] = model;
             }
+            this.data[model.name] = model;
             this.save();
             return model;
         },
         update: function(model) {
-            if (model.abspath) {
-                this.data[model.name] = model;
-            } else {
-                // XXX: compat
-                this.data[model.id] = model;
-            }
+            this.data[model.name] = model;
             this.save();
             return model;
         },
         find: function(model) {
-            if (model.abspath) {
-                return this.data[model.name];
-            } else {
-                // XXX: compat
-                return this.data[model.id];
-            }
+            return this.data[model.name];
         },
         findAll: function() {
             return _.values(this.data);
         },
         destroy: function(model) {
-            if (model.abspath) {
-                delete this.data[model.name];
-            } else {
-                // XXX: compat
-                delete this.data[model.id];
-            }
+            delete this.data[model.name];
+            // XXX: this might be the place to cleanup empty entries
+            // from the localstorage
             this.save();
             return model;
         }
@@ -82,7 +65,6 @@ define([
 
     // XXX: proper cleanup is missing:
     // - sometimes not all models are deleted from a collection
-    // - the collection key is not deleted
 
     var location = function(obj) {
         if (!obj) { obj = this; }
@@ -146,24 +128,17 @@ define([
         // model is either a collection or a model
         var resp;
         var store;
-        try {
-            store = model.localStorage || model.collection.localStorage;
-        } catch (e) {
-            if (e.type !== "non_object_property_load") {
-                throw e;
-            }
-        }
-        if (!store) {
-            // XXX: persist store on the models instead of recreating?
-            if (model.collection) {
-                store = new Store(model.collection.abspath());
-            } else if (model instanceof Collection) {
-                // Collections don't store anything themselves, they
-                // are only a container for their models
-                store = new Store(model.abspath());
-            } else {
-                store = new Store(model.parent.abspath());
-            }
+
+        // XXX: persist store on the models instead of recreating?
+        //store = model.localStorage || model.collection.localStorage;
+        if (model.collection) {
+            store = new Store(model.collection.abspath());
+        } else if (model instanceof Collection) {
+            // Collections don't store anything themselves, they
+            // are only a container for their models
+            store = new Store(model.abspath());
+        } else {
+            store = new Store(model.parent.abspath());
         }
 
         switch (method) {
@@ -171,15 +146,10 @@ define([
             resp = store.create(model);
             break;
         case "read":
-            if (model.abspath) {
-                if (model instanceof Collection) {
-                    resp = store.findAll();
-                } else {
-                    resp = store.find(model);
-                }
+            if (model instanceof Collection) {
+                resp = store.findAll();
             } else {
-                // XXX: compat
-                resp = model.id ? store.find(model) : store.findAll();
+                resp = store.find(model);
             }
             break;
         case "update":
@@ -206,4 +176,3 @@ define([
         Store: Store
     };
 });
-
