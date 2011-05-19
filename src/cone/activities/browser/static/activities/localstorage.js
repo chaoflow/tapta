@@ -91,9 +91,23 @@ define([
         // XXX: define create in analogy to coll.create with addition
         // factory.
         constructor: function(attr, opts) {
+            _.bindAll(this, "eventForwarder");
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
             Backbone.Model.apply(this, arguments);
+        },
+        defchild: function(Proto, attr, opts) {
+            if (opts.parent === undefined) {
+                opts.parent = this;
+            }
+            var child = new Proto(attr, opts);
+            child.bind("all", this.eventForwarder);
+            child.fetch();
+            return child;
+        },
+        eventForwarder: function() {
+            // call with exact same arguments as we were called
+            this.trigger.apply(this, arguments);
         }
     });
 
