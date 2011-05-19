@@ -5,36 +5,17 @@
 //  - only vertical element size of 1
 define([
     'require',
-    'cdn/underscore.js'
+    'cdn/underscore.js',
+    './model'
 ], function(require) {
 
-    // XXX: feels like this should be in model.js
-    // Edges connect a source and target node and allow to insert a
-    // new node in their place. Therefore they keep a reference to the
-    // paths they belong to.
-    var Edge = function(opts) {
-        this.source = opts && opts.source;
-        this.target = opts && opts.target;
-        this.paths = [];
-    };
-    Edge.prototype = {
-        insert: function(node) {
-            var source = this.source;
-            _.each(this.paths, function(path) {
-                var nodes = path.get('nodes');
-                var idx = _.indexOf(nodes, source);
-                var head = _.head(nodes, idx);
-                var tail = _.tail(nodes, idx);
-                path.set({nodes: head.concat(node).concat(tail)},
-                         {silent: true});
-            });
-            _.first(this.paths).collection.trigger("change");
+    var placeandroute = function(paths, slot) {
+        // calculate size, position and outgoing edges for all nodes
+        // information is stored on the nodes in: node.ui[slot]
+        // slot is the cid of the activity we are working for
+        if (slot === undefined) {
+            throw "Need slot to store ui info in.";
         }
-    };
-
-    var placeandroute = function(paths) {
-        // sets sizes and positions on paths and nodes in the paths
-        // returns list of edges
 
         // A deep working copy (wc), the nodes in there are still the very same.
         var paths_wc = paths.deep();
@@ -58,14 +39,27 @@ define([
                 if (node.get('y_req') > 1) {
                     throw 'Vertical node size != 1 unspported';
                 };
-                node.ui.dx = node.get('x_req');
-                node.ui.dy = node.get('y_req');
+
+                // initialize ui slot for this node. we always iterate
+                // over the longest path and remove all nodes we see
+                // from the other paths. Therefore, here we only see
+                // each node once.
+                if (node.ui === undefined) {
+                    node.ui = {};
+                }
+                var ui = node.ui[slot] = {
+                    x: -1,
+                    y: -1,
+                    dx: node.get('x_req'),
+                    dy: node.get('y_req'),
+                    edges: []
+                };
 
                 // The longest path, i.e. the path that needs the most
-                // space defines how much horizontal space to allocate
+                // space, defines how much horizontal space to allocate
                 // to its nodes, beyond their needs.
                 var xadd = (longest.x_avail - longest.xReq()) / longest.count();
-                node.ui.dx += Math.round(xadd * 1000) / 1000;
+                ui.dx += Math.round(xadd * 1000) / 1000;
 
                 // The vertical space given to a node depends on its
                 // presence in paths. Additional space is given if a
@@ -76,13 +70,23 @@ define([
                 paths.forEach(function(path) {
                     if (path.include(node)) {
                         seen = true;
+                        // for the current longest path we already
+                        // added the vertical space above.
                         if (path !== longest) {
-                            node.ui.dy += path.yReq();
+                            ui.dy += path.yReq();
                         };
-                        node.ui.dy += yadd;
+
+                        // If there is additional space we add and
+                        // reset it. This is the case, if between the
+                        // paths this node is a member of, there is a
+                        // prematurely ending path.
+                        ui.dy += yadd;
                         yadd = 0;
+                        
+                        // remove the node from the path and reduce
+                        // the path's available space accordingly.
                         path.remove(node);
-                        path.x_avail -= node.ui.dx;
+                        path.x_avail -= ui.dx;
                     } else if (seen && (path.last() !== longest.last())) {
                         // The node is not present in this path, but
                         // its paths may enclose a path ending
@@ -104,45 +108,59 @@ define([
         };
         var allnodes = recurse(paths_wc);
 
+        // XXX: resolved circular dependency, we currently need to
+        // create Edges
+        var Edge = require('./model').Edge;
+
         // position all nodes
         // all nodes in the first path receive vertical position 0
         // all nodes in the second path that have no position yet, receive 1
         // ...
         var i = 0;
         paths.forEach(function(path) {
-            var prev_node = undefined;
+            var prev_node;
+            var prevui;
             _.forEach(path.get('nodes'), function(node) {
-                if (node.ui.y === -1) {
-                    node.ui.y = i;
-                };
-                if (node.ui.x === -1) {
-                    if (prev_node) {
-                        node.ui.x = Math.round(
-                            (prev_node.ui.x + prev_node.ui.dx) * 1000
+                var ui = node.ui[slot];
+                // If the node has no vertical place yet, its the
+                // index of our path.
+                if (ui.y === -1) {
+                    ui.y = i;
+                }
+                if (prev_node) {
+                    prevui = prev_node.ui[slot];
+                }
+                // If the node has no horizontal place yet, its the
+                // previous node's + its size.
+                if (ui.x === -1) {
+                    if (prevui) {
+                        ui.x = Math.round(
+                            (prevui.x + prevui.dx) * 1000
                         ) / 1000;
                     } else {
-                        node.ui.x = 0;
+                        ui.x = 0;
                     };
                 };
-
                 // generate edge and store it on the previous node
                 // the vertical position and size of an edge are taken
                 // from the target node. Horizontal position and size
                 // is queried from source and target node.
-                if (prev_node) {
-                    var existing = _.select(prev_node.edges, function(edge) {
+                if (prevui) {
+                    var edges = _.select(prevui.edges, function(edge) {
                         return edge.target === node;
                     });
-                    if (existing.length > 1) {
+                    // select returns an array, make sure we have at
+                    // most one matching edge
+                    if (edges.length > 1) {
                         throw "Duplicate edge - programmer's fault!";
                     }
-                    existing = existing[0];
-                    if (existing === undefined) {
-                        existing = new Edge({source: prev_node,
-                                             target: node});
-                        prev_node.edges.push(existing);
+                    var edge = edges[0];
+                    if (edge === undefined) {
+                        edge = new Edge({source: prev_node,
+                                         target: node});
+                        prevui.edges.push(edge);
                     }
-                    existing.paths.push(path);
+                    edge.paths.push(path);
                 };
                 prev_node = node;
             });

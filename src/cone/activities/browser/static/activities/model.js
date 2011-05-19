@@ -112,15 +112,6 @@ define([
             x_req: 1, // varibale size supported
             y_req: 1  // fixed for now
         },
-        initialize: function() {
-            this.ui = {
-                x: -1,
-                y: -1,
-                dx: -1,
-                dy: -1
-            };
-            this.edges = [];
-        }
     });
     var Final = Node.extend({});
     var Initial = Node.extend({});
@@ -164,7 +155,7 @@ define([
             }
         },
         placeandroute: function() {
-            return placeandroute(this.paths);
+            return placeandroute(this.paths, this.cid);
         }
     });
 
@@ -247,6 +238,29 @@ define([
         }
     });
 
+    // Edges connect a source and target node and allow to insert a
+    // new node in their place. Therefore they keep a reference to the
+    // paths they belong to.
+    var Edge = function(opts) {
+        this.source = opts && opts.source;
+        this.target = opts && opts.target;
+        this.paths = [];
+    };
+    Edge.prototype = {
+        insert: function(node) {
+            var source = this.source;
+            _.each(this.paths, function(path) {
+                var nodes = path.get('nodes');
+                var idx = _.indexOf(nodes, source);
+                var head = _.head(nodes, idx);
+                var tail = _.tail(nodes, idx);
+                path.set({nodes: head.concat(node).concat(tail)},
+                         {silent: true});
+            });
+            _.first(this.paths).collection.trigger("change");
+        }
+    };
+
     return {
         App: App,
         Layer: Layer,
@@ -263,6 +277,7 @@ define([
         Activity: Activity,
         Activities: Activities,
         Path: Path,
-        Paths: Paths
+        Paths: Paths,
+        Edge: Edge
     };
 });

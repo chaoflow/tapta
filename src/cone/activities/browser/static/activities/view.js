@@ -73,50 +73,57 @@ define([
 
     var Activity = Backbone.View.extend({
         initialize: function() {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'getView');
             this.model.bind("change", this.render);
+            // we have the same cid as our model. Therefore our child
+            // views know which slot to take the ui info from.
+            this.cid = this.model.cid;
+        },
+        getView: function(element) {
+            var proto;
+            if (element instanceof model.Initial) {
+                proto = Initial;
+            } else if (element instanceof model.Final) {
+                proto = Final;
+            } else if (element instanceof model.Action) {
+                proto = Action;
+            } else if (element instanceof model.DecMer) {
+                proto = DecMer;
+            } else if (element instanceof model.ForkJoin) {
+                proto = ForkJoin;
+            } else if (element instanceof model.Edge) {
+                proto = Edge;
+            } else {
+                throw "Unknown element";
+            }
+            // One node may be in several activities. Through the
+            // parent relationship, the view knows from which slot
+            // to take the ui info and where to render.
+            return new proto({model: element, parent: this});
         },
         render: function() {
-            height = settings.canvas.height;
-            width = settings.canvas.width;
+            var height = settings.canvas.height;
+            var width = settings.canvas.width;
             var canvas = this.canvas = Raphael(this.el[0], width, height);
             var rect = canvas.rect(0, 0, width, height, settings.canvas.r);
             var nodes = this.model.placeandroute();
             // create and render views for all nodes. the view will
-            // store itself as node.view and is needed for drawing the
-            // edges in the next step.
+            // store itself as node.ui[slot].view and is needed for drawing the
+            // edges in the next step. slot is the activity.id
+            var getView = this.getView;
             _.each(nodes, function(node) {
-                getView(node).render(canvas);
+                getView(node).render();
             });
 
             // create and draw edges for all nodes
             _.each(nodes, function(node) {
                 _.each(node.edges, function(edge) {
                     // edges are not backbone models, we use the attr anyway
-                    view = new Edge({model: edge});
-                    view.render(canvas);
+                    getView(edge).render();
                 });
             });
         }
     });
-
-    var getView = function(node) {
-        var proto;
-        if (node instanceof model.Initial) {
-            proto = Initial;
-        } else if (node instanceof model.Final) {
-            proto = Final;
-        } else if (node instanceof model.Action) {
-            proto = Action;
-        } else if (node instanceof model.DecMer) {
-            proto = DecMer;
-        } else if (node instanceof model.ForkJoin) {
-            proto = ForkJoin;
-        } else {
-            throw "Unknown node";
-        }
-        return new proto({model: node});
-    };
 
     var xToPix = function(x) {
         return settings.gridsize.x * x;
@@ -125,40 +132,44 @@ define([
         return settings.gridsize.y * y;
     };
 
-    var Node = Backbone.View.extend({
-        initialize: function() {
-            _.bindAll(this, 'render', 'renderNode', 'ui');
-            this.model.view = this;
-        },
-        render: function(canvas) {
-            // render the node
-            this.renderNode(canvas);
-        },
-        renderNode: function(canvas) {},
+    var ElementView = Backbone.View.extend({
+        constructor: function(opts) {
+            this.parent = opts.parent;
+            opts.model.ui[this.parent.cid].view = this;
+            _.bindAll(this);
+            Backbone.View.apply(this, arguments);
+        }
+    });
+
+    var Node = ElementView.extend({
         ui: function() {
-            // translate the grid coordinates into pixel coordinates
+            // return ui info for slot, grid coordinates translated
+            // into pixel coordinates.
+            var slot = this.parent.cid;
             return {
-                x: xToPix(this.model.ui.x),
-                y: yToPix(this.model.ui.y),
-                dx: xToPix(this.model.ui.dx),
-                dy: yToPix(this.model.ui.dy)
+                x: xToPix(this.model.ui[slot].x),
+                y: yToPix(this.model.ui[slot].y),
+                dx: xToPix(this.model.ui[slot].dx),
+                dy: yToPix(this.model.ui[slot].dy),
+                edges: this.model.ui[slot].edges
             };
         }
     });
 
-    var Edge = Backbone.View.extend({
-        initialize: function() {
-            _.bindAll(this, 'insert');
-        },
+    var Edge = ElementView.extend({
         render: function(canvas) {
+            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+            var sourceview = this.model.source.ui[this.parent.cid].view;
+            var targetview = this.model.source.ui[this.source.cid].view;
+
             // all space between nodes is allocated to edge areas.
-            var x = this.model.source.view.x_out;
-            var dx = this.model.target.view.x_in - x;
-            sourceui = this.model.source.view.ui();
-            targetui = this.model.target.view.ui();
+            var x = sourceview.x_out;
+            var dx = targetview.x_in - x;
+            var sourceui = sourceview.ui();
+            var targetui = targetview.ui();
             var y = sourceui.y > targetui.y ? sourceui.y : targetui.y;
             var dy = sourceui.dy < targetui.dy ? sourceui.dy : targetui.dy;
-           
+            
             // The edge is drawn as an SVG path, see:
             // http://www.w3.org/TR/SVG/paths.html#PathData
             // the line
@@ -168,8 +179,8 @@ define([
             var y1 = y0;
             var svgpath = _.template(
                 "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
-                x0:x0, y0:y0, x1:x1, y1:y1});
-         
+                    x0:x0, y0:y0, x1:x1, y1:y1});
+            
             // and the arrow head 
             var adx = settings.edge.arrow.dx;
             var ady = settings.edge.arrow.dy;
@@ -204,7 +215,8 @@ define([
     });
 
     var Initial = Node.extend({
-        renderNode: function(canvas) {
+        render: function(canvas) {
+            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             // get ui position and size in pixels
             var r = settings.node.initial.r;
             var ui = this.ui();
@@ -227,7 +239,8 @@ define([
     });
 
     var Final = Node.extend({
-        renderNode: function(canvas) {
+        render: function(canvas) {
+            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             // get ui position and size in pixels
             var r = settings.node.final.r;
             var ui = this.ui();
@@ -256,7 +269,8 @@ define([
     });
 
     var Action = Node.extend({
-        renderNode: function(canvas) {
+        render: function(canvas) {
+            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.action.dx;
             var dy = settings.node.action.dy;
             var ui = this.ui();
@@ -267,14 +281,15 @@ define([
             var node = canvas.set();
             var rect = canvas.rect(x, y, dx, dy, settings.node.action.r);
             rect.attr({fill: settings.node.fillcolor,
-                        stroke: settings.node.bordercolor,
-                        "stroke-width": settings.node.borderwidth});
+                       stroke: settings.node.bordercolor,
+                       "stroke-width": settings.node.borderwidth});
             node.push(rect);
         }
     });
 
     var DecMer = Node.extend({
-        renderNode: function(canvas) {
+        render: function(canvas) {
+            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.action.dx;
             var ui = this.ui();
             dx = Math.sqrt((Math.pow((dx / 2), 2) * 2));
@@ -293,7 +308,8 @@ define([
     });
     
     var ForkJoin = Node.extend({
-        renderNode: function(canvas) {
+        render: function(canvas) {
+            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.forkjoin.dx;
             var pad = settings.node.forkjoin.pad;
             var ui = this.ui();
@@ -316,11 +332,11 @@ define([
         Layer: Layer,
         Layers: Layers,
         Activity: Activity,
-        getView: getView,
         Initial: Initial,
         Final: Final,
         Action: Action,
         DecMer: DecMer,
-        ForkJoin: ForkJoin
+        ForkJoin: ForkJoin,
+        Edge: Edge
     };
 });
