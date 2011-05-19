@@ -214,18 +214,10 @@ define([
         // path are looked up in the library.
         lib: undefined,
         model: Path,
-        workingCopy: function(Wrapper) {
+        deep: function() {
             var wc = new Paths(
                 this.map(function (path) {
-                    var path_wc = new Path({
-                        nodes: _.map(path.get('nodes'), function(node) {
-                            return Wrapper ? new Wrapper(node) : node;
-                        })
-                    });
-                    // XXX: this whole uinode wrapping and not having
-                    // the real paths directly, sucks.
-                    path_wc.orig = path;
-                    return path_wc;
+                    return path.copy();
                 })
             );
             return wc;
