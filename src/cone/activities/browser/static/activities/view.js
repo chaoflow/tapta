@@ -4,6 +4,7 @@ define([
     'cdn/jquery.tmpl', // XXX: what's that?
     'cdn/underscore',
     'cdn/backbone.js',
+    'cdn/raphael.js',
     './model',
     './settings'
 ], function(require) {
