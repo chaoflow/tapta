@@ -42,7 +42,8 @@ define([
             $(this.el).html(this.template({layers: this.model.layers}));
             _.each(this.model.layers, function(layer) { 
                 var view = new Layer({
-                    // at this point the elements exist in the DOM, created 3 lines above
+                    // at this point the elements exist in the DOM,
+                    // created 3 lines above
                     el: layers.$('#'+layer.name),
                     model: layer
                 });
