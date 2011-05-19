@@ -4,7 +4,7 @@ cone activities
 Installation
 ------------
 
-> git clone git@github.com:bluedynamics/cone.activities.git
+> git clone git@github.com:chaoflownet/cone.activities.git
 
 this build needs (on debian based systems):
 sudo apt-get install libpcre3-dev
@@ -33,4 +33,4 @@ bdajax related
 Licence
 =======
 
-GNU General Public License Version 2
+GNU Affero General Public License Version
