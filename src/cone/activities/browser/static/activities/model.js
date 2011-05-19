@@ -445,9 +445,14 @@ define([
                 } else {
                     layer = this.parent;
                 }
-                var source = layer.initials.create();
-                var target = layer.finals.create();
-                this.paths.create({nodes: [source, target]});
+                // don't create path, initial and final node in the
+                // storage, just "add" them. Only if the path is
+                // changed later on, it will be added to the storage.
+                var source = new Initial();
+                var target = new Final();
+                layer.initials.add(source);
+                layer.finals.add(target);
+                this.paths.add({nodes: [source, target]});
             }
         },
         placeandroute: function() {
