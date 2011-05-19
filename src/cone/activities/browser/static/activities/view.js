@@ -162,64 +162,6 @@ define([
         }
     });
 
-    var Edge = ElementView.extend({
-        render: function(canvas) {
-            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
-            var sourceview = this.model.source.ui[this.parent.cid].view;
-            var targetview = this.model.target.ui[this.parent.cid].view;
-
-            // all space between nodes is allocated to edge areas.
-            var x = sourceview.x_out;
-            var dx = targetview.x_in - x;
-            var sourceui = sourceview.ui();
-            var targetui = targetview.ui();
-            var y = sourceui.y > targetui.y ? sourceui.y : targetui.y;
-            var dy = sourceui.dy < targetui.dy ? sourceui.dy : targetui.dy;
-            
-            // The edge is drawn as an SVG path, see:
-            // http://www.w3.org/TR/SVG/paths.html#PathData
-            // the line
-            var x0 = x;
-            var y0 = y + dy / 2;
-            var x1 = x + dx;
-            var y1 = y0;
-            var svgpath = _.template(
-                "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
-                    x0:x0, y0:y0, x1:x1, y1:y1});
-            
-            // and the arrow head 
-            var adx = settings.edge.arrow.dx;
-            var ady = settings.edge.arrow.dy;
-            // xl/yl left - xr/yr right when looking in direction of arrow
-            var xl = x1 - adx;
-            var yl = y1 - ady / 2;
-            var xr = xl;
-            var yr = y1 + ady / 2;
-            svgpath += _.template(
-                " L <%= xl %> <%= yl %> M <%= x1 %> <%= y1 %>"
-                    + " L <%= xr %> <%= yr %>"
-            )({xl:xl, yl:yl, x1:x1, y1:y1, xr:xr, yr:yr});
-
-            // draw the arrow
-            var arrow = canvas.path(svgpath);
-            arrow.attr({stroke: settings.edge.color,
-                        "stroke-width": settings.edge.strokewidth});
-
-            // and the edge area above it
-            var area = canvas.rect(x, y, dx, dy);
-            area.attr({fill: "#F0F0F0",
-                       stroke: "grey",
-                       opacity: 0});
-
-            // bind to events
-            area.click(this.insert);
-        },
-        insert: function(event) {
-            var decmer = new model.DecMer();
-            this.model.insert(decmer);
-        }
-    });
-
     var Initial = Node.extend({
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
@@ -330,6 +272,64 @@ define([
                        stroke: settings.node.bordercolor,
                        "stroke-width": settings.node.borderwidth});
             node.push(rect);
+        }
+    });
+
+    var Edge = ElementView.extend({
+        render: function(canvas) {
+            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+            var sourceview = this.model.source.ui[this.parent.cid].view;
+            var targetview = this.model.target.ui[this.parent.cid].view;
+
+            // all space between nodes is allocated to edge areas.
+            var x = sourceview.x_out;
+            var dx = targetview.x_in - x;
+            var sourceui = sourceview.ui();
+            var targetui = targetview.ui();
+            var y = sourceui.y > targetui.y ? sourceui.y : targetui.y;
+            var dy = sourceui.dy < targetui.dy ? sourceui.dy : targetui.dy;
+            
+            // The edge is drawn as an SVG path, see:
+            // http://www.w3.org/TR/SVG/paths.html#PathData
+            // the line
+            var x0 = x;
+            var y0 = y + dy / 2;
+            var x1 = x + dx;
+            var y1 = y0;
+            var svgpath = _.template(
+                "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
+                    x0:x0, y0:y0, x1:x1, y1:y1});
+            
+            // and the arrow head 
+            var adx = settings.edge.arrow.dx;
+            var ady = settings.edge.arrow.dy;
+            // xl/yl left - xr/yr right when looking in direction of arrow
+            var xl = x1 - adx;
+            var yl = y1 - ady / 2;
+            var xr = xl;
+            var yr = y1 + ady / 2;
+            svgpath += _.template(
+                " L <%= xl %> <%= yl %> M <%= x1 %> <%= y1 %>"
+                    + " L <%= xr %> <%= yr %>"
+            )({xl:xl, yl:yl, x1:x1, y1:y1, xr:xr, yr:yr});
+
+            // draw the arrow
+            var arrow = canvas.path(svgpath);
+            arrow.attr({stroke: settings.edge.color,
+                        "stroke-width": settings.edge.strokewidth});
+
+            // and the edge area above it
+            var area = canvas.rect(x, y, dx, dy);
+            area.attr({fill: "#F0F0F0",
+                       stroke: "grey",
+                       opacity: 0});
+
+            // bind to events
+            area.click(this.insert);
+        },
+        insert: function(event) {
+            var decmer = new model.DecMer();
+            this.model.insert(decmer);
         }
     });
 
