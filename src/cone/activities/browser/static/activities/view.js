@@ -142,12 +142,14 @@ define([
             } else {
                 opts.model.ui[this.parent.cid].view = this;
             }
-            _.bindAll(this);
             Backbone.View.apply(this, arguments);
         }
     });
 
     var Node = ElementView.extend({
+        initialize: function() {
+            _.bindAll(this, "ui");
+        },
         ui: function() {
             // return ui info for slot, grid coordinates translated
             // into pixel coordinates.
@@ -163,6 +165,9 @@ define([
     });
 
     var Initial = Node.extend({
+        initialize: function() {
+            _.bindAll(this, "render");
+        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             // get ui position and size in pixels
@@ -187,6 +192,9 @@ define([
     });
 
     var Final = Node.extend({
+        initialize: function() {
+            _.bindAll(this, "render");
+        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             // get ui position and size in pixels
@@ -217,6 +225,9 @@ define([
     });
 
     var Action = Node.extend({
+        initialize: function() {
+            _.bindAll(this, "render");
+        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.action.dx;
@@ -236,6 +247,9 @@ define([
     });
 
     var DecMer = Node.extend({
+        initialize: function() {
+            _.bindAll(this, "render");
+        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.action.dx;
@@ -256,6 +270,9 @@ define([
     });
     
     var ForkJoin = Node.extend({
+        initialize: function() {
+            _.bindAll(this, "render");
+        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.forkjoin.dx;
@@ -276,6 +293,9 @@ define([
     });
 
     var Edge = ElementView.extend({
+        initialize: function(canvas) {
+            _.bindAll(this, "render", "insert");
+        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var sourceview = this.model.source.ui[this.parent.cid].view;

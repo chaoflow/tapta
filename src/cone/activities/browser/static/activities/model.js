@@ -241,25 +241,25 @@ define([
     // Edges connect a source and target node and allow to insert a
     // new node in their place. Therefore they keep a reference to the
     // paths they belong to.
-    var Edge = function(opts) {
-        this.source = opts && opts.source;
-        this.target = opts && opts.target;
-        this.paths = [];
-    };
-    Edge.prototype = {
+    var Edge = Model.extend({
+        initialize: function(opts) {
+            this.source = opts && opts.source;
+            this.target = opts && opts.target;
+            this.paths = [];
+        },
         insert: function(node) {
             var source = this.source;
             _.each(this.paths, function(path) {
                 var nodes = path.get('nodes');
                 var idx = _.indexOf(nodes, source);
-                var head = _.head(nodes, idx);
-                var tail = _.tail(nodes, idx);
+                var head = _.head(nodes, idx+1);
+                var tail = _.tail(nodes, idx+1);
                 path.set({nodes: head.concat(node).concat(tail)},
                          {silent: true});
             });
             _.first(this.paths).collection.trigger("change");
         }
-    };
+    });
 
     return {
         App: App,
