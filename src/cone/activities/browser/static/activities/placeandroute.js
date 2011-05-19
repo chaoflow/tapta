@@ -8,6 +8,24 @@ define([
     'cdn/underscore.js'
 ], function(require) {
 
+    var Edge = function(opts) {
+        this.source = opts && opts.source;
+        this.target = opts && opts.target;
+        this.paths = [];
+    };
+    Edge.prototype = {
+        insert: function(node) {
+            var source = this.source;
+            _.each(this.paths, function(path) {
+                var nodes = path.get('nodes');
+                var idx = _.indexOf(nodes, source);
+                var head = _.head(nodes, idx+1);
+                var tail = _.tail(nodes, idx+1);
+                path.set({nodes: head.concat(node).concat(tail)});
+            });
+        }
+    };
+
     var placeandroute = function(paths) {
         // sets sizes and positions on paths and nodes in the paths
         // returns list of edges
@@ -106,13 +124,19 @@ define([
                 // from the target node. Horizontal position and size
                 // is queried from source and target node.
                 if (prev_node) {
-                    var seen = _.any(prev_node.edges, function(edge) {
+                    var existing = _.select(prev_node.edges, function(edge) {
                         return edge.target === node;
                     });
-                    if (!seen) {
-                        prev_node.edges.push({source: prev_node,
-                                              target: node});
-                    };
+                    if (existing.length > 1) {
+                        throw "Duplicate edge - programmer's fault!";
+                    }
+                    existing = existing[0];
+                    if (existing === undefined) {
+                        existing = new Edge({source: prev_node,
+                                             target: node});
+                        prev_node.edges.push(existing);
+                    }
+                    existing.paths.push(path);
                 };
                 prev_node = node;
             });
