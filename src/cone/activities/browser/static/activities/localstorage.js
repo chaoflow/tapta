@@ -85,13 +85,6 @@ define([
         }, '');
     };
 
-    var Root = Backbone.Model.extend({
-        abspath: abspath,
-        fetch: undefined,
-        location: location,
-        save: undefined
-    });
-
     var Model = Backbone.Model.extend({
         abspath: abspath,
         location: location,
@@ -102,6 +95,11 @@ define([
             this.parent = opts && opts.parent;
             Backbone.Model.apply(this, arguments);
         }
+    });
+
+    var Root = Model.extend({
+        fetch: undefined,
+        save: undefined
     });
 
     var Collection = Backbone.Collection.extend({
