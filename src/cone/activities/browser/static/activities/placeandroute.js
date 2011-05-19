@@ -8,6 +8,10 @@ define([
     'cdn/underscore.js'
 ], function(require) {
 
+    // XXX: feels like this should be in model.js
+    // Edges connect a source and target node and allow to insert a
+    // new node in their place. Therefore they keep a reference to the
+    // paths they belong to.
     var Edge = function(opts) {
         this.source = opts && opts.source;
         this.target = opts && opts.target;
@@ -21,8 +25,10 @@ define([
                 var idx = _.indexOf(nodes, source);
                 var head = _.head(nodes, idx+1);
                 var tail = _.tail(nodes, idx+1);
-                path.set({nodes: head.concat(node).concat(tail)});
+                path.set({nodes: head.concat(node).concat(tail)},
+                         {silent: true});
             });
+            _.first(this.paths).collection.trigger("change");
         }
     };
 
