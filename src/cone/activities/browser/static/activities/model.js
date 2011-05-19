@@ -22,14 +22,14 @@ define([
         var G = new Action({name: 'G'});
         var H = new Action({name: 'H'});
         var I = new Initial({name: 'I'});
-        var J = new Action({name: 'J'});
+        var J = new Action({name: 'J', x_req: 2});
         var K = new Action({name: 'K'});
         var L = new Action({name: 'L'});
         var M = new Action({name: 'M'});
         var N = new Final({name: 'N'});
         var P = new Action({name: 'P'});
         var Q = new Final({name: 'Q'});
-        var R = new Action({name: 'R', x_req: 1});
+        var R = new Action({name: 'R', x_req: 3});
 
         // build paths
         var paths = activity.paths;
@@ -92,7 +92,7 @@ define([
                 lib: this
             });
             
-//            testpaths(this.activity);
+            testpaths(this.activity);
         },
         obj: function(id) {
             var res;
