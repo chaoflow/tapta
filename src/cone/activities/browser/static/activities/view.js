@@ -74,6 +74,7 @@ define([
     var Activity = Backbone.View.extend({
         initialize: function() {
             _.bindAll(this, 'render');
+            this.model.bind("change", this.render);
         },
         render: function() {
             height = settings.canvas.height;
@@ -146,6 +147,9 @@ define([
     });
 
     var Edge = Backbone.View.extend({
+        initialize: function() {
+            _.bindAll(this, 'insert');
+        },
         render: function(canvas) {
             // all space between nodes is allocated to edge areas.
             var x = this.model.source.view.x_out;
@@ -190,10 +194,12 @@ define([
                        stroke: "grey",
                        opacity: 0});
 
-            // XXX: dummy action
-            area.click(function() { area.attr({
-                stroke: "red",
-                opacity:50});});
+            // bind to events
+            area.click(this.insert);
+        },
+        insert: function(event) {
+            var decmer = new model.DecMer();
+            this.model.insert(decmer);
         }
     });
 

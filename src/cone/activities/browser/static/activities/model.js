@@ -68,7 +68,7 @@ define([
             this.layers = [];
             var prev;
             for (i = 0; i < 6; i++) {
-                var layer = new Layer({}, {name:"layer"+i, parent:this});
+                var layer = this.defchild(Layer, {}, {name:"layer"+i});
                 layer.prev = prev;
                 if (prev) {
                     prev.next = layer;
@@ -80,16 +80,19 @@ define([
 
     var Layer = Model.extend({
         initialize: function() {
-            this.initials = new Initials([], {name: 'initials', parent:this}).fetch();
-            this.finals = new Finals([], {name:'finals', parent:this}).fetch();
-            this.actions = new Actions([], {name:'actions', parent:this}).fetch();
-            this.decmers = new DecMers([], {name:"decmers", parent:this}).fetch();
-            this.forkjoins = new ForkJoins([], {name:'forkjoins', parent:this}).fetch();
-            this.activities = new Activities([], {name:'activities', parent:this}).fetch();
+            this.initials = this.defchild(Initials, [], {name: 'initials'});
+            this.finals = this.defchild(Finals, [], {name:'finals'});
+            this.actions = this.defchild(Actions, [], {name:'actions'});
+            this.decmers = this.defchild(DecMers, [], {name:"decmers"});
+            this.forkjoins = this.defchild(ForkJoins, [], {name:'forkjoins'});
+            this.activities = this.defchild(Activities, [], {name:'activities'});
             // XXX: temp hack
-            this.activity = new Activity([], {name:'theonlyone', parent:this}).fetch();
+            this.activity = this.defchild(Activity, [], {
+                name: 'theonlyone',
+                lib: this
+            });
             
-            //  testpaths(this.activity);
+//            testpaths(this.activity);
         },
         obj: function(id) {
             var res;
@@ -146,23 +149,17 @@ define([
     });
 
     var Activity = Model.extend({
-        initialize: function() {
-            this.paths = new Paths([], {name:'paths', parent:this});
-            this.paths.fetch();
-            if (!this.paths.length) {
-                var layer;
-                if (this.collection) {
-                    layer = this.collection.parent;
-                } else {
-                    layer = this.parent;
-                }
+        initialize: function(attrs, opts) {
+            this.paths = this.defchild(Paths, [], {name:'paths'});
+            this.lib = opts.lib;
+            if ((!this.paths.length) && (this.lib !== undefined)) {
                 // don't create path, initial and final node in the
                 // storage, just "add" them. Only if the path is
                 // changed later on, it will be added to the storage.
                 var source = new Initial();
                 var target = new Final();
-                layer.initials.add(source);
-                layer.finals.add(target);
+                this.lib.initials.add(source);
+                this.lib.finals.add(target);
                 this.paths.add({nodes: [source, target]});
             }
         },
@@ -212,23 +209,38 @@ define([
     });
 
     var Paths = Collection.extend({
+        // On serialization (see toJSON of PATH above), only the ids
+        // are stored. Upon parse (see below) the nodes that form a
+        // path are looked up in the library.
+        lib: undefined,
         model: Path,
-        deep: function() {
-            // return a "deep" copy, nodes are still the same as in
-            // the original
-            return new Paths(
-                this.map(function (path) { return path.copy(); })
+        workingCopy: function(Wrapper) {
+            var wc = new Paths(
+                this.map(function (path) {
+                    var path_wc = new Path({
+                        nodes: _.map(path.get('nodes'), function(node) {
+                            return Wrapper ? new Wrapper(node) : node;
+                        })
+                    });
+                    // XXX: this whole uinode wrapping and not having
+                    // the real paths directly, sucks.
+                    path_wc.orig = path;
+                    return path_wc;
+                })
             );
+            return wc;
         },
         longest: function() {
             return this.max(function(path) { return path.xReq(); });
         },
         parse: function(response) {
-            // this.activity.layers XXX: needs better solution
-            var layer = this.parent.parent;
+            // this might be called during tests, also if no lib is
+            // defined. However, the lib is only needed if there is
+            // data coming from the storage.
+            var lib = this.lib;
             var ids = response[0];
             nodes = _.map(ids, function(id) {
-                return layer.obj(id);
+                return lib.obj(id);
             });
             var path = nodes.length ? new Path({nodes: nodes}) : undefined;
             return path;

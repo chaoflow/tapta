@@ -23,8 +23,8 @@ define([
             _.each(this.paths, function(path) {
                 var nodes = path.get('nodes');
                 var idx = _.indexOf(nodes, source);
-                var head = _.head(nodes, idx+1);
-                var tail = _.tail(nodes, idx+1);
+                var head = _.head(nodes, idx);
+                var tail = _.tail(nodes, idx);
                 path.set({nodes: head.concat(node).concat(tail)},
                          {silent: true});
             });
