@@ -116,8 +116,9 @@ define([
             });
 
             // create and draw edges for all nodes
+            var slot = this.cid;
             _.each(nodes, function(node) {
-                _.each(node.edges, function(edge) {
+                _.each(node.ui[slot].edges, function(edge) {
                     // edges are not backbone models, we use the attr anyway
                     getView(edge).render();
                 });
@@ -135,7 +136,12 @@ define([
     var ElementView = Backbone.View.extend({
         constructor: function(opts) {
             this.parent = opts.parent;
-            opts.model.ui[this.parent.cid].view = this;
+            if (opts.model.ui === undefined) {
+                // edges
+                opts.model.view = this;
+            } else {
+                opts.model.ui[this.parent.cid].view = this;
+            }
             _.bindAll(this);
             Backbone.View.apply(this, arguments);
         }
@@ -160,7 +166,7 @@ define([
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var sourceview = this.model.source.ui[this.parent.cid].view;
-            var targetview = this.model.source.ui[this.source.cid].view;
+            var targetview = this.model.target.ui[this.parent.cid].view;
 
             // all space between nodes is allocated to edge areas.
             var x = sourceview.x_out;
