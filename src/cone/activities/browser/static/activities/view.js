@@ -160,7 +160,8 @@ define([
             var y0 = y + dy / 2;
             var x1 = x + dx;
             var y1 = y0;
-            var svgpath = _.template("M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
+            var svgpath = _.template(
+                "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
                 x0:x0, y0:y0, x1:x1, y1:y1});
          
             // and the arrow head 
@@ -172,7 +173,8 @@ define([
             var xr = xl;
             var yr = y1 + ady / 2;
             svgpath += _.template(
-                " L <%= xl %> <%= yl %> M <%= x1 %> <%= y1 %> L <%= xr %> <%= yr %>"
+                " L <%= xl %> <%= yl %> M <%= x1 %> <%= y1 %>"
+                    + " L <%= xr %> <%= yr %>"
             )({xl:xl, yl:yl, x1:x1, y1:y1, xr:xr, yr:yr});
 
             // draw the arrow
