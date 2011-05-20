@@ -499,8 +499,10 @@ define([
         },
         insertNode: function(event) {
             // the edge knows how to add, the layer upstream will know
-            // what. arguments need to be a list.
-            this.parent.trigger("insert:node", [{edge: this}]);
+            // what. arguments need to be a list and is the only thing
+            // the event handler receives. The string is only to bind
+            // to an handler to the event.
+            this.parent.trigger("insert:node", [{edge: this.model}]);
         }
     });
 
