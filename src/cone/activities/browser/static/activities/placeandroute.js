@@ -101,6 +101,9 @@ define([
             // we are using floats...
             if (longest.x_avail > 0.001) {
                 debugger;
+                // XXX: sigh, we end up here, with like real space
+                // left-over, like 1 or 2. Produce by adding a row of
+                // actions in combination with reloading.
                 throw "Unallocated space left!";
             };
             paths.remove(longest);
