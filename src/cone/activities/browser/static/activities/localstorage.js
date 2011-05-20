@@ -36,25 +36,37 @@ define([
                 if (model.name) {
                     model.id = model.attributes.id = model.name;
                 } else {
-                    model.id = model.attributes.id = model.name = guid();
+                    model.id = model.attributes.id = guid();
                 }
+            }
+            if (!model.name) {
+                model.name = model.id;
             }
             this.data[model.name] = model;
             this.save();
             return model;
         },
         update: function(model) {
+            if (!model.name) {
+                model.name = model.id;
+            }
             this.data[model.name] = model;
             this.save();
             return model;
         },
         find: function(model) {
+            if (!model.name) {
+                model.name = model.id;
+            }
             return this.data[model.name];
         },
         findAll: function() {
             return _.values(this.data);
         },
         destroy: function(model) {
+            if (!model.name) {
+                model.name = model.id;
+            }
             delete this.data[model.name];
             // XXX: this might be the place to cleanup empty entries
             // from the localstorage

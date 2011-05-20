@@ -235,7 +235,9 @@ define([
             Model.prototype.save.apply(this);
         },
         toJSON: function() {
-            return _.pluck(this.get('nodes'), 'id');
+            var attributes = _.clone(this.attributes);
+            attributes['nodes'] = _.pluck(attributes['nodes'], 'id');
+            return attributes;
         },
         xReq: function() {
             return _.reduce(this.get('nodes'), function (memo, node) {
@@ -273,11 +275,11 @@ define([
             // data coming from the storage.
             var layer = this.layer || this.parent.collection.parent;
             // XXX: we currently only store one path
-            var paths = _.map(response, function(ids) { 
-                var nodes = _.map(ids, function(id) {
+            var paths = _.map(response, function(attributes) {
+                attributes['nodes'] = _.map(attributes['nodes'], function(id) {
                     return layer.obj(id);
                 });
-                var path = nodes.length ? new Path({nodes: nodes}) : undefined;
+                var path = new Path(attributes);
                 return path;
             });
             return paths;
