@@ -151,7 +151,10 @@ define([
     var Action = Node.extend({
         toJSON: function() {
             var attributes = _.clone(this.attributes);
-            attributes['activity'] = attributes['activity'].id;
+            var act = this.attributes['activity'];
+            if (act !== undefined) {
+                attributes['activity'] = act.id;
+            }
             return attributes;
         }
     });
