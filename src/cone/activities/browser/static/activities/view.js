@@ -60,16 +60,15 @@ define([
         render: function() {
             var layers = this;
             $(this.el).html(this.template({layers: this.model.layers}));
-            var defchild = this.defchild;
             _.each(this.model.layers, function(layer) { 
-                var view = defchild(Layer, {
+                var view = this.defchild(Layer, {
                     // at this point the elements exist in the DOM,
                     // created 3 lines above
                     el: layers.$('#'+layer.name),
                     model: layer
                 });
                 view.render();
-            });
+            }, this);
         }
     });
 
