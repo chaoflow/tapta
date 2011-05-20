@@ -36,6 +36,7 @@ their outgoing edges
 **** bind edges to their source node to update label
 **** background: decmers provide their answers to be displayed on outedges
 ** med prio
+*** TODO fix existing tests
 *** TODO print
 **** 6 layers, one per page, landscape
 **** zoom to fit?
