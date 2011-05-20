@@ -129,10 +129,9 @@ define([
                     getView(edge).render();
                 });
             });
-            // XXX: non-functional
             if (this.model.get('raked')) {
                 var layer = this.model.collection.parent;
-                layer.next.activity = this.model.get('raked');
+                layer.next.activity = this.model.get('raked').get('activity');
                 layer.next.trigger("change");
             }
         }
@@ -271,15 +270,18 @@ define([
 
             // XXX: should this really be here?
             var model = this.model;
+            var parent = this.parent;
             rake.click(function() {
+                var layer = model.collection.parent;
                 if (model.get('activity') === undefined) {
-                    var layer = model.collection.parent;
                     var newact = layer.next.activities.create();
                     model.set({activity: newact});
                     model.save();
-                    layer.next.activity = newact;
-                    layer.next.trigger("change");
                 }
+                //layer.next.activity = model.get('activity');
+                parent.model.set({raked: model});
+                parent.model.save();
+                //layer.next.trigger("change");
             });
         },
         rake: function(x, y, dx, dy) {

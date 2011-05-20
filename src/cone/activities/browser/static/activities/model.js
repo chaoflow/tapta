@@ -200,11 +200,24 @@ define([
         },
         placeandroute: function() {
             return placeandroute(this.paths, this.cid);
+        },
+        toJSON: function() {
+            var attributes = _.clone(this.attributes);
+            attributes['raked'] = attributes['raked'] && attributes['raked'].id;
+            return attributes;
         }
     });
 
     var Activities = Collection.extend({
-        model: Activity
+        model: Activity,
+        parse: function(response) {
+            var layer = this.parent;
+            var activities = _.map(response, function(attrs) {
+                attrs['raked'] = attrs['raked'] && layer.obj(attrs['raked']);
+                return new Activity(attrs, {layer: layer});
+            });
+            return activities;
+        }
     });
 
     var Path = Model.extend({
@@ -273,7 +286,7 @@ define([
             // this might be called during tests, also if no lib is
             // defined. However, the lib is only needed if there is
             // data coming from the storage.
-            var layer = this.layer || this.parent.collection.parent;
+            var layer = this.layer || this.parent.layer;
             // XXX: we currently only store one path
             var paths = _.map(response, function(attributes) {
                 attributes['nodes'] = _.map(attributes['nodes'], function(id) {
