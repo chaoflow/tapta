@@ -143,15 +143,9 @@ define([
     var Initial = Node.extend({});
     var Action = Node.extend({
         toJSON: function() {
-            var attributes = this.attributes;
-            return _.reduce(_.keys(attributes), function(memo, key) {
-                if (key === "activity") {
-                    memo[key] = attributes[key].id;
-                } else {
-                    memo[key] = attributes[key];
-                }
-                return memo;
-            }, {});
+            var attributes = _.clone(this.attributes);
+            attributes['activity'] = attributes['activity'].id;
+            return attributes;
         }
     });
 
@@ -167,7 +161,19 @@ define([
     });
 
     var Actions = Collection.extend({
-        model: Action
+        model: Action,
+        parse: function(resp) {
+            var parent = this.parent;
+            var model = this.model;
+            resp = _.map(resp, function(data) {
+                var actid = data['activity'];
+                if (actid) {
+                    data['activity'] = parent.next.activities.get(actid);
+                }
+                return new model(data);
+            });
+            return resp;
+        }
     });
 
     var DecMers = Collection.extend({
@@ -263,6 +269,7 @@ define([
             // defined. However, the lib is only needed if there is
             // data coming from the storage.
             var layer = this.layer || this.parent.parent;
+            // XXX: we currently only store one path
             var ids = response[0];
             nodes = _.map(ids, function(id) {
                 return layer.obj(id);
