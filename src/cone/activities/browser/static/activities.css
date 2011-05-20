@@ -11,13 +11,13 @@ body {
     border-style: none;
 }
 
-.diagram_container {
+.layers {
     background-color:#ffffee;
     border:#aaa 1px solid;
     
 }
 /* properties */
-.diagram_container .element_properties {
+.layers .left-pane {
     font-size:10px;
     width:190px; /* 10px total padding */
     background-color:#ffffee;
@@ -25,28 +25,28 @@ body {
     display: inline-block;
     vertical-align: top;
 }
-.diagram_container .element_properties .props {
+.layers .element_properties .props {
     border-top:#ccc 1px solid;
     margin-top:5px;
     padding-top:5px;
 }
-.diagram_container .element_properties .props .field {
+.layers .element_properties .props .field {
     margin-bottom:5px;
 }
-.diagram_container .element_properties .props .field label {
+.layers .element_properties .props .field label {
     font-weight:bold;
 }
-.diagram_container .element_properties input,
-.diagram_container .element_properties textarea {
+.layers .element_properties input,
+.layers .element_properties textarea {
     font-size:10px;
 }
-.diagram_container .element_properties input {
+.layers .element_properties input {
     width:188px;
 }
-.diagram_container .element_properties .update {
+.layers .element_properties .update {
     width:90px;
 }
-.diagram_container .element_properties .status {
+.layers .element_properties .status {
     position:absolute;
     bottom:0px;
     padding-top:2px;
@@ -55,31 +55,31 @@ body {
     height:60px;
 }
 
-.diagram_container .selectable_actions {
+.layers .selectable_actions {
     vertical-align: top;
     display: inline-block;
 }
-.diagram_container .selectable_actions .highlight {
+.layers .selectable_actions .highlight {
     background-color: red;
 }
 
 
-.diagram_container .canvas_container {
+.layers .activity {
     display: inline-block;
 }
 
-.diagram_container svg {
+.layers svg {
     border-left-style: solid;
     border-width: 1px;
     background-color: white;
 
 }
-.diagram_container .control {
+.layers .control {
     position: absolute;
     left:1px;
     top:1px;
 }
-.diagram_container .diagram {
+.layers .diagram {
     left:0;
     top:0;
     z-index:1;

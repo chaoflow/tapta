@@ -1,7 +1,7 @@
 define([
     'require',
     'jquery',
-    'cdn/jquery.tmpl', // XXX: what's that?
+    'cdn/jquery.tmpl', // jquery templates
     'cdn/underscore',
     'cdn/backbone.js',
     'cdn/raphael.js',
@@ -60,16 +60,15 @@ define([
         render: function() {
             var layers = this;
             $(this.el).html(this.template({layers: this.model.layers}));
-            var defchild = this.defchild;
             _.each(this.model.layers, function(layer) { 
-                var view = defchild(Layer, {
+                var view = this.defchild(Layer, {
                     // at this point the elements exist in the DOM,
                     // created 3 lines above
                     el: layers.$('#'+layer.name),
                     model: layer
                 });
                 view.render();
-            });
+            }, this);
         }
     });
 
@@ -86,10 +85,16 @@ define([
             // an existing activity.
             $(this.el).html(this.template());
             this.activity = this.defchild(Activity, {
-                el: this.$('#activity'),
+                el: this.$('.activity'),
                 model: this.model.activity
             });
             this.activity.render();
+            this.left_pane = new PaneManager({
+                model:this.model,
+                el:this.$('.left-pane')
+            });
+            this.left_pane.add(new PropertiesView({model: this.model.activity}));
+            this.left_pane.render();
         },
         insertNode: function(event, load) {
             // get node from the library
@@ -159,6 +164,72 @@ define([
                 layer.next.activity = raked && raked.get('activity');
                 layer.next.trigger("change");
             }
+        }
+    });
+
+    var PaneManager = Backbone.View.extend({
+        template: $.template(null, $("#pane_template")),
+        initialize: function(){
+            this.keys = [];
+            this.panes = {};
+            this.pane_elems = {};
+        },
+        add: function(view){
+            var id = _.uniqueId("pane_");
+            var pane_elem = $.tmpl(this.template, {id: id});
+            view.el = pane_elem;
+            this.keys.push(id);
+            this.panes[id] = view;
+            this.pane_elems[id] = pane_elem;
+        },
+        render: function(){
+            this.el.empty();
+            _(this.keys).each(function(key){
+                this.el.append(this.pane_elems[key]);
+                this.panes[key].render();
+            }, this);
+        }
+    });
+
+    var PropertiesView = Backbone.View.extend({
+        template: $.template($("#properties_template")),
+        initialize: function(){
+            _.bindAll(this, "handle_update");
+        },
+        handle_update: function(){
+            if(this.elem instanceof model.Action){
+                this.elem.set({
+                    name: this.el.find("input[name=name]").val(),
+                    description: this.el.find("input[name=description").val()
+                });
+                this.elem.save();
+            }
+        },
+        render: function(){
+            if(this.model === undefined){
+                return;
+            }
+            if(this.model.get("selected") === undefined) {
+                return;
+            }
+            var elem = this.model.get("selected");
+            this.elem = elem;
+            this.el.empty();
+            var attrs = {};
+            if(elem instanceof model.Action){
+                attrs.hidden = {
+                    id: elem.id,
+                    cid: elem.cid
+                };
+                attrs.singleline = {
+                    name: elem.get("name") || ""
+                };
+                attrs.multiline = {
+                    description: elem.get("description") || ""
+                };
+            }
+            $.tmpl(this.template, attrs).appendTo(this.el);
+            this.el.find('input[type=button]').unbind().bind("click", this.handle_update);
         }
     });
 
@@ -310,6 +381,9 @@ define([
                 parent.model.set({raked: model});
                 parent.model.save();
             });
+            node.click(function(){
+                parent.model.set({selected: this.model});
+            }, this);
         },
         rake: function(x, y, dx, dy) {
             var canvas = this.canvas;

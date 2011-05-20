@@ -100,6 +100,7 @@ define([
 
     var Layer = Model.extend({
         initialize: function() {
+            this.activity = undefined;
             this.initials = this.defchild(Initials, [], {name: 'initials'});
             this.finals = this.defchild(Finals, [], {name:'finals'});
             this.actions = this.defchild(Actions, [], {name:'actions'});
@@ -124,7 +125,6 @@ define([
             res = this.decmers.get(id); if (res) { return res; }
             res = this.forkjoins.get(id); if (res) { return res; }
             res = this.activities.get(id); if (res) { return res; }
-            debugger;
             throw "Could not find node for id "+id;
         }
     });
@@ -151,10 +151,12 @@ define([
     var Action = Node.extend({
         toJSON: function() {
             var attributes = _.clone(this.attributes);
-            var act = this.attributes['activity'];
-            if (act !== undefined) {
-                attributes['activity'] = act.id;
-            }
+            _(['act']).each(function(key){
+                var tmp = this.attributes[key];
+                if(tmp !== undefined){
+                    attributes[key] = tmp.id;
+                }
+            }, this);
             return attributes;
         }
     });
@@ -204,7 +206,9 @@ define([
         },
         toJSON: function() {
             var attributes = _.clone(this.attributes);
-            attributes['raked'] = attributes['raked'] && attributes['raked'].id;
+            _(["raked", "selected"]).each(function(key){
+                attributes[key] = attributes[key] && attributes[key].id;
+            }, this);
             return attributes;
         }
     });
@@ -214,7 +218,9 @@ define([
         parse: function(response) {
             var layer = this.parent;
             var activities = _.map(response, function(attrs) {
-                attrs['raked'] = attrs['raked'] && layer.obj(attrs['raked']);
+                _(["raked", "selected"]).each(function(key){
+                    attrs[key] = attrs[key] && layer.obj(attrs[key]);
+                }, this);
                 return new Activity(attrs, {layer: layer});
             });
             return activities;

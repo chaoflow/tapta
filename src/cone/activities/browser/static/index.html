@@ -33,7 +33,7 @@
          title="${title}"
          class="${id}">&nbsp;</a>
     </script>
-    <script type="text/html" id="properties_template">
+    <script type="text/template" id="properties_template">
       <strong>Properties</strong>
       <div class="props">
         {{each hidden}}
@@ -80,12 +80,16 @@
     </div>
 
     <!-- templates -->
+    <script type="text/template" id="pane_template">
+      <div id="${id}" class="element_properties">
+      </div>
+    </script>
     <script type="text/template" id="layer-template">
-      <div id="left-pane" class="pane">
+      <div class="left-pane pane">
       </div>
-      <div id="activity" class="activity">
+      <div class="activity">
       </div>
-      <div id="right-pane" class="pane">
+      <div class="right-pane pane">
       </div>
     </script>
 
