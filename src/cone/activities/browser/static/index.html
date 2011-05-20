@@ -51,6 +51,25 @@
                value="update"
                class="update" />
     </script>
+    <script type="text/template" id="library_template">
+      <ul>
+        {{each action}}
+        <li id="${$value.id}">${$value.label}</li>
+        {{/each}}
+      </ul>
+    </script>
+    <script type="text/template" id="actionbar_template">
+      <ul class="menubar">
+        <li class="add_action">
+        </li>
+        <li class="add_dec">
+        </li>
+        <li class="add_fork">
+        </li>
+        <li class="delete">
+        </li>
+      </ul>
+    </script>
     <script type="text/html" id="actions_template">
       <ul>
         {{each actions}}

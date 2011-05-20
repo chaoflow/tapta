@@ -17,7 +17,7 @@ body {
     
 }
 /* properties */
-.layers .left-pane {
+.layers .pane {
     font-size:10px;
     width:190px; /* 10px total padding */
     background-color:#ffffee;
@@ -116,6 +116,34 @@ body {
     cursor:pointer;
     text-decoration:none;
 }
+
+.menubar li {
+    height: 23px;
+    width: 23px;
+    background-image: url("icons/activities_sprite.png");
+    display: inline-block;
+}
+
+.menubar .add_action{
+    background-position: 0px 322px;
+}
+
+.menubar .add_dec {
+    background-position: 0px 252px;
+}
+.menubar .add_fork {
+    background-position: 0px 275px;
+}
+.menubar .delete {
+    background-position: 0px 46px;
+}
+
+.highlight {
+    border-color: red;
+    border-style: solid;
+    border-width: 1px;
+}
+
 
 /* tests */
 .qunit {

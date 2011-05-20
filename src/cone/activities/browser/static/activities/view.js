@@ -93,8 +93,15 @@ define([
                 model:this.model,
                 el:this.$('.left-pane')
             });
+            this.right_pane = new PaneManager({
+                model: this.model,
+                el:this.$('.right-pane')
+            });
             this.left_pane.add(new PropertiesView({model: this.model.activity}));
             this.left_pane.render();
+            this.right_pane.add(this.defchild(LibraryView, {model: this.model}));
+            this.right_pane.add(new ActionbarView());
+            this.right_pane.render();
         },
         insertNode: function(event, load) {
             // get node from the library
@@ -199,7 +206,7 @@ define([
         handle_update: function(){
             if(this.elem instanceof model.Action){
                 this.elem.set({
-                    name: this.el.find("input[name=name]").val(),
+                    label: this.el.find("input[name=label]").val(),
                     description: this.el.find("input[name=description").val()
                 });
                 this.elem.save();
@@ -222,7 +229,7 @@ define([
                     cid: elem.cid
                 };
                 attrs.singleline = {
-                    name: elem.get("name") || ""
+                    label: elem.get("label") || ""
                 };
                 attrs.multiline = {
                     description: elem.get("description") || ""
@@ -230,6 +237,59 @@ define([
             }
             $.tmpl(this.template, attrs).appendTo(this.el);
             this.el.find('input[type=button]').unbind().bind("click", this.handle_update);
+        }
+    });
+
+    var LibraryView = BaseView.extend({
+        template: $.template($("#library_template")),
+        events: {
+            "click li" : "clicked"
+        },
+        render: function(){
+            if(this.model === undefined){
+                return;
+            }
+            var attrs = {};
+            attrs.id = this.id; 
+            this.id = _.uniqueId();
+            var actions = _(
+                _(this.model.actions.models).map(function(action){
+                    return {id: action.id, label: action.get("label")};
+                })).filter(function(action){
+                    return action.label !== undefined;
+                });
+            attrs.action = actions;
+            $.tmpl(this.template, attrs).appendTo(this.el);
+            this.delegateEvents(this.events);
+        },
+        clicked: function(event){
+            $(event.target).addClass("highlight");
+            var node = this.model.actions.get(event.target.id);
+            this.trigger("library:element_selected", node);
+        }
+    });
+
+    var ActionbarView = Backbone.View.extend({
+        template: $.template($("#actionbar_template")),
+        events: {
+            "click li" : "clicked"
+        },
+        render: function(){
+            $.tmpl(this.template, {}).appendTo(this.el);
+            this.delegateEvents(this.events);
+        },
+        clicked: function(event){
+            var key = event.target.getAttribute('class');
+            $(event.target).addClass("highlight");
+            if(key == "add_action"){
+                this.trigger("menubar:add_action", {});
+            }else if(key == "add_dec"){
+                this.trigger("menubar:add_decmec", {});
+            }else if(key == "add_fork"){
+                this.trigger("menubar:add_forkjoin", {});
+            }else if(key == "delete"){
+                this.trigger("menubar:delete", {});
+            }
         }
     });
 
@@ -334,6 +394,8 @@ define([
     var Action = Node.extend({
         initialize: function() {
             _.bindAll(this, "render", "rake");
+            this.model.bind("change:label", this.render);
+            this.model.bind("change:description", this.render);
         },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
@@ -351,6 +413,11 @@ define([
                        stroke: settings.node.bordercolor,
                        "stroke-width": settings.node.borderwidth});
             node.push(rect);
+
+            if(this.model.get("label")){
+                var label = canvas.text(x + dx / 2, y + 5, this.model.get("label"));
+            }
+            node.push(label);
 
             // calculate and draw rake, lower right corner
             var rdx = dx / 3;
