@@ -6,10 +6,12 @@ define([
     'cdn/backbone.js',
     'cdn/raphael.js',
     './model',
-    './settings'
+    './settings',
+    './stack'
 ], function(require) {
     var model = require('./model');
     var settings = require('./settings');
+    var Stack = require('./stack');
 
     var BaseView = Backbone.View.extend({
         constructor: function() {
@@ -75,9 +77,13 @@ define([
     var Layer = BaseView.extend({
         template: _.template($("#layer-template").html()),
         initialize: function() {
-            _.bindAll(this, 'render', 'insertNode');
+            _.bindAll(this, 'render');
             this.model.bind("change", this.render);
-            this.bind("insert:node", this.insertNode);
+            // the stack catches our events and allows them to combine
+            // themselves
+            // XXX: it might be useful to have stacks on several
+            // levels of the view hierarchy
+            this.stack = new Stack(this, {consolelog: true});
         },
         render: function() {
             // XXX: We create a new activity view each time when
@@ -102,9 +108,6 @@ define([
             this.right_pane.add(this.defchild(LibraryView, {model: this.model}));
             this.right_pane.add(new ActionbarView());
             this.right_pane.render();
-        },
-        insertNode: function(event, load) {
-            // get node from the library
         }
     });
 
@@ -565,11 +568,14 @@ define([
             area.click(this.insertNode);
         },
         insertNode: function(event) {
-            // the edge knows how to add, the layer upstream will know
-            // what. arguments need to be a list and is the only thing
-            // the event handler receives. The string is only to bind
-            // to an handler to the event.
-            this.parent.trigger("insert:node", [{edge: this.model}]);
+            this.parent.trigger("insert:node", [function(stack) {
+                var prev = stack.last();
+                if (prev === undefined) { return; }
+                if (prev.name === "library:element_selected") {
+                    this.model.insert(prev.node);
+                    stack.pop();
+                }
+            }]);
         }
     });
 
