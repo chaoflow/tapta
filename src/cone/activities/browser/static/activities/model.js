@@ -67,14 +67,20 @@ define([
             // XXX: consider using a collection for this
             this.layers = [];
             var prev;
+            var i;
             for (i = 0; i < 6; i++) {
-                var layer = this.defchild(Layer, {}, {name:"layer"+i});
+                var layer = this.defchild(Layer, {}, {name: "layer"+i});
                 layer.prev = prev;
                 if (prev) {
                     prev.next = layer;
                 }
                 this.layers.push(layer);
                 prev = layer;
+            }
+            // need to be fetched in reverse order, so actions can
+            // look up activities they reference.
+            for (i = 5; i >= 0; i--) {
+                this.layers[i].fetch();
             }
 
             // mark special layers
@@ -104,6 +110,15 @@ define([
             this.decmers = this.defchild(DecMers, [], {name:"decmers"});
             this.forkjoins = this.defchild(ForkJoins, [], {name:'forkjoins'});
             this.activities = this.defchild(Activities, [], {name:'activities'});
+        },
+        fetch: function() {
+            // XXX: support in base classes
+            this.initials.fetch();
+            this.finals.fetch();
+            this.actions.fetch();
+            this.decmers.fetch();
+            this.forkjoins.fetch();
+            this.activities.fetch();
         },
         obj: function(id) {
             var res;
