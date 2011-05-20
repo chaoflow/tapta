@@ -137,14 +137,6 @@ define([
     });
     var Final = Node.extend({});
     var Initial = Node.extend({});
-    var Action = Node.extend({
-        toJSON: function() {
-            var attributes = _.clone(this.attributes);
-            attributes['activity'] = attributes['activity'].id;
-            return attributes;
-        }
-    });
-
     var DecMer = Node.extend({});
     var ForkJoin = Node.extend({});
 
@@ -156,6 +148,13 @@ define([
         model: Final
     });
 
+    var Action = Node.extend({
+        toJSON: function() {
+            var attributes = _.clone(this.attributes);
+            attributes['activity'] = attributes['activity'].id;
+            return attributes;
+        }
+    });
     var Actions = Collection.extend({
         model: Action,
         parse: function(resp) {
