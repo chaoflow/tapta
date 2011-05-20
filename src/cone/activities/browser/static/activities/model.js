@@ -186,6 +186,9 @@ define([
         initialize: function(attrs, opts) {
             this.paths = this.defchild(Paths, [], {name:'paths'});
             this.layer = opts.layer || this.collection.parent;
+        },
+        placeandroute: function() {
+            this.layer.fetch();
             this.paths.fetch();
             if ((!this.paths.length) && (this.layer !== undefined)) {
                 // don't create path, initial and final node in the
@@ -197,8 +200,6 @@ define([
                 this.layer.finals.add(target);
                 this.paths.add({nodes: [source, target]});
             }
-        },
-        placeandroute: function() {
             return placeandroute(this.paths, this.cid);
         },
         toJSON: function() {
