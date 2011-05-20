@@ -126,7 +126,20 @@ define([
     });
     var Final = Node.extend({});
     var Initial = Node.extend({});
-    var Action = Node.extend({});
+    var Action = Node.extend({
+        toJSON: function() {
+            var attributes = this.attributes;
+            return _.reduce(_.keys(attributes), function(memo, key) {
+                if (key === "activity") {
+                    memo[key] = attributes[key].id;
+                } else {
+                    memo[key] = attributes[key];
+                }
+                return memo;
+            }, {});
+        }
+    });
+
     var DecMer = Node.extend({});
     var ForkJoin = Node.extend({});
 
