@@ -83,11 +83,8 @@ define([
                 this.layers[i].fetch();
             }
 
-            // mark special layers
             var toplayer = _.first(this.layers);
-            toplayer.toplayer = true;
             var bottomlayer = _.last(this.layers);
-            bottomlayer = true;
 
             // create activity for top-layer and tell it to show it
             var act;
