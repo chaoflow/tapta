@@ -1,5 +1,6 @@
 * Todos                                                               :tapta:
 ** high prio
+*** TODO display name of actions
 *** TODO rake area to show activity on next level
 **** layers to generate initial activity for layer0
 **** click rake area tells current layer to rake the action (persistent)
@@ -51,7 +52,6 @@ their outgoing edges
 
 ** low prio and easy
 Theses tasks are meant for newbies to enter the project
-
 *** TODO top-layer without edges
 ***** how do we place them?
 *** TODO bottom-layer without rakes
