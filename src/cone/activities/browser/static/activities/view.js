@@ -395,8 +395,11 @@ define([
             area.click(this.insert);
         },
         insert: function(event) {
-            var decmer = new model.DecMer();
-            this.model.insert(decmer);
+            var layer = this.parent.model.collection.parent;
+            var node = new model.Action();
+            layer.actions.add(node);
+            node.save();
+            this.model.insert(node);
         }
     });
 

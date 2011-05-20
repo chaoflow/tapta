@@ -186,6 +186,7 @@ define([
         initialize: function(attrs, opts) {
             this.paths = this.defchild(Paths, [], {name:'paths'});
             this.layer = opts.layer || this.collection.parent;
+            this.paths.fetch();
             if ((!this.paths.length) && (this.layer !== undefined)) {
                 // don't create path, initial and final node in the
                 // storage, just "add" them. Only if the path is
@@ -226,6 +227,13 @@ define([
             node = nodes.splice(_.indexOf(nodes, node), 1);
             // XXX: what to return, the node or the remaining nodes?
         },
+        save: function() {
+            // make sure all nodes are saved;
+            _.each(this.get('nodes'), function(node) {
+                node.save();
+            });
+            Model.prototype.save.apply(this);
+        },
         toJSON: function() {
             return _.pluck(this.get('nodes'), 'id');
         },
@@ -263,14 +271,16 @@ define([
             // this might be called during tests, also if no lib is
             // defined. However, the lib is only needed if there is
             // data coming from the storage.
-            var layer = this.layer || this.parent.parent;
+            var layer = this.layer || this.parent.collection.parent;
             // XXX: we currently only store one path
-            var ids = response[0];
-            nodes = _.map(ids, function(id) {
-                return layer.obj(id);
+            var paths = _.map(response, function(ids) { 
+                var nodes = _.map(ids, function(id) {
+                    return layer.obj(id);
+                });
+                var path = nodes.length ? new Path({nodes: nodes}) : undefined;
+                return path;
             });
-            var path = nodes.length ? new Path({nodes: nodes}) : undefined;
-            return path;
+            return paths;
         },
         xReq: function() {
             return this.longest().xReq();
@@ -300,6 +310,7 @@ define([
                 var tail = _.tail(nodes, idx+1);
                 path.set({nodes: head.concat(node).concat(tail)},
                          {silent: true});
+                path.save();
             });
             _.first(this.paths).collection.trigger("change");
         }

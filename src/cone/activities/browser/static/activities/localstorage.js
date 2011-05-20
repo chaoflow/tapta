@@ -81,7 +81,8 @@ define([
         var pathsep = '/';
         if (!location) { location = this.location(); }
         return _.reduce(location, function(memo, obj) {
-            return memo + pathsep + obj.name;
+            var name = obj.name || obj.id;
+            return memo + pathsep + name;
         }, '');
     };
 
@@ -130,6 +131,22 @@ define([
             this.parent = opts && opts.parent;
             Backbone.Collection.apply(this, arguments);
         },
+        // XXX: not sure whether a good idea, its not called early
+        // enough, we are safer of to take id and collection as
+        // replacement for name and parent, as done now above in
+        // abspath.
+        // _add: function() {
+        //     var model = Backbone.Collection.prototype._add.apply(this, arguments);
+        //     if (model.id) {
+        //         if (model.name === undefined) {
+        //             model.name = model.id;
+        //         }
+        //     }
+        //     if (model.collection) {
+        //         model.parent = model.collection;
+        //     }
+        //     return model;
+        // },
         destroyAll: function() {
             _.forEach(this.toArray(), function(model) { model.destroy(); });
         }
