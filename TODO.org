@@ -1,0 +1,73 @@
+* Todos                                                               :tapta:
+** high prio
+*** TODO rake area to show activity on next level
+**** layers to generate initial activity for layer0
+**** click rake area tells current layer to rake the action (persistent)
+**** current layer tells next layer to show the activity
+*** TODO menubar (from scratch)
+**** action, decmer, forkjoin
+**** drag item onto edge
+**** menubar could have instances of the nodes
+**** who handles the procedure?
+*** TODO menubar delete
+**** tell paths to remove the node
+*** TODO generate new path
+**** idea: drop new final node onto an area of a forkjoin/decmer
+they have areas corresponding to the space: above, between and below
+their outgoing edges
+*** TODO merge path into other, ie. drag final node onto some node
+*** TODO panes
+**** flags to enable hiding: left, top, right, bottom
+**** handles to hide if enabled in an direction
+**** global and layer-local mode
+*** TODO base class for tools to be docked in panes
+*** TODO properties tool, layer-local, docked by default on the left
+**** instant delayed update of changed properties
+**** label and description
+*** TODO action library tool, layer-local, docked by default on the right
+**** show all actions of the layer
+**** filter on action label (name is now used within the storage)
+**** new node functionality via menubar
+**** delete node
+***** only if not used anywhere anymore
+***** maybe not delete, but just blacklist
+*** TODO edges to query source node for label
+**** bind edges to their source node to update label
+**** background: decmers provide their answers to be displayed on outedges
+** med prio
+*** TODO print
+**** 6 layers, one per page, landscape
+**** zoom to fit?
+**** generate pdf or use browser?
+*** TODO switch edges, ie change path order
+*** TODO decmer library tool,
+**** like action lib but on decmers
+**** show only decmers that have a name
+*** TODO menubar undo
+**** either in the save hooks or in the storage
+**** keep git-like storage above localstorage in mind
+***** would it help?
+*** TODO drag preview
+
+** low prio and easy
+Theses tasks are meant for newbies to enter the project
+
+*** TODO top-layer without edges
+***** how do we place them?
+*** TODO bottom-layer without rakes
+*** TODO collection set parent of their models, in add
+the parent is used to generate the key for the storage. currently in
+several places there is code to differentiate between
+models/collection with parent set and models that are a member of
+collections.
+*** TODO move diagram around within one layer
+*** TODO zooming within one layer
+*** TODO draw rake symbol
+*** TODO draw vertical lines for decmers
+*** TODO tests need to properly cleanup after themselves
+**** properly destroy all elements
+**** localstorage: remove empty keys
+*** TODO tool to measure test coverage
+*** TODO full test coverage
+**** for non-view
+**** for view?
