@@ -74,6 +74,7 @@ define([
                     prev.next = layer;
                 }
                 this.layers.push(layer);
+                prev = layer;
             }
 
             // mark special layers
