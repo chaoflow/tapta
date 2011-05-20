@@ -278,10 +278,12 @@ define([
                     model.set({activity: newact});
                     model.save();
                 }
-                //layer.next.activity = model.get('activity');
+                // this will trigger our layer's view and it will set
+                // the correct activity for the next layer.
+                // XXX: not really sure why it triggers it, but happy
+                // about it.
                 parent.model.set({raked: model});
                 parent.model.save();
-                //layer.next.trigger("change");
             });
         },
         rake: function(x, y, dx, dy) {
