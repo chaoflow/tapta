@@ -102,7 +102,6 @@ define([
             }
             var child = new Proto(attr, opts);
             child.bind("all", this.eventForwarder);
-            child.fetch();
             return child;
         },
         eventForwarder: function() {
