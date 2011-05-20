@@ -19,6 +19,9 @@ define([
             Backbone.View.apply(this, arguments);
         },
         defchild: function(View, props) {
+            if (!props) {
+                props = {};
+            }
             if (props.parent === undefined) {
                 props.parent = this;
             }
@@ -103,10 +106,14 @@ define([
                 model: this.model,
                 el:this.$('.right-pane')
             });
-            this.left_pane.add(new PropertiesView({model: this.model.activity}));
+            this.left_pane.add(this.defchild(
+                PropertiesView, {model: this.model.activity}
+            ));
             this.left_pane.render();
-            this.right_pane.add(this.defchild(LibraryView, {model: this.model}));
-            this.right_pane.add(new ActionbarView());
+            this.right_pane.add(this.defchild(
+                LibraryView, {model: this.model}
+            ));
+            this.right_pane.add(this.defchild(ActionbarView));
             this.right_pane.render();
         }
     });
@@ -177,7 +184,7 @@ define([
         }
     });
 
-    var PaneManager = Backbone.View.extend({
+    var PaneManager = BaseView.extend({
         template: $.template(null, $("#pane_template")),
         initialize: function(){
             this.keys = [];
@@ -272,7 +279,7 @@ define([
         }
     });
 
-    var ActionbarView = Backbone.View.extend({
+    var ActionbarView = BaseView.extend({
         template: $.template($("#actionbar_template")),
         events: {
             "click li" : "clicked"
