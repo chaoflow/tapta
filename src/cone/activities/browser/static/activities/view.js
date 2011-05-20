@@ -57,6 +57,7 @@ define([
         template: _.template($("#layer-template").html()),
         initialize: function() {
             _.bindAll(this, 'render');
+            this.model.bind("change", this.render);
         },
         render: function() {
             // XXX: We create a new activity view each time when
@@ -108,24 +109,31 @@ define([
             var width = settings.canvas.width;
             var canvas = this.canvas = Raphael(this.el[0], width, height);
             var rect = canvas.rect(0, 0, width, height, settings.canvas.r);
-            if (this.model) {
-                var nodes = this.model.placeandroute();
-                // create and render views for all nodes. the view will
-                // store itself as node.ui[slot].view and is needed for drawing the
-                // edges in the next step. slot is the activity.id
-                var getView = this.getView;
-                _.each(nodes, function(node) {
-                    getView(node).render();
-                });
+            if (this.model === undefined) {
+                return;
+            }
+            var nodes = this.model.placeandroute();
+            // create and render views for all nodes. the view will
+            // store itself as node.ui[slot].view and is needed for drawing the
+            // edges in the next step. slot is the activity.id
+            var getView = this.getView;
+            _.each(nodes, function(node) {
+                getView(node).render();
+            });
 
-                // create and draw edges for all nodes
-                var slot = this.cid;
-                _.each(nodes, function(node) {
-                    _.each(node.ui[slot].edges, function(edge) {
-                        // edges are not backbone models, we use the attr anyway
-                        getView(edge).render();
-                    });
+            // create and draw edges for all nodes
+            var slot = this.cid;
+            _.each(nodes, function(node) {
+                _.each(node.ui[slot].edges, function(edge) {
+                    // edges are not backbone models, we use the attr anyway
+                    getView(edge).render();
                 });
+            });
+            // XXX: non-functional
+            if (this.model.get('raked')) {
+                var layer = this.model.collection.parent;
+                layer.next.activity = this.model.get('raked');
+                layer.next.trigger("change");
             }
         }
     });
@@ -230,7 +238,7 @@ define([
 
     var Action = Node.extend({
         initialize: function() {
-            _.bindAll(this, "render", "rake", "showActivity");
+            _.bindAll(this, "render", "rake");
         },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
@@ -260,7 +268,19 @@ define([
             // up until it finds a value
             var rake = this.rake(rx, ry, rdx, rdy);
             node.push(rake);
-            rake.click(this.showActivity);
+
+            // XXX: should this really be here?
+            var model = this.model;
+            rake.click(function() {
+                if (model.get('activity') === undefined) {
+                    var layer = model.collection.parent;
+                    var newact = layer.next.activities.create();
+                    model.set({activity: newact});
+                    model.save();
+                    layer.next.activity = newact;
+                    layer.next.trigger("change");
+                }
+            });
         },
         rake: function(x, y, dx, dy) {
             var canvas = this.canvas;
@@ -270,16 +290,6 @@ define([
                        stroke: "grey",
                        opacity: 10});
             return rect;
-        },
-        showActivity: function() {
-            // - tell activity that our action is the raked one
-            // - activity needs to persist this
-            // - check whether action has an activity yet
-            // -   create an activity
-            // - tell next layer to show the activity
-            activity.
-            this.model.getActivity();
-            debugger;
         }
     });
 
