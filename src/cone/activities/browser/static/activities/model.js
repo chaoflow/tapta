@@ -94,7 +94,6 @@ define([
                 act = toplayer.activities.first();
             }
             toplayer.activity = act;
-            
 //            testpaths(toplevel.activity);
         }
     });
@@ -193,10 +192,7 @@ define([
                 var target = new Final();
                 this.layer.initials.add(source);
                 this.layer.finals.add(target);
-                // XXX: this one only temp
-                var action = new Action();
-                this.layer.actions.add(action);
-                this.paths.add({nodes: [source, action, target]});
+                this.paths.add({nodes: [source, target]});
             }
         },
         placeandroute: function() {
