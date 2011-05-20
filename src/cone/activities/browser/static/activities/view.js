@@ -65,7 +65,7 @@ define([
             $(this.el).html(this.template());
             this.activity = new Activity({
                 el: this.$('#activity'),
-                model: this.model.activity || this.model.get('activity')
+                model: this.model.activity
             });
             this.activity.render();
         }
@@ -74,10 +74,12 @@ define([
     var Activity = Backbone.View.extend({
         initialize: function() {
             _.bindAll(this, 'render', 'getView');
-            this.model.bind("change", this.render);
-            // we have the same cid as our model. Therefore our child
-            // views know which slot to take the ui info from.
-            this.cid = this.model.cid;
+            if (this.model) {
+                this.model.bind("change", this.render);
+                // we have the same cid as our model. Therefore our child
+                // views know which slot to take the ui info from.
+                this.cid = this.model.cid;
+            }
         },
         getView: function(element) {
             var proto;
@@ -106,23 +108,25 @@ define([
             var width = settings.canvas.width;
             var canvas = this.canvas = Raphael(this.el[0], width, height);
             var rect = canvas.rect(0, 0, width, height, settings.canvas.r);
-            var nodes = this.model.placeandroute();
-            // create and render views for all nodes. the view will
-            // store itself as node.ui[slot].view and is needed for drawing the
-            // edges in the next step. slot is the activity.id
-            var getView = this.getView;
-            _.each(nodes, function(node) {
-                getView(node).render();
-            });
-
-            // create and draw edges for all nodes
-            var slot = this.cid;
-            _.each(nodes, function(node) {
-                _.each(node.ui[slot].edges, function(edge) {
-                    // edges are not backbone models, we use the attr anyway
-                    getView(edge).render();
+            if (this.model) {
+                var nodes = this.model.placeandroute();
+                // create and render views for all nodes. the view will
+                // store itself as node.ui[slot].view and is needed for drawing the
+                // edges in the next step. slot is the activity.id
+                var getView = this.getView;
+                _.each(nodes, function(node) {
+                    getView(node).render();
                 });
-            });
+
+                // create and draw edges for all nodes
+                var slot = this.cid;
+                _.each(nodes, function(node) {
+                    _.each(node.ui[slot].edges, function(edge) {
+                        // edges are not backbone models, we use the attr anyway
+                        getView(edge).render();
+                    });
+                });
+            }
         }
     });
 
@@ -221,15 +225,16 @@ define([
                         stroke: settings.node.bordercolor,
                         "stroke-width": settings.node.borderwidth});
             node.push(inner);
-        }        
+        }
     });
 
     var Action = Node.extend({
         initialize: function() {
-            _.bindAll(this, "render");
+            _.bindAll(this, "render", "rake", "showActivity");
         },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+            // calculate and draw box for action
             var dx = settings.node.action.dx;
             var dy = settings.node.action.dy;
             var ui = this.ui();
@@ -243,6 +248,38 @@ define([
                        stroke: settings.node.bordercolor,
                        "stroke-width": settings.node.borderwidth});
             node.push(rect);
+
+            // calculate and draw rake, lower right corner
+            var rdx = dx / 3;
+            var rdy = dy / 3;
+            var rx = x + dx - rdx;
+            var ry = y + dy - rdy;
+            // XXX: make conditional, not for lowest layer - probably just a flag
+            // something like getUtility would be nice, or even acquisition.
+            // Did I say acquisition? yes! this.acquire(name) will go
+            // up until it finds a value
+            var rake = this.rake(rx, ry, rdx, rdy);
+            node.push(rake);
+            rake.click(this.showActivity);
+        },
+        rake: function(x, y, dx, dy) {
+            var canvas = this.canvas;
+            var rect = canvas.rect(x, y, dx, dy);
+            // XXX: draw rake symbol
+            rect.attr({fill: "white",
+                       stroke: "grey",
+                       opacity: 10});
+            return rect;
+        },
+        showActivity: function() {
+            // - tell activity that our action is the raked one
+            // - activity needs to persist this
+            // - check whether action has an activity yet
+            // -   create an activity
+            // - tell next layer to show the activity
+            activity.
+            this.model.getActivity();
+            debugger;
         }
     });
 

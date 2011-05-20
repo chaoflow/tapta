@@ -75,6 +75,23 @@ define([
                 }
                 this.layers.push(layer);
             }
+
+            // mark special layers
+            var toplayer = _.first(this.layers);
+            toplayer.toplayer = true;
+            var bottomlayer = _.last(this.layers);
+            bottomlayer = true;
+
+            // create activity for top-layer and tell it to show it
+            var act;
+            if (toplayer.activities.length === 0) {
+                act = toplayer.activities.create();
+            } else {
+                act = toplayer.activities.first();
+            }
+            toplayer.activity = act;
+            
+//            testpaths(toplevel.activity);
         }
     });
 
@@ -86,13 +103,6 @@ define([
             this.decmers = this.defchild(DecMers, [], {name:"decmers"});
             this.forkjoins = this.defchild(ForkJoins, [], {name:'forkjoins'});
             this.activities = this.defchild(Activities, [], {name:'activities'});
-            // XXX: temp hack
-            this.activity = this.defchild(Activity, [], {
-                name: 'theonlyone',
-                lib: this
-            });
-            
-            testpaths(this.activity);
         },
         obj: function(id) {
             var res;
@@ -142,16 +152,19 @@ define([
     var Activity = Model.extend({
         initialize: function(attrs, opts) {
             this.paths = this.defchild(Paths, [], {name:'paths'});
-            this.lib = opts.lib;
-            if ((!this.paths.length) && (this.lib !== undefined)) {
+            this.layer = opts.layer || this.collection.parent;
+            if ((!this.paths.length) && (this.layer !== undefined)) {
                 // don't create path, initial and final node in the
                 // storage, just "add" them. Only if the path is
                 // changed later on, it will be added to the storage.
                 var source = new Initial();
                 var target = new Final();
-                this.lib.initials.add(source);
-                this.lib.finals.add(target);
-                this.paths.add({nodes: [source, target]});
+                this.layer.initials.add(source);
+                this.layer.finals.add(target);
+                // XXX: this one only temp
+                var action = new Action();
+                this.layer.actions.add(action);
+                this.paths.add({nodes: [source, action, target]});
             }
         },
         placeandroute: function() {
