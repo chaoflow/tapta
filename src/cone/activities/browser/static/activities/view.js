@@ -11,14 +11,33 @@ define([
     var model = require('./model');
     var settings = require('./settings');
 
-    var App = Backbone.View.extend({
+    var BaseView = Backbone.View.extend({
+        constructor: function() {
+            _.bindAll(this, "eventForwarder");
+            Backbone.View.apply(this, arguments);
+        },
+        defchild: function(View, props) {
+            if (props.parent === undefined) {
+                props.parent = this;
+            }
+            var child = new View(props);
+            child.bind("all", this.eventForwarder);
+            return child;
+        },
+        eventForwarder: function() {
+            // call with exact same arguments as we were called
+            this.trigger.apply(this, arguments);
+        }
+    });
+
+    var App = BaseView.extend({
         el: $('#tapta_app'),
         initialize: function() {
             _.bindAll(this, 'render');
             // the layers view piggy-backs on our model as
             // this.model.layers is not a collection but just a plain
             // list for now.
-            this.layers = new Layers({
+            this.layers = this.defchild(Layers, {
                 // this element already exists in the index.html
                 el: this.$('#layers'),
                 model: this.model
@@ -29,7 +48,7 @@ define([
         }
     });
 
-    var Layers = Backbone.View.extend({
+    var Layers = BaseView.extend({
         template: _.template(
             '<% _.each(layers, function(layer) {%>'
                 + '<div id="<%= layer.name %>" class="layer"></div>'
@@ -41,8 +60,9 @@ define([
         render: function() {
             var layers = this;
             $(this.el).html(this.template({layers: this.model.layers}));
+            var defchild = this.defchild;
             _.each(this.model.layers, function(layer) { 
-                var view = new Layer({
+                var view = defchild(Layer, {
                     // at this point the elements exist in the DOM,
                     // created 3 lines above
                     el: layers.$('#'+layer.name),
@@ -53,26 +73,30 @@ define([
         }
     });
 
-    var Layer = Backbone.View.extend({
+    var Layer = BaseView.extend({
         template: _.template($("#layer-template").html()),
         initialize: function() {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'insertNode');
             this.model.bind("change", this.render);
+            this.bind("insert:node", this.insertNode);
         },
         render: function() {
             // XXX: We create a new activity view each time when
             // rendered, check whether/how we can change the model of
             // an existing activity.
             $(this.el).html(this.template());
-            this.activity = new Activity({
+            this.activity = this.defchild(Activity, {
                 el: this.$('#activity'),
                 model: this.model.activity
             });
             this.activity.render();
+        },
+        insertNode: function(event, load) {
+            // get node from the library
         }
     });
 
-    var Activity = Backbone.View.extend({
+    var Activity = BaseView.extend({
         initialize: function() {
             _.bindAll(this, 'render', 'getView');
             if (this.model) {
@@ -102,7 +126,7 @@ define([
             // One node may be in several activities. Through the
             // parent relationship, the view knows from which slot
             // to take the ui info and where to render.
-            return new proto({model: element, parent: this});
+            return this.defchild(proto, {model: element, parent: this});
         },
         render: function() {
             var height = settings.canvas.height;
@@ -145,7 +169,7 @@ define([
         return settings.gridsize.y * y;
     };
 
-    var ElementView = Backbone.View.extend({
+    var ElementView = BaseView.extend({
         constructor: function(opts) {
             this.parent = opts.parent;
             if (opts.model.ui === undefined) {
@@ -154,7 +178,7 @@ define([
             } else {
                 opts.model.ui[this.parent.cid].view = this;
             }
-            Backbone.View.apply(this, arguments);
+            BaseView.apply(this, arguments);
         }
     });
 
@@ -346,7 +370,7 @@ define([
 
     var Edge = ElementView.extend({
         initialize: function(canvas) {
-            _.bindAll(this, "render", "insert");
+            _.bindAll(this, "render", "insertNode");
         },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
@@ -397,14 +421,12 @@ define([
                        opacity: 0});
 
             // bind to events
-            area.click(this.insert);
+            area.click(this.insertNode);
         },
-        insert: function(event) {
-            var layer = this.parent.model.collection.parent;
-            var node = new model.Action();
-            layer.actions.add(node);
-            node.save();
-            this.model.insert(node);
+        insertNode: function(event) {
+            // the edge knows how to add, the layer upstream will know
+            // what. arguments need to be a list.
+            this.parent.trigger("insert:node", [{edge: this}]);
         }
     });
 
