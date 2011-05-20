@@ -1,7 +1,8 @@
 * Todos                                                               :tapta:
 ** high prio
 *** TODO display name of actions
-*** TODO rake area to show activity on next level
+*** DONE rake area to show activity on next level
+CLOSED: [2011-05-20 Fri 09:24]
 **** layers to generate initial activity for layer0
 **** click rake area tells current layer to rake the action (persistent)
 **** current layer tells next layer to show the activity
@@ -50,7 +51,10 @@ their outgoing edges
 **** keep git-like storage above localstorage in mind
 ***** would it help?
 *** TODO drag preview
-
+*** TODO control event propagation
+**** selective listening to events
+**** concept of change:attr for defchild children?
+**** defchild flag to trigger propagation
 ** low prio and easy
 Theses tasks are meant for newbies to enter the project
 *** TODO top-layer without edges
