@@ -121,7 +121,7 @@ define([
         defaults: {
             x_req: 1, // varibale size supported
             y_req: 1  // fixed for now
-        },
+        }
     });
     var Final = Node.extend({});
     var Initial = Node.extend({});
@@ -233,10 +233,10 @@ define([
             // this might be called during tests, also if no lib is
             // defined. However, the lib is only needed if there is
             // data coming from the storage.
-            var lib = this.lib;
+            var layer = this.layer || this.parent.parent;
             var ids = response[0];
             nodes = _.map(ids, function(id) {
-                return lib.obj(id);
+                return layer.obj(id);
             });
             var path = nodes.length ? new Path({nodes: nodes}) : undefined;
             return path;
