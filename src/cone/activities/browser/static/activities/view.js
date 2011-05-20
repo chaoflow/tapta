@@ -129,9 +129,10 @@ define([
                     getView(edge).render();
                 });
             });
-            if (this.model.get('raked')) {
-                var layer = this.model.collection.parent;
-                layer.next.activity = this.model.get('raked').get('activity');
+            var layer = this.model.collection.parent;
+            if (layer.next) {
+                var raked = this.model.get('raked');
+                layer.next.activity = raked && raked.get('activity');
                 layer.next.trigger("change");
             }
         }
