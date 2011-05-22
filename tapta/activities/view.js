@@ -338,7 +338,7 @@ define([
                                 activity: activity});
                 }]);
             }else if(key == "delete"){
-                this.trigger("add", [function (stack){
+                this.trigger("delete", [function (stack){
                     stack.push({event: "delete",
                                 detailed_event: "actionbar:delete",
                                 activity: activity});
