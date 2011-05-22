@@ -140,8 +140,8 @@ define([
             y: 60
         },
         canvas: {
-            width: 1000,
-            height: 500,
+            width: 600,
+            height: 200,
             r: 10
         },
         edge: {
