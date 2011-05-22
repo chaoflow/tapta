@@ -41,9 +41,11 @@
                      " name="${$index}" value="${$value}" >
         {{/each}}
         {{each singleline}}
+        Label:
         <input type="input" name="${$index}" value="${$value}" >
         {{/each}}
         {{each multiline}}
+        Description:
         <textarea name="${$index}">${$value}</textarea>
         {{/each}}
         <input type="button"
