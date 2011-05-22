@@ -1,5 +1,5 @@
-cone activities
-===============
+TaPTa
+=====
 
 Installation
 ------------
