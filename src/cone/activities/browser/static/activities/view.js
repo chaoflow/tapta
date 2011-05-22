@@ -289,6 +289,10 @@ define([
     });
 
     var ActionbarView = BaseView.extend({
+        initialize: function() {
+            this.prev_target = undefined;
+            _.bindAll(this, "clicked", "render");
+        },
         template: $.template($("#actionbar_template")),
         events: {
             "click li" : "clicked"
@@ -299,6 +303,10 @@ define([
         },
         clicked: function(event){
             var key = event.target.getAttribute('class');
+            if (this.prev_target) {
+                $(this.prev_target).removeClass("highlight");
+            }
+            this.prev_target = event.target;
             $(event.target).addClass("highlight");
             var node = undefined;
             var activity = this.model.activity;
