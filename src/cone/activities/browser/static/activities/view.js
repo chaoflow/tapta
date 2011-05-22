@@ -615,7 +615,7 @@ define([
             this.parent.trigger("insert:node", [function(stack) {
                 var prev = stack.last();
                 if (prev === undefined) { return; }
-                if (prev.detailed_event === "actionbar:add_action") {
+                if (prev.event === "add") {
                     edge.insert(prev.elem);
                     stack.pop();
                 }
