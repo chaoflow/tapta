@@ -113,7 +113,8 @@ define([
             this.right_pane.add(this.defchild(
                 LibraryView, {model: this.model}
             ));
-            this.right_pane.add(this.defchild(ActionbarView));
+            this.right_pane.add(this.defchild(ActionbarView), 
+                                {model:this.model});
             this.right_pane.render();
         }
     });
@@ -217,7 +218,7 @@ define([
             if(this.elem instanceof model.Action){
                 this.elem.set({
                     label: this.el.find("input[name=label]").val(),
-                    description: this.el.find("input[name=description").val()
+                    description: this.el.find("input[name=description]").val()
                 });
                 this.elem.save();
             }
@@ -291,7 +292,9 @@ define([
         clicked: function(event){
             var key = event.target.getAttribute('class');
             $(event.target).addClass("highlight");
+            var elem = undefined
             if(key == "add_action"){
+                elem = new this.model.actions.model();
                 this.trigger("menubar:add_action", {});
             }else if(key == "add_dec"){
                 this.trigger("menubar:add_decmec", {});
