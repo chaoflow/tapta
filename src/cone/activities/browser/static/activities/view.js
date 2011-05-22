@@ -113,8 +113,8 @@ define([
             this.right_pane.add(this.defchild(
                 LibraryView, {model: this.model}
             ));
-            this.right_pane.add(this.defchild(ActionbarView), 
-                                {model:this.model});
+            this.right_pane.add(this.defchild(ActionbarView, 
+                                {model:this.model}));
             this.right_pane.render();
         }
     });
@@ -274,9 +274,17 @@ define([
             this.delegateEvents(this.events);
         },
         clicked: function(event){
-            $(event.target).addClass("highlight");
             var node = this.model.actions.get(event.target.id);
-            this.trigger("library:element_selected", node);
+            if(this.model.activity.indexOf(node) == -1){
+                this.model.activity.actions.add(node);
+                $(event.target).addClass("highlight");
+                this.trigger("add", [function (stack){
+                    stack.push({event: "add",
+                                detailed_event: "library_add",
+                                node: node,
+                                activity: this.model.activity});
+                }]);;
+            }
         }
     });
 
@@ -292,16 +300,41 @@ define([
         clicked: function(event){
             var key = event.target.getAttribute('class');
             $(event.target).addClass("highlight");
-            var elem = undefined
+            var node = undefined;
+            var activity = this.model.activity;
             if(key == "add_action"){
-                elem = new this.model.actions.model();
-                this.trigger("menubar:add_action", {});
+                node = new this.model.actions.model();
+                this.model.actions.add(node);
+                this.trigger("add", [function (stack){
+                    stack.push({event: "add",
+                                detailed_event: "actionbar:add_action",
+                                elem: node,
+                                activity: activity});
+                }]);
             }else if(key == "add_dec"){
-                this.trigger("menubar:add_decmec", {});
+                node = new this.model.decmers.model();
+                this.model.decmers.add(node);
+                this.trigger("add", [function (stack){
+                    stack.push({event: "add",
+                                detailed_event: "actionbar:add_dec",
+                                elem: node,
+                                activity: activity});
+                }]);
             }else if(key == "add_fork"){
-                this.trigger("menubar:add_forkjoin", {});
+                node = new this.model.forkjoins.model();
+                this.model.forkjoins.add(node);
+                this.trigger("add", [function (stack){
+                    stack.push({event: "add",
+                                detailed_event: "actionbar:add_fork",
+                                elem: node,
+                                activity: activity});
+                }]);
             }else if(key == "delete"){
-                this.trigger("menubar:delete", {});
+                this.trigger("add", [function (stack){
+                    stack.push({event: "delete",
+                                detailed_event: "actionbar:delete",
+                                activity: activity});
+                }]);
             }
         }
     });
@@ -581,7 +614,7 @@ define([
             this.parent.trigger("insert:node", [function(stack) {
                 var prev = stack.last();
                 if (prev === undefined) { return; }
-                if (prev.name === "library:element_selected") {
+                if (prev.detailed_event === "actionbar:add_action") {
                     this.model.insert(prev.node);
                     stack.pop();
                 }
