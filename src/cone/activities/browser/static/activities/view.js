@@ -611,11 +611,12 @@ define([
             area.click(this.insertNode);
         },
         insertNode: function(event) {
+            var edge = this.model;
             this.parent.trigger("insert:node", [function(stack) {
                 var prev = stack.last();
                 if (prev === undefined) { return; }
                 if (prev.detailed_event === "actionbar:add_action") {
-                    this.model.insert(prev.node);
+                    edge.insert(prev.elem);
                     stack.pop();
                 }
             }]);
