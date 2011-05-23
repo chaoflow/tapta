@@ -122,11 +122,22 @@ define([
         initialize: function() {
             _.bindAll(this, 'render', 'getView');
             if (this.model) {
-                this.model.paths.bind("change", this.render);
-                // we have the same cid as our model. Therefore our child
-                // views know which slot to take the ui info from.
-                this.cid = this.model.cid;
+                this.bindToModel();
             }
+        },
+        bindToModel: function() {
+            // XXX: here we could also assign model:
+            //this.model = model;
+
+            // we have the same cid as our model. Therefore our child
+            // views know which slot to take the ui info from.
+            this.cid = this.model.cid;
+
+            // adding a node to a path triggers a change event for
+            // the path which is caught on its collection
+            this.model.paths.bind("change", this.render);
+
+            //this.model.bind("change:activity", this.render);
         },
         getView: function(element) {
             var proto;
