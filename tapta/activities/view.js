@@ -71,8 +71,7 @@ define([
         template: _.template($("#layer-template").html()),
         initialize: function() {
             _.bindAll(this, 'render');
-            // XXX: there should be no need for this
-            this.model.bind("change", this.render);
+            this.model.bind("change:activity", this.render);
             // the stack catches our events and allows them to combine
             // themselves
             // XXX: it might be useful to have stacks on several
@@ -123,7 +122,7 @@ define([
         initialize: function() {
             _.bindAll(this, 'render', 'getView');
             if (this.model) {
-                this.model.bind("change", this.render);
+                this.model.bind("change:paths", this.render);
                 // we have the same cid as our model. Therefore our child
                 // views know which slot to take the ui info from.
                 this.cid = this.model.cid;
