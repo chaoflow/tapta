@@ -49,12 +49,15 @@ define([
         ),
         initialize: function() {
             _.bindAll(this, 'render');
-            this.children = _.each(this.model.layers.reverse(), function(layer) { 
-                return this.defchild(Layer, {
-                    model: layer,
-                    name: layer.name
-                });
-            }, this);            
+            this.children = _.each(
+                this.model.layers.concat().reverse(),
+                function(layer) { 
+                    return this.defchild(Layer, {
+                        model: layer,
+                        name: layer.name
+                    });
+                }, this
+            );            
         },
         render: function() {
             var layers = this;

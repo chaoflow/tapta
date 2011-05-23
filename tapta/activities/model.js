@@ -79,7 +79,7 @@ define([
             }
             // need to be fetched in reverse order, so actions can
             // look up activities they reference.
-            _.each(this.layers.reverse(), function(layer) {
+            _.each(this.layers.concat().reverse(), function(layer) {
                 layer.fetch();
             }, this);
 
