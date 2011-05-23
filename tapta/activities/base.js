@@ -28,6 +28,7 @@ define([
     var View = Backbone.View.extend({
         constructor: function(props) {
             this.name = props.name;
+            this.parent = props.parent;
             console.log("DEBUG:INIT:START: " + props.name);
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
@@ -36,8 +37,8 @@ define([
         abspath: abspath,
         location: location,
         defchild: function(View, props) {
+            props.parent = props.parent || this;
             var child = new View(props);
-            child.parent = props.parent || this;
             child.bind("all", _.bind(this.eventForwarder, this));
             var realrender = child.render;
             child.render = function() {
