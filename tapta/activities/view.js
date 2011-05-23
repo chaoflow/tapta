@@ -23,7 +23,6 @@ define([
         el: $('#tapta_app'),
         initialize: function() {
             _.bindAll(this, 'render');
-            this.name = "app";
             // the layers view piggy-backs on our model as
             // this.model.layers is not a collection but just a plain
             // list for now.
@@ -36,6 +35,7 @@ define([
             });
         },
         render: function() {
+            // we were not defined by defchild, no render wrapper
             console.log("DEBUG: Rendering app");
             this.layers.render();
         }
