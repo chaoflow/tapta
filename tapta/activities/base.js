@@ -13,7 +13,6 @@ define([
             var realrender = child.render;
             child.render = function() {
                 console.log("DEBUG:RENDER: " + (child.name || "unnamed view"));
-                debugger;
                 realrender.apply(this, arguments);
             };
             return child;
