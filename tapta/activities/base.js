@@ -29,10 +29,10 @@ define([
         constructor: function(props) {
             this.name = props.name;
             this.parent = props.parent;
-            console.log("DEBUG:INIT:START: " + props.name);
+            console.log("DEBUG:INIT:BEG: " + this.abspath());
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
-            console.log("DEBUG:INIT:FINISHED: " + props.name);
+            console.log("DEBUG:INIT:END: " + this.abspath());
         },
         abspath: abspath,
         location: location,
