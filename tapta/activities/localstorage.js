@@ -78,6 +78,8 @@ define([
     // XXX: proper cleanup is missing:
     // - sometimes not all models are deleted from a collection
 
+    // XXX: move most of this to base, except the very storage
+
     var location = function(obj) {
         if (!obj) { obj = this; }
         if (obj.parent) {

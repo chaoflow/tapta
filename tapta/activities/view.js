@@ -1,6 +1,8 @@
 define([
     'require',
     'jquery',
+    // XXX: we currently use _.template and jquery templ. Should
+    // settle for one.
     'cdn/jquery.tmpl',
     'cdn/underscore',
     'cdn/raphael.js',
@@ -17,6 +19,7 @@ define([
     var panes = require('./panes');
 
     var App = base.View.extend({
+        // XXX: the id should be unique
         el: $('#tapta_app'),
         initialize: function() {
             _.bindAll(this, 'render');
@@ -24,7 +27,8 @@ define([
             // this.model.layers is not a collection but just a plain
             // list for now.
             this.layers = this.defchild(Layers, {
-                // this element already exists in the index.html
+                // this element already exists in the App template
+                // XXX: the id should be unique
                 el: this.$('#layers'),
                 model: this.model
             });
@@ -49,7 +53,7 @@ define([
             _.each(this.model.layers, function(layer) { 
                 var view = this.defchild(Layer, {
                     // at this point the elements exist in the DOM,
-                    // created 3 lines above
+                    // created by the layers template
                     el: layers.$('#'+layer.name),
                     model: layer
                 });
@@ -59,9 +63,12 @@ define([
     });
 
     var Layer = base.View.extend({
+        // XXX: id should be unique
         template: _.template($("#layer-template").html()),
         initialize: function() {
             _.bindAll(this, 'render');
+            // XXX: there should be no need for this, console.log in
+            // render for now to find out when we are rerendered
             this.model.bind("change", this.render);
             // the stack catches our events and allows them to combine
             // themselves

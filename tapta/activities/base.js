@@ -5,6 +5,8 @@ define([
 ], function(require) {
     var View = Backbone.View.extend({
         defchild: function(View, props) {
+            // XXX: children should have name and be stored in
+            // this.children with an order property
             if (!props) {
                 props = {};
             }
