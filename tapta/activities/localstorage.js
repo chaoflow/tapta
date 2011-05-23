@@ -104,7 +104,6 @@ define([
         // XXX: define create in analogy to coll.create with addition
         // factory.
         constructor: function(attr, opts) {
-            _.bindAll(this, "eventForwarder");
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
             Backbone.Model.apply(this, arguments);
@@ -114,12 +113,21 @@ define([
                 opts.parent = this;
             }
             var child = new Proto(attr, opts);
-            child.bind("all", this.eventForwarder);
+            child.bind("all", this.getEventForwarder(child));
             return child;
         },
-        eventForwarder: function() {
-            // call with exact same arguments as we were called
-            this.trigger.apply(this, arguments);
+        getEventForwarder: function(child) {
+            // XXX: How can we create an arguments object?
+            // XXX: Is there something like python *args
+            return _.bind(function(event, a, b, c, d, e) {
+                // event = "change:foo/bar"
+                // we prepend the name of the child
+                var type = event.split(":")[0];
+                var subtype = event.split(":").splice(1).join(":");
+                var newevent = type + ":" + child.name + (subtype ? "/" + subtype : "");
+                console.log(newevent, a, b, c, d, e);
+                this.trigger(newevent, a, b, c, d, e);
+            }, this);
         }
     });
 
