@@ -453,6 +453,8 @@ define([
         },
         insertNode: function(event) {
             var edge = this.model;
+            // XXX: this events being function feels weird but might
+            // be cool
             this.parent.trigger("insert:node", [function(stack) {
                 var prev = stack.last();
                 if (prev === undefined) { return; }
