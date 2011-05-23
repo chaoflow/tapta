@@ -208,6 +208,8 @@ define([
                 opts.model.ui[this.parent.cid].view = this;
             }
             base.View.apply(this, arguments);
+            _.bindAll(this, "render");
+            this.model.bind("change", this.render);
         }
     });
 
@@ -230,9 +232,6 @@ define([
     });
 
     var Initial = Node.extend({
-        initialize: function() {
-            _.bindAll(this, "render");
-        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             // get ui position and size in pixels
@@ -257,9 +256,6 @@ define([
     });
 
     var Final = Node.extend({
-        initialize: function() {
-            _.bindAll(this, "render");
-        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             // get ui position and size in pixels
@@ -291,7 +287,7 @@ define([
 
     var Action = Node.extend({
         initialize: function() {
-            _.bindAll(this, "render", "rake");
+            _.bindAll(this, "rake");
             this.model.bind("change:label", this.render);
             this.model.bind("change:description", this.render);
         },
@@ -362,9 +358,6 @@ define([
     });
 
     var DecMer = Node.extend({
-        initialize: function() {
-            _.bindAll(this, "render");
-        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.action.dx;
@@ -385,9 +378,6 @@ define([
     });
     
     var ForkJoin = Node.extend({
-        initialize: function() {
-            _.bindAll(this, "render");
-        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var dx = settings.node.forkjoin.dx;
@@ -409,7 +399,7 @@ define([
 
     var Edge = ElementView.extend({
         initialize: function(canvas) {
-            _.bindAll(this, "render", "insertNode");
+            _.bindAll(this, "insertNode");
         },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
