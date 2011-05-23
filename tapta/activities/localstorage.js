@@ -2,8 +2,10 @@ define([
     'require',
     'cdn/underscore.js',
     'cdn/backbone.js',
+    './base',
     './settings'
 ], function(require) {
+    var base = require('./base');
     var settings = require('./settings');
     var KEY = settings.localstorage_key;
 
@@ -80,29 +82,9 @@ define([
 
     // XXX: move most of this to base, except the very storage
 
-    var location = function(obj) {
-        if (!obj) { obj = this; }
-        if (obj.parent) {
-            return location(obj.parent).concat(obj);
-        } else if (obj.collection) {
-            return location(obj.collection).concat(obj);
-        } else {
-            return [obj];
-        }
-    };
-
-    var abspath = function(location) {
-        var pathsep = '/';
-        if (!location) { location = this.location(); }
-        return _.reduce(location, function(memo, obj) {
-            var name = obj.name || obj.id;
-            return memo + pathsep + name;
-        }, '');
-    };
-
     var Model = Backbone.Model.extend({
-        abspath: abspath,
-        location: location,
+        abspath: base.abspath,
+        location: base.location,
         // XXX: define create in analogy to coll.create with addition
         // factory.
         constructor: function(attr, opts) {
@@ -141,8 +123,8 @@ define([
     });
 
     var Collection = Backbone.Collection.extend({
-        abspath: abspath,
-        location: location,
+        abspath: base.abspath,
+        location: base.location,
         model: Model,
         // XXX: hook into create to set parent
         // create: function() {
@@ -220,8 +202,6 @@ define([
     };
 
     return {
-        abspath: abspath,
-        location: location,
         Collection: Collection,
         Model: Model,
         Root: Root,
