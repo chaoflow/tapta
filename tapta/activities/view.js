@@ -146,16 +146,18 @@ define([
             this.model.bind("change:raked", this.rake);
 
             this.render();
-            if (this.model.get("raked")) {
-                this.rake();
-            }
+            this.rake();
         },
         rake: function() {
             // tell the next layer whether and which activity to display
             var layer = this.model.collection.parent;
-            if (layer.next && this.model.get('raked')) {
-                layer.next.activity = this.model.get('raked').get('activity');
-                layer.next.trigger("change:activity");
+            if (layer.next) {
+                var raked = this.model.get('raked');
+                var activity = raked && raked.get('activity') || undefined;
+                if (layer.next.activity !== activity) {
+                    layer.next.activity = activity;
+                    layer.next.trigger("change:activity");
+                }
             }
         },
         getView: function(element) {
