@@ -23,6 +23,7 @@ define([
         el: $('#tapta_app'),
         initialize: function() {
             _.bindAll(this, 'render');
+            this.name = "app";
             // the layers view piggy-backs on our model as
             // this.model.layers is not a collection but just a plain
             // list for now.
@@ -30,7 +31,8 @@ define([
                 // this element already exists in the App template
                 // XXX: the id should be unique
                 el: this.$('#layers'),
-                model: this.model
+                model: this.model,
+                name: "layers"
             });
         },
         render: function() {
@@ -56,7 +58,8 @@ define([
                     // at this point the elements exist in the DOM,
                     // created by the layers template
                     el: layers.$('#'+layer.name),
-                    model: layer
+                    model: layer,
+                    name: layer.name
                 });
                 view.render();
             }, this);
@@ -68,8 +71,7 @@ define([
         template: _.template($("#layer-template").html()),
         initialize: function() {
             _.bindAll(this, 'render');
-            // XXX: there should be no need for this, console.log in
-            // render for now to find out when we are rerendered
+            // XXX: there should be no need for this
             this.model.bind("change", this.render);
             // the stack catches our events and allows them to combine
             // themselves
@@ -78,34 +80,41 @@ define([
             this.stack = new Stack(this, {consolelog: true});
         },
         render: function() {
-            // XXX: find out when we are rendered
-            console.log("Layer rerendered");
             // XXX: We create a new activity view each time when
             // rendered, check whether/how we can change the model of
             // an existing activity.
             $(this.el).html(this.template());
             this.activity = this.defchild(Activity, {
                 el: this.$('.activity'),
-                model: this.model.activity
+                model: this.model.activity,
+                name: "activity"
             });
             this.activity.render();
-            this.left_pane = new panes.PaneManager({
+            this.left_pane = this.defchild(panes.PaneManager, {
+                el:this.$('.left-pane'),
                 model:this.model,
-                el:this.$('.left-pane')
+                name: "leftpane"
             });
-            this.right_pane = new panes.PaneManager({
+            this.right_pane = this.defchild(panes.PaneManager, {
+                el:this.$('.right-pane'),
                 model: this.model,
-                el:this.$('.right-pane')
+                name: "rightpane"
             });
-            this.left_pane.add(this.defchild(
-                panes.PropertiesView, {model: this.model.activity}
-            ));
+            // XXX: create el beforehand
+            this.left_pane.add(this.defchild(panes.PropertiesView, {
+                model: this.model.activity,
+                name: "props"
+            }));
+            // XXX: create el beforehand
+            this.right_pane.add(this.defchild(panes.LibraryView, {
+                model: this.model,
+                name: "library"
+            }));
+            this.right_pane.add(this.defchild(panes.ActionbarView, { 
+                model:this.model,
+                name: "actionbar"
+            }));
             this.left_pane.render();
-            this.right_pane.add(this.defchild(
-                panes.LibraryView, {model: this.model}
-            ));
-            this.right_pane.add(this.defchild(panes.ActionbarView, 
-                                {model:this.model}));
             this.right_pane.render();
         }
     });
@@ -140,7 +149,12 @@ define([
             // One node may be in several activities. Through the
             // parent relationship, the view knows from which slot
             // to take the ui info and where to render.
-            return this.defchild(proto, {model: element, parent: this});
+            return this.defchild(proto, {
+                // XXX: parent should not be needed explicitly here
+                parent: this,
+                model: element,
+                name: element.cid
+            });
         },
         render: function() {
             $(this.el).html("");
