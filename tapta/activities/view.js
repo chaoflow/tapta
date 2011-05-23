@@ -459,8 +459,8 @@ define([
                 var prev = stack.last();
                 if (prev === undefined) { return; }
                 if (prev.event === "add") {
-                    edge.insert(prev.elem);
-                    stack.pop();
+                    var node = prev.collection.create();
+                    edge.insert(node);
                 }
             }]);
         }

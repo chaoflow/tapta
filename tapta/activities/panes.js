@@ -129,33 +129,30 @@ define([
             }
             this.prev_target = event.target;
             $(event.target).addClass("highlight");
-            var node = undefined;
             var activity = this.model.activity;
+            var coll;
             if(key == "add_action"){
-                node = new this.model.actions.model();
-                this.model.actions.add(node);
+                coll = this.model.actions;
                 this.trigger("add", [function (stack){
                     stack.push({event: "add",
                                 detailed_event: "actionbar:add_action",
-                                elem: node,
+                                collection: coll,
                                 activity: activity});
                 }]);
             }else if(key == "add_dec"){
-                node = new this.model.decmers.model();
-                this.model.decmers.add(node);
+                coll = this.model.decmers;
                 this.trigger("add", [function (stack){
                     stack.push({event: "add",
                                 detailed_event: "actionbar:add_dec",
-                                elem: node,
+                                collection: coll,
                                 activity: activity});
                 }]);
             }else if(key == "add_fork"){
-                node = new this.model.forkjoins.model();
-                this.model.forkjoins.add(node);
+                coll = this.model.forkjoins;
                 this.trigger("add", [function (stack){
                     stack.push({event: "add",
                                 detailed_event: "actionbar:add_fork",
-                                elem: node,
+                                collection: coll,
                                 activity: activity});
                 }]);
             }else if(key == "delete"){
