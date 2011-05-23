@@ -49,7 +49,7 @@ define([
         ),
         initialize: function() {
             _.bindAll(this, 'render');
-            this.children = _.each(this.model.layers, function(layer) { 
+            this.children = _.each(this.model.layers.reverse(), function(layer) { 
                 return this.defchild(Layer, {
                     model: layer,
                     name: layer.name
