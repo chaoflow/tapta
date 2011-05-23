@@ -116,6 +116,7 @@ define([
             child.bind("all", this.getEventForwarder(child));
             return child;
         },
+        // same as in view.BaseView
         getEventForwarder: function(child) {
             // XXX: How can we create an arguments object?
             // XXX: Is there something like python *args
@@ -124,7 +125,9 @@ define([
                 // we prepend the name of the child
                 var type = event.split(":")[0];
                 var subtype = event.split(":").splice(1).join(":");
-                var newevent = type + ":" + child.name + (subtype ? "/" + subtype : "");
+                var newevent = type;
+                newevent += ":" + child.name;
+                newevent += (subtype ? "/" + subtype : "");
                 console.log(newevent, a, b, c, d, e);
                 this.trigger(newevent, a, b, c, d, e);
             }, this);
