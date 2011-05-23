@@ -118,7 +118,6 @@ define([
             child.bind("all", this.getEventForwarder(child));
             return child;
         },
-        // same as in view.BaseView
         getEventForwarder: function(child) {
             // XXX: How can we create an arguments object?
             // XXX: Is there something like python *args
