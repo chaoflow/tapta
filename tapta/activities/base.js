@@ -26,6 +26,10 @@ define([
     };
 
     var View = Backbone.View.extend({
+        constructor: function() {
+            _.bindAll(this, "eventForwarder");
+            Backbone.View.apply(this, arguments);
+        },
         abspath: abspath,
         location: location,
         defchild: function(View, props) {

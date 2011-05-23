@@ -133,33 +133,41 @@ define([
             var coll;
             if(key == "add_action"){
                 coll = this.model.actions;
-                this.trigger("add", [function (stack){
-                    stack.push({event: "add",
-                                detailed_event: "actionbar:add_action",
-                                collection: coll,
-                                activity: activity});
+                this.trigger("add", [function (state){
+                    state.setState({
+                        event: "add",
+                        detailed_event: "actionbar:add_action",
+                        collection: coll,
+                        activity: activity
+                    });
                 }]);
             }else if(key == "add_dec"){
                 coll = this.model.decmers;
-                this.trigger("add", [function (stack){
-                    stack.push({event: "add",
-                                detailed_event: "actionbar:add_dec",
-                                collection: coll,
-                                activity: activity});
+                this.trigger("add", [function (state){
+                    state.setState({
+                        event: "add",
+                        detailed_event: "actionbar:add_dec",
+                        collection: coll,
+                        activity: activity
+                    });
                 }]);
             }else if(key == "add_fork"){
                 coll = this.model.forkjoins;
-                this.trigger("add", [function (stack){
-                    stack.push({event: "add",
-                                detailed_event: "actionbar:add_fork",
-                                collection: coll,
-                                activity: activity});
+                this.trigger("add", [function (state){
+                    state.setState({
+                        event: "add",
+                        detailed_event: "actionbar:add_fork",
+                        collection: coll,
+                        activity: activity
+                    });
                 }]);
             }else if(key == "delete"){
-                this.trigger("delete", [function (stack){
-                    stack.push({event: "delete",
-                                detailed_event: "actionbar:delete",
-                                activity: activity});
+                this.trigger("delete", [function (state){
+                    state.setState({
+                        event: "delete",
+                        detailed_event: "actionbar:delete",
+                        activity: activity
+                    });
                 }]);
             }
         }

@@ -15,7 +15,7 @@ define([
     var base = require('./base');
     var model = require('./model');
     var settings = require('./settings');
-    var Stack = require('./stack');
+    var State = require('./stack').State;
     var panes = require('./panes');
 
     var App = base.View.extend({
@@ -76,7 +76,7 @@ define([
             // themselves
             // XXX: it might be useful to have stacks on several
             // levels of the view hierarchy
-            this.stack = new Stack(this, {consolelog: true});
+            this.state = new State({consolelog: true, parent: this});
         },
         render: function() {
             // XXX: We create a new activity view each time when
@@ -120,7 +120,7 @@ define([
 
     var Activity = base.View.extend({
         initialize: function() {
-            _.bindAll(this, 'render', 'getView');
+            _.bindAll(this, 'render', 'bindToModel', 'rake', 'getView');
             if (this.model) {
                 this.bindToModel();
             }
@@ -137,7 +137,19 @@ define([
             // the path which is caught on its collection
             this.model.paths.bind("change", this.render);
 
-            //this.model.bind("change:activity", this.render);
+            // next level has to display another activity
+            this.model.bind("change:raked", this.rake);
+
+            // changing the activity to be displayed, n-1 raked
+            this.model.bind("change:activity", this.render);
+        },
+        rake: function() {
+            // tell the next layer whether and which activity to display
+            var layer = this.model.collection.parent;
+            if (layer.next && this.model.get('raked')) {
+                layer.next.activity = this.model.get('raked').get('activity');
+                layer.next.trigger("change:activity");
+            }
         },
         getView: function(element) {
             var proto;
@@ -167,37 +179,34 @@ define([
             });
         },
         render: function() {
+            // reset element
             $(this.el).html("");
+
+            // initialize canvas
             var height = settings.canvas.height;
             var width = settings.canvas.width;
             var canvas = this.canvas = Raphael(this.el[0], width, height);
             var rect = canvas.rect(0, 0, width, height, settings.canvas.r);
-            if (this.model === undefined) {
-                return;
-            }
+
+            // finished if we have no model, i.e. the upper level did not rake one
+            if (this.model === undefined) { return; }
+
+            // get nodes with ui information
             var nodes = this.model.placeandroute();
+
             // create and render views for all nodes. the view will
             // store itself as node.ui[slot].view and is needed for drawing the
-            // edges in the next step. slot is the activity.id
-            var getView = this.getView;
+            // edges in the next step. slot is the activity.cid
             _.each(nodes, function(node) {
-                getView(node).render();
-            });
+                this.getView(node).render();
+            }, this);
 
             // create and draw edges for all nodes
-            var slot = this.cid;
             _.each(nodes, function(node) {
-                _.each(node.ui[slot].edges, function(edge) {
-                    // edges are not backbone models, we use the attr anyway
-                    getView(edge).render();
-                });
-            });
-            var layer = this.model.collection.parent;
-            if (layer.next) {
-                var raked = this.model.get('raked');
-                layer.next.activity = raked && raked.get('activity');
-                layer.next.trigger("change");
-            }
+                _.each(node.ui[this.cid].edges, function(edge) {
+                    this.getView(edge).render();
+                }, this);
+            }, this);
         }
     });
 
@@ -301,8 +310,8 @@ define([
             this.model.bind("change:label", this.render);
             this.model.bind("change:description", this.render);
         },
-        render: function(canvas) {
-            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+        render: function() {
+            var canvas = this.parent.canvas;
             // calculate and draw box for action
             var dx = settings.node.action.dx;
             var dy = settings.node.action.dy;
@@ -336,28 +345,26 @@ define([
             node.push(rake);
 
             // XXX: should this really be here?
-            var model = this.model;
-            var parent = this.parent;
             rake.click(function() {
-                var layer = model.collection.parent;
-                if (model.get('activity') === undefined) {
+                var layer = this.model.collection.parent;
+                if (this.model.get('activity') === undefined) {
                     var newact = layer.next.activities.create();
-                    model.set({activity: newact});
-                    model.save();
+                    this.model.set({activity: newact});
+                    this.model.save();
                 }
                 // this will trigger our layer's view and it will set
                 // the correct activity for the next layer.
                 // XXX: not really sure why it triggers it, but happy
                 // about it.
-                parent.model.set({raked: model});
-                parent.model.save();
-            });
+                this.parent.model.set({raked: this.model});
+                this.parent.model.save();
+            }, this);
             node.click(function(){
-                parent.model.set({selected: this.model});
+                this.parent.model.set({selected: this.model});
             }, this);
         },
         rake: function(x, y, dx, dy) {
-            var canvas = this.canvas;
+            var canvas = this.parent.canvas;
             var rect = canvas.rect(x, y, dx, dy);
             // XXX: draw rake symbol
             rect.attr({fill: "white",
@@ -466,11 +473,11 @@ define([
             var edge = this.model;
             // XXX: this events being function feels weird but might
             // be cool
-            this.parent.trigger("insert:node", [function(stack) {
-                var prev = stack.last();
-                if (prev === undefined) { return; }
-                if (prev.event === "add") {
-                    var node = prev.collection.create();
+            this.parent.trigger("insert:node", [function(sm) {
+                var state = sm.getState();
+                if (state === undefined) { return; }
+                if (state.event === "add") {
+                    var node = state.collection.create();
                     edge.insert(node);
                 }
             }]);
