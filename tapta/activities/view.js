@@ -3,47 +3,18 @@ define([
     'jquery',
     'cdn/jquery.tmpl', // XXX: Do we need this? Why not _.template?
     'cdn/underscore',
-    'cdn/backbone.js',
     'cdn/raphael.js',
+    './base',
     './model',
     './settings',
     './stack'
 ], function(require) {
+    var base = require('./base');
     var model = require('./model');
     var settings = require('./settings');
     var Stack = require('./stack');
 
-    var BaseView = Backbone.View.extend({
-        defchild: function(View, props) {
-            if (!props) {
-                props = {};
-            }
-            if (props.parent === undefined) {
-                props.parent = this;
-            }
-            var child = new View(props);
-            child.bind("all", this.getEventForwarder(child));
-            return child;
-        },
-        // same as in localstorage.Model
-        getEventForwarder: function(child) {
-            // XXX: How can we create an arguments object?
-            // XXX: Is there something like python *args
-            return _.bind(function(event, a, b, c, d, e) {
-                // event = "change:foo/bar"
-                // we prepend the name of the child
-                var type = event.split(":")[0];
-                var subtype = event.split(":").splice(1).join(":");
-                var newevent = type;
-                newevent += ":" + child.name;
-                newevent += (subtype ? "/" + subtype : "");
-                console.log(newevent, a, b, c, d, e);
-                this.trigger(newevent, a, b, c, d, e);
-            }, this);
-        }
-    });
-
-    var App = BaseView.extend({
+    var App = base.View.extend({
         el: $('#tapta_app'),
         initialize: function() {
             _.bindAll(this, 'render');
@@ -61,7 +32,7 @@ define([
         }
     });
 
-    var Layers = BaseView.extend({
+    var Layers = base.View.extend({
         template: _.template(
             '<% _.each(layers, function(layer) {%>'
                 + '<div id="<%= layer.name %>" class="layer"></div>'
@@ -85,7 +56,7 @@ define([
         }
     });
 
-    var Layer = BaseView.extend({
+    var Layer = base.View.extend({
         template: _.template($("#layer-template").html()),
         initialize: function() {
             _.bindAll(this, 'render');
@@ -127,7 +98,7 @@ define([
         }
     });
 
-    var Activity = BaseView.extend({
+    var Activity = base.View.extend({
         initialize: function() {
             _.bindAll(this, 'render', 'getView');
             if (this.model) {
@@ -193,7 +164,7 @@ define([
         }
     });
 
-    var PaneManager = BaseView.extend({
+    var PaneManager = base.View.extend({
         template: $.template(null, $("#pane_template")),
         initialize: function(){
             this.keys = [];
@@ -217,7 +188,7 @@ define([
         }
     });
 
-    var PropertiesView = BaseView.extend({
+    var PropertiesView = base.View.extend({
         template: $.template($("#properties_template")),
         initialize: function(){
             _.bindAll(this, "handle_update");
@@ -259,7 +230,7 @@ define([
         }
     });
 
-    var LibraryView = BaseView.extend({
+    var LibraryView = base.View.extend({
         template: $.template($("#library_template")),
         events: {
             "click li" : "clicked"
@@ -296,7 +267,7 @@ define([
         }
     });
 
-    var ActionbarView = BaseView.extend({
+    var ActionbarView = base.View.extend({
         initialize: function() {
             this.prev_target = undefined;
             _.bindAll(this, "clicked", "render");
@@ -362,7 +333,7 @@ define([
         return settings.gridsize.y * y;
     };
 
-    var ElementView = BaseView.extend({
+    var ElementView = base.View.extend({
         constructor: function(opts) {
             this.parent = opts.parent;
             if (opts.model.ui === undefined) {
@@ -371,7 +342,7 @@ define([
             } else {
                 opts.model.ui[this.parent.cid].view = this;
             }
-            BaseView.apply(this, arguments);
+            base.View.apply(this, arguments);
         }
     });
 
