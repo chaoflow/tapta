@@ -1,5 +1,7 @@
 * Todos                                                               :tapta:
 ** high prio
+*** TODO rethink panes, how are they rerendered and learn about new activity
+*** TODO select arrow (for properties)
 *** TODO display name of actions
 *** DONE rake area to show activity on next level
 CLOSED: [2011-05-20 Fri 09:24]
