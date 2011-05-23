@@ -207,6 +207,8 @@ define([
             var canvas = this.canvas = Raphael(this.el[0], width, height);
             var rect = canvas.rect(0, 0, width, height, settings.canvas.r);
 
+            this.rake();
+
             // finished if we have no model, i.e. the upper level did not rake one
             if (this.model === undefined) { return; }
 
