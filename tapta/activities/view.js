@@ -1,7 +1,7 @@
 define([
     'require',
     'jquery',
-    'cdn/jquery.tmpl', // jquery templates
+    'cdn/jquery.tmpl', // XXX: Do we need this? Why not _.template?
     'cdn/underscore',
     'cdn/backbone.js',
     'cdn/raphael.js',
