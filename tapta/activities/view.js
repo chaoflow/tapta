@@ -49,15 +49,16 @@ define([
         ),
         initialize: function() {
             _.bindAll(this, 'render');
-            this.children = _.each(
+            this.children = _.map(
                 this.model.layers.concat().reverse(),
                 function(layer) { 
-                    return this.defchild(Layer, {
+                    var child = this.defchild(Layer, {
                         model: layer,
                         name: layer.name
                     });
+                    return child;
                 }, this
-            );            
+            );           
         },
         render: function() {
             var layers = this;
@@ -82,6 +83,20 @@ define([
             // XXX: it might be useful to have stacks on several
             // levels of the view hierarchy
             this.state = new State({consolelog: true, parent: this});
+
+            // initialize our child views
+            this.activity = this.defchild(Activity, {
+                model: this.model.activity,
+                name: "activity"
+            });
+            this.left_pane = this.defchild(panes.PaneManager, {
+                model:this.model,
+                name: "leftpane"
+            });
+            this.right_pane = this.defchild(panes.PaneManager, {
+                model: this.model,
+                name: "rightpane"
+            });
         },
         activityChanged: function() {
             this.activity.bindToModel(this.model.activity);
@@ -92,22 +107,11 @@ define([
             // rendered, check whether/how we can change the model of
             // an existing activity.
             $(this.el).html(this.template());
-            this.activity = this.defchild(Activity, {
-                el: this.$('.activity'),
-                model: this.model.activity,
-                name: "activity"
-            });
+            this.activity.el = this.$('.activity');
             this.activity.render();
-            this.left_pane = this.defchild(panes.PaneManager, {
-                el:this.$('.left-pane'),
-                model:this.model,
-                name: "leftpane"
-            });
-            this.right_pane = this.defchild(panes.PaneManager, {
-                el:this.$('.right-pane'),
-                model: this.model,
-                name: "rightpane"
-            });
+            this.left_pane.el = this.$('.left-pane');
+            this.right_pane.el = this.$('.right-pane');
+
             // XXX: create el beforehand
             this.left_pane.add(this.defchild(panes.PropertiesView, {
                 model: this.model.activity,
@@ -135,14 +139,13 @@ define([
                       'rake',
                       'getView'
                      );
-            if (this.model) {
-                this.bindToModel();
-            }
+            this.bindToModel(this.model);
         },
         bindToModel: function(model) {
-            if (model !== undefined) {
-                this.model = model;
-            }
+            this.model = model;
+            
+            // without a model we are finished
+            if (model === undefined) { return; }
 
             // we have the same cid as our model. Therefore our child
             // views know which slot to take the ui info from.
@@ -154,15 +157,13 @@ define([
 
             // next level has to display another activity
             this.model.bind("change:raked", this.rake);
-
-            this.rake();
         },
         rake: function() {
             // tell the next layer whether and which activity to display
-            var layer = this.model.collection.parent;
+            var layer = this.parent.model;
             if (layer.next) {
-                var raked = this.model.get('raked');
-                var activity = raked && raked.get('activity') || undefined;
+                var raked = this.model && this.model.get('raked');
+                var activity = raked && raked.get('activity');
                 if (layer.next.activity !== activity) {
                     layer.next.activity = activity;
                     layer.next.trigger("change:activity");
