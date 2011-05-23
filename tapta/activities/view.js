@@ -14,10 +14,6 @@ define([
     var Stack = require('./stack');
 
     var BaseView = Backbone.View.extend({
-        constructor: function() {
-            _.bindAll(this, "eventForwarder");
-            Backbone.View.apply(this, arguments);
-        },
         defchild: function(View, props) {
             if (!props) {
                 props = {};
@@ -26,12 +22,24 @@ define([
                 props.parent = this;
             }
             var child = new View(props);
-            child.bind("all", this.eventForwarder);
+            child.bind("all", this.getEventForwarder(child));
             return child;
         },
-        eventForwarder: function() {
-            // call with exact same arguments as we were called
-            this.trigger.apply(this, arguments);
+        // same as in localstorage.Model
+        getEventForwarder: function(child) {
+            // XXX: How can we create an arguments object?
+            // XXX: Is there something like python *args
+            return _.bind(function(event, a, b, c, d, e) {
+                // event = "change:foo/bar"
+                // we prepend the name of the child
+                var type = event.split(":")[0];
+                var subtype = event.split(":").splice(1).join(":");
+                var newevent = type;
+                newevent += ":" + child.name;
+                newevent += (subtype ? "/" + subtype : "");
+                console.log(newevent, a, b, c, d, e);
+                this.trigger(newevent, a, b, c, d, e);
+            }, this);
         }
     });
 
