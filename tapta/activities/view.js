@@ -77,6 +77,8 @@ define([
             this.stack = new Stack(this, {consolelog: true});
         },
         render: function() {
+            // XXX: find out when we are rendered
+            console.log("Layer rerendered");
             // XXX: We create a new activity view each time when
             // rendered, check whether/how we can change the model of
             // an existing activity.
