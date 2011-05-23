@@ -209,7 +209,7 @@ define([
         }
     });
 
-    var PropertiesView = Backbone.View.extend({
+    var PropertiesView = BaseView.extend({
         template: $.template($("#properties_template")),
         initialize: function(){
             _.bindAll(this, "handle_update");
