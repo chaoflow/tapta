@@ -49,19 +49,21 @@ define([
         ),
         initialize: function() {
             _.bindAll(this, 'render');
+            this.children = _.each(this.model.layers, function(layer) { 
+                return this.defchild(Layer, {
+                    model: layer,
+                    name: layer.name
+                });
+            }, this);            
         },
         render: function() {
             var layers = this;
             $(this.el).html(this.template({layers: this.model.layers}));
-            _.each(this.model.layers, function(layer) { 
-                var view = this.defchild(Layer, {
-                    // at this point the elements exist in the DOM,
-                    // created by the layers template
-                    el: layers.$('#'+layer.name),
-                    model: layer,
-                    name: layer.name
-                });
-                view.render();
+            _.each(this.children, function(child) { 
+                // at this point the elements exist in the DOM,
+                // created by the layers template
+                child.el = layers.$('#'+child.name);
+                child.render();
             }, this);
         }
     });
