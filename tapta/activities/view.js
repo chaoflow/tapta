@@ -142,6 +142,7 @@ define([
             return this.defchild(proto, {model: element, parent: this});
         },
         render: function() {
+            $(this.el).html("");
             var height = settings.canvas.height;
             var width = settings.canvas.width;
             var canvas = this.canvas = Raphael(this.el[0], width, height);
