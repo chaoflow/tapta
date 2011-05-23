@@ -34,6 +34,7 @@ define([
             });
         },
         render: function() {
+            console.log("DEBUG: Rendering app");
             this.layers.render();
         }
     });
