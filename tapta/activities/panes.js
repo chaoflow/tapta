@@ -4,11 +4,9 @@ define([
     'cdn/jquery.tmpl',
     'cdn/underscore',
     './base',
-    './settings',
-    './model'
+    './settings'
 ], function(require) {
     var base = require('./base');
-    var model = require('./model');
 
     var PaneManager = base.View.extend({
         template: $.template(null, $("#pane_template")),
@@ -59,18 +57,16 @@ define([
             this.elem = elem;
             this.el.empty();
             var attrs = {};
-            if(elem instanceof model.Action){
-                attrs.hidden = {
-                    id: elem.id,
-                    cid: elem.cid
-                };
-                attrs.singleline = {
-                    label: elem.get("label") || ""
-                };
-                attrs.multiline = {
-                    description: elem.get("description") || ""
-                };
-            }
+            attrs.hidden = {
+                id: elem.id,
+                cid: elem.cid
+            };
+            attrs.singleline = {
+                label: elem.get("label") || ""
+            };
+            attrs.multiline = {
+                description: elem.get("description") || ""
+            };
             $.tmpl(this.template, attrs).appendTo(this.el);
             this.el.find('input[type=button]').unbind().bind("click", this.handle_update);
         }
