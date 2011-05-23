@@ -120,7 +120,12 @@ define([
 
     var Activity = base.View.extend({
         initialize: function() {
-            _.bindAll(this, 'render', 'bindToModel', 'rake', 'getView');
+            _.bindAll(this,
+                      'render',
+                      'bindToModel',
+                      'rake',
+                      'getView'
+                     );
             if (this.model) {
                 this.bindToModel();
             }
@@ -140,8 +145,10 @@ define([
             // next level has to display another activity
             this.model.bind("change:raked", this.rake);
 
-            // changing the activity to be displayed, n-1 raked
-            this.model.bind("change:activity", this.render);
+            this.render();
+            if (this.model.get("raked")) {
+                this.rake();
+            }
         },
         rake: function() {
             // tell the next layer whether and which activity to display
@@ -306,7 +313,7 @@ define([
 
     var Action = Node.extend({
         initialize: function() {
-            _.bindAll(this, "rake");
+            _.bindAll(this, "renderRake");
             this.model.bind("change:label", this.render);
             this.model.bind("change:description", this.render);
         },
@@ -341,7 +348,7 @@ define([
             // something like getUtility would be nice, or even acquisition.
             // Did I say acquisition? yes! this.acquire(name) will go
             // up until it finds a value
-            var rake = this.rake(rx, ry, rdx, rdy);
+            var rake = this.renderRake(rx, ry, rdx, rdy);
             node.push(rake);
 
             // XXX: should this really be here?
@@ -352,10 +359,6 @@ define([
                     this.model.set({activity: newact});
                     this.model.save();
                 }
-                // this will trigger our layer's view and it will set
-                // the correct activity for the next layer.
-                // XXX: not really sure why it triggers it, but happy
-                // about it.
                 this.parent.model.set({raked: this.model});
                 this.parent.model.save();
             }, this);
@@ -363,7 +366,7 @@ define([
                 this.parent.model.set({selected: this.model});
             }, this);
         },
-        rake: function(x, y, dx, dy) {
+        renderRake: function(x, y, dx, dy) {
             var canvas = this.parent.canvas;
             var rect = canvas.rect(x, y, dx, dy);
             // XXX: draw rake symbol
