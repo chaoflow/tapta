@@ -122,7 +122,7 @@ define([
         initialize: function() {
             _.bindAll(this, 'render', 'getView');
             if (this.model) {
-                this.model.bind("change:paths", this.render);
+                this.model.paths.bind("change", this.render);
                 // we have the same cid as our model. Therefore our child
                 // views know which slot to take the ui info from.
                 this.cid = this.model.cid;
