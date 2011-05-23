@@ -70,13 +70,17 @@ define([
         // XXX: id should be unique
         template: _.template($("#layer-template").html()),
         initialize: function() {
-            _.bindAll(this, 'render');
-            this.model.bind("change:activity", this.render);
+            _.bindAll(this, "activityChanged", 'render');
+            this.model.bind("change:activity", this.activityChanged);
             // the stack catches our events and allows them to combine
             // themselves
             // XXX: it might be useful to have stacks on several
             // levels of the view hierarchy
             this.state = new State({consolelog: true, parent: this});
+        },
+        activityChanged: function() {
+            this.activity.bindToModel(this.model.activity);
+            this.activity.render();
         },
         render: function() {
             // XXX: We create a new activity view each time when
@@ -130,9 +134,10 @@ define([
                 this.bindToModel();
             }
         },
-        bindToModel: function() {
-            // XXX: here we could also assign model:
-            //this.model = model;
+        bindToModel: function(model) {
+            if (model !== undefined) {
+                this.model = model;
+            }
 
             // we have the same cid as our model. Therefore our child
             // views know which slot to take the ui info from.
@@ -145,7 +150,6 @@ define([
             // next level has to display another activity
             this.model.bind("change:raked", this.rake);
 
-            this.render();
             this.rake();
         },
         rake: function() {
