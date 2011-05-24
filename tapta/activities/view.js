@@ -73,7 +73,6 @@ define([
     });
 
     var Layer = base.View.extend({
-        // XXX: id should be unique
         template: _.template($("#layer-template").html()),
         initialize: function() {
             _.bindAll(this, "activityChanged", 'render');

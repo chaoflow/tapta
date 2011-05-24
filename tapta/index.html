@@ -1,28 +1,13 @@
 <html>
   <head>
-    <title>Activities</title>
+    <title>TaPTa</title>
     <script data-main="bootstrap" src="cdn/require-jquery.js"></script>
     <link href="activities.css"
           rel="stylesheet"
           type="text/css"
           media="screen" />
-    <link href="cdn/qunit.css"
-          rel="stylesheet"
-          type="text/css"
-          media="screen" />
   </head>
   <body>
-    <script type="text/html" id="action">
-      <rect width="${width}" 
-            height="${height}" 
-            x="${x}" 
-            y="${y}" 
-            rx="${rounding}" 
-            fill="${fillColor}" 
-            stroke="${borderColor}" 
-            stroke-width="${borderWidth}" />
-    </script>
-
     <!-- editor templates -->
     <script type="text/html" id="editor_action">
       <a href="#"
@@ -86,9 +71,6 @@
         </div>
       </div>
     </script>
-    
-    <!-- demo editor -->
-    <div id="demo_editor" class="activity_editor"></div>
 
     <!-- tapta app -->
     <div id="tapta_app" class="tapta_app">
@@ -109,15 +91,5 @@
       <div class="right-pane pane">
       </div>
     </script>
-
-    <!-- qunit related -->
-    <div class="qunit">
-      <h1 id="qunit-header">cone.activities QUnit</h1>
-      <h2 id="qunit-banner"></h2>
-      <div id="qunit-testrunner-toolbar"></div>
-      <h2 id="qunit-userAgent"></h2>
-      <ol id="qunit-tests"></ol>
-      <div id="qunit-fixture"></div>
-    </div>
   </body>
 </html>
