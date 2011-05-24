@@ -485,10 +485,16 @@ define([
             // bind to events
             area.click(this.insertNode);
         },
+        // XXX: a better name might be edge:clicked or clicked:edge
         insertNode: function(event) {
             var edge = this.model;
             // XXX: this events being function feels weird but might
             // be cool
+            // XXX: the logic how the statemanager works should not be
+            // here. We are here in a view, a view catches DOM events and
+            // translates them into UI events. A series of UI events
+            // forms commands. The code should go into some cmd center /
+            // controller / ...
             this.parent.trigger("insert:node", [function(sm) {
                 var state = sm.getState();
                 if (state === undefined) { return; }
