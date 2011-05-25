@@ -445,7 +445,7 @@ define([
     });
 
     var DecMer = Node.extend({
-        render: function() {
+        render: function(state) {
             var canvas = this.parent.canvas;
             var dx = settings.node.action.dx;
             var ui = this.ui();
@@ -460,12 +460,26 @@ define([
                        stroke: settings.node.bordercolor,
                        "stroke-width": settings.node.borderwidth});
             rect.rotate(45);
+
+            // XXX: (mostly) the same as in DecMer
+            if (state && state.name === "addingnewnode") {
+                var N = ui.edges.length;
+                for (var i=0; i<=N; i++) {
+                    // dy for the drop area
+                    var ddy = ui.dy / (N + 1);
+                    var droparea = canvas.rect(ui.x, ui.y + i * ddy, ui.dx, ddy);
+                    droparea.attr({fill: "#F0F0F0", stroke: "grey"});
+                    droparea.click(function() {
+                        this.trigger("act:addnewpath", [this.model, i]);
+                    }, this);
+                }
+            }
             node.push(rect);
         }
     });
     
     var ForkJoin = Node.extend({
-        render: function() {
+        render: function(state) {
             var canvas = this.parent.canvas;
             var dx = settings.node.forkjoin.dx;
             var pad = settings.node.forkjoin.pad;
@@ -475,12 +489,24 @@ define([
             var dy = ui.dy - 2 * pad;
             this.x_in = x;
             this.x_out = x + dx;
-            var node = canvas.set();
             var rect = canvas.rect(x, y, dx, dy, 0);
             rect.attr({fill: settings.node.fillcolor,
                        stroke: settings.node.bordercolor,
                        "stroke-width": settings.node.borderwidth});
-            node.push(rect);
+
+            // XXX: (mostly) the same as in DecMer
+            if (state && state.name === "addingnewnode") {
+                var N = ui.edges.length;
+                for (var i=0; i<=N; i++) {
+                    // dy for the drop area
+                    var ddy = dy / (N + 1);
+                    var droparea = canvas.rect(x, y + i * ddy, dx, ddy);
+                    droparea.attr({fill: "#F0F0F0", stroke: "grey"});
+                    droparea.click(function() {
+                        this.trigger("act:addnewpath", [this.model, i]);
+                    }, this);
+                }
+            }
         }
     });
 
