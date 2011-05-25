@@ -75,7 +75,7 @@ define([
     var Layer = base.View.extend({
         template: _.template($("#layer-template").html()),
         initialize: function() {
-            _.bindAll(this, "activityChanged", 'render');
+            _.bindAll(this, "activityChanged", 'render', "bindEvents");
             this.model.bind("change:activity", this.activityChanged);
             // the stack catches our events and allows them to combine
             // themselves
@@ -95,6 +95,30 @@ define([
             this.right_pane = this.defchild(panes.PaneManager, {
                 model: this.model,
                 name: "rightpane"
+            });
+
+            this.bindEvents();
+        },
+        bindEvents: function() {
+            // The element views catch DOM events and translate them
+            // into user acts, they are executed here.
+            this.bind("act:rake", function(load) {
+                // If the action model does not point to an activity
+                // yet, create an activity in the next layer and assign
+                // it.
+                if (load[0].get('activity') === undefined) {
+                    var newact = this.model.next.activities.create();
+                    load[0].set({activity: newact});
+                    load[0].save();
+                }
+                // remember for the activity being displayed on the
+                // current layer which activity to display on the next
+                // layer.
+                this.activity.model.set({raked: load[0]});
+                this.activity.model.save();
+            });
+            this.bind("act:select:node", function(load) {
+                this.parent.model.set({selected: load[0]});
             });
         },
         activityChanged: function() {
@@ -349,9 +373,13 @@ define([
             node.push(rect);
 
             if(this.model.get("label")){
-                var label = canvas.text(x + dx / 2, y + 5, this.model.get("label"));
+                var label = canvas.text(x + dx / 2, y + 5,
+                                        this.model.get("label"));
+                node.push(label);
+                label.click(function(){
+                    this.trigger("act:select:node", [this.model]);
+                }, this);
             }
-            node.push(label);
 
             // calculate and draw rake, lower right corner
             var rdx = dx / 3;
@@ -365,19 +393,12 @@ define([
             var rake = this.renderRake(rx, ry, rdx, rdy);
             node.push(rake);
 
-            // XXX: should this really be here?
+            // translate DOM events to user acts
             rake.click(function() {
-                var layer = this.model.collection.parent;
-                if (this.model.get('activity') === undefined) {
-                    var newact = layer.next.activities.create();
-                    this.model.set({activity: newact});
-                    this.model.save();
-                }
-                this.parent.model.set({raked: this.model});
-                this.parent.model.save();
+                this.trigger("act:rake", [this.model]);
             }, this);
-            node.click(function(){
-                this.parent.model.set({selected: this.model});
+            rect.click(function(){
+                this.trigger("act:select:node", [this.model]);
             }, this);
         },
         renderRake: function(x, y, dx, dy) {
