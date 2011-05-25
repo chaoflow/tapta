@@ -133,18 +133,23 @@ define([
             // Events that have no immediate effect, but are used to
             // change the state to be used by later events.
             this.bind("act:newnode", function(load) {
-                this.state = _.extend({name:"newnode"}, load[0]);
+                this.state = _.extend({name: "addingnewnode"}, load[0]);
                 this.trigger("change:state");
             });
             this.bind("act:delete", function(load) {
-                this.state = {name:"delete"};
+                this.state = {name: "delete"};
                 this.trigger("change:state");
+            });
+
+            // rerender activity on state change, passing the state
+            this.bind("change:state", function() {
+                this.activity.render();
             });
             
             // Events that need a state to be processed
             this.bind("act:addtoedge", function(load) {
                 if (this.state === undefined) { return; }
-                if (this.state.name !== "newnode") { return; }
+                if (this.state.name !== "addingnewnode") { return; }
                 var edgemodel = load[0];
                 var node = this.state.collection.create();
                 edgemodel.insert(node);
@@ -247,6 +252,7 @@ define([
             });
         },
         render: function() {
+            var state = this.parent.state;
             // reset element
             $(this.el).html("");
 
@@ -268,13 +274,13 @@ define([
             // store itself as node.ui[slot].view and is needed for drawing the
             // edges in the next step. slot is the activity.cid
             _.each(nodes, function(node) {
-                this.getView(node).render();
+                this.getView(node).render(state);
             }, this);
 
             // create and draw edges for all nodes
             _.each(nodes, function(node) {
                 _.each(node.ui[this.cid].edges, function(edge) {
-                    this.getView(edge).render();
+                    this.getView(edge).render(state);
                 }, this);
             }, this);
         }
@@ -321,8 +327,8 @@ define([
     });
 
     var Initial = Node.extend({
-        render: function(canvas) {
-            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+        render: function() {
+            var canvas = this.parent.canvas;
             // get ui position and size in pixels
             var r = settings.node.initial.r;
             var ui = this.ui();
@@ -345,8 +351,8 @@ define([
     });
 
     var Final = Node.extend({
-        render: function(canvas) {
-            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+        render: function() {
+            var canvas = this.parent.canvas;
             // get ui position and size in pixels
             var r = settings.node.final.r;
             var ui = this.ui();
@@ -439,8 +445,8 @@ define([
     });
 
     var DecMer = Node.extend({
-        render: function(canvas) {
-            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+        render: function() {
+            var canvas = this.parent.canvas;
             var dx = settings.node.action.dx;
             var ui = this.ui();
             dx = Math.sqrt((Math.pow((dx / 2), 2) * 2));
@@ -459,8 +465,8 @@ define([
     });
     
     var ForkJoin = Node.extend({
-        render: function(canvas) {
-            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+        render: function() {
+            var canvas = this.parent.canvas;
             var dx = settings.node.forkjoin.dx;
             var pad = settings.node.forkjoin.pad;
             var ui = this.ui();
@@ -479,8 +485,8 @@ define([
     });
 
     var Edge = ElementView.extend({
-        render: function(canvas) {
-            this.canvas = canvas = canvas ? canvas : this.parent.canvas;
+        render: function(state) {
+            var canvas = this.parent.canvas;
             var sourceview = this.model.source.ui[this.parent.cid].view;
             var targetview = this.model.target.ui[this.parent.cid].view;
 
@@ -516,20 +522,27 @@ define([
                     + " L <%= xr %> <%= yr %>"
             )({xl:xl, yl:yl, x1:x1, y1:y1, xr:xr, yr:yr});
 
+            var droparea = canvas.set();
+            // edge area, depending on the state we
+            // make it visible as a drop target.
+            // XXX: use css with classes .droptarget and set class here
+            var rect = canvas.rect(x, y, dx, dy);
+            if (state && state.name === "addingnewnode") {
+                rect.attr({fill: "#F0F0F0", stroke: "grey"});
+            } else {
+                rect.attr({fill: "white", opacity: 0});
+            }
+            droparea.push(rect);
+
             // draw the arrow
             var arrow = canvas.path(svgpath);
             arrow.attr({stroke: settings.edge.color,
                         "stroke-width": settings.edge.strokewidth});
-
-            // and the edge area above it
-            var area = canvas.rect(x, y, dx, dy);
-            area.attr({fill: "#F0F0F0",
-                       stroke: "grey",
-                       opacity: 0});
+            droparea.push(arrow);
 
             // translate DOM events to user acts
-            area.click(function() {
-                // we only now that something is added to an edge a
+            droparea.click(function() {
+                // we only know that something is added to an edge a
                 // previous event defined what is going to be added.
                 this.trigger("act:addtoedge", [this.model]);
             }, this);
