@@ -123,52 +123,31 @@ define([
             this.delegateEvents(this.events);
         },
         clicked: function(event){
-            var key = event.target.getAttribute('class');
+            // remove highlight from previous and add to new, if it
+            // differs. This enables toggling of an item selection.
             if (this.prev_target) {
                 $(this.prev_target).removeClass("highlight");
             }
-            this.prev_target = event.target;
-            $(event.target).addClass("highlight");
-            var activity = this.model.activity;
-            var coll;
-            if(key == "add_action"){
-                coll = this.model.actions;
-                this.trigger("add", [function (state){
-                    state.setState({
-                        event: "add",
-                        detailed_event: "actionbar:add_action",
-                        collection: coll,
-                        activity: activity
-                    });
+            if (this.prev_target !== event.target) {
+                this.prev_target = event.target;
+                $(event.target).addClass("highlight");
+            }
+            var collection;
+            var layermodel = this.model;
+            var classes = event.target.classList;
+            if (classes.contains("new_node")) {
+                if (classes.contains("new_action")) {
+                    collection = layermodel.actions;
+                } else if (classes.contains("new_decmer")) {
+                    collection = layermodel.decmers;
+                } else if (classes.contains("new_forkjoin")) {
+                    collection = layermodel.forkjoins;
+                }
+                this.trigger("act:newnode", [{
+                    collection: collection
                 }]);
-            }else if(key == "add_dec"){
-                coll = this.model.decmers;
-                this.trigger("add", [function (state){
-                    state.setState({
-                        event: "add",
-                        detailed_event: "actionbar:add_dec",
-                        collection: coll,
-                        activity: activity
-                    });
-                }]);
-            }else if(key == "add_fork"){
-                coll = this.model.forkjoins;
-                this.trigger("add", [function (state){
-                    state.setState({
-                        event: "add",
-                        detailed_event: "actionbar:add_fork",
-                        collection: coll,
-                        activity: activity
-                    });
-                }]);
-            }else if(key == "delete"){
-                this.trigger("delete", [function (state){
-                    state.setState({
-                        event: "delete",
-                        detailed_event: "actionbar:delete",
-                        activity: activity
-                    });
-                }]);
+            } else if (classes.contains("delete")) {
+                this.trigger("act:delete");
             }
         }
     });

@@ -124,15 +124,14 @@ body {
     display: inline-block;
 }
 
-.menubar .add_action{
+.menubar .new_action{
     background-position: 0px 322px;
 }
-
-.menubar .add_fork {
-    background-position: 0px 252px;
-}
-.menubar .add_dec {
+.menubar .new_decmer {
     background-position: 0px 275px;
+}
+.menubar .new_forkjoin {
+    background-position: 0px 252px;
 }
 .menubar .delete {
     background-position: 0px 46px;
