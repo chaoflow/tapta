@@ -127,7 +127,7 @@ define([
             });
             this.bind("act:select:node", function(load) {
                 var actionmodel = load[0];
-                this.parent.model.set({selected: actionmodel});
+                this.model.set({selected: actionmodel});
             });
 
             // Events that have no immediate effect, but are used to
