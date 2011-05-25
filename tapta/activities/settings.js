@@ -141,7 +141,7 @@ define([
         },
         canvas: {
             width: 600,
-            height: 100,
+            height: 400,
             r: 10
         },
         edge: {
