@@ -102,23 +102,54 @@ define([
         bindEvents: function() {
             // The element views catch DOM events and translate them
             // into user acts, they are executed here.
+            // 
+            // XXX: In case the whole act processing is moved to app level
+            // it is the responsibility of the layer to catch all events
+            // and enrich them with layermodel:this.model.
+            //
+            // XXX: the whole thing still feels rough. If we are in
+            // delete state and a rake is clicked, should it rake or the
+            // node be delete. Currently it would rake, as the the
+            // rake.click event handler already makes the decision
+            // what the click means.
             this.bind("act:rake", function(load) {
+                var actionmodel = load[0];
+                var layermodel = this.model;
                 // If the action model does not point to an activity
                 // yet, create an activity in the next layer and assign
                 // it.
-                if (load[0].get('activity') === undefined) {
-                    var newact = this.model.next.activities.create();
-                    load[0].set({activity: newact});
-                    load[0].save();
+                if (actionmodel.get('activity') === undefined) {
+                    var newact = layermodel.next.activities.create();
+                    actionmodel.set({activity: newact});
+                    actionmodel.save();
                 }
                 // remember for the activity being displayed on the
                 // current layer which activity to display on the next
                 // layer.
-                this.activity.model.set({raked: load[0]});
+                this.activity.model.set({raked: actionmodel});
                 this.activity.model.save();
             });
             this.bind("act:select:node", function(load) {
-                this.parent.model.set({selected: load[0]});
+                var actionmodel = load[0];
+                this.parent.model.set({selected: actionmodel});
+            });
+
+            // Events that have no immediate effect, but are used to
+            // change the state to be used by later events.
+            this.bind("act:newnode", function(load) {
+                this.state = _.extend({name:"act:newnode"}, load[0]);
+            });
+            this.bind("act:delete", function(load) {
+                this.state = {name:"act:delete"};
+            });
+            
+            // Events that need a state to be processed
+            this.bind("act:addtoedge", function(load) {
+                if (this.state === undefined) { return; }
+                if (this.state.name !== "act:newnode") { return; }
+                var edgemodel = load[0];
+                var node = this.state.collection.create();
+                edgemodel.insert(node);
             });
         },
         activityChanged: function() {
@@ -453,9 +484,6 @@ define([
     });
 
     var Edge = ElementView.extend({
-        initialize: function(canvas) {
-            _.bindAll(this, "insertNode");
-        },
         render: function(canvas) {
             this.canvas = canvas = canvas ? canvas : this.parent.canvas;
             var sourceview = this.model.source.ui[this.parent.cid].view;
@@ -504,27 +532,12 @@ define([
                        stroke: "grey",
                        opacity: 0});
 
-            // bind to events
-            area.click(this.insertNode);
-        },
-        // XXX: a better name might be edge:clicked or clicked:edge
-        insertNode: function(event) {
-            var edge = this.model;
-            // XXX: this events being function feels weird but might
-            // be cool
-            // XXX: the logic how the statemanager works should not be
-            // here. We are here in a view, a view catches DOM events and
-            // translates them into UI events. A series of UI events
-            // forms commands. The code should go into some cmd center /
-            // controller / ...
-            this.parent.trigger("insert:node", [function(sm) {
-                var state = sm.getState();
-                if (state === undefined) { return; }
-                if (state.event === "add") {
-                    var node = state.collection.create();
-                    edge.insert(node);
-                }
-            }]);
+            // translate DOM events to user acts
+            area.click(function() {
+                // we only now that something is added to an edge a
+                // previous event defined what is going to be added.
+                this.trigger("act:addtoedge", [this.model]);
+            }, this);
         }
     });
 

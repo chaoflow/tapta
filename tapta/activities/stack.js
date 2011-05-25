@@ -1,3 +1,5 @@
+// XXX: currently unused
+
 define([
     'require',
     'cdn/underscore.js'
