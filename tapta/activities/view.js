@@ -340,6 +340,7 @@ define([
             var y = ui.y + (ui.dy - dy) / 2;
             this.x_in = x;
             this.x_out = x + dx;
+            // XXX: what are we using / going to use sets for?
             var node = canvas.set();
             var rect = canvas.rect(x, y, dx, dy, settings.node.action.r);
             rect.attr({fill: settings.node.fillcolor,
