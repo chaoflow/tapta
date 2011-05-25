@@ -289,6 +289,25 @@ define([
         longest: function() {
             return this.max(function(path) { return path.xReq(); });
         },
+        newpath: function(opts) {
+            // If an element occurs in multiple paths, these need to
+            // be neighbors. Select all the paths that contain our
+            // start node.
+            var paths = this.select(function(path) {
+                return path.include(opts.start);
+            });
+            var head = _.first(paths[0].get('nodes'),
+                               paths[0].get('nodes').indexOf(opts.start)+1);
+            var nodes = head.concat(opts.nodes); 
+            var layer = this.layer || this.parent.layer;
+            if (!(_.last(nodes) instanceof Final)) {
+                nodes.push(layer.finals.create());
+            }
+            var path = new Path({nodes: nodes});
+            // XXX: figure out where to put it based on opts.idx
+            this.add(path);
+            path.save();
+        },
         parse: function(response) {
             // this might be called during tests, also if no lib is
             // defined. However, the lib is only needed if there is
