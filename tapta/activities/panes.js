@@ -123,15 +123,11 @@ define([
             this.delegateEvents(this.events);
         },
         clicked: function(event){
-            // remove highlight from previous and add to new, if it
-            // differs. This enables toggling of an item selection.
             if (this.prev_target) {
                 $(this.prev_target).removeClass("highlight");
             }
-            if (this.prev_target !== event.target) {
-                this.prev_target = event.target;
-                $(event.target).addClass("highlight");
-            }
+            this.prev_target = event.target;
+            $(event.target).addClass("highlight");
             var collection;
             var layermodel = this.model;
             var classes = event.target.classList;
