@@ -33,6 +33,9 @@ define([
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
             console.log("DEBUG:INIT:END: " + this.abspath());
+            if (this.logevents) {
+                this.bind("all", function() { console.log(arguments); });
+            }
         },
         abspath: abspath,
         location: location,

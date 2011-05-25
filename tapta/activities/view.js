@@ -73,15 +73,11 @@ define([
     });
 
     var Layer = base.View.extend({
+        logevents: true,
         template: _.template($("#layer-template").html()),
         initialize: function() {
             _.bindAll(this, "activityChanged", 'render', "bindEvents");
             this.model.bind("change:activity", this.activityChanged);
-            // the stack catches our events and allows them to combine
-            // themselves
-            // XXX: it might be useful to have stacks on several
-            // levels of the view hierarchy
-            this.state = new State({consolelog: true, parent: this});
 
             // initialize our child views
             this.activity = this.defchild(Activity, {
