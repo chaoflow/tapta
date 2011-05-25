@@ -153,21 +153,18 @@ define([
             this.activity.render();
         },
         render: function() {
-            // XXX: We create a new activity view each time when
-            // rendered, check whether/how we can change the model of
-            // an existing activity.
             $(this.el).html(this.template());
             this.activity.el = this.$('.activity');
             this.activity.render();
             this.left_pane.el = this.$('.left-pane');
             this.right_pane.el = this.$('.right-pane');
 
-            // XXX: create el beforehand
+            // XXX: initialize beforehand?
             this.left_pane.add(this.defchild(panes.PropertiesView, {
                 model: this.model.activity,
                 name: "props"
             }));
-            // XXX: create el beforehand
+            // XXX: initialzie beforehand?
             this.right_pane.add(this.defchild(panes.LibraryView, {
                 model: this.model,
                 name: "library"
