@@ -133,16 +133,18 @@ define([
             // Events that have no immediate effect, but are used to
             // change the state to be used by later events.
             this.bind("act:newnode", function(load) {
-                this.state = _.extend({name:"act:newnode"}, load[0]);
+                this.state = _.extend({name:"newnode"}, load[0]);
+                this.trigger("change:state");
             });
             this.bind("act:delete", function(load) {
-                this.state = {name:"act:delete"};
+                this.state = {name:"delete"};
+                this.trigger("change:state");
             });
             
             // Events that need a state to be processed
             this.bind("act:addtoedge", function(load) {
                 if (this.state === undefined) { return; }
-                if (this.state.name !== "act:newnode") { return; }
+                if (this.state.name !== "newnode") { return; }
                 var edgemodel = load[0];
                 var node = this.state.collection.create();
                 edgemodel.insert(node);
