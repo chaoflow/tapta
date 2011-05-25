@@ -1,6 +1,12 @@
 * Todos                                                               :tapta:
 ** high prio
-*** TODO rethink panes, how are they rerendered and learn about new activity
+*** TODO fix ctrl areas of DecMer and ForkJoin
+size/position is wrong
+more beautiful
+*** TODO enable adding multiple in a row
+**** needs beautification of ctrl areas
+*** TODO final node merge into other node
+*** TODO dragging edges 
 *** TODO select arrow (for properties)
 *** TODO display name of actions
 *** DONE rake area to show activity on next level
@@ -8,33 +14,38 @@ CLOSED: [2011-05-20 Fri 09:24]
 **** layers to generate initial activity for layer0
 **** click rake area tells current layer to rake the action (persistent)
 **** current layer tells next layer to show the activity
-*** TODO menubar (from scratch)
+*** DONE menubar (from scratch)
+CLOSED: [2011-05-25 Wed 21:53]
+now layer-local
 **** action, decmer, forkjoin
 **** drag item onto edge
 **** menubar could have instances of the nodes
 **** who handles the procedure?
 *** TODO menubar delete
 **** tell paths to remove the node
-*** TODO generate new path
+*** DONE generate new path
+CLOSED: [2011-05-25 Wed 21:51]
 **** idea: drop new final node onto an area of a forkjoin/decmer
 they have areas corresponding to the space: above, between and below
 their outgoing edges
 *** TODO merge path into other, ie. drag final node onto some node
+*** TODO move ctrl area style to css
 *** TODO panes
 **** flags to enable hiding: left, top, right, bottom
 **** handles to hide if enabled in an direction
 **** global and layer-local mode
-*** TODO base class for tools to be docked in panes
-*** TODO properties tool, layer-local, docked by default on the left
-**** instant delayed update of changed properties
-**** label and description
-*** TODO action library tool, layer-local, docked by default on the right
-**** show all actions of the layer
-**** filter on action label (name is now used within the storage)
-**** new node functionality via menubar
-**** delete node
-***** only if not used anywhere anymore
-***** maybe not delete, but just blacklist
+**** TODO rethink panes, how are they rerendered and learn about new activity
+**** TODO base class for tools to be docked in panes
+**** TODO properties tool, layer-local, docked by default on the left
+***** instant delayed update of changed properties
+***** label and description
+**** TODO action library tool, layer-local, docked by default on the right
+***** show all actions of the layer
+***** filter on action label (name is now used within the storage)
+***** new node functionality via menubar
+***** delete node
+****** only if not used anywhere anymore
+****** maybe not delete, but just blacklist
 *** TODO edges to query source node for label
 **** bind edges to their source node to update label
 **** background: decmers provide their answers to be displayed on outedges
