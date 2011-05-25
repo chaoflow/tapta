@@ -137,7 +137,7 @@ define([
                 this.trigger("change:state");
             });
             this.bind("act:delete", function(load) {
-                this.state = {name: "delete"};
+                this.state = {name: "deleting"};
                 this.trigger("change:state");
             });
 
@@ -400,7 +400,7 @@ define([
             this.model.bind("change:label", this.render);
             this.model.bind("change:description", this.render);
         },
-        render: function() {
+        render: function(state) {
             var canvas = this.parent.canvas;
             // calculate and draw box for action
             var dx = settings.node.action.dx;
@@ -417,6 +417,11 @@ define([
                        stroke: settings.node.bordercolor,
                        "stroke-width": settings.node.borderwidth});
             node.push(rect);
+
+            if (state && state.name === "deleting") {
+                // XXX: only if we have 1 incoming and one outgoing edge
+                rect.attr({fill: "red"});
+            }
 
             if(this.model.get("label")){
                 var label = canvas.text(x + dx / 2, y + 5,
@@ -492,6 +497,9 @@ define([
                         };
                     }(i), this);
                 }
+            } else if (state && state.name === "deleting") {
+                // XXX: only if we have 1 incoming and one outgoing edge
+                rect.attr({fill: "red"});
             }
             node.push(rect);
         }
@@ -530,6 +538,9 @@ define([
                         };
                     }(i), this);
                 }
+            } else if (state && state.name === "deleting") {
+                // XXX: only if we have 1 incoming and one outgoing edge
+                rect.attr({fill: "red"});
             }
         }
     });
