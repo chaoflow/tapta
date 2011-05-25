@@ -91,6 +91,9 @@ define([
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
             Backbone.Model.apply(this, arguments);
+            if (this.logevents) {
+                this.bind("all", function() { console.log(arguments); });
+            }
         },
         defchild: function(Proto, attr, opts) {
             if (opts.parent === undefined) {

@@ -228,6 +228,7 @@ define([
     });
 
     var Path = Model.extend({
+        logevents: true,
         copy: function() {
             return new Path({
                 nodes: [].concat(this.get('nodes'))
@@ -299,7 +300,6 @@ define([
             }
             Collection.prototype._add.apply(this, arguments);
         },
-        logevents: true,
         model: Path,
         comparator: function(path) {
             return path.get('idx');
