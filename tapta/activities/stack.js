@@ -45,7 +45,11 @@ define([
             // we just expect a callable as load, the callable can
             // decide whether to do something or just put itself on
             // the stack.
-            load[0](this);
+            try {
+                load[0](this);
+            } catch(TypeError) {
+                console.log("Cannot execute event "+name);
+            }
         },
         getState: function() {
             return this.state;
