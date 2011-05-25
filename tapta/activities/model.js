@@ -273,11 +273,37 @@ define([
     });
 
     var Paths = Collection.extend({
-        // On serialization (see toJSON of PATH above), only the ids
-        // are stored. Upon parse (see below) the nodes that form a
-        // path are looked up in the library.
-        lib: undefined,
+        _add: function(model, opts) {
+            if (this.length === 0) {
+                try {
+                    model.set({idx: 0});
+                } catch(TypeError) {
+                    model.idx = 0;
+                }
+            } else {
+                var idx = model.get('idx');
+                if (idx === undefined) {
+                    idx = this.length;
+                } else {
+                    this.each(function(path) {
+                        // the new model dictates the idx, all after
+                        // that are shifted.
+                        var shift = 0;
+                        if (idx === path.get('idx')) {
+                            shift = 1;
+                        }
+                        path.set({idx: path.get('idx') + shift},
+                                 {silent: true});
+                    });
+                }
+            }
+            Collection.prototype._add.apply(this, arguments);
+        },
+        logevents: true,
         model: Path,
+        comparator: function(path) {
+            return path.get('idx');
+        },
         deep: function() {
             var wc = new Paths(
                 this.map(function (path) {
@@ -303,8 +329,10 @@ define([
             if (!(_.last(nodes) instanceof Final)) {
                 nodes.push(layer.finals.create());
             }
-            var path = new Path({nodes: nodes});
-            // XXX: figure out where to put it based on opts.idx
+            var path = new Path({
+                idx: paths[0].get('idx') + opts.idx,
+                nodes: nodes
+            });
             this.add(path);
             path.save();
         },
