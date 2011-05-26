@@ -142,8 +142,8 @@ define([
                 this.trigger("act:newnode", [{
                     collection: collection
                 }]);
-            } else if (classes.contains("delete")) {
-                this.trigger("act:delete");
+            } else if (classes.contains("remove")) {
+                this.trigger("act:remove");
             }
         }
     });

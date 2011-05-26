@@ -136,8 +136,8 @@ define([
                 this.state = _.extend({name: "addingnewnode"}, load[0]);
                 this.trigger("change:state");
             });
-            this.bind("act:delete", function(load) {
-                this.state = {name: "deleting"};
+            this.bind("act:remove", function(load) {
+                this.state = {name: "removing"};
                 this.trigger("change:state");
             });
 
