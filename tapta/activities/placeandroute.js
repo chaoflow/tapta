@@ -52,7 +52,9 @@ define([
                     y: -1,
                     dx: node.get('x_req'),
                     dy: node.get('y_req'),
-                    edges: []
+                    edges: [],
+                    incoming: [],
+                    outgoing: []
                 };
 
                 // The longest path, i.e. the path that needs the most
@@ -149,7 +151,7 @@ define([
                 // from the target node. Horizontal position and size
                 // is queried from source and target node.
                 if (prevui) {
-                    var edges = _.select(prevui.edges, function(edge) {
+                    var edges = _.select(prevui.outgoing, function(edge) {
                         return edge.target === node;
                     });
                     // select returns an array, make sure we have at
@@ -161,7 +163,8 @@ define([
                     if (edge === undefined) {
                         edge = new Edge({source: prev_node,
                                          target: node});
-                        prevui.edges.push(edge);
+                        prevui.outgoing.push(edge);
+                        ui.incoming.push(edge);
                     }
                     edge.paths.push(path);
                 };

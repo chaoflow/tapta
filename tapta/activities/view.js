@@ -293,7 +293,7 @@ define([
 
             // create and draw edges for all nodes
             _.each(nodes, function(node) {
-                _.each(node.ui[this.cid].edges, function(edge) {
+                _.each(node.ui[this.cid].outgoing, function(edge) {
                     this.getView(edge).render(state);
                 }, this);
             }, this);
