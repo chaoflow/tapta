@@ -505,11 +505,16 @@ define([
             // XXX: introduce state classes:
             // draggingnode, addingnewnode, addinglibnode
             if (state && state.name === "addingnewnode") {
-                var N = ui.edges.length + 1;
+                var N = ui.outgoing.length + 1;
+                var cy = ui.y;
                 for (var i=0; i<N; i++) {
-                    // dy for the drop area
-                    var ddy = ui.dy / N;
-                    ctrlarea = canvas.rect(ui.x, ui.y + i * ddy, ui.dx, ddy);
+                    // dy for the control area
+                    var cdy = ui.dy / (N - 1);
+                    if ((i === 0) || (i === N -1)) {
+                        cdy = cdy / 2;
+                    }
+                    ctrlarea = canvas.rect(ui.x, cy, ui.dx, cdy);
+                    cy += cdy;
                     ctrlarea.attr({fill: "#F0F0F0", stroke: "grey"});
                     ctrlarea.click(function(idx) {
                         return function() {
