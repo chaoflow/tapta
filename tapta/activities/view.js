@@ -326,6 +326,32 @@ define([
         initialize: function() {
             _.bindAll(this, "ui");
         },
+        render: function(state) {
+            var canvas = this.parent.canvas;
+            // ui contains position and size of the whole available area
+            var ui = this.ui();
+            var set = this.set = canvas.set();
+            _.each(["outgoingEdges", "symbol", "delarea", "ctrlareas"], function(item) {
+                var elem = this[item](canvas, ui, state);
+                if (elem) {
+                    set.push(elem);
+                    this.elems = this.elems || {};
+                    this.elems[item] = elem;
+                }
+            }, this);
+        },
+        outgoingEdges: function(canvas, ui) {
+            //
+        },
+        delarea: function(canvas, ui, state) {
+            var delarea;
+            if ((state && state.name === "removing") && this.removable(state)) {
+                // XXX: only if we have 1 incoming and one outgoing edge
+                delarea = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
+                delarea.attr({fill: "red", opacity:"0.15"});
+            }
+            return delarea;
+        },
         ui: function() {
             // return ui info for slot, grid coordinates translated
             // into pixel coordinates.
@@ -335,17 +361,18 @@ define([
                 y: yToPix(this.model.ui[slot].y),
                 dx: xToPix(this.model.ui[slot].dx),
                 dy: yToPix(this.model.ui[slot].dy),
-                edges: this.model.ui[slot].edges
+                edges: this.model.ui[slot].edges,
+                incoming: this.model.ui[slot].incoming,
+                outgoing: this.model.ui[slot].outgoing
             };
         }
     });
 
     var Initial = Node.extend({
-        render: function() {
-            var canvas = this.parent.canvas;
+        removable: function() { return false; },
+        symbol: function(canvas, ui, state) {
             // get ui position and size in pixels
             var r = settings.node.initial.r;
-            var ui = this.ui();
 
             // calculate pixel size and position of circle, centered
             // in the ui of the node.
@@ -361,15 +388,20 @@ define([
                          stroke: settings.node.bordercolor,
                          "stroke-width": settings.node.borderwidth});
             node.push(circle);
-        }
+        },
+        ctrlareas: function() {}
     });
 
     var Final = Node.extend({
-        render: function() {
-            var canvas = this.parent.canvas;
+        removable: function() {
+            var slot = this.parent.cid;
+            var previousnode = this.ui().incoming[0].source;
+            return previousnode instanceof model.MIMO
+                && previousnode.ui[slot].outgoing.length > 1;
+        },
+        symbol: function(canvas, ui, state) {
             // get ui position and size in pixels
             var r = settings.node.final.r;
-            var ui = this.ui();
 
             // calculate pixel size and position of circle, vertically
             // centered, horizontally left-aligned in the ui of the
@@ -379,19 +411,21 @@ define([
 
             this.x_in = ui.x + xToPix(1) / 2 - r;
 
-            var node = canvas.set();
+            var symbol = canvas.set();
             var outer = canvas.circle(x, y, r);
             outer.attr({fill: settings.node.fillcolor,
                         stroke: settings.node.bordercolor,
                         "stroke-width": settings.node.borderwidth});
-            node.push(outer);
+            symbol.push(outer);
 
             var inner = canvas.circle(x, y, r - settings.node.final.dr);
             inner.attr({fill: settings.node.bordercolor,
                         stroke: settings.node.bordercolor,
                         "stroke-width": settings.node.borderwidth});
-            node.push(inner);
-        }
+            symbol.push(inner);
+            return symbol;
+        },
+        ctrlareas: function() {}
     });
 
     var Action = Node.extend({
@@ -400,12 +434,11 @@ define([
             this.model.bind("change:label", this.render);
             this.model.bind("change:description", this.render);
         },
-        render: function(state) {
-            var canvas = this.parent.canvas;
+        removable: function() { return true; },
+        symbol: function(canvas, ui, state) {
             // calculate and draw box for action
             var dx = settings.node.action.dx;
             var dy = settings.node.action.dy;
-            var ui = this.ui();
             var x = ui.x + (ui.dx - dx) / 2;
             var y = ui.y + (ui.dy - dy) / 2;
             this.x_in = x;
@@ -418,20 +451,20 @@ define([
                        "stroke-width": settings.node.borderwidth});
             node.push(rect);
 
-            if (state && state.name === "deleting") {
-                // XXX: only if we have 1 incoming and one outgoing edge
-                rect.attr({fill: "red"});
-            }
-
             if(this.model.get("label")){
-                var label = canvas.text(x + dx / 2, y + 5,
+                var label = canvas.text(x + dx / 2,
+                                        y + 5,
                                         this.model.get("label"));
                 node.push(label);
-                label.click(function(){
-                    this.trigger("act:select:node", [this.model]);
-                }, this);
             }
-
+            return node;
+        },
+        ctrlareas: function(canvas, ui, state) {
+            var attrs = this.elems.symbol[0].attrs;
+            var x = attrs.x;
+            var y = attrs.y;
+            var dx = attrs.width;
+            var dy = attrs.height;
             // calculate and draw rake, lower right corner
             var rdx = dx / 3;
             var rdy = dy / 3;
@@ -441,19 +474,18 @@ define([
             // something like getUtility would be nice, or even acquisition.
             // Did I say acquisition? yes! this.acquire(name) will go
             // up until it finds a value
-            var rake = this.renderRake(rx, ry, rdx, rdy);
-            node.push(rake);
+            var rake = this.renderRake(canvas, rx, ry, rdx, rdy);
 
             // translate DOM events to user acts
             rake.click(function() {
                 this.trigger("act:rake", [this.model]);
             }, this);
-            rect.click(function(){
+            this.elems.symbol.click(function(){
                 this.trigger("act:select:node", [this.model]);
             }, this);
+            return rake;
         },
-        renderRake: function(x, y, dx, dy) {
-            var canvas = this.parent.canvas;
+        renderRake: function(canvas, x, y, dx, dy) {
             var rect = canvas.rect(x, y, dx, dy);
             // XXX: draw rake symbol
             rect.attr({fill: "white",
@@ -463,32 +495,23 @@ define([
         }
     });
 
-    var DecMer = Node.extend({
-        render: function(state) {
-            var canvas = this.parent.canvas;
-            var dx = settings.node.action.dx;
+    var MIMO = Node.extend({
+        removable: function() {
             var ui = this.ui();
-            dx = Math.sqrt((Math.pow((dx / 2), 2) * 2));
-            var x = ui.x + (ui.dx - dx) / 2;
-            var y = ui.y + (ui.dy - dx) / 2;
-            this.x_in = ui.x + (ui.dx - settings.node.action.dx) / 2;
-            this.x_out = ui.x + ui.dx / 2 + settings.node.action.dx / 2;
-            var node = canvas.set();
-            var rect = canvas.rect(x, y, dx, dx, 0);
-            rect.attr({fill: settings.node.fillcolor,
-                       stroke: settings.node.bordercolor,
-                       "stroke-width": settings.node.borderwidth});
-            rect.rotate(45);
-
-            // XXX: (mostly) the same as in ForkJoin
+            return ui.incoming.length === 1 && ui.outgoing.length === 1;
+        },
+        ctrlareas: function(canvas, ui, state) {
+            var ctrlarea;
+            // XXX: introduce state classes:
+            // draggingnode, addingnewnode, addinglibnode
             if (state && state.name === "addingnewnode") {
                 var N = ui.edges.length + 1;
                 for (var i=0; i<N; i++) {
                     // dy for the drop area
                     var ddy = ui.dy / N;
-                    var droparea = canvas.rect(ui.x, ui.y + i * ddy, ui.dx, ddy);
-                    droparea.attr({fill: "#F0F0F0", stroke: "grey"});
-                    droparea.click(function(idx) {
+                    ctrlarea = canvas.rect(ui.x, ui.y + i * ddy, ui.dx, ddy);
+                    ctrlarea.attr({fill: "#F0F0F0", stroke: "grey"});
+                    ctrlarea.click(function(idx) {
                         return function() {
                             this.trigger("act:addnewpath", {
                                 start: this.model,
@@ -497,20 +520,35 @@ define([
                         };
                     }(i), this);
                 }
-            } else if (state && state.name === "deleting") {
-                // XXX: only if we have 1 incoming and one outgoing edge
-                rect.attr({fill: "red"});
             }
-            node.push(rect);
+            return ctrlarea;
+        }
+    });
+
+    var DecMer = MIMO.extend({
+        symbol: function(canvas, ui) {
+            // we draw a rect and then rotate it 45 degress
+            var dx = settings.node.action.dx;
+            dx = Math.sqrt((Math.pow((dx / 2), 2) * 2));
+            var x = ui.x + (ui.dx - dx) / 2;
+            var y = ui.y + (ui.dy - dx) / 2;
+            this.x_in = ui.x + (ui.dx - settings.node.action.dx) / 2;
+            this.x_out = ui.x + ui.dx / 2 + settings.node.action.dx / 2;
+            var node = canvas.set();
+            var rect = canvas.rect(x, y, dx, dx, 0);
+            // XXX: can we do that in CSS and just add a class here?
+            rect.attr({fill: settings.node.fillcolor,
+                       stroke: settings.node.bordercolor,
+                       "stroke-width": settings.node.borderwidth});
+            rect.rotate(45);
+            return rect;
         }
     });
     
-    var ForkJoin = Node.extend({
-        render: function(state) {
-            var canvas = this.parent.canvas;
+    var ForkJoin = MIMO.extend({
+        symbol: function(canvas, ui, state) {
             var dx = settings.node.forkjoin.dx;
             var pad = settings.node.forkjoin.pad;
-            var ui = this.ui();
             var x = ui.x + (ui.dx - dx) / 2;
             var y = ui.y + pad;
             var dy = ui.dy - 2 * pad;
@@ -520,28 +558,7 @@ define([
             rect.attr({fill: settings.node.fillcolor,
                        stroke: settings.node.bordercolor,
                        "stroke-width": settings.node.borderwidth});
-
-            // XXX: (mostly) the same as in DecMer
-            if (state && state.name === "addingnewnode") {
-                var N = ui.edges.length;
-                for (var i=0; i<=N; i++) {
-                    // dy for the drop area
-                    var ddy = dy / (N + 1);
-                    var droparea = canvas.rect(x, y + i * ddy, dx, ddy);
-                    droparea.attr({fill: "#F0F0F0", stroke: "grey"});
-                    droparea.click(function(idx) {
-                        return function() {
-                            this.trigger("act:addnewpath", {
-                                start: this.model,
-                                idx: idx
-                            });
-                        };
-                    }(i), this);
-                }
-            } else if (state && state.name === "deleting") {
-                // XXX: only if we have 1 incoming and one outgoing edge
-                rect.attr({fill: "red"});
-            }
+            return rect;
         }
     });
 

@@ -137,8 +137,9 @@ define([
     });
     var Final = Node.extend({});
     var Initial = Node.extend({});
-    var DecMer = Node.extend({});
-    var ForkJoin = Node.extend({});
+    var MIMO = Node.extend({});
+    var DecMer = MIMO.extend({});
+    var ForkJoin = MIMO.extend({});
 
     var Initials = Collection.extend({
         model: Initial
@@ -388,6 +389,8 @@ define([
     return {
         App: App,
         Layer: Layer,
+        Node: Node,
+        MIMO: MIMO,
         Initial: Initial,
         Initials: Initials,
         Final: Final,
