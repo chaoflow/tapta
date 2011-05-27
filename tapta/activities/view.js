@@ -339,7 +339,12 @@ define([
             // ui contains position and size of the whole available area
             var ui = this.ui();
             var set = this.set = canvas.set();
-            _.each(["outgoingEdges", "symbol", "delarea", "ctrlareas"], function(item) {
+            _.each([
+                "outgoingEdges",
+                "symbol",
+                "removearea",
+                "ctrlareas"
+            ], function(item) {
                 var elem = this[item](canvas, ui, mode);
                 if (elem) {
                     set.push(elem);
@@ -351,15 +356,17 @@ define([
         outgoingEdges: function(canvas, ui) {
             //
         },
-        delarea: function(canvas, ui, mode) {
-            var delarea;
+        removable: function() { return false; },
+        removearea: function(canvas, ui, mode) {
+            var area;
             if ((mode && mode.name === "removing") && this.removable(mode)) {
                 // XXX: only if we have 1 incoming and one outgoing edge
-                delarea = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
-                delarea.attr({fill: "red", opacity:"0.15"});
+                area = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
+                area.attr({fill: "red", opacity:"0.15"});
             }
-            return delarea;
+            return area;
         },
+        ctrlareas: function() {},
         ui: function() {
             // return ui info for slot, grid coordinates translated
             // into pixel coordinates.
@@ -377,7 +384,6 @@ define([
     });
 
     var Initial = Node.extend({
-        removable: function() { return false; },
         symbol: function(canvas, ui, mode) {
             // get ui position and size in pixels
             var r = settings.node.initial.r;
@@ -397,7 +403,6 @@ define([
                          "stroke-width": settings.node.borderwidth});
             node.push(circle);
         },
-        ctrlareas: function() {}
     });
 
     var Final = Node.extend({
@@ -433,7 +438,6 @@ define([
             symbol.push(inner);
             return symbol;
         },
-        ctrlareas: function() {}
     });
 
     var Action = Node.extend({
