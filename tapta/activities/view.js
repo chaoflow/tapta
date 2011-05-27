@@ -9,13 +9,11 @@ define([
     './base',
     './model',
     './settings',
-    './stack',
     './panes'
 ], function(require) {
     var base = require('./base');
     var model = require('./model');
     var settings = require('./settings');
-    var State = require('./stack').State;
     var panes = require('./panes');
 
     var App = base.View.extend({
