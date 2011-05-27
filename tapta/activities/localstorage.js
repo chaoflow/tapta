@@ -177,6 +177,7 @@ define([
             // are only a container for their models
             store = new Store(model.abspath());
         } else {
+            // XXX: fails when deleting a path from paths
             store = new Store(model.parent.abspath());
         }
 

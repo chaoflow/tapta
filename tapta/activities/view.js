@@ -409,7 +409,7 @@ define([
 
     var Final = Node.extend({
         removable: function() {
-            // XXX: fails atm
+            // XXX: fails atm - see localstorage;
             return false;
             var slot = this.parent.cid;
             var previousnode = this.ui().incoming[0].source;

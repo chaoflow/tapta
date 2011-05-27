@@ -214,11 +214,17 @@ define([
                 var nodes = path.get('nodes');
                 var idx = nodes.indexOf(node);
                 if (idx !== -1) {
+                    if (node instanceof Final) {
+                        // XXX: not sure whether it will cause
+                        // problems to delete from the collection we are
+                        // iterating over.
+                        this.paths.remove(path);
+                    }
                     nodes.splice(idx,1);
                     path.set({nodes: nodes});
                     path.save();
                 }
-            });
+            }, this);
         },
         toJSON: function() {
             var attributes = _.clone(this.attributes);
