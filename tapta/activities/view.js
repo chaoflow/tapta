@@ -161,8 +161,6 @@ define([
                 var edgemodel = load[0];
                 var node = this.mode.collection.create();
                 edgemodel.insert(node);
-                this.mode = undefined;
-                this.trigger("change:mode");
             });
             this.bind("act:addnewpath", function(load) {
                 if (this.mode === undefined) { return; }
@@ -173,8 +171,6 @@ define([
                 }));
                 // XXX: workaround: we currently don't catch the model event
                 this.activity.render();
-                this.mode = undefined;
-                this.trigger("change:mode");
             });
         },
         activityChanged: function() {
