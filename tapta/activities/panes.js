@@ -119,10 +119,12 @@ define([
             "click li" : "clicked"
         },
         render: function(){
+            // XXX: render full el content, not append
             $.tmpl(this.template, {}).appendTo(this.el);
             this.delegateEvents(this.events);
         },
         clicked: function(event){
+            // XXX: move highlighting to render depending on mode
             if (this.prev_target) {
                 $(this.prev_target).removeClass("highlight");
             }
