@@ -432,9 +432,7 @@ define([
 
     var Action = Node.extend({
         initialize: function() {
-            _.bindAll(this, "renderRake");
             this.model.bind("change:label", this.render);
-            this.model.bind("change:description", this.render);
         },
         removable: function() { return true; },
         symbol: function(canvas, ui, mode) {
@@ -462,21 +460,23 @@ define([
             return node;
         },
         ctrlareas: function(canvas, ui, mode) {
-            var attrs = this.elems.symbol[0].attrs;
-            var x = attrs.x;
-            var y = attrs.y;
-            var dx = attrs.width;
-            var dy = attrs.height;
+            var symbol = this.elems.symbol[0].attrs;
             // calculate and draw rake, lower right corner
-            var rdx = dx / 3;
-            var rdy = dy / 3;
-            var rx = x + dx - rdx;
-            var ry = y + dy - rdy;
+            var rdx = symbol.width / 3;
+            var rdy = symbol.height / 3;
+            var rx = symbol.x + symbol.width - rdx;
+            var ry = symbol.y + symbol.height - rdy;
             // XXX: make conditional, not for lowest layer - probably just a flag
             // something like getUtility would be nice, or even acquisition.
             // Did I say acquisition? yes! this.acquire(name) will go
             // up until it finds a value
-            var rake = this.renderRake(canvas, rx, ry, rdx, rdy);
+            var rake = canvas.set();
+            var rect = canvas.rect(rx, ry, rdx, rdy);
+            rect.attr({fill: "white",
+                       stroke: "grey",
+                       opacity: 10});
+            // XXX: draw rake symbol
+            rake.push(rect);
 
             // translate DOM events to user acts
             rake.click(function() {
@@ -486,14 +486,6 @@ define([
                 this.trigger("act:select:node", [this.model]);
             }, this);
             return rake;
-        },
-        renderRake: function(canvas, x, y, dx, dy) {
-            var rect = canvas.rect(x, y, dx, dy);
-            // XXX: draw rake symbol
-            rect.attr({fill: "white",
-                       stroke: "grey",
-                       opacity: 10});
-            return rect;
         }
     });
 
