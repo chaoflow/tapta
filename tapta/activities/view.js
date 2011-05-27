@@ -156,14 +156,12 @@ define([
             
             // Events that need a mode to be processed
             this.bind("act:addtoedge", function(load) {
-                if (this.mode === undefined) { return; }
                 if (this.mode.name !== "addingnewnode") { return; }
                 var edgemodel = load[0];
                 var node = this.mode.collection.create();
                 edgemodel.insert(node);
             });
             this.bind("act:addnewpath", function(load) {
-                if (this.mode === undefined) { return; }
                 if (this.mode.name !== "addingnewnode") { return; }
                 var node = this.mode.collection.create();
                 this.activity.model.paths.newpath(_.extend(load, {
@@ -355,7 +353,7 @@ define([
         removable: function() { return false; },
         removearea: function(canvas, ui, mode) {
             var area;
-            if ((mode && mode.name === "removing") && this.removable(mode)) {
+            if ((mode.name === "removing") && this.removable(mode)) {
                 // XXX: only if we have 1 incoming and one outgoing edge
                 area = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
                 area.attr({fill: "red", opacity:"0.15"});
@@ -511,7 +509,7 @@ define([
             var ctrlarea;
             // XXX: introduce mode classes:
             // draggingnode, addingnewnode, addinglibnode
-            if (mode && mode.name === "addingnewnode") {
+            if (mode.name === "addingnewnode") {
                 var N = ui.outgoing.length + 1;
                 var cy = ui.y;
                 for (var i=0; i<N; i++) {
@@ -617,7 +615,7 @@ define([
             // make it visible as a drop target.
             // XXX: use css with classes .droptarget and set class here
             var rect = canvas.rect(x, y, dx, dy);
-            if (mode && mode.name === "addingnewnode") {
+            if (mode.name === "addingnewnode") {
                 rect.attr({fill: "#F0F0F0", stroke: "grey"});
             } else {
                 rect.attr({fill: "white", opacity: 0});
