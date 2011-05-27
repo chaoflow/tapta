@@ -145,10 +145,8 @@ define([
                 this.trigger("change:mode");
             });
 
-            // rerender activity on mode change, passing the mode
-            this.bind("change:mode", function() {
-                this.activity.render();
-            });
+            // rerender activity on mode change
+            this.bind("change:mode", this.activity.render);
             
             // Events that need a mode to be processed
             this.bind("act:addtoedge", function(load) {
