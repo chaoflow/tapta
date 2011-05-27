@@ -520,7 +520,7 @@ define([
                     }
                     ctrlarea = canvas.rect(ui.x, cy, ui.dx, cdy);
                     cy += cdy;
-                    ctrlarea.attr({fill: "#F0F0F0", stroke: "grey"});
+                    ctrlarea.attr({fill: "green", stroke: "black", "fill-opacity": "0.1"});
                     ctrlarea.click(function(idx) {
                         return function() {
                             this.trigger("act:addnewpath", {
