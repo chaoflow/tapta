@@ -80,6 +80,7 @@ define([
         logevents: true,
         template: _.template($("#layer-template").html()),
         initialize: function() {
+            this.mode = {name:"selecting"};
             _.bindAll(this, "activityChanged", 'render', "bindEvents");
             this.model.bind("change:activity", this.activityChanged);
 
@@ -465,6 +466,13 @@ define([
             return node;
         },
         ctrlareas: function(canvas, ui, mode) {
+            var ctrl;
+            if (mode.name === "selecting") {
+                ctrl = this.rakeArea(canvas, ui);
+            }
+            return ctrl;
+        },
+        rakeArea: function(canvas, ui) {
             var symbol = this.elems.symbol[0].attrs;
             // calculate and draw rake, lower right corner
             var rdx = symbol.width / 3;
