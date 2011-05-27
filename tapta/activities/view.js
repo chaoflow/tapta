@@ -135,7 +135,12 @@ define([
             });
 
             // Events that have no immediate effect, but are used to
-            // change the mode to be used by later events.
+            // change the mode. The mode influences rendering of
+            // ctrlareas.
+            this.bind("mode:selecting", function(load) {
+                this.mode = _.extend({name: "selecting"});
+                this.trigger("change:mode");
+            });
             this.bind("mode:addingnewnode", function(load) {
                 this.mode = _.extend({name: "addingnewnode"}, load[0]);
                 this.trigger("change:mode");

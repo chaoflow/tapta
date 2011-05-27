@@ -133,7 +133,9 @@ define([
             var collection;
             var layermodel = this.model;
             var classes = event.target.classList;
-            if (classes.contains("new_node")) {
+            if (classes.contains("select")) {
+                this.trigger("mode:selecting");
+            } else if (classes.contains("new_node")) {
                 if (classes.contains("new_action")) {
                     collection = layermodel.actions;
                 } else if (classes.contains("new_decmer")) {
