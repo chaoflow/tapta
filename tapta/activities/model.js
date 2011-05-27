@@ -208,6 +208,18 @@ define([
             }
             return placeandroute(this.paths, this.cid);
         },
+        // remove a node from all paths
+        remove: function(node) {
+            this.paths.each(function(path) {
+                var nodes = path.get('nodes');
+                var idx = nodes.indexOf(node);
+                if (idx !== -1) {
+                    nodes.splice(idx,1);
+                    path.set({nodes: nodes});
+                    path.save();
+                }
+            });
+        },
         toJSON: function() {
             var attributes = _.clone(this.attributes);
             _(["raked", "selected"]).each(function(key){

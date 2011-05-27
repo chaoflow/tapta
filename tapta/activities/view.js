@@ -170,6 +170,11 @@ define([
                 // XXX: workaround: we currently don't catch the model event
                 this.activity.render();
             });
+            this.bind("act:remove", function(load) {
+                var nodemodel = load[0];
+                this.activity.model.remove(nodemodel);
+                this.activity.render();
+            });
         },
         activityChanged: function() {
             this.activity.bindToModel(this.model.activity);
@@ -357,6 +362,9 @@ define([
                 // XXX: only if we have 1 incoming and one outgoing edge
                 area = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
                 area.attr({fill: "red", opacity:"0.15"});
+                area.click(function() {
+                    this.trigger("act:remove", [this.model]);
+                }, this);
             }
             return area;
         },
@@ -401,6 +409,8 @@ define([
 
     var Final = Node.extend({
         removable: function() {
+            // XXX: fails atm
+            return false;
             var slot = this.parent.cid;
             var previousnode = this.ui().incoming[0].source;
             return previousnode instanceof model.MIMO
