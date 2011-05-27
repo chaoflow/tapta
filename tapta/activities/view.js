@@ -33,6 +33,12 @@ define([
                 model: this.model,
                 name: "layers"
             });
+            var app = this;
+            this.$("#destroyall").click(function() {
+                localStorage.clear();
+                app.model.fetch();
+                app.render();
+            });
         },
         render: function() {
             // we were not defined by defchild, no render wrapper

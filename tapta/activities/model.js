@@ -77,6 +77,9 @@ define([
                 this.layers.push(layer);
                 prev = layer;
             }
+            this.fetch();
+        },
+        fetch: function() {
             // need to be fetched in reverse order, so actions can
             // look up activities they reference.
             _.each(this.layers.concat().reverse(), function(layer) {
