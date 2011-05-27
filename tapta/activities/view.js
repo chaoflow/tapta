@@ -108,7 +108,7 @@ define([
             // and enrich them with layermodel:this.model.
             //
             // XXX: the whole thing still feels rough. If we are in
-            // delete state and a rake is clicked, should it rake or the
+            // delete mode and a rake is clicked, should it rake or the
             // node be delete. Currently it would rake, as the the
             // rake.click event handler already makes the decision
             // what the click means.
@@ -135,42 +135,42 @@ define([
             });
 
             // Events that have no immediate effect, but are used to
-            // change the state to be used by later events.
+            // change the mode to be used by later events.
             this.bind("act:newnode", function(load) {
-                this.state = _.extend({name: "addingnewnode"}, load[0]);
-                this.trigger("change:state");
+                this.mode = _.extend({name: "addingnewnode"}, load[0]);
+                this.trigger("change:mode");
             });
             this.bind("act:remove", function(load) {
-                this.state = {name: "removing"};
-                this.trigger("change:state");
+                this.mode = {name: "removing"};
+                this.trigger("change:mode");
             });
 
-            // rerender activity on state change, passing the state
-            this.bind("change:state", function() {
+            // rerender activity on mode change, passing the mode
+            this.bind("change:mode", function() {
                 this.activity.render();
             });
             
-            // Events that need a state to be processed
+            // Events that need a mode to be processed
             this.bind("act:addtoedge", function(load) {
-                if (this.state === undefined) { return; }
-                if (this.state.name !== "addingnewnode") { return; }
+                if (this.mode === undefined) { return; }
+                if (this.mode.name !== "addingnewnode") { return; }
                 var edgemodel = load[0];
-                var node = this.state.collection.create();
+                var node = this.mode.collection.create();
                 edgemodel.insert(node);
-                this.state = undefined;
-                this.trigger("change:state");
+                this.mode = undefined;
+                this.trigger("change:mode");
             });
             this.bind("act:addnewpath", function(load) {
-                if (this.state === undefined) { return; }
-                if (this.state.name !== "addingnewnode") { return; }
-                var node = this.state.collection.create();
+                if (this.mode === undefined) { return; }
+                if (this.mode.name !== "addingnewnode") { return; }
+                var node = this.mode.collection.create();
                 this.activity.model.paths.newpath(_.extend(load, {
                     nodes: [node]
                 }));
                 // XXX: workaround: we currently don't catch the model event
                 this.activity.render();
-                this.state = undefined;
-                this.trigger("change:state");
+                this.mode = undefined;
+                this.trigger("change:mode");
             });
         },
         activityChanged: function() {
@@ -270,7 +270,7 @@ define([
             });
         },
         render: function() {
-            var state = this.parent.state;
+            var mode = this.parent.mode;
             // reset element
             $(this.el).html("");
 
@@ -292,13 +292,13 @@ define([
             // store itself as node.ui[slot].view and is needed for drawing the
             // edges in the next step. slot is the activity.cid
             _.each(nodes, function(node) {
-                this.getView(node).render(state);
+                this.getView(node).render(mode);
             }, this);
 
             // create and draw edges for all nodes
             _.each(nodes, function(node) {
                 _.each(node.ui[this.cid].outgoing, function(edge) {
-                    this.getView(edge).render(state);
+                    this.getView(edge).render(mode);
                 }, this);
             }, this);
         }
@@ -330,13 +330,13 @@ define([
         initialize: function() {
             _.bindAll(this, "ui");
         },
-        render: function(state) {
+        render: function(mode) {
             var canvas = this.parent.canvas;
             // ui contains position and size of the whole available area
             var ui = this.ui();
             var set = this.set = canvas.set();
             _.each(["outgoingEdges", "symbol", "delarea", "ctrlareas"], function(item) {
-                var elem = this[item](canvas, ui, state);
+                var elem = this[item](canvas, ui, mode);
                 if (elem) {
                     set.push(elem);
                     this.elems = this.elems || {};
@@ -347,9 +347,9 @@ define([
         outgoingEdges: function(canvas, ui) {
             //
         },
-        delarea: function(canvas, ui, state) {
+        delarea: function(canvas, ui, mode) {
             var delarea;
-            if ((state && state.name === "removing") && this.removable(state)) {
+            if ((mode && mode.name === "removing") && this.removable(mode)) {
                 // XXX: only if we have 1 incoming and one outgoing edge
                 delarea = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
                 delarea.attr({fill: "red", opacity:"0.15"});
@@ -374,7 +374,7 @@ define([
 
     var Initial = Node.extend({
         removable: function() { return false; },
-        symbol: function(canvas, ui, state) {
+        symbol: function(canvas, ui, mode) {
             // get ui position and size in pixels
             var r = settings.node.initial.r;
 
@@ -403,7 +403,7 @@ define([
             return previousnode instanceof model.MIMO
                 && previousnode.ui[slot].outgoing.length > 1;
         },
-        symbol: function(canvas, ui, state) {
+        symbol: function(canvas, ui, mode) {
             // get ui position and size in pixels
             var r = settings.node.final.r;
 
@@ -439,7 +439,7 @@ define([
             this.model.bind("change:description", this.render);
         },
         removable: function() { return true; },
-        symbol: function(canvas, ui, state) {
+        symbol: function(canvas, ui, mode) {
             // calculate and draw box for action
             var dx = settings.node.action.dx;
             var dy = settings.node.action.dy;
@@ -463,7 +463,7 @@ define([
             }
             return node;
         },
-        ctrlareas: function(canvas, ui, state) {
+        ctrlareas: function(canvas, ui, mode) {
             var attrs = this.elems.symbol[0].attrs;
             var x = attrs.x;
             var y = attrs.y;
@@ -504,11 +504,11 @@ define([
             var ui = this.ui();
             return ui.incoming.length === 1 && ui.outgoing.length === 1;
         },
-        ctrlareas: function(canvas, ui, state) {
+        ctrlareas: function(canvas, ui, mode) {
             var ctrlarea;
-            // XXX: introduce state classes:
+            // XXX: introduce mode classes:
             // draggingnode, addingnewnode, addinglibnode
-            if (state && state.name === "addingnewnode") {
+            if (mode && mode.name === "addingnewnode") {
                 var N = ui.outgoing.length + 1;
                 var cy = ui.y;
                 for (var i=0; i<N; i++) {
@@ -555,7 +555,7 @@ define([
     });
     
     var ForkJoin = MIMO.extend({
-        symbol: function(canvas, ui, state) {
+        symbol: function(canvas, ui, mode) {
             var dx = settings.node.forkjoin.dx;
             var pad = settings.node.forkjoin.pad;
             var x = ui.x + (ui.dx - dx) / 2;
@@ -572,7 +572,7 @@ define([
     });
 
     var Edge = ElementView.extend({
-        render: function(state) {
+        render: function(mode) {
             var canvas = this.parent.canvas;
             var sourceview = this.model.source.ui[this.parent.cid].view;
             var targetview = this.model.target.ui[this.parent.cid].view;
@@ -610,11 +610,11 @@ define([
             )({xl:xl, yl:yl, x1:x1, y1:y1, xr:xr, yr:yr});
 
             var droparea = canvas.set();
-            // edge area, depending on the state we
+            // edge area, depending on the mode we
             // make it visible as a drop target.
             // XXX: use css with classes .droptarget and set class here
             var rect = canvas.rect(x, y, dx, dy);
-            if (state && state.name === "addingnewnode") {
+            if (mode && mode.name === "addingnewnode") {
                 rect.attr({fill: "#F0F0F0", stroke: "grey"});
             } else {
                 rect.attr({fill: "white", opacity: 0});
