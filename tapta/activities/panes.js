@@ -139,11 +139,11 @@ define([
                 } else if (classes.contains("new_forkjoin")) {
                     collection = layermodel.forkjoins;
                 }
-                this.trigger("act:newnode", [{
+                this.trigger("mode:addingnewnode", [{
                     collection: collection
                 }]);
             } else if (classes.contains("remove")) {
-                this.trigger("act:remove");
+                this.trigger("mode:removing");
             }
         }
     });

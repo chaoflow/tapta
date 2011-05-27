@@ -136,11 +136,11 @@ define([
 
             // Events that have no immediate effect, but are used to
             // change the mode to be used by later events.
-            this.bind("act:newnode", function(load) {
+            this.bind("mode:addingnewnode", function(load) {
                 this.mode = _.extend({name: "addingnewnode"}, load[0]);
                 this.trigger("change:mode");
             });
-            this.bind("act:remove", function(load) {
+            this.bind("mode:removing", function(load) {
                 this.mode = {name: "removing"};
                 this.trigger("change:mode");
             });
