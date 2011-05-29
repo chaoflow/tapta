@@ -359,7 +359,6 @@ define([
         removearea: function(canvas, ui, mode) {
             var area;
             if ((mode.name === "removing") && this.removable(mode)) {
-                // XXX: only if we have 1 incoming and one outgoing edge
                 area = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
                 area.attr({fill: "red", opacity:"0.15"});
                 area.click(function() {
@@ -404,7 +403,7 @@ define([
                          stroke: settings.node.bordercolor,
                          "stroke-width": settings.node.borderwidth});
             node.push(circle);
-        },
+        }
     });
 
     var Final = Node.extend({
@@ -439,7 +438,7 @@ define([
                         "stroke-width": settings.node.borderwidth});
             symbol.push(inner);
             return symbol;
-        },
+        }
     });
 
     var Action = Node.extend({
