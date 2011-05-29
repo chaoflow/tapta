@@ -391,7 +391,7 @@ define([
                     + "L <%= x0 %> <%= y1 %> "
                     + "L <%= x1 %> <%= y1 %>"
             );
-            _.each(ui.outgoing, function(edge) {
+            var lines = _.map(ui.outgoing, function(edge) {
                 // center of area
                 var x0 = ui.x + ui.dx / 2;
                 var y0 = ui.y + ui.dy / 2;
@@ -402,7 +402,9 @@ define([
                 line.attr({stroke: settings.edge.color,
                            "stroke-width": settings.edge.strokewidth});
                 edge.render(mode);
+                return line;
             });
+            return lines;
         },
         removable: function() { return false; },
         removearea: function(canvas, ui, mode) {
@@ -571,16 +573,16 @@ define([
             // XXX: introduce mode classes:
             // draggingnode, addingnewnode, addinglibnode
             if (mode.name === "addingnewnode") {
-                var N = ui.outgoing.length + 1;
-                var cy = ui.y;
-                for (var i=0; i<N; i++) {
-                    // dy for the control area
-                    var cdy = ui.dy / (N - 1);
-                    if ((i === 0) || (i === N -1)) {
-                        cdy = cdy / 2;
-                    }
-                    ctrlarea = canvas.rect(ui.x, cy, ui.dx, cdy);
-                    cy += cdy;
+                var i = 0;
+                var y0;
+                var y1 = ui.y;
+                var lines = this.elems.outgoingEdges.concat([{
+                    attrs: {path: [[0, 0, ui.y + ui.dy]]}
+                }]);
+                _.each(lines, function(line) {
+                    y0 = y1;
+                    y1 = _.last(line.attrs.path)[2];
+                    ctrlarea = canvas.rect(ui.x, y0, ui.dx, y1-y0);
                     ctrlarea.attr({fill: "yellow",
                                    stroke: "grey",
                                    "fill-opacity": "0.2"});
@@ -592,7 +594,8 @@ define([
                             });
                         };
                     }(i), this);
-                }
+                    i++;
+                }, this);
             }
             return ctrlarea;
         }
