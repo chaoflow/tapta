@@ -52,7 +52,6 @@ define([
                     y: -1,
                     dx: node.get('x_req'),
                     dy: node.get('y_req'),
-                    edges: [],
                     incoming: [],
                     outgoing: []
                 };

@@ -377,7 +377,6 @@ define([
                 y: yToPix(this.model.ui[slot].y),
                 dx: xToPix(this.model.ui[slot].dx),
                 dy: yToPix(this.model.ui[slot].dy),
-                edges: this.model.ui[slot].edges,
                 incoming: this.model.ui[slot].incoming,
                 outgoing: this.model.ui[slot].outgoing
             };
