@@ -526,7 +526,9 @@ define([
                     }
                     ctrlarea = canvas.rect(ui.x, cy, ui.dx, cdy);
                     cy += cdy;
-                    ctrlarea.attr({fill: "green", stroke: "black", "fill-opacity": "0.1"});
+                    ctrlarea.attr({fill: "yellow",
+                                   stroke: "grey",
+                                   "fill-opacity": "0.2"});
                     ctrlarea.click(function(idx) {
                         return function() {
                             this.trigger("act:addnewpath", {
@@ -579,25 +581,17 @@ define([
     });
 
     var Edge = ElementView.extend({
+        // XXX: unify with node rendering?
         render: function(mode) {
             var canvas = this.parent.canvas;
-            var sourceview = this.model.source.ui[this.parent.cid].view;
-            var targetview = this.model.target.ui[this.parent.cid].view;
+            var ui = this.ui();
 
-            // all space between nodes is allocated to edge areas.
-            var x = sourceview.x_out;
-            var dx = targetview.x_in - x;
-            var sourceui = sourceview.ui();
-            var targetui = targetview.ui();
-            var y = sourceui.y > targetui.y ? sourceui.y : targetui.y;
-            var dy = sourceui.dy < targetui.dy ? sourceui.dy : targetui.dy;
-            
             // The edge is drawn as an SVG path, see:
             // http://www.w3.org/TR/SVG/paths.html#PathData
             // the line
-            var x0 = x;
-            var y0 = y + dy / 2;
-            var x1 = x + dx;
+            var x0 = ui.x;
+            var y0 = ui.y + ui.dy / 2;
+            var x1 = ui.x + ui.dx;
             var y1 = y0;
             var svgpath = _.template(
                 "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
@@ -620,9 +614,9 @@ define([
             // edge area, depending on the mode we
             // make it visible as a drop target.
             // XXX: use css with classes .droptarget and set class here
-            var rect = canvas.rect(x, y, dx, dy);
+            var rect = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
             if (mode.name === "addingnewnode") {
-                rect.attr({fill: "#F0F0F0", stroke: "grey"});
+                rect.attr({fill: "green", stroke: "grey", "fill-opacity":"0.2"});
             } else {
                 rect.attr({fill: "white", opacity: 0});
             }
@@ -640,6 +634,17 @@ define([
                 // previous event defined what is going to be added.
                 this.trigger("act:addtoedge", [this.model]);
             }, this);
+        },
+        ui: function() {
+            // return ui info, grid coordinates translated
+            // into pixel coordinates.
+            var ui = this.model.get('ui');
+            return {
+                x: xToPix(ui.x),
+                y: yToPix(ui.y),
+                dx: xToPix(ui.dx),
+                dy: yToPix(ui.dy)
+            };
         }
     });
 

@@ -149,6 +149,8 @@ define([
                 dx: 6,
                 dy: 5
             },
+            // XXX: grid coordinates
+            dx: 0.5,
             color: "#202020",
             strokewidth: 2
         },

@@ -6,8 +6,10 @@
 define([
     'require',
     'cdn/underscore.js',
-    './model'
+    './model',
+    './settings'
 ], function(require) {
+    var settings = require('./settings');
 
     var placeandroute = function(paths, slot) {
         // calculate size, position and outgoing edges for all nodes
@@ -134,11 +136,12 @@ define([
                     prevui = prev_node.ui[slot];
                 }
                 // If the node has no horizontal place yet, its the
-                // previous node's + its size.
+                // previous node's + its size + space for the edge.
                 if (ui.x === -1) {
                     if (prevui) {
+                        // XXX: do we need this round? (see also edge.ui.x)
                         ui.x = Math.round(
-                            (prevui.x + prevui.dx) * 1000
+                            (prevui.x + prevui.dx + settings.edge.dx) * 1000
                         ) / 1000;
                     } else {
                         ui.x = 0;
@@ -159,8 +162,16 @@ define([
                     }
                     var edge = edges[0];
                     if (edge === undefined) {
-                        edge = new Edge({source: prev_node,
-                                         target: node});
+                        edge = new Edge({
+                            source: prev_node,
+                            target: node,
+                            ui: {
+                                x: prevui.x + prevui.dx,
+                                y: prevui.y > ui.y ? prevui.y : ui.y,
+                                dx: settings.edge.dx,
+                                dy: prevui.dy < ui.dy ? prevui.dy : ui.dy
+                            }
+                        });
                         prevui.outgoing.push(edge);
                         ui.incoming.push(edge);
                     }
