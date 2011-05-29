@@ -334,6 +334,7 @@ define([
             _.each([
                 "outgoingEdges",
                 "symbol",
+                "incomingEdges",
                 "removearea",
                 "ctrlareas"
             ], function(item) {
@@ -343,6 +344,42 @@ define([
                     this.elems = this.elems || {};
                     this.elems[item] = elem;
                 }
+            }, this);
+        },
+        incomingEdges: function(canvas, ui, mode) {
+            var svgpath = _.template(
+                "M <%= x0 %> <%= y %>"
+                    + "L <%= x1 %> <%= y %>"
+            );
+            _.each(ui.incoming, function(edge) {
+                var x0 = ui.x;
+                // subtract a bit, otherwise the arrow overlaps the symbol
+                var x1 = this.x_in - 3;
+                var y = edge.ui().y + edge.ui().dy / 2;
+                var line = canvas.path(svgpath({
+                    x0:ui.x,
+                    y:y,
+                    x1:x1
+                }));
+                line.attr({stroke: settings.edge.color,
+                           "stroke-width": settings.edge.strokewidth});
+
+                // and the arrow head 
+                var adx = settings.edge.arrow.dx;
+                var ady = settings.edge.arrow.dy;
+                // xl/yl left - xr/yr right when looking in direction of arrow
+                var xl = x1 - adx;
+                var yl = y - ady / 2;
+                var xr = xl;
+                var yr = y + ady / 2;
+                var arrow = canvas.path(
+                    _.template(
+                        " M <%= xl %> <%= yl %> L <%= x1 %> <%= y %>"
+                            + " L <%= xr %> <%= yr %>"
+                    )({xl:xl, yl:yl, x1:x1, y:y, xr:xr, yr:yr})
+                );
+                arrow.attr({stroke: settings.edge.color,
+                           "stroke-width": settings.edge.strokewidth});
             }, this);
         },
         outgoingEdges: function(canvas, ui, mode) {
@@ -618,19 +655,6 @@ define([
                 "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
                     x0:x0, y0:y0, x1:x1, y1:y1});
             
-            // and the arrow head 
-            var adx = settings.edge.arrow.dx;
-            var ady = settings.edge.arrow.dy;
-            // xl/yl left - xr/yr right when looking in direction of arrow
-            var xl = x1 - adx;
-            var yl = y1 - ady / 2;
-            var xr = xl;
-            var yr = y1 + ady / 2;
-            svgpath += _.template(
-                " L <%= xl %> <%= yl %> M <%= x1 %> <%= y1 %>"
-                    + " L <%= xr %> <%= yr %>"
-            )({xl:xl, yl:yl, x1:x1, y1:y1, xr:xr, yr:yr});
-
             var droparea = canvas.set();
             // edge area, depending on the mode we
             // make it visible as a drop target.
