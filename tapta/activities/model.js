@@ -218,11 +218,13 @@ define([
                         // XXX: not sure whether it will cause
                         // problems to delete from the collection we are
                         // iterating over.
+                        path.destroy();
                         this.paths.remove(path);
+                    } else {
+                        nodes.splice(idx,1);
+                        path.set({nodes: nodes});
+                        path.save();
                     }
-                    nodes.splice(idx,1);
-                    path.set({nodes: nodes});
-                    path.save();
                 }
             }, this);
         },
