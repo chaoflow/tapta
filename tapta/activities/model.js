@@ -261,6 +261,13 @@ define([
         count: function() {
             return _.size(this.get('nodes'));
         },
+        head: function(node) {
+            if (this.get('nodes').indexOf(node) === -1) {
+                throw "node not in path";
+            }
+            return _.first(this.get('nodes'),
+                           this.get('nodes').indexOf(node));
+        },
         include: function(node) {
             return _.include(this.get('nodes'), node);
         },
@@ -319,6 +326,7 @@ define([
                         }
                         path.set({idx: path.get('idx') + shift},
                                  {silent: true});
+                        path.save();
                     });
                 }
             }
@@ -336,29 +344,48 @@ define([
             );
             return wc;
         },
+        // return groups of paths by common head up to node
+        groups: function(node) {
+            var groups = [];
+            var paths = this.select(function(path) {
+                return path.include(node);
+            });
+            // something definitely not contained in a path
+            var head = [1];
+            var group;
+            _.each(paths, function(path) {
+                if (_.intersect(
+                    head,
+                    path.get('nodes')
+                ).length !== head.length) {
+                    // a new group
+                    head = path.head(node);
+                    group = {head: head, paths: [path]};
+                    groups.push(group);
+                } else {
+                    group.paths.push(path);
+                }
+            });
+            return groups;
+        },
         longest: function() {
             return this.max(function(path) { return path.xReq(); });
         },
         newpath: function(opts) {
-            // If an element occurs in multiple paths, these need to
-            // be neighbors. Select all the paths that contain our
-            // start node.
-            var paths = this.select(function(path) {
-                return path.include(opts.start);
-            });
-            var head = _.first(paths[0].get('nodes'),
-                               paths[0].get('nodes').indexOf(opts.start)+1);
-            var nodes = head.concat(opts.nodes); 
-            var layer = this.layer || this.parent.layer;
-            if (!(_.last(nodes) instanceof Final)) {
-                nodes.push(layer.finals.create());
-            }
-            var path = new Path({
-                idx: paths[0].get('idx') + opts.idx,
-                nodes: nodes
-            });
-            this.add(path);
-            path.save();
+            // Paths are grouped by common head up to the start node
+            // of the new path. We need to create a new path for
+            // each group.
+            _.each(this.groups(opts.start), function(group) {
+                if (opts.idx > group.paths.length) {
+                    throw "Index out of group range";
+                }
+                var idx = group.paths[0].get('idx') + opts.idx;
+                var nodes = group.head.concat([opts.start]).concat(opts.nodes);
+                var path = new Path({idx: idx, nodes: nodes});
+                this.add(path);
+                path.save();
+                this.fetch();
+            }, this);
         },
         parse: function(response) {
             // this might be called during tests, also if no lib is

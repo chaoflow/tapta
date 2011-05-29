@@ -163,9 +163,11 @@ define([
             });
             this.bind("act:addnewpath", function(load) {
                 if (this.mode.name !== "addingnewnode") { return; }
+                // XXX: confusing; this.mode vs this.model
                 var node = this.mode.collection.create();
+                var final = this.model.finals.create();
                 this.activity.model.paths.newpath(_.extend(load, {
-                    nodes: [node]
+                    nodes: [node, final]
                 }));
                 // XXX: workaround: we currently don't catch the model event
                 this.activity.render();
