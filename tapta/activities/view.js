@@ -346,7 +346,24 @@ define([
             }, this);
         },
         outgoingEdges: function(canvas, ui, mode) {
+            // for each outgoing edge: vertical line from center to
+            // middle of outgoing edge horizontal line to the border
+            // of our area.
+            var svgpath = _.template(
+                "M <%= x0 %> <%= y0 %> "
+                    + "L <%= x0 %> <%= y1 %> "
+                    + "L <%= x1 %> <%= y1 %>"
+            );
             _.each(ui.outgoing, function(edge) {
+                // center of area
+                var x0 = ui.x + ui.dx / 2;
+                var y0 = ui.y + ui.dy / 2;
+                // hand-over point to edge area
+                var x1 = ui.x + ui.dx;
+                var y1 = edge.ui().y + edge.ui().dy / 2;
+                var line = canvas.path(svgpath({x0:x0, y0:y0, x1:x1, y1:y1}));
+                line.attr({stroke: settings.edge.color,
+                           "stroke-width": settings.edge.strokewidth});
                 edge.render(mode);
             });
         },
@@ -582,6 +599,9 @@ define([
     });
 
     var Edge = ElementView.extend({
+        initialize: function() {
+            _.bindAll(this, "ui");
+        },
         // XXX: unify with node rendering?
         render: function(mode) {
             var canvas = this.parent.canvas;
