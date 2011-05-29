@@ -297,13 +297,6 @@ define([
             _.each(nodes, function(node) {
                 this.getView(node).render(mode);
             }, this);
-
-            // create and draw edges for all nodes
-            _.each(nodes, function(node) {
-                _.each(node.ui[this.cid].outgoing, function(edge) {
-                    this.getView(edge).render(mode);
-                }, this);
-            }, this);
         }
     });
 
@@ -352,8 +345,10 @@ define([
                 }
             }, this);
         },
-        outgoingEdges: function(canvas, ui) {
-            //
+        outgoingEdges: function(canvas, ui, mode) {
+            _.each(ui.outgoing, function(edge) {
+                edge.render(mode);
+            });
         },
         removable: function() { return false; },
         removearea: function(canvas, ui, mode) {
@@ -377,8 +372,14 @@ define([
                 y: yToPix(this.model.ui[slot].y),
                 dx: xToPix(this.model.ui[slot].dx),
                 dy: yToPix(this.model.ui[slot].dy),
-                incoming: this.model.ui[slot].incoming,
-                outgoing: this.model.ui[slot].outgoing
+                incoming: _.map(
+                    this.model.ui[slot].incoming,
+                    this.parent.getView
+                ),
+                outgoing: _.map(
+                    this.model.ui[slot].outgoing,
+                    this.parent.getView
+                )
             };
         }
     });
@@ -408,7 +409,7 @@ define([
     var Final = Node.extend({
         removable: function() {
             var slot = this.parent.cid;
-            var previousnode = this.ui().incoming[0].source;
+            var previousnode = this.ui().incoming[0].model.source;
             return previousnode instanceof model.MIMO
                 && previousnode.ui[slot].outgoing.length > 1;
         },
