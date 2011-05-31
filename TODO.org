@@ -49,6 +49,9 @@ their outgoing edges
 *** TODO edges to query source node for label
 **** bind edges to their source node to update label
 **** background: decmers provide their answers to be displayed on outedges
+*** TODO x_req/y_req
+elements have a size, optional x/y padding which needs to be accounted
+for in the space allocation
 ** med prio
 *** TODO fix existing tests
 *** TODO print
