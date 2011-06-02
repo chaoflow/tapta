@@ -1,6 +1,6 @@
 define([
     'require',
-    'cdn/underscore',
+    'cdn/underscore.js',
     'cdn/backbone.js'
 ], function(require) {
     var DEBUG_RENDER = true;

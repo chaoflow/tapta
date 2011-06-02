@@ -4,7 +4,7 @@ define([
     // XXX: we currently use _.template and jquery templ. Should
     // settle for one.
     'cdn/jquery.tmpl',
-    'cdn/underscore',
+    'cdn/underscore.js',
     'cdn/raphael.js',
     './base',
     './model',

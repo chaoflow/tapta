@@ -2,7 +2,7 @@ define([
     'require',
     'jquery',
     'cdn/jquery.tmpl',
-    'cdn/underscore',
+    'cdn/underscore.js',
     './base',
     './settings'
 ], function(require) {
