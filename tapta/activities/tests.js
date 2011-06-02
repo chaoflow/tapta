@@ -1,6 +1,7 @@
 // Register all test modules here
 define([
     'require',
+    './test_base',
     './test_localstorage',
     './test_model',
     './test_placeandroute'

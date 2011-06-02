@@ -118,15 +118,6 @@ define([
         equal(coll.parent, 'par', "Parent made it for collection alongside attr");
     });
 
-    test("location and abspath", function() {
-        var A = {name:'A'};
-        var B = {name:'B', parent:A};
-        var C = {name:'C', parent:B};
-        equal(storage.abspath(storage.location(A)), '/A');
-        equal(storage.abspath(storage.location(B)), '/A/B');
-        equal(storage.abspath(storage.location(C)), '/A/B/C');
-    });
-
     test("Model/Collection abspath", function() {
         var A = new Model();
         var B = new Collection();
