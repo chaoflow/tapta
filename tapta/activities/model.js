@@ -333,9 +333,6 @@ define([
             Collection.prototype._add.apply(this, arguments);
         },
         model: Path,
-        comparator: function(path) {
-            return path.get('idx');
-        },
         deep: function() {
             var wc = new Paths(
                 this.map(function (path) {
