@@ -51,7 +51,8 @@ define([
             nodes: [I, A, R, E, Q]
         }));
 
-        var nodes = placeandroute(paths);
+        var slot = "test";
+        var nodes = placeandroute(paths, slot);
 
         test("Path set 0: all node process order", function() {
             deepEqual(_.map(nodes, function(node) { return node.get('name'); }),
@@ -63,37 +64,45 @@ define([
                        "C"]);
         });
 
+        var ui = function(node) {
+            var res = _.clone(node.ui[slot]);
+            delete res.outgoing;
+            delete res.incoming;
+            return res;
+        };
+
         test("Path set 0: size and position", function() {
             // the blocks are sorted by path
-            deepEqual(I.ui, {x:0,    y:0, dx:1,    dy:6}, 'I');
-            deepEqual(A.ui, {x:1,    y:0, dx:1,    dy:6}, 'A');
-            deepEqual(B.ui, {x:2,    y:0, dx:1.75, dy:3}, 'B');
-            deepEqual(C.ui, {x:3.75, y:0, dx:3.5,  dy:1}, 'C');
-            deepEqual(D.ui, {x:7.25, y:0, dx:1.75, dy:2}, 'D');
-            deepEqual(E.ui, {x:9,    y:0, dx:1,    dy:6}, 'E');
-            deepEqual(Q.ui, {x:10,   y:0, dx:1,    dy:6}, 'Q');
+            deepEqual(ui(I), {x:0,    y:0, dx:1,    dy:6}, 'I');
+            deepEqual(ui(A), {x:1.5,  y:0, dx:1,    dy:6}, 'A');
+            deepEqual(ui(B), {x:3,    y:0, dx:1.75, dy:3}, 'B');
+            deepEqual(ui(C), {x:5.25, y:0, dx:3.5,  dy:1}, 'C');
+            deepEqual(ui(D), {x:9.25, y:0, dx:1.75, dy:2}, 'D');
+            deepEqual(ui(E), {x:11.5, y:0, dx:1,    dy:6}, 'E');
+            deepEqual(ui(Q), {x:13,   y:0, dx:1,    dy:6}, 'Q');
 
-            deepEqual(F.ui, {x:3.75, y:1, dx:1.75, dy:1}, 'F');
-            deepEqual(G.ui, {x:5.5,  y:1, dx:1.75, dy:1}, 'G');
+            deepEqual(ui(F), {x:5.25, y:1, dx:1.75, dy:1}, 'F');
+            deepEqual(ui(G), {x:7.5,  y:1, dx:1.75, dy:1}, 'G');
 
-            deepEqual(N.ui, {x:3.75, y:2, dx:7.25, dy:1}, 'N');
+            deepEqual(ui(N), {x:5.25, y:2, dx:7.25, dy:1}, 'N');
 
-            deepEqual(H.ui, {x:2,    y:3, dx:1.4,  dy:1}, 'H');
-            deepEqual(J.ui, {x:3.4,  y:3, dx:1.4,  dy:1}, 'J');
-            deepEqual(K.ui, {x:4.8,  y:3, dx:1.4,  dy:1}, 'K');
-            deepEqual(L.ui, {x:6.2,  y:3, dx:1.4,  dy:1}, 'L');
-            deepEqual(M.ui, {x:7.6,  y:3, dx:1.4,  dy:1}, 'M');
+            deepEqual(ui(H), {x:3,    y:3, dx:1.4,  dy:1}, 'H');
+            deepEqual(ui(J), {x:4.9,  y:3, dx:1.4,  dy:1}, 'J');
+            deepEqual(ui(K), {x:6.8,  y:3, dx:1.4,  dy:1}, 'K');
+            deepEqual(ui(L), {x:8.7,  y:3, dx:1.4,  dy:1}, 'L');
+            deepEqual(ui(M), {x:10.6, y:3, dx:1.4,  dy:1}, 'M');
 
-            deepEqual(P.ui, {x:2,    y:4, dx:7,    dy:1}, 'P');
+            deepEqual(ui(P), {x:3,    y:4, dx:7,    dy:1}, 'P');
 
-            deepEqual(R.ui, {x:2,    y:5, dx:7,    dy:1}, 'R');
+            deepEqual(ui(R), {x:3,    y:5, dx:7,    dy:1}, 'R');
         });
 
         var edges = function(node) {
-            return _.map(node.edges, function(edge) {
+            res = _.map(node.ui[slot].outgoing, function(edge) {
                 return {source: edge.source.get('name'),
                         target: edge.target.get('name')};
             });
+            return res;
         };
 
         test("Path set 0: edges", function() {
