@@ -558,6 +558,8 @@ define([
             rake.click(function() {
                 this.trigger("act:rake", [this.model]);
             }, this);
+
+            // XXX: this should not be here
             this.elems.symbol.click(function(){
                 this.trigger("act:select:node", [this.model]);
             }, this);
