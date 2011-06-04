@@ -163,6 +163,68 @@ define([
         }
     });
 
+    // A collection where each model has an idx. insert is supported
+    // and updates the idx of all affected models
+    var IndexedCollection = Collection.extend({
+        _add: function(model, opts) {
+            // elements without an idx are appended
+            idx = model.get ? model.get('idx') : model.idx;
+            if (idx === undefined) {
+                idx = this.length;
+            }
+            if (model.set) {
+                model.set({idx: idx}, opts);
+                // only save if model exist in the db
+                if (model.get('id')) {
+                    model.save();
+                }
+            } else {
+                model.idx = idx;
+            }
+            // ATTENTION: Backbone.Collection._add returns the model
+            // but .add returns the collection.
+            return Collection.prototype._add.apply(this, arguments);
+        },
+        comparator: function(path) {
+            return path.get('idx');
+        },
+        insert: function(model, opts) {
+            if (opts.idx === undefined) {
+                throw "insert needs opts.idx";
+            }
+            // shift all models, starting with last model to model
+            // with idx of model to be inserted.
+            // not sure whether the collection resorts on each changed event
+            var N = this.length-1;
+            var models = this.toArray();
+            for (var i=N; i>=opts.idx; i--) {
+                models[i].set({idx: i+1}, opts);
+                // only save if model exist in the db
+                if (models[i].get('id')) {
+                    models[i].save();
+                }
+            }
+            if (model.set) {
+                model.set({idx: opts.idx});
+            } else {
+                model.idx = opts.idx;
+            }
+            this._add(model, opts);
+        },
+        _remove: function(model, opts) {
+            model = Collection.prototype._remove.apply(this, arguments);
+            var N = this.length-1;
+            var models = this.toArray();            
+            for (var i=model.get('idx'); i<=N; i++) {
+                models[i].set({idx: i}, opts);
+                // only save if model exist in the db
+                if (models[i].get('id')) {
+                    models[i].save();
+                }
+            }
+        }
+    });
+
     Backbone.sync = function(method, model, success, error) {
         // model is either a collection or a model
         var resp;
@@ -208,6 +270,7 @@ define([
 
     return {
         Collection: Collection,
+        IndexedCollection: IndexedCollection,
         Model: Model,
         Root: Root,
         Store: Store

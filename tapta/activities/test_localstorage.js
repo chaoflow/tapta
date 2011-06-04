@@ -257,5 +257,47 @@ define([
         // XXX: proper cleanup
     });
 
+    test("IndexedCollection", function() {
+        var idxcoll = new storage.IndexedCollection();
+        idxcoll.add({a:1});
+        var mod2 = new storage.Model({a:2});
+        idxcoll.add(mod2);
+        var mod1 = idxcoll.models[0];
+        deepEqual(mod1.attributes, {a: 1, idx: 0},
+                  "Plain obj receives idx");
+        deepEqual(mod2.attributes, {a: 2, idx: 1},
+                  "Model receives idx");
+        idxcoll.insert({a: 11}, {idx: 0});
+        var mod11 = idxcoll.models[0];
+        deepEqual(mod11.attributes, {a: 11, idx: 0},
+                  "Plain obj can be inserted");
+        var mod21 = new storage.Model({a:21});
+        idxcoll.insert(mod21, {idx: 1});
+        deepEqual(mod21.attributes, {a: 21, idx: 1},
+                  "Model can be inserted");
+        deepEqual(
+            idxcoll.map(function(model) {
+                return model.attributes;
+            }),
+            [
+                {a: 11, idx: 0},
+                {a: 21, idx: 1},
+                {a: 1,  idx: 2},
+                {a: 2,  idx: 3}
+            ],
+            "Overall order fits");
+        idxcoll.remove(mod21);
+        deepEqual(
+            idxcoll.map(function(model) {
+                return model.attributes;
+            }),
+            [
+                {a: 11, idx: 0},
+                {a: 1,  idx: 1},
+                {a: 2,  idx: 2}
+            ],
+            "Removing reindexes");
+    });
+
     localStorage.removeItem(test_root.abspath());
 }); 
