@@ -102,9 +102,9 @@ define([
             var child = new Proto(attr, opts);
             //child.bind("all", this.getEventForwarder(child));
             return child;
+        }
         // XXX: reintroduce with change::/path/to/child if really
         // needed, otherwise collision with events like change:selected
-        // },
         // getEventForwarder: function(child) {
         //     // XXX: How can we create an arguments object?
         //     // XXX: Is there something like python *args
@@ -119,7 +119,7 @@ define([
         //         console.log(newevent, a, b, c, d, e);
         //         this.trigger(newevent, a, b, c, d, e);
         //     }, this);
-        }
+        // }
     });
 
     var Root = Model.extend({
