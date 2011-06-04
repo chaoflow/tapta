@@ -252,6 +252,26 @@ define([
         }
     });
 
+    // XXX: move to utils.js and write tests for it
+    var head = function(list, item) {
+        if (item === undefined) {
+            return _.head(list);
+        }
+        if (list.indexOf(item) === -1) {
+            throw "Item not in list";
+        }
+        return _.head(list, _.indexOf(list, item));
+    };
+    var tail = function(list, item) {
+        if (item === undefined) {
+            return _.tail(list);
+        }
+        if (list.indexOf(item) === -1) {
+            throw "Item not in list";
+        }
+        return _.tail(list, _.indexOf(list, item));
+    };
+
     var Path = Model.extend({
         logevents: true,
         copy: function() {
@@ -263,18 +283,10 @@ define([
             return _.size(this.get('nodes'));
         },
         head: function(node) {
-            if (this.get('nodes').indexOf(node) === -1) {
-                throw "node not in path";
-            }
-            return _.first(this.get('nodes'),
-                           this.get('nodes').indexOf(node));
+            return head(this.get('nodes'), node);
         },
         include: function(node) {
             return _.include(this.get('nodes'), node);
-        },
-        // XXX: naming head/tail and first/last
-        last: function() {
-            return _.last(this.get('nodes'));
         },
         remove: function(node) {
             var nodes = this.get('nodes');
@@ -287,6 +299,9 @@ define([
                 node.save();
             });
             Model.prototype.save.apply(this);
+        },
+        tail: function(node) {
+            return tail(this.get('nodes'), node);
         },
         toJSON: function() {
             var attributes = _.clone(this.attributes);
@@ -305,6 +320,8 @@ define([
             }).get('y_req');
         }
     });
+    Path.prototype.first = Path.prototype.head;
+    Path.prototype.last = Path.prototype.tail;
 
     var Paths = IndexedCollection.extend({
         model: Path,
