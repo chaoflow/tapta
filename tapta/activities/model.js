@@ -55,6 +55,7 @@ define([
 
     var Model = storage.Model;
     var Collection = storage.Collection;
+    var IndexedCollection = storage.IndexedCollection;
 
     // root object is based on a Backbone.Model, but the save and
     // fetch functions are disabled. You can give it a custom name:
@@ -304,34 +305,7 @@ define([
         }
     });
 
-    var Paths = Collection.extend({
-        _add: function(model, opts) {
-            if (this.length === 0) {
-                try {
-                    model.set({idx: 0});
-                } catch(TypeError) {
-                    model.idx = 0;
-                }
-            } else {
-                var idx = model.get('idx');
-                if (idx === undefined) {
-                    idx = this.length;
-                } else {
-                    this.each(function(path) {
-                        // the new model dictates the idx, all after
-                        // that are shifted.
-                        var shift = 0;
-                        if (idx === path.get('idx')) {
-                            shift = 1;
-                        }
-                        path.set({idx: path.get('idx') + shift},
-                                 {silent: true});
-                        path.save();
-                    });
-                }
-            }
-            Collection.prototype._add.apply(this, arguments);
-        },
+    var Paths = IndexedCollection.extend({
         model: Path,
         deep: function() {
             var wc = new Paths(
