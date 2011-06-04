@@ -322,6 +322,16 @@ define([
     Path.prototype.first = Path.prototype.head;
     Path.prototype.last = Path.prototype.tail;
 
+    // XXX: move somewhere and test it
+    var startswith = function(list, head) {
+        for (var i=0; i<head.length; i++) {
+            if (list[i] !== head[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     var Paths = IndexedCollection.extend({
         model: Path,
         deep: function() {
@@ -342,11 +352,7 @@ define([
             var head = [1];
             var group;
             _.each(paths, function(path) {
-                // XXX: proper equality test for array elements needed
-                if (_.intersect(
-                    head,
-                    path.get('nodes')
-                ).length !== head.length) {
+                if (!(startswith(path.get('nodes'), head))) {
                     // a new group
                     head = path.head(node);
                     group = {head: head, paths: [path]};
