@@ -211,14 +211,11 @@ define([
         },
         // remove a node from all paths
         remove: function(node) {
-            this.paths.each(function(path) {
+            _.each(this.paths.toArray(), function(path) {
                 var nodes = path.get('nodes');
                 var idx = nodes.indexOf(node);
                 if (idx !== -1) {
                     if (node instanceof Final) {
-                        // XXX: not sure whether it will cause
-                        // problems to delete from the collection we are
-                        // iterating over.
                         path.destroy();
                         this.paths.remove(path);
                     } else {
