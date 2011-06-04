@@ -272,6 +272,7 @@ define([
         include: function(node) {
             return _.include(this.get('nodes'), node);
         },
+        // XXX: naming head/tail and first/last
         last: function() {
             return _.last(this.get('nodes'));
         },
@@ -315,7 +316,7 @@ define([
             );
             return wc;
         },
-        // return groups of paths by common head up to node
+        // return paths grouped by common head relative to node
         groups: function(node) {
             var groups = [];
             var paths = this.select(function(path) {
@@ -325,6 +326,7 @@ define([
             var head = [1];
             var group;
             _.each(paths, function(path) {
+                // XXX: proper equality test for array elements needed
                 if (_.intersect(
                     head,
                     path.get('nodes')
