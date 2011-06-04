@@ -171,15 +171,15 @@ define([
             idx = model.get ? model.get('idx') : model.idx;
             if (idx === undefined) {
                 idx = this.length;
-            }
-            if (model.set) {
-                model.set({idx: idx}, opts);
-                // only save if model exist in the db
-                if (model.get('id')) {
-                    model.save();
+                if (model.set) {
+                    model.set({idx: idx}, opts);
+                    // only save if model exist in the db
+                    if (model.get('id')) {
+                        model.save();
+                    }
+                } else {
+                    model.idx = idx;
                 }
-            } else {
-                model.idx = idx;
             }
             // ATTENTION: Backbone.Collection._add returns the model
             // but .add returns the collection.
