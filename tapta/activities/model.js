@@ -352,8 +352,11 @@ define([
                 }
                 var idx = group.paths[0].get('idx') + opts.idx;
                 var nodes = group.head.concat([opts.start]).concat(opts.nodes);
-                var path = new Path({idx: idx, nodes: nodes});
-                this.add(path);
+                var path = new Path({nodes: nodes});
+                this.insert(path, {idx:idx});
+                if (path !== this.toArray()[idx]) {
+                    throw "Path inserted at wrong position";
+                }
                 path.save();
                 this.fetch();
             }, this);
