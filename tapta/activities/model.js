@@ -218,6 +218,8 @@ define([
                     if (node instanceof Final) {
                         path.destroy();
                         this.paths.remove(path);
+                        node.destroy();
+                        this.layer.finals.remove(node);
                     } else {
                         nodes.splice(idx,1);
                         path.set({nodes: nodes});
