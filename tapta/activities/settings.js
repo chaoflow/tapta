@@ -151,16 +151,18 @@ define([
             },
             // XXX: grid coordinates
             dx: 0.5,
-            color: "#202020",
+            color: "#424242",
             strokewidth: 2
         },
         node: {
             initial: {
-                r: 16
+                r: 10,
+                color: "#424242"
             },
             final: {
-                r: 18,
-                dr: 5
+                r: 12,
+                dr: 4,
+                color: "#424242"
             },
             action: {
                 dx: 60,
@@ -168,8 +170,12 @@ define([
                 r: 4
             },
             forkjoin: {
-                dx: 15,
-                pad: 10
+                dx: 5,
+                pad: 10,
+                color: "#424242"
+            },
+            merge: {
+                color: "#424242"
             },
             borderwidth: 2,
             bordercolor: '#b5d9ea',

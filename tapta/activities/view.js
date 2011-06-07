@@ -457,8 +457,8 @@ define([
             // draw the circle - XXX: only one thing in the set?
             var node = canvas.set();
             var circle = canvas.circle(x, y, r);
-            circle.attr({fill: settings.node.bordercolor,
-                         stroke: settings.node.bordercolor,
+            circle.attr({fill: settings.node.initial.color,
+                         stroke: settings.node.initial.color,
                          "stroke-width": settings.node.borderwidth});
             node.push(circle);
         }
@@ -485,14 +485,14 @@ define([
 
             var symbol = canvas.set();
             var outer = canvas.circle(x, y, r);
-            outer.attr({fill: settings.node.fillcolor,
-                        stroke: settings.node.bordercolor,
+            outer.attr({fill: "white",
+                        stroke: settings.node.final.color,
                         "stroke-width": settings.node.borderwidth});
             symbol.push(outer);
 
             var inner = canvas.circle(x, y, r - settings.node.final.dr);
-            inner.attr({fill: settings.node.bordercolor,
-                        stroke: settings.node.bordercolor,
+            inner.attr({fill: settings.node.final.color,
+                        stroke: settings.node.final.color,
                         "stroke-width": settings.node.borderwidth});
             symbol.push(inner);
             return symbol;
@@ -608,17 +608,32 @@ define([
     var DecMer = MIMO.extend({
         symbol: function(canvas, ui) {
             // we draw a rect and then rotate it 45 degress
-            var dx = settings.node.action.dx;
+            var dx;
+            var fillcolor;
+            var strokecolor;
+            // a decmer with only one outgoing edge is at most a
+            // merge, but not a decision. Only decisions are colorful -
+            // they need to stand out, as human needs to do something in
+            // contrast to forkjoin and pure merge.
+            if (ui.outgoing.length === 1) {
+                fillcolor = settings.node.merge.color;
+                strokecolor = settings.node.merge.color;
+                dx = settings.node.action.dx / 3;
+            } else {
+                fillcolor = settings.node.fillcolor;
+                strokecolor = settings.node.bordercolor;
+                dx = settings.node.action.dx;
+            }
+            this.x_in = ui.x + (ui.dx - dx) / 2;
+            this.x_out = ui.x + ui.dx / 2 + dx / 2;
             dx = Math.sqrt((Math.pow((dx / 2), 2) * 2));
             var x = ui.x + (ui.dx - dx) / 2;
             var y = ui.y + (ui.dy - dx) / 2;
-            this.x_in = ui.x + (ui.dx - settings.node.action.dx) / 2;
-            this.x_out = ui.x + ui.dx / 2 + settings.node.action.dx / 2;
             var node = canvas.set();
             var rect = canvas.rect(x, y, dx, dx, 0);
             // XXX: can we do that in CSS and just add a class here?
-            rect.attr({fill: settings.node.fillcolor,
-                       stroke: settings.node.bordercolor,
+            rect.attr({fill: fillcolor,
+                       stroke: strokecolor,
                        "stroke-width": settings.node.borderwidth});
             rect.rotate(45);
             return rect;
@@ -635,8 +650,8 @@ define([
             this.x_in = x;
             this.x_out = x + dx;
             var rect = canvas.rect(x, y, dx, dy, 0);
-            rect.attr({fill: settings.node.fillcolor,
-                       stroke: settings.node.bordercolor,
+            rect.attr({fill: settings.node.forkjoin.color,
+                       stroke: settings.node.forkjoin.color,
                        "stroke-width": settings.node.borderwidth});
             return rect;
         }
