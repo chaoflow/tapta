@@ -304,16 +304,6 @@ define([
     Path.prototype.first = Path.prototype.head;
     Path.prototype.last = Path.prototype.tail;
 
-    // XXX: move somewhere and test it
-    var startswith = function(list, head) {
-        for (var i=0; i<head.length; i++) {
-            if (list[i] !== head[i]) {
-                return false;
-            }
-        }
-        return true;
-    };
-
     var Paths = IndexedCollection.extend({
         model: Path,
         deep: function() {

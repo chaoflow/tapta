@@ -36,4 +36,12 @@ define([
         deepEqual(base.tail(list, 2), [3], "return tail after item in list");
         deepEqual(base.tail(list, 3), [], "tail works for last element");
     });
+
+    test("startswith", function() {
+        var list = [0,1,2,3];
+        var head = [0,1];
+        var nothead = [1,2];
+        equal(base.startswith(list, head), true, "startswith returns true");
+        equal(base.startswith(list, nothead), false, "startswith returns true");
+    });
 }); 

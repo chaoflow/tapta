@@ -34,6 +34,16 @@ define([
         }
         return _.head(list, _.indexOf(list, item));
     };
+
+    var startswith = function(list, head) {
+        for (var i=0; i<head.length; i++) {
+            if (list[i] !== head[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     var tail = function(list, item) {
         if (item === undefined) {
             return _.tail(list);
@@ -73,10 +83,12 @@ define([
             this.trigger.apply(this, arguments);
         }
     });
+
     return {
         abspath: abspath,
         head: head,
         location: location,
+        startswith: startswith,
         tail: tail,
         View: View
     };
