@@ -140,7 +140,7 @@ define([
             y: 60
         },
         canvas: {
-            width: 600,
+            width: 900,
             height: 400,
             r: 10
         },
