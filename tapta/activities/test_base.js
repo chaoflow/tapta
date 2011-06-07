@@ -46,5 +46,6 @@ define([
         var nothead = [1,2];
         equal(base.startswith(list, head), true, "startswith returns true");
         equal(base.startswith(list, nothead), false, "startswith returns true");
+        equal(base.startswith(list), false, "false for undefined");
     });
 }); 

@@ -36,6 +36,9 @@ define([
     };
 
     var startswith = function(list, head) {
+        if (head === undefined) {
+            return false;
+        }
         for (var i=0; i<head.length; i++) {
             if (list[i] !== head[i]) {
                 return false;
