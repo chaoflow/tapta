@@ -2,10 +2,12 @@ define([
     'require',
     'cdn/underscore.js',
     'cdn/backbone.js',
+    './base',
     './settings',
     './localstorage',
     './placeandroute'
 ], function(require) {
+    var base = require('./base');
     var placeandroute = require('./placeandroute');
     var settings = require('./settings');
     var storage = require('./localstorage');
@@ -251,26 +253,6 @@ define([
         }
     });
 
-    // XXX: move to utils.js and write tests for it
-    var head = function(list, item) {
-        if (item === undefined) {
-            return _.head(list);
-        }
-        if (list.indexOf(item) === -1) {
-            throw "Item not in list";
-        }
-        return _.head(list, _.indexOf(list, item));
-    };
-    var tail = function(list, item) {
-        if (item === undefined) {
-            return _.tail(list);
-        }
-        if (list.indexOf(item) === -1) {
-            throw "Item not in list";
-        }
-        return _.tail(list, _.indexOf(list, item));
-    };
-
     var Path = Model.extend({
         logevents: true,
         copy: function() {
@@ -282,7 +264,7 @@ define([
             return _.size(this.get('nodes'));
         },
         head: function(node) {
-            return head(this.get('nodes'), node);
+            return base.head(this.get('nodes'), node);
         },
         include: function(node) {
             return _.include(this.get('nodes'), node);
@@ -300,7 +282,7 @@ define([
             Model.prototype.save.apply(this);
         },
         tail: function(node) {
-            return tail(this.get('nodes'), node);
+            return base.tail(this.get('nodes'), node);
         },
         toJSON: function() {
             var attributes = _.clone(this.attributes);

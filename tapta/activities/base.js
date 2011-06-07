@@ -25,6 +25,25 @@ define([
         }, '');
     };
 
+    var head = function(list, item) {
+        if (item === undefined) {
+            return _.head(list);
+        }
+        if (list.indexOf(item) === -1) {
+            throw "Item not in list";
+        }
+        return _.head(list, _.indexOf(list, item));
+    };
+    var tail = function(list, item) {
+        if (item === undefined) {
+            return _.tail(list);
+        }
+        if (list.indexOf(item) === -1) {
+            throw "Item not in list";
+        }
+        return _.tail(list, _.indexOf(list, item)+1);
+    };
+
     var View = Backbone.View.extend({
         constructor: function(props) {
             this.name = props.name;
@@ -56,7 +75,9 @@ define([
     });
     return {
         abspath: abspath,
+        head: head,
         location: location,
+        tail: tail,
         View: View
     };
 });
