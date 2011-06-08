@@ -316,24 +316,9 @@ define([
         },
         // return paths grouped by common head relative to node
         groups: function(node) {
-            var groups = [];
-            var paths = this.select(function(path) {
-                return path.include(node);
+            return base.groups(this.models, node, function(path) {
+                return path.get("nodes");
             });
-            // something definitely not contained in a path
-            var head = [1];
-            var group;
-            _.each(paths, function(path) {
-                if (!(startswith(path.get('nodes'), head))) {
-                    // a new group
-                    head = path.head(node);
-                    group = {head: head, paths: [path]};
-                    groups.push(group);
-                } else {
-                    group.paths.push(path);
-                }
-            });
-            return groups;
         },
         longest: function() {
             return this.max(function(path) { return path.xReq(); });
@@ -343,10 +328,10 @@ define([
             // of the new path. We need to create a new path for
             // each group.
             _.each(this.groups(opts.start), function(group) {
-                if (opts.idx > group.paths.length) {
+                if (opts.idx > group.members.length) {
                     throw "Index out of group range";
                 }
-                var idx = group.paths[0].get('idx') + opts.idx;
+                var idx = group.members[0].get('idx') + opts.idx;
                 var nodes = group.head.concat([opts.start]).concat(opts.nodes);
                 var path = new Path({nodes: nodes});
                 this.insert(path, {idx:idx});

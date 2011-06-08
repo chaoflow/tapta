@@ -48,4 +48,61 @@ define([
         equal(base.startswith(list, nothead), false, "startswith returns true");
         equal(base.startswith(list), false, "false for undefined");
     });
+
+    test("groups", function() {
+        var lists = [
+            [0,1,2],
+            [0,2,1,3],
+            [0,1,3],
+            [0,2,1,4],
+            [0,2,3],
+            [0,3,1,4],
+            [0,3,1,5],
+            [0,3,4,1,5]
+        ];
+        deepEqual(_.pluck(base.groups(lists, 1), 'head'), [
+            [0],
+            [0,2],
+            [0,3],
+            [0,3,4]
+        ], "group heads are correct");
+        deepEqual(_.pluck(base.groups(lists, 1), "members"), [
+            [[0,1,2],
+             [0,1,3]],
+            [[0,2,1,3],
+             [0,2,1,4]],
+            [[0,3,1,4],
+             [0,3,1,5]],
+            [[0,3,4,1,5]]
+        ], "group members are correct");
+        var objlists = [
+            {items: [0,1,2]},
+            {items: [0,2,1,3]},
+            {items: [0,1,3]},
+            {items: [0,2,1,4]},
+            {items: [0,2,3]},
+            {items: [0,3,1,4]},
+            {items: [0,3,1,5]},
+            {items: [0,3,4,1,5]}
+        ];
+        deepEqual(_.pluck(base.groups(objlists, 1, function(obj) {
+            return obj.items;
+        }), 'head'), [
+            [0],
+            [0,2],
+            [0,3],
+            [0,3,4]
+        ], "group heads are correct with map");
+        deepEqual(_.pluck(base.groups(objlists, 1, function(obj) {
+            return obj.items;
+        }), "members"), [
+            [{items: [0,1,2]},
+             {items: [0,1,3]}],
+            [{items: [0,2,1,3]},
+             {items: [0,2,1,4]}],
+            [{items: [0,3,1,4]},
+             {items: [0,3,1,5]}],
+            [{items: [0,3,4,1,5]}]
+        ], "group members are correct with map");
+    });
 }); 

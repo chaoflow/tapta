@@ -25,6 +25,37 @@ define([
         }, '');
     };
 
+    // lists is a list of lists. return groups of lists that contain
+    // the item and have a common head relative to the item. map is
+    // optional and will be used to retrieve items from the lists.
+    var groups = function(lists, item, map) {
+        var groups = [];
+        // only lists containing the item are relevant
+        var relevantlists = _.select(lists, function(obj) {
+            var list = map ? map(obj) : obj;
+            return _.include(list, item);
+        });
+        _.each(relevantlists, function(obj) {
+            var list = map ? map(obj) : obj;
+            var grouphead = head(list, item);
+            var group = _.detect(groups, function(group) {
+                for (var i=0; i<grouphead.length; i++) {
+                    if (grouphead[i] !== group.head[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            if (group === undefined) {
+                group = {head: grouphead, members: [obj]};
+                groups.push(group);
+            } else {
+                group.members.push(obj);
+            }
+        });
+        return groups;
+    };
+
     var head = function(list, item) {
         if (item === undefined) {
             return _.head(list);
@@ -89,6 +120,7 @@ define([
 
     return {
         abspath: abspath,
+        groups: groups,
         head: head,
         location: location,
         startswith: startswith,
