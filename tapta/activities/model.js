@@ -343,11 +343,10 @@ define([
             }, this);
         },
         parse: function(response) {
-            // this might be called during tests, also if no lib is
-            // defined. However, the lib is only needed if there is
+            // this might be called during tests, also if no layer is
+            // defined. However, the layer is only needed if there is
             // data coming from the storage.
             var layer = this.layer || this.parent.layer;
-            // XXX: we currently only store one path
             var paths = _.map(response, function(attributes) {
                 attributes['nodes'] = _.map(attributes['nodes'], function(id) {
                     return layer.obj(id);
