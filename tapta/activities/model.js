@@ -320,19 +320,35 @@ define([
             });
         },
         // return easy to read info about the paths structure
-        inspect: function() {
-            return this.map(
+        inspect: function(opts) {
+            var list = this.map(
                 function(path) {
-                    return _.map(path.get('nodes'), function(node) {
-                        return node.cid;
+                    var nodes = _.map(path.get('nodes'), function(node) {
+                        return node.id.toString().substr(0,8);
                     });
+                    if (opts.toString) {
+                        return [
+                            path.get('idx'),
+                            path.id.toString().substr(0,8),
+                            nodes.join(',')
+                        ].join(" : ");
+                    } else {
+                        return {
+                            idx: path.get('idx'),
+                            id: path.id.toString().substr(0,8),
+                            nodes: nodes
+                        };
+                    }
                 }
             );
+            return list;
         },
         longest: function() {
             return this.max(function(path) { return path.xReq(); });
         },
         newpath: function(opts) {
+            console.group("newpath: "+this.abspath());
+            var before = this.inspect({toString:true}).join('\n');
             // Paths are grouped by common head up to the start node
             // of the new path. We need to create a new path for
             // each group.
@@ -350,6 +366,13 @@ define([
                 path.save();
                 this.fetch();
             }, this);
+            console.group("then");
+            console.debug(before);
+            console.groupEnd();
+            console.group("now");
+            console.debug(this.inspect({toString:true}).join('\n'));
+            console.groupEnd();
+            console.groupEnd();
         },
         parse: function(response) {
             // this might be called during tests, also if no layer is
