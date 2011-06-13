@@ -107,6 +107,8 @@ define([
                 // actions in combination with reloading.
                 throw "Unallocated space left!";
             };
+            // XXX: paths is a real collection and throws events
+            // no problem, but something to be aware of
             paths.remove(longest);
             return recurse(paths, allnodes);
         };

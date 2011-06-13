@@ -85,8 +85,6 @@ define([
     var Model = Backbone.Model.extend({
         abspath: base.abspath,
         location: base.location,
-        // XXX: define create in analogy to coll.create with addition
-        // factory.
         constructor: function(attr, opts) {
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
