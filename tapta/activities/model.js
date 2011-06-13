@@ -254,7 +254,6 @@ define([
     });
 
     var Path = Model.extend({
-        logevents: true,
         copy: function() {
             return new Path({
                 nodes: [].concat(this.get('nodes'))
