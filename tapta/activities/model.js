@@ -320,6 +320,16 @@ define([
                 return path.get("nodes");
             });
         },
+        // return easy to read info about the paths structure
+        inspect: function() {
+            return this.map(
+                function(path) {
+                    return _.map(path.get('nodes'), function(node) {
+                        return node.cid;
+                    });
+                }
+            );
+        },
         longest: function() {
             return this.max(function(path) { return path.xReq(); });
         },
