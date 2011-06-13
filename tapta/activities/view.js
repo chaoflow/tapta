@@ -40,8 +40,9 @@ define([
         },
         render: function() {
             // we were not defined by defchild, no render wrapper
-            console.log("DEBUG: Rendering app");
+            console.group("render:"+this.abspath());
             this.layers.render();
+            console.groupEnd();
         }
     });
 
