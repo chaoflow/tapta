@@ -3,8 +3,6 @@ define([
     'cdn/underscore.js',
     'cdn/backbone.js'
 ], function(require) {
-    var DEBUG_RENDER = true;
-
     var location = function(obj) {
         if (!obj) { obj = this; }
         if (obj.parent) {
