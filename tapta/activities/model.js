@@ -349,19 +349,27 @@ define([
         newpath: function(opts) {
             console.group("newpath: "+this.abspath());
             var before = this.inspect({toString:true}).join('\n');
+            var slot = this.parent.cid;
+            var outgoing = opts.start.ui[slot].outgoing;
+            if (opts.idx > outgoing.length) {
+                throw "Index out of range";
+            }
             // Paths are grouped by common head up to the start node
             // of the new path. We need to create a new path for
             // each group.
             _.each(this.groups(opts.start), function(group) {
-                if (opts.idx > group.members.length) {
-                    throw "Index out of group range";
-                }
-                var idx = group.members[0].get('idx') + opts.idx;
                 var nodes = group.head.concat([opts.start]).concat(opts.nodes);
                 var path = new Path({nodes: nodes});
-                this.insert(path, {idx:idx});
-                if (path !== this.toArray()[idx]) {
-                    throw "Path inserted at wrong position";
+                if (opts.idx === outgoing.length) {
+                    // append
+                    this.add(path);
+                } else {
+                    // insert before first path with the edge of the same idx
+                    var idx = outgoing[opts.idx].paths[0].get('idx');
+                    this.insert(path, {idx:idx});
+                    if (path !== this.toArray()[idx]) {
+                        throw "Path inserted at wrong position";
+                    }
                 }
                 path.save();
                 this.fetch();
