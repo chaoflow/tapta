@@ -21,6 +21,8 @@ define([
         // A deep working copy (wc), the nodes in there are still the very same.
         var paths_wc = paths.deep();
         paths_wc.name = "placeandroute_working_copy";
+        // make sure events are not logged
+        paths_wc.logevents = false;
         
         // The longest path defines the size of the whole diagram
         // (paths.xReq), this space is available for all paths,
