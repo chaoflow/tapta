@@ -89,9 +89,11 @@ define([
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
             Backbone.Model.apply(this, arguments);
-            if (this.logevents) {
-                this.bind("all", function() { console.log(arguments); });
-            }
+            this.bind("all", function() {
+                if (this.logevents) {
+                    console.log(arguments);
+                }
+            });
         },
         defchild: function(Proto, attr, opts) {
             if (opts.parent === undefined) {
@@ -139,6 +141,11 @@ define([
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
             Backbone.Collection.apply(this, arguments);
+            this.bind("all", function() {
+                if (this.logevents) {
+                    console.log(arguments);
+                }
+            });
         },
         // XXX: not sure whether a good idea, its not called early
         // enough, we are safer of to take id and collection as

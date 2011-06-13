@@ -94,9 +94,11 @@ define([
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
             console.groupEnd();
-            if (this.logevents) {
-                this.bind("all", function() { console.log(arguments); });
-            }
+            this.bind("all", function() {
+                if (this.logevents) {
+                    console.log(arguments);
+                }
+            });
         },
         abspath: abspath,
         location: location,
