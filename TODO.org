@@ -64,6 +64,7 @@ factor out stuff and write tests for it
 *** TODO fix x_req/y_req - edges have also space and padding?
 elements have a size, optional x/y padding which needs to be accounted
 for in the space allocation
+*** TODO clear rake hierarchy when raked action is removed
 ** med prio
 *** DONE fix existing tests
 CLOSED: [2011-06-04 Sat 03:48]
