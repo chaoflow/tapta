@@ -112,7 +112,7 @@ define([
             };
             // XXX: paths is a real collection and throws events
             // no problem, but something to be aware of
-            paths.remove(longest);
+            paths.remove(longest, {silent:true});
             return recurse(paths, allnodes);
         };
         var allnodes = recurse(paths_wc);
