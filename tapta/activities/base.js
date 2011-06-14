@@ -109,7 +109,7 @@ define([
             var realrender = child.render;
             child.render = function() {
                 //console.group("render:"+this.abspath());
-                realrender.apply(this, arguments);
+                return realrender.apply(this, arguments);
                 //console.groupEnd();
             };
             return child;
