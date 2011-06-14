@@ -590,7 +590,8 @@ define([
                     ctrlarea = canvas.rect(ui.x, y0, ui.dx, y1-y0);
                     ctrlarea.attr({fill: "yellow",
                                    stroke: "grey",
-                                   "fill-opacity": "0.2"});
+                                   "fill-opacity": "0.1",
+                                   "stroke-opacity": "0.2"});
                     ctrlarea.click(function(idx) {
                         return function() {
                             this.trigger("act:addnewpath", {
@@ -684,7 +685,10 @@ define([
             // XXX: use css with classes .droptarget and set class here
             var rect = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
             if (mode.name === "addingnewnode") {
-                rect.attr({fill: "green", stroke: "grey", "fill-opacity":"0.2"});
+                rect.attr({fill: "green",
+                           stroke: "grey",
+                           "fill-opacity":"0.01",
+                           "stroke-opacity":"0.2"});
             } else {
                 rect.attr({fill: "white", opacity: 0});
             }
