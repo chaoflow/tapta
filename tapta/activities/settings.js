@@ -154,6 +154,7 @@ define([
             color: "#424242",
             strokewidth: 2
         },
+        // with inheritance this would be cool
         node: {
             initial: {
                 r: 10,
