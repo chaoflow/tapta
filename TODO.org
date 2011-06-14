@@ -103,6 +103,7 @@ XXX: this might be outdated
 **** for non-view
 **** for view?
 *** TODO move ctrl area style to css
+*** TODO move drawing code into raphael plugin: raphael.fn.tapta?
 ** low prio and easy
 Theses tasks are meant for newbies to enter the project
 *** TODO top-layer without edges
