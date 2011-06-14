@@ -217,10 +217,11 @@ define([
             this._add(model, opts);
         },
         _remove: function(model, opts) {
+            var idx = model.get('idx');
             model = Collection.prototype._remove.apply(this, arguments);
             var N = this.length-1;
             var models = this.toArray();            
-            for (var i=model.get('idx'); i<=N; i++) {
+            for (var i=idx; i<=N; i++) {
                 models[i].set({idx: i}, opts);
                 // only save if model exist in the db
                 if (models[i].get('id')) {
