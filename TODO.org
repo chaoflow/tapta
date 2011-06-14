@@ -27,14 +27,16 @@ CLOSED: [2011-05-25 Wed 21:51]
 **** idea: drop new final node onto an area of a forkjoin/decmer
 they have areas corresponding to the space: above, between and below
 their outgoing edges
-*** TODO instrospection tool for data model
+*** DONE instrospection tool for data model
+CLOSED: [2011-06-14 Tue 02:12]
 there needs to be a debugger window that shows all paths and elements
 in a concise way.
 
 content of all collections with selected attributes, cid for a start
 
 content of paths listing path idx and nodes as cid lists
-*** TODO BUG: newpath with only MIMO leads to wrong insertion
+*** DONE BUG: newpath with only MIMO leads to wrong insertion
+CLOSED: [2011-06-14 Tue 02:12]
 factor out stuff and write tests for it
 *** TODO BUG: removing left last path with idx != 0
 factor out stuff and write tests for it
