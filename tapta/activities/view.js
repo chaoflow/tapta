@@ -62,8 +62,12 @@ define([
                         name: layer.name
                     });
                     return child;
-                }, this
-            );           
+                },
+                this
+            ).reverse();
+            for (var i=0; i<this.children.length; i++) {
+                this[i] = this.children[i];
+            }
         },
         render: function() {
             var layers = this;
