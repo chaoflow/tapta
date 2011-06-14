@@ -90,10 +90,10 @@ define([
         constructor: function(props) {
             this.name = props.name;
             this.parent = props.parent;
-            console.group("init:"+this.abspath());
+            //console.group("init:"+this.abspath());
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
-            console.groupEnd();
+            //console.groupEnd();
             this.bind("all", function() {
                 if (this.logevents) {
                     console.log(arguments);
@@ -108,9 +108,9 @@ define([
             child.bind("all", _.bind(this.eventForwarder, this));
             var realrender = child.render;
             child.render = function() {
-                console.group("render:"+this.abspath());
+                //console.group("render:"+this.abspath());
                 realrender.apply(this, arguments);
-                console.groupEnd();
+                //console.groupEnd();
             };
             return child;
         },
