@@ -38,12 +38,11 @@ content of paths listing path idx and nodes as cid lists
 *** DONE BUG: newpath with only MIMO leads to wrong insertion
 CLOSED: [2011-06-14 Tue 02:12]
 factor out stuff and write tests for it
-*** TODO BUG: removing left last path with idx != 0
+*** DONE BUG: removing left last path with idx != 0
+CLOSED: [2011-06-14 Tue 02:59]
 factor out stuff and write tests for it
+*** TODO merge path into other, ie. drag final node onto mimo
 *** TODO display name of actions
-*** TODO dragging edges to switch order of paths
-*** TODO merge path into other, ie. drag final node onto some node
-*** TODO move ctrl area style to css
 *** TODO panes
 **** flags to enable hiding: left, top, right, bottom
 **** handles to hide if enabled in an direction
@@ -76,7 +75,6 @@ exist but without icon so far
 **** 6 layers, one per page, landscape
 **** zoom to fit?
 **** generate pdf or use browser?
-*** TODO switch edges, ie change path order
 *** TODO action library tool
 *** TODO decmer library tool,
 **** like action lib but on decmers
@@ -104,6 +102,7 @@ XXX: this might be outdated
 *** TODO full test coverage
 **** for non-view
 **** for view?
+*** TODO move ctrl area style to css
 ** low prio and easy
 Theses tasks are meant for newbies to enter the project
 *** TODO top-layer without edges
