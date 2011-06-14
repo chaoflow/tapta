@@ -360,16 +360,17 @@ define([
             _.each(this.groups(opts.start), function(group) {
                 var nodes = group.head.concat([opts.start]).concat(opts.nodes);
                 var path = new Path({nodes: nodes});
+                var idx;
                 if (opts.idx === outgoing.length) {
-                    // append
-                    this.add(path);
+                    // insert after last path of the last edge
+                    idx = _.last(outgoing[opts.idx-1].paths).get('idx') + 1;
                 } else {
                     // insert before first path with the edge of the same idx
-                    var idx = outgoing[opts.idx].paths[0].get('idx');
-                    this.insert(path, {idx:idx});
-                    if (path !== this.toArray()[idx]) {
-                        throw "Path inserted at wrong position";
-                    }
+                    idx = outgoing[opts.idx].paths[0].get('idx');
+                }
+                this.insert(path, {idx:idx});
+                if (path !== this.toArray()[idx]) {
+                    throw "Path inserted at wrong position";
                 }
                 path.save();
                 this.fetch();
