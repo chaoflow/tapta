@@ -41,6 +41,7 @@ factor out stuff and write tests for it
 *** DONE BUG: removing left last path with idx != 0
 CLOSED: [2011-06-14 Tue 02:59]
 factor out stuff and write tests for it
+*** TODO Graph/vertices instead of paths
 *** TODO merge path into other, ie. drag final node onto mimo
 *** TODO display name of actions
 *** TODO panes
@@ -98,7 +99,16 @@ XXX: this might be outdated
 *** TODO tests need to properly cleanup after themselves
 **** properly destroy all elements
 **** localstorage: remove empty keys
-*** TODO tool to measure test coverage
+*** DONE tool to measure test coverage
+CLOSED: [2011-06-21 Tue 08:44]
+**** firebug extension
+https://addons.mozilla.org/en-US/firefox/addon/code-coverage-v2-for-firebug/
+however, with firebug 1.7.3 and firefox 5 the result varies from run
+to run
+**** jscoverage
+http://siliconforks.com/jscoverage/
+http://blog.siliconforks.com/2010/04/28/jscoverage-jquery/
+looks good
 *** TODO full test coverage
 **** for non-view
 **** for view?
