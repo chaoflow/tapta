@@ -1,7 +1,5 @@
-.project
-.pydevproject
-.installed.cfg
-bin
-eggs
-parts
-src/cone/activities/browser/static/.tmp_*
+/.installed.cfg
+/bin
+/coverage/
+/eggs
+/parts
