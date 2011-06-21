@@ -10,6 +10,11 @@ define([
 
     module('Base');
 
+    test("toArray clones arrays", function() {
+        var a = [1,2,3];
+        ok(_.toArray(a) !== a, "arrays are cloned");
+    });
+
     test("location and abspath", function() {
         var A = {name:'A'};
         var B = {name:'B', parent:A};
