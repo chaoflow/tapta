@@ -1,1 +1,1 @@
-define(["order!jquery", "order!./jquery.tmpl.js"]){}
+define(["order!jquery", "order!./jquery.tmpl.js"], function() {});
