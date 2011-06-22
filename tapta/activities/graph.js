@@ -1,48 +1,50 @@
+// directed acyclic graph
 define([
     'require',
     'cdn/underscore.js',
+    './graphutils',
     './localstorage'
 ], function(require) {
+    var graphutils = require('./graphutils');
     var storage = require('./localstorage');
     var Model = storage.Model;
     var Collection = storage.Collection;
 
-    // vertex and node mean the same in graphs: we use vertex for the
-    // graph element and node for what is actually put into the vertex,
-    // e.g. an initial node. The vertex is just a container, that knows
-    // its pre- and successor(s).
+    // A vertex is a container that knows its direct successors.
     var Vertex = Model.extend({
-        node: function() {
-            return this.get('node');
-        },
-        // return array of next vertices
+        // list of direct successors
         next: function() {
-            this.get('next') || this.set({next:[]});
-            return this.get('next');
+            return this.get('next') || this.set({next:[]}).get('next');
+        },
+        // string or object, object needs an id
+        payload: function() {
+            return this.get('payload');
         },
         // goes hand-in-hand with Graph.parse
         toJSON: function() {
-            // get a copy of our attributes and replace some things by
-            // their ids
-            var attrs = _.clone(this.attributes);
-            if (this.collection.nodelib && attrs['node']) {
-                attrs['node'] = attrs['node'].id;
-            }
-            // XXX: concept of prev unused so far and might vanish
-            _.each(['prev', 'next'], function(name) {
-                if (attrs[name]) {
-                    attrs[name] = _.pluck(attrs[name], 'id');
-                }
-            });
             // we are not responsible for jsonification, but only
             // selection of what is going to be jsonified.
-            return attrs;
+            return _.reduce(this.attributes, function(memo, val, key) {
+                memo[key] = function() {
+                    if (key === "payload") {
+                        if (_.isString(val)) return val;
+                        if (val.id === undefined) throw "Payload needs an id!";
+                        return val.id;
+                    }
+                    if (key === "next") return _.pluck(val, 'id');
+                    return val;
+                }();
+                return memo;
+            }, {});
         }
     });
 
-    // a graph is a collection of vertices. The edges are stored
-    // implicitly (prev/next vertex/vertices).
+    // a graph is stored as a collection of vertices.
+    // arcs are stored as direct successors on vertices
     var Graph = Collection.extend({
+        arcs: function() {
+            return graphutils.arcs(this.sources());
+        },
         model: Vertex,
         // goes hand-in-hand with Vertex.toJSON
         parse: function(resp) {
@@ -59,17 +61,25 @@ define([
             // replace ids with the real objects
             _.each(vertices, function(vertex) {
                 var attrs = vertex.attributes;
-                if (this.nodelib && attrs['node']) {
-                    attrs['node'] = this.nodelib.get(attrs['node']);
+                if (this.nodelib && attrs['payload']) {
+                    attrs['payload'] = this.nodelib.get(attrs['payload']);
                 }
-                // XXX: concept of prev unused so far and might vanish
-                _.each(['prev', 'next'], function(name) {
+                _.each(['next'], function(name) {
                     attrs[name] = _.map(attrs[name], function(id) {
                         return cache[id];
                     });
                 });
             }, this);
             return vertices;
+        },
+        paths: function() {
+            return graphutils.paths(this.sources());
+        },
+        sinks: function() {
+            return graphutils.sinks(this.models);
+        },
+        sources: function() {
+            return graphutils.sources(this.models);
         }
     });
 

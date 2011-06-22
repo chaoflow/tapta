@@ -2,37 +2,42 @@ define([
     'require',
     'cdn/qunit.js',
     'cdn/underscore.js',
-    './graph'
+    './graph',
+    './graphutils'
 ], function(require) {
-    // dependencies we need a handle for
-    var Graph = require('./graph').Graph;
-
     module('Graph');
+
+    var Graph = require('./graph').Graph;
+    var graphutils = require('./graphutils');
+    var pluckId = graphutils.pluckId;
+
+    var clean = function(model) {
+        localStorage.removeItem(model.abspath());
+    };
+
+    // XXX: create testgraph or use same as in test_graphutils
 
     test("(De)serialization with string nodes", function() {
         var graph = new Graph();
         graph.name = "test_graph";
 
         // cleanup leftovers
-        graph.fetch();
-        var foo = graph.toArray();
-        _.invoke(foo, 'destroy');
-        graph.remove(foo);
+        clean(graph);
 
         // create vertices
-        graph.create({node: "A"});
-        graph.create({node: "B"});
-        graph.create({node: "C"});
-        graph.create({node: "D"});
+        graph.create({payload: "A"});
+        graph.create({payload: "B"});
+        graph.create({payload: "C"});
+        graph.create({payload: "D"});
         vertices = graph.toArray();
         var a = vertices[0];
         var b = vertices[1];
         var c = vertices[2];
         var d = vertices[3];
-        equal(a.node(), "A", "A created correctly");
-        equal(b.node(), "B", "B created correctly");
-        equal(c.node(), "C", "C created correctly");
-        equal(d.node(), "D", "D created correctly");
+        equal(a.payload(), "A", "A created correctly");
+        equal(b.payload(), "B", "B created correctly");
+        equal(c.payload(), "C", "C created correctly");
+        equal(d.payload(), "D", "D created correctly");
 
         // hook them up and save
         a.next().splice(0, 0, b, c);
@@ -41,8 +46,22 @@ define([
         a.save();
         b.save();
         c.save();
-
         deepEqual(a.toJSON().next, [b.id, c.id], "next is serialized to ids");
+
+        
+        deepEqual(pluckId(graph.arcs()), [
+            [a.id, b.id],
+            [a.id, c.id],
+            [b.id, d.id],
+            [c.id, d.id]
+        ], "arcs");
+        deepEqual(pluckId(graph.paths()), [
+            [a.id, b.id, d.id],
+            [a.id, c.id, d.id]
+        ], "paths");
+        deepEqual(pluckId(graph.sources()), [a.id], "sinks");
+        deepEqual(pluckId(graph.sinks()), [d.id], "sinks");
+        
 
         // fetch a fresh copy
         var graph_ = new Graph();
@@ -58,20 +77,15 @@ define([
                   "next is deserialized correctly");
 
         // cleanup
-        foo = graph_.toArray();
-        _.invoke(foo, 'destroy');
-        graph.remove(foo);
+        clean(graph);
     });
 
-    test("(De)serialization with object nodes", function() {
+    test("(De)serialization with object payloads", function() {
         var graph = new Graph();
         graph.name = "test_graph";
 
         // cleanup leftovers
-        graph.fetch();
-        var foo = graph.toArray();
-        _.invoke(foo, 'destroy');
-        graph.remove(foo);
+        clean(graph);
 
         // mockup node library
         var NodeLib = function(nodes) {
@@ -89,12 +103,12 @@ define([
         graph.nodelib = nodelib;
 
         // create vertices
-        graph.create({node: nodelib.get("idA")});
+        graph.create({payload: nodelib.get("idA")});
         vertices = graph.toArray();
         var a = vertices[0];
-        equal(a.node().id, "idA", "A created correctly");
+        equal(a.payload().id, "idA", "A created correctly");
 
-        equal(a.toJSON().node, "idA", "node is serialized to id");
+        equal(a.toJSON().payload, "idA", "payload is serialized to id");
 
         // fetch a fresh copy
         var graph_ = new Graph();
@@ -103,11 +117,9 @@ define([
         graph_.fetch();
         vertices = graph_.toArray();
         var a_ = vertices[0];
-        equal(a_.node().id, "idA", "node is deserialized correctly");
+        equal(a_.payload().id, "idA", "payload is deserialized correctly");
 
         // cleanup
-        foo = graph_.toArray();
-        _.invoke(foo, 'destroy');
-        graph.remove(foo);
+        clean(graph);
     });
 }); 
