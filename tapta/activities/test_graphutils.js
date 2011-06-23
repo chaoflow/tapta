@@ -69,6 +69,11 @@ define([
             _.compose(colJoin, pluckId)
         );
         deepEqual(paths, opts.paths, "paths are derived");
+        var paths2 = _.map(
+            graphutils.paths2(sources),
+            _.compose(colJoin, pluckId)
+        );
+        deepEqual(paths2, opts.paths, "paths are derived");
     };
 
     test("Graph 1", function() {

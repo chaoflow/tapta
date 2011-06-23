@@ -77,6 +77,19 @@ define([
         }, []);
     };
 
+    // alternative implementation 
+    // return all paths starting with the given vertices
+    var paths2 = function(vertices) {
+        // edge case: return list containing one empty path
+        if (vertices.length === 0) return [];
+        var x = vertices.slice(0,1)[0];
+        var xs = vertices.slice(1);
+        return _.map(
+            paths(x.next()),
+            function(path) { return [x].concat(path); }
+        ).concat(paths2(xs));
+    };
+
     // find sinks, vertices not referencing other vertices, outdegree = 0
     var sinks = function(vertices) {
         return _(vertices).select(function(vertex) {
@@ -99,6 +112,7 @@ define([
         colJoin: colJoin,
         graph: graph,
         paths: paths,
+        paths2: paths2,
         pluckId: pluckId,
         reduce: reduce,
         sinks: sinks,
