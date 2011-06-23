@@ -66,12 +66,14 @@ define([
     
     // return all paths starting with the given vertices
     var paths = function(vertices) {
+        // edge case: return list containing one empty path
+        if (vertices.length === 0) return [[]];
         return _.reduce(vertices, function(memo, vertex) {
-            return memo.concat(vertex.next().length === 0
-                               ? [vertex]
-                               : _.map(paths(vertex.next()), function(path) {
-                                   return [vertex].concat(path);
-                               }));
+            return memo.concat(
+                _.map(paths(vertex.next()), function(path) {
+                    return [vertex].concat(path);
+                })
+            );
         }, []);
     };
 
