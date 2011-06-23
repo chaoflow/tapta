@@ -97,7 +97,7 @@ define([
         if (vertices.length === 0) return [];
         var x = vertices.slice(0,1)[0];
         var xs = vertices.slice(1);
-        return map('[x].concat(_)', paths(x.next())).concat(paths3(xs));
+        return map('[x].concat(_)', paths3(x.next())).concat(paths3(xs));
     };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
