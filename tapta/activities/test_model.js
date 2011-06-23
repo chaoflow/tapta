@@ -1,6 +1,6 @@
 define([
     'require',
-    'cdn/qunit.js',
+    'vendor/qunit.js',
     './model'
 ], function(require) {
     // dependencies we need a handle for

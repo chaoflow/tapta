@@ -1,7 +1,7 @@
 define([
     'require',
-    'cdn/underscore.js',
-    'cdn/backbone.js',
+    'vendor/underscore.js',
+    'vendor/backbone.js',
     './base',
     './settings',
     './localstorage',

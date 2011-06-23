@@ -3,9 +3,9 @@ define([
     'jquery',
     // XXX: we currently use _.template and jquery templ. Should
     // settle for one.
-    'cdn/jquery.tmpl',
-    'cdn/underscore.js',
-    'cdn/raphael.js',
+    'vendor/jquery.tmpl',
+    'vendor/underscore.js',
+    'vendor/raphael.js',
     './base',
     './model',
     './settings',

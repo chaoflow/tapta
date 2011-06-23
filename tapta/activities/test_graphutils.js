@@ -1,7 +1,7 @@
 define([
     'require',
-    'cdn/qunit.js',
-    'cdn/underscore.js',
+    'vendor/qunit.js',
+    'vendor/underscore.js',
     './graphutils'
 ], function(require) {
     module('Graph utils');

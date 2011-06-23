@@ -1,5 +1,5 @@
 // XXX: old - unused
-define(['activities/core', 'cdn/qunit.js'], function($) {
+define(['activities/core', 'vendor/qunit.js'], function($) {
     var Models = activities.model;
     
     tests = {

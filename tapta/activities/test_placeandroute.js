@@ -1,7 +1,7 @@
 // list all dependencies
 define([
     'require',
-    'cdn/qunit.js',
+    'vendor/qunit.js',
     './model',
     './placeandroute'
 ], function(require) {

@@ -1,6 +1,6 @@
 define([
     'require',
-    'cdn/underscore.js'
+    'vendor/underscore.js'
 ], function(require) {
     ////// generic tools
 

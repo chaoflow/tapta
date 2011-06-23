@@ -3,7 +3,7 @@
  */
 define([
     'require',
-    'cdn/underscore.js',
+    'vendor/underscore.js',
     'jquery'
 ], function(require) {
     if (!window.activities){

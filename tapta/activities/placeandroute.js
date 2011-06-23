@@ -4,7 +4,7 @@
 //  - only vertical element size of 1
 define([
     'require',
-    'cdn/underscore.js',
+    'vendor/underscore.js',
     './model',
     './settings'
 ], function(require) {

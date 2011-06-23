@@ -1,7 +1,7 @@
 // directed acyclic graph
 define([
     'require',
-    'cdn/underscore.js',
+    'vendor/underscore.js',
     './graphutils',
     './localstorage'
 ], function(require) {

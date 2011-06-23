@@ -1,8 +1,8 @@
 define([
     'require',
     'jquery',
-    'cdn/backbone.js',
-    'cdn/underscore.js',
+    'vendor/backbone.js',
+    'vendor/underscore.js',
     './settings'
 ], function(require) {
     activities.ui = {};

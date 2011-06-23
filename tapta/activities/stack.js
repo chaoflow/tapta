@@ -2,7 +2,7 @@
 
 define([
     'require',
-    'cdn/underscore.js'
+    'vendor/underscore.js'
 ], function(require) {
 
     var Event = function(stack) {

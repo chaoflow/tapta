@@ -1,8 +1,8 @@
 define([
     'require',
-    'cdn/qunit.js',
-    'cdn/underscore.js',
-    'cdn/backbone.js',
+    'vendor/qunit.js',
+    'vendor/underscore.js',
+    'vendor/backbone.js',
     './base'
 ], function(require) {
     // dependencies we need a handle for

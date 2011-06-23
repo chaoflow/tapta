@@ -1,8 +1,8 @@
 define([
     'require',
     'jquery',
-    'cdn/jquery.tmpl',
-    'cdn/raphael.js',
+    'vendor/jquery.tmpl',
+    'vendor/raphael.js',
     './model',
     './menubar',
     './settings',
