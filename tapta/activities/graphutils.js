@@ -77,7 +77,7 @@ define([
         }, []);
     };
 
-    // alternative implementation 
+    // alternative implementation
     // return all paths starting with the given vertices
     var paths2 = function(vertices) {
         // edge case: return list containing one empty path
@@ -88,6 +88,16 @@ define([
             paths(x.next()),
             function(path) { return [x].concat(path); }
         ).concat(paths2(xs));
+    };
+
+    // yaa using functional.js
+    // return all paths starting with the given vertices
+    var paths3 = function(vertices) {
+        // edge case: return list containing one empty path
+        if (vertices.length === 0) return [];
+        var x = vertices.slice(0,1)[0];
+        var xs = vertices.slice(1);
+        return map('[x].concat(_)', paths(x.next())).concat(paths3(xs));
     };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
@@ -113,6 +123,7 @@ define([
         graph: graph,
         paths: paths,
         paths2: paths2,
+        paths3: paths3,
         pluckId: pluckId,
         reduce: reduce,
         sinks: sinks,
