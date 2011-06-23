@@ -215,7 +215,24 @@ define([
         return result;
     };
 
+    // crippled - object not used
+    map2 = function(fn, sequence, object) {
+        fn = Function.toFunction(fn);
+        var len = sequence.length,
+            result = [];
+        for (var i = 0; i < len; i++)
+            result[i] = fn(sequence[i], i);
+        return result;
+    };
+
+    map3 = function(fn, sequence, object) {
+        fn = Function.toFunction(fn);
+        return Array.map(fn, sequence, object);
+    };
+
     return {
-        map: map
+        map: map,
+        map2: map2,
+        map3: map3
     };
 });
