@@ -10,7 +10,7 @@ define([
     var Collection = storage.Collection;
     var Model = storage.Model;
 
-    module('Storage');
+    module('TaPTa Storage');
 
     test("Backbone.Model.extend behaves as expected", function() {
         // a custom constructor

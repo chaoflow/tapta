@@ -9,7 +9,7 @@ define([
     var placeandroute = require('./placeandroute');
     var model = require('./model');
     
-    module('Place and route');
+    module('TaPTa Place and route');
 
     var path_set_0 = function() {
         var A = new model.ForkJoin({name: 'A'});

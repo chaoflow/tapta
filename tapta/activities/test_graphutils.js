@@ -4,7 +4,7 @@ define([
     'vendor/underscore.js',
     './graphutils'
 ], function(require) {
-    module('Graph utils');
+    module('TaPTa Graph utils');
 
     var graphutils = require('./graphutils');
     var colJoin = graphutils.colJoin;

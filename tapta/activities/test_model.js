@@ -6,7 +6,7 @@ define([
     // dependencies we need a handle for
     var model = require('./model');
 
-    module('Model');
+    module('TaPTa Model');
     var app = new model.App({name: "test_app"});
 
     test("App model init", function() {

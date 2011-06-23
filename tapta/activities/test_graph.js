@@ -5,7 +5,7 @@ define([
     './graph',
     './graphutils'
 ], function(require) {
-    module('Graph');
+    module('TaPTa Graph');
 
     var Graph = require('./graph').Graph;
     var graphutils = require('./graphutils');

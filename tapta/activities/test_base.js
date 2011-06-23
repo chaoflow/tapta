@@ -8,7 +8,7 @@ define([
     // dependencies we need a handle for
     var base = require('./base');
 
-    module('Base');
+    module('TaPTa Base');
 
     test("toArray clones arrays", function() {
         var a = [1,2,3];
