@@ -18,6 +18,7 @@ define([
     './test_graph',
     './test_localstorage',
     './test_model',
-    './test_placeandroute'
+    './test_placeandroute',
+    './test_speed'
 ], function(require) {
 });
