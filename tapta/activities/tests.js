@@ -12,6 +12,7 @@ define([
     'vendor/underscore/test/utility.js',
     'vendor/underscore/test/chaining.js',
     'vendor/underscore/test/speed.js',
+    './test_functional',
     './test_base',
     './test_graphutils',
     './test_graph',
