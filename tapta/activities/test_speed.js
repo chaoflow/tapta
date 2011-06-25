@@ -15,15 +15,15 @@ define([
         return functional.map(function(obj){ return obj.num; }, objects);
     });
 
-    JSLitmus.test('functional.map2() with fun', function() {
-        return functional.map2(function(obj){ return obj.num; }, objects);
-    });
-
-    JSLitmus.test('functional.map3() with fun', function() {
-        return functional.map2(function(obj){ return obj.num; }, objects);
-    });
-
     JSLitmus.test('functional.map() with strfun', function() {
         return functional.map("_.num", objects);
+    });
+
+    JSLitmus.test('functional.map_() with fun', function() {
+        return functional.map_(function(obj){ return obj.num; }, objects);
+    });
+
+    JSLitmus.test('functional.map_() with strfun', function() {
+        return functional.map_("_.num", objects);
     });
 });

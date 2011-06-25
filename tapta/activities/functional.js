@@ -211,28 +211,17 @@ define([
         var len = sequence.length,
             result = new Array(len);
         for (var i = 0; i < len; i++)
-            result[i] = fn.apply(object, [sequence[i], i]);
+            result[i] = fn.call(object, sequence[i], i);
         return result;
     };
 
-    // crippled - object not used
-    map2 = function(fn, sequence, object) {
+    map_ = function(fn, sequence, object) {
         fn = Function.toFunction(fn);
-        var len = sequence.length,
-            result = [];
-        for (var i = 0; i < len; i++)
-            result[i] = fn(sequence[i], i);
-        return result;
-    };
-
-    map3 = function(fn, sequence, object) {
-        fn = Function.toFunction(fn);
-        return Array.map(fn, sequence, object);
+        return _.map(sequence, fn, object);
     };
 
     return {
         map: map,
-        map2: map2,
-        map3: map3
+        map_: map_
     };
 });
