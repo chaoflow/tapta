@@ -20,5 +20,16 @@
     <address>
       <a href="mailto:dev@chaoflow.net">dev@chaoflow.net</a>
     </address>
+
+    <!-- the underscore test suite expects this -->
+    <div class="underscore-test">
+      <div id="qunit-header">TaPTa QUnit</div>
+      <div id="qunit-banner"></div>
+      <script type="text/html" id="template">
+        <%
+           if (data) { data += 12345; }; %>
+        <li><%= data %></li>
+      </script>
+    </div>
   </body>
 </html>
