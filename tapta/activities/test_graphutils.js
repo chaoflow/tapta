@@ -17,17 +17,6 @@ define([
         equal(_.compose(colJoin, pluckId)(list), "1:2", "composed");
     });
 
-    // mockup vertex
-    var Vertex = function(id) {
-        this.id = id;
-        this._next = [];
-    };
-    _(Vertex.prototype).extend({
-        next: function() {
-            return this._next;
-        }
-    });
-
     var testgraph = function(opts) {
         // create vertices from ids in opts.arcs strings
         var vids = _(opts.arcs).chain()
@@ -35,7 +24,7 @@ define([
                 .flatten()
                 .uniq()
                 .value();
-        var V = _.map(vids, function(id) { return new Vertex(id); });
+        var V = _.map(vids, function(id) { return new graphutils.Vertex(id); });
 
         // generate graph, a list of vertices that know their direct successors
         var graph = graphutils.graph(V, opts.arcs);

@@ -18,7 +18,19 @@ define([
     };
 
 
-    ////// defining a graph
+    ////// defining graphs
+
+    // a very basic vertex
+    var Vertex = function(id) {
+        this.id = id;
+        this._next = [];
+    };
+    _(Vertex.prototype).extend({
+        next: function() {
+            return this._next;
+        }
+    });
+
 
     // define a graph via vertices and arcs:
     // - vertices: list of objects having ids
@@ -118,6 +130,7 @@ define([
     };
 
     return {
+        Vertex: Vertex,
         arcs: arcs,
         colJoin: colJoin,
         graph: graph,
