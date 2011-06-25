@@ -7,6 +7,7 @@ define([
     module('TaPTa Graph utils');
 
     var graphutils = require('./graphutils');
+
     var colJoin = graphutils.colJoin;
     var pluckId = graphutils.pluckId;
 
@@ -18,36 +19,13 @@ define([
     });
 
     var testgraph = function(opts) {
-        // create vertices from ids in opts.arcs strings
-        var vids = _(opts.arcs).chain()
-                .map(function(arc) { return arc.split(':'); })
-                .flatten()
-                .uniq()
-                .value();
-        var V = _.map(vids, function(id) { return new graphutils.Vertex(id); });
-
-        // generate graph, a list of vertices that know their direct successors
-        var graph = graphutils.graph(V, opts.arcs);
+        var graph = graphutils.graph(opts.arcs);
 
         // find sources and sinks of the graph
         var sources = graphutils.sources(graph);
         var sinks = graphutils.sinks(graph);
         deepEqual(pluckId(sources), opts.sources, "sources are found");
         deepEqual(pluckId(sinks), opts.sinks, "sinks are found");
-
-        // reduce to a list of vertices
-        var V_ = graphutils.reduce(sources, function(memo, vertex) {
-            // XXX: would functional be better? profile it
-            // return _.include(memo, vertex) ? memo : memo.concat([vertex]);
-            _.include(memo, vertex) || memo.push(vertex);
-            return memo;
-        }, []);
-        var vids_ = pluckId(V_);
-        // XXX: introduce test that checks the order
-        ok(vids_.length === vids.length
-           && _.without.apply(_, [vids_].concat(vids)).length === 0
-           && _.intersect(vids_, vids).length === vids.length,
-           "vertices are ok");
 
         var A  = graphutils.arcs(sources);
         var arcs = _.map(A, _.compose(colJoin, pluckId));
@@ -58,16 +36,6 @@ define([
             _.compose(colJoin, pluckId)
         );
         deepEqual(paths, opts.paths, "paths are derived");
-        var paths2 = _.map(
-            graphutils.paths2(sources),
-            _.compose(colJoin, pluckId)
-        );
-        deepEqual(paths2, opts.paths, "paths are derived using paths2");
-        var paths3 = _.map(
-            graphutils.paths2(sources),
-            _.compose(colJoin, pluckId)
-        );
-        deepEqual(paths3, opts.paths, "paths are derived using paths3");
     };
 
     test("Graph 1", function() {

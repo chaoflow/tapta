@@ -1,8 +1,22 @@
 define([
     'require',
-    'vendor/underscore.js'
+    'vendor/underscore.js',
+    './functional'
 ], function(require) {
     ////// generic tools
+    var f = require('./functional'),
+        extend = f.extend,
+        foldl = f.foldl,
+        foldl1 = f.foldl1,
+        foldr = f.foldr,
+        foldr1 = f.foldr1,
+        map = f.map,
+        scanl = f.scanl,
+        scanl1 = f.scanl1,
+        scanr = f.scanr,
+        scanr1 = f.scanr1;
+    delete f;
+
 
     // join items of a list with columns
     var colJoin = function(list) {
@@ -31,22 +45,20 @@ define([
         }
     });
 
-
-    // define a graph via vertices and arcs:
-    // - vertices: list of objects having ids
-    // - arcs: list of "id1:id2" strings
-    // returns the list of all vertices
-    var graph = function(vertices, arcs) {
-        // scan all vertices and remember by id
-        var cache = _.reduce(vertices, function(memo, vertex) {
-            memo[vertex.id] = vertex;
-            return memo;
-        }, {});
-        // connect vertices according to arc strings
+    // A graph can be created by only providing arcs.
+    // An arc references its head and tail vertices by id. It can be
+    // provided as a string "id1:id2" or tuple list ["id1", "id2"].
+    // A very basic vertex implementation will be used to create all
+    // referenced vertices. A list of all vertices is returned.
+    var graph = function(arcs) {
+        // A is list of strings, let's get a list of tuples
+        arcs = map("x.split(':')", arcs);
+        // all vertex ids, seen in arcs
+        var vids = _(arcs).chain().flatten().uniq().value(),
+            vertices = map(function(id) { return new Vertex(id); }, vids),
+            cache = foldl("acc,x -> (acc[x.id] = x) && acc", {}, vertices);
         _.each(arcs, function(arc) {
-            var head = arc.split(':')[0];
-            var tail = arc.split(':')[1];
-            cache[head].next().push(cache[tail]);
+            cache[arc[0]].next().push(cache[arc[1]]);
         });
         return vertices;
     };
@@ -76,40 +88,41 @@ define([
         }, []);
     };
     
-    // return all paths starting with the given vertices
-    var paths = function(vertices) {
-        // edge case: return list containing one empty path
-        if (vertices.length === 0) return [[]];
-        return _.reduce(vertices, function(memo, vertex) {
-            return memo.concat(
-                _.map(paths(vertex.next()), function(path) {
-                    return [vertex].concat(path);
-                })
-            );
-        }, []);
-    };
+    // // return all paths starting with the given vertices
+    // var paths = function(vertices) {
+    //     // edge case: return list containing one empty path
+    //     if (vertices.length === 0) return [[]];
+    //     return _.reduce(vertices, function(memo, vertex) {
+    //         return memo.concat(
+    //             _.map(paths(vertex.next()), function(path) {
+    //                 return [vertex].concat(path);
+    //             })
+    //         );
+    //     }, []);
+    // };
 
     // alternative implementation
     // return all paths starting with the given vertices
-    var paths2 = function(vertices) {
-        // edge case: return list containing one empty path
-        if (vertices.length === 0) return [];
-        var x = vertices.slice(0,1)[0];
-        var xs = vertices.slice(1);
-        return _.map(
-            paths(x.next()),
-            function(path) { return [x].concat(path); }
-        ).concat(paths2(xs));
-    };
+    // var paths2 = function(vertices) {
+    //     // edge case: return list containing one empty path
+    //     if (vertices.length === 0) return [];
+    //     var x = vertices.slice(0,1)[0];
+    //     var xs = vertices.slice(1);
+    //     return _.map(
+    //         paths(x.next()),
+    //         function(path) { return [x].concat(path); }
+    //     ).concat(paths2(xs));
+    // };
 
-    // yaa using functional.js
     // return all paths starting with the given vertices
-    var paths3 = function(vertices) {
+    var paths = function(vertices) {
         // edge case: return list containing one empty path
         if (vertices.length === 0) return [];
-        var x = vertices.slice(0,1)[0];
-        var xs = vertices.slice(1);
-        return map('[x].concat(_)', paths3(x.next())).concat(paths3(xs));
+        var x = vertices.slice(0,1)[0],
+            xs = vertices.slice(1),
+            tails = paths(x.next());
+        return map('[this.x].concat(path)', tails.length ? tails : [[]], {x:x})
+            .concat(paths(xs));
     };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
@@ -135,8 +148,6 @@ define([
         colJoin: colJoin,
         graph: graph,
         paths: paths,
-        paths2: paths2,
-        paths3: paths3,
         pluckId: pluckId,
         reduce: reduce,
         sinks: sinks,
