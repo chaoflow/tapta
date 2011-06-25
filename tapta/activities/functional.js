@@ -176,7 +176,6 @@ define([
         return value.toFunction();
     };
 
-
     ////// map from functional.js
     // original copyright note, code slightly modified:
     /*
@@ -194,6 +193,65 @@ define([
      * functional and function-level programming.
      */
 
+    var foldl = function(fn, acc, list, object) {
+        fn = Function.toFunction(fn);
+        for (var i = 0; i < list.length; i++) {
+            acc = fn.call(object, acc, list[i]);
+        }
+        return acc;
+    };
+
+    var foldl1 = function(fn, list, object) {
+        var acc = list.slice(0,1)[0];
+        list = list.slice(1);
+        return foldl(fn, acc, list, object);
+    };
+
+    var foldr = function(fn, acc, list, object) {
+        fn = Function.toFunction(fn);
+        for (var i = list.length-1; i >= 0; i--) {
+            acc = fn.call(object, list[i], acc);
+        }
+        return acc;
+    };
+
+    var foldr1 = function(fn, list, object) {
+        var acc = list.slice(-1)[0];
+        list = list.slice(0,list.length-1);
+        return foldr(fn, acc, list, object);
+    };
+
+    var scanl = function(fn, acc, list, object) {
+        var accs = [acc];
+        fn = Function.toFunction(fn);
+        for (var i = 0; i < list.length; i++) {
+            acc = fn.call(object, acc, list[i]);
+            accs.push(acc);
+        }
+        return accs;
+    };
+
+    var scanl1 = function(fn, list, object) {
+        var acc = list.slice(0,1)[0];
+        list = list.slice(1);
+        return scanl(fn, acc, list, object);
+    };
+
+    var scanr = function(fn, acc, list, object) {
+        fn = Function.toFunction(fn);
+        var accs = [acc];
+        for (var i = list.length-1; i >= 0; i--) {
+            accs.unshift(fn.call(object, list[i], accs[0]));
+        }
+        return accs;
+    };
+
+    var scanr1 = function(fn, list, object) {
+        var acc = list.slice(-1)[0];
+        list = list.slice(0,list.length-1);
+        return scanr(fn, acc, list, object);
+    };
+
     /**
      * Applies `fn` to each element of `sequence`.
      * == map(f, [x1, x2...]) = [f(x, 0), f(x2, 1), ...]
@@ -206,22 +264,30 @@ define([
      * >> map('+1', map('*2', [1,2,3])) -> [3, 5, 7]
      * >> map(compose('+1', '*2'), [1,2,3]) -> [3, 5, 7]
      */
-    map = function(fn, sequence, object) {
+    var map = function(fn, list, object) {
         fn = Function.toFunction(fn);
-        var len = sequence.length,
-            result = new Array(len);
-        for (var i = 0; i < len; i++)
-            result[i] = fn.call(object, sequence[i], i);
-        return result;
+        var res = [];
+        for (var i = 0; i < list.length; i++) {
+            res[i] = fn.call(object, list[i], i);
+        }
+        return res;
     };
 
-    map_ = function(fn, sequence, object) {
+    var map_ = function(fn, sequence, object) {
         fn = Function.toFunction(fn);
         return _.map(sequence, fn, object);
     };
 
     return {
+        foldl: foldl,
+        foldl1: foldl1,
+        foldr: foldr,
+        foldr1: foldr1,
         map: map,
-        map_: map_
+        map_: map_,
+        scanl: scanl,
+        scanl1: scanl1,
+        scanr: scanr,
+        scanr1: scanr1
     };
 });
