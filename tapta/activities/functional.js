@@ -193,6 +193,10 @@ define([
      * functional and function-level programming.
      */
 
+    var extend = function(obj1, obj2) {
+        return _.extend({}, obj1, obj2);
+    };
+
     var foldl = function(fn, acc, list, object) {
         fn = Function.toFunction(fn);
         for (var i = 0; i < list.length; i++) {
@@ -279,6 +283,7 @@ define([
     };
 
     return {
+        extend: extend,
         foldl: foldl,
         foldl1: foldl1,
         foldr: foldr,

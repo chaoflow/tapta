@@ -4,6 +4,7 @@ define([
     './functional'
 ], function(require) {
     var f = require('./functional'),
+        extend = f.extend,
         foldl = f.foldl,
         foldl1 = f.foldl1,
         foldr = f.foldr,
@@ -37,6 +38,14 @@ define([
                   [2,2], "constant function 2");
         deepEqual(map("x", [1,2]),
                   [1,2], "map 1:1");
+    });
+
+    test("extend", function() {
+        var obj1 = {a:1};
+        var obj2 = extend(obj1, {b:2});
+        equal(obj1.a, 1, "obj1 untouched");
+        equal(obj2.a, 1, "obj2 has a");
+        equal(obj2.b, 2, "obj2 has b");
     });
 
     test("fold/scan", function() {
