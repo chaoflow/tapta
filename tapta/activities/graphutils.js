@@ -3,20 +3,7 @@ define([
     'vendor/underscore.js',
     './functional'
 ], function(require) {
-    var f = require('./functional'),
-        extend = f.extend,
-        foldl = f.foldl,
-        foldl1 = f.foldl1,
-        foldr = f.foldr,
-        foldr1 = f.foldr1,
-        map = f.map,
-        maximum = f.maximum,
-        scanl = f.scanl,
-        scanl1 = f.scanl1,
-        scanr = f.scanr,
-        scanr1 = f.scanr1;
-    delete f;
-
+    require('./functional').install();
 
     // join items of a list with columns
     var colJoin = function(list) {

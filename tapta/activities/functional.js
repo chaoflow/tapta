@@ -296,6 +296,14 @@ define([
         return _.map(sequence, fn, object);
     };
 
+    var without = function(fn, seq, obj) {
+        // XXX: fn = fn.toFunction && fn.toFunction()
+        fn = Function.toFunction(fn);
+        return foldl(function(acc, x) {
+            return fn(x) ? acc : acc.concat(x);
+        }, [], seq);
+    };
+
     var maximum = function(seq) {
         return foldl1("acc, x -> x > acc ? x : acc", seq);
     };
@@ -316,14 +324,18 @@ define([
         };
     };
 
+    var install = function() {
+        _.extend(window, functional);
+    };
 
-    return {
+    var functional = {
         compose: compose,
         extend: extend,
         foldl: foldl,
         foldl1: foldl1,
         foldr: foldr,
         foldr1: foldr1,
+        install: install,
         map: map,
         map_: map_,
         maximum: maximum,
@@ -331,6 +343,8 @@ define([
         scanl: scanl,
         scanl1: scanl1,
         scanr: scanr,
-        scanr1: scanr1
+        scanr1: scanr1,
+        without: without
     };
+    return functional;
 });

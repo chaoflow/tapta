@@ -3,21 +3,7 @@ define([
     'vendor/qunit.js',
     './functional'
 ], function(require) {
-    var f = require('./functional'),
-        compose = f.compose,
-        extend = f.extend,
-        foldl = f.foldl,
-        foldl1 = f.foldl1,
-        foldr = f.foldr,
-        foldr1 = f.foldr1,
-        map = f.map,
-        maximum = f.maximum,
-        partial = f.partial,
-        scanl = f.scanl,
-        scanl1 = f.scanl1,
-        scanr = f.scanr,
-        scanr1 = f.scanr1;
-    delete f;
+    require('./functional').install();
 
     module('TaPTa Functional');
 
@@ -41,6 +27,11 @@ define([
                   [2,2], "constant function 2");
         deepEqual(map("x", [1,2]),
                   [1,2], "map 1:1");
+    });
+
+    test("without", function() {
+        var a = [1,2,3];
+        deepEqual(without("x == 2", a), [1,3], "without");
     });
 
     test("extend", function() {
