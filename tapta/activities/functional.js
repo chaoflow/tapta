@@ -176,6 +176,28 @@ define([
         return value.toFunction();
     };
 
+
+    /// ^^ Utilities
+
+    /**
+     * Returns a function identical to this function except that
+     * it prints its arguments on entry and its return value on exit.
+     * This is useful for debugging function-level programs.
+     */
+    Function.prototype.traced = function(name) {
+        var fn = this;
+        name = name || fn;
+        return function() {
+            console.group(name);
+            console.debug('apply(', this, ',', arguments, ')');
+            var rval = fn.apply(this, arguments);
+            console.debug('-> ', rval);
+            console.groupEnd();
+            return rval;
+        };
+    };
+
+
     ////// map from functional.js
     // original copyright note, code slightly modified:
     /*

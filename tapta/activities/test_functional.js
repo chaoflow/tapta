@@ -76,4 +76,11 @@ define([
         var add5 = partial(add, 5);
         equal(add5(3), 8, "partial with one arg works");
     });
-}); 
+
+    test("traced", function() {
+        var f1 = function(x,y) { return x+y; };
+        var f2 = "x+y".lambda();
+        equal(f1.traced()(1,2), f1(1,2), "normal traced function");
+        equal(f2.traced()(1,2), f2(1,2), "traced string lambda");
+    });
+});
