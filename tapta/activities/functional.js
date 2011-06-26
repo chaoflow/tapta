@@ -197,6 +197,8 @@ define([
         return _.extend({}, obj1, obj2);
     };
 
+    var slice = Array.prototype.slice;
+
     var foldl = function(fn, acc, list, object) {
         fn = Function.toFunction(fn);
         for (var i = 0; i < list.length; i++) {
@@ -206,8 +208,9 @@ define([
     };
 
     var foldl1 = function(fn, list, object) {
-        var acc = list.slice(0,1)[0];
-        list = list.slice(1);
+        var acc = slice.call(list, 0, 1)[0];
+        list = slice.call(list, 1);
+        if (list.lenght == 0) return acc;
         return foldl(fn, acc, list, object);
     };
 
