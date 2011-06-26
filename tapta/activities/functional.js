@@ -117,8 +117,8 @@ define([
             cache = {},
             uncached = proto.lambda,
             cached = function() {
-	        var key = '#' + this; // avoid hidden properties on Object.prototype
-	        return cache[key] || (cache[key] = uncached.call(this));
+                var key = '#' + this; // avoid hidden properties on Object.prototype
+                return cache[key] || (cache[key] = uncached.call(this));
             };
         cached.cached = function(){};
         cached.uncache = function(){proto.lambda = uncached};
