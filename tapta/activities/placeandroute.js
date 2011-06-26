@@ -23,7 +23,7 @@ define([
         paths_wc.name = "placeandroute_working_copy";
         // make sure events are not logged
         paths_wc.logevents = false;
-        
+
         // The longest path defines the size of the whole diagram
         // (paths.xReq), this space is available for all paths,
         paths_wc.each(function(path) { path.x_avail = paths_wc.xReq(); });
@@ -87,7 +87,7 @@ define([
                         // prematurely ending path.
                         ui.dy += yadd;
                         yadd = 0;
-                        
+
                         // remove the node from the path and reduce
                         // the path's available space accordingly.
                         path.remove(node);
