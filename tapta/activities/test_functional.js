@@ -4,6 +4,7 @@ define([
     './functional'
 ], function(require) {
     var f = require('./functional'),
+        compose = f.compose,
         extend = f.extend,
         foldl = f.foldl,
         foldl1 = f.foldl1,
@@ -58,6 +59,14 @@ define([
         deepEqual(scanl1("acc+x",   [1,2,3]), [1,3,6],   "scanl1");
         deepEqual(scanr("x+acc", 1, [3,2,1]), [7,4,2,1], "scanr");
         deepEqual(scanr1("x+acc",   [3,2,1]), [6,3,1],   "scanr1");
+    });
+
+    test("compose", function() {
+        var f = "/3".lambda(),
+            g = "2*".lambda(),
+            h = "x*x".lambda(),
+            composition = compose(f,g,h);
+        equal(composition(6), f(g(h(6))), "compose");
     });
 
     test("partial", function() {

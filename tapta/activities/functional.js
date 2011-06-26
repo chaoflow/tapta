@@ -273,6 +273,16 @@ define([
         return _.map(sequence, fn, object);
     };
 
+
+    // only unary functions so far
+    var compose = function(/*fn1, fn2, ...*/) {
+        return foldl1(function(acc, fn) {
+            return function(x) {
+                return acc(fn(x));
+            };
+        }, arguments);
+    };
+
     // currently only supports binary -> unary
     var partial = function(fn, x, obj) {
         return function(y) {
@@ -280,7 +290,9 @@ define([
         };
     };
 
+
     return {
+        compose: compose,
         extend: extend,
         foldl: foldl,
         foldl1: foldl1,
