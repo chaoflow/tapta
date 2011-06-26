@@ -282,6 +282,13 @@ define([
         return _.map(sequence, fn, object);
     };
 
+    // currently only supports binary -> unary
+    var partial = function(fn, x, obj) {
+        return function(y) {
+            return fn.call(obj, x, y);
+        };
+    };
+
     return {
         extend: extend,
         foldl: foldl,
@@ -290,6 +297,7 @@ define([
         foldr1: foldr1,
         map: map,
         map_: map_,
+        partial: partial,
         scanl: scanl,
         scanl1: scanl1,
         scanr: scanr,

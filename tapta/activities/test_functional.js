@@ -10,6 +10,7 @@ define([
         foldr = f.foldr,
         foldr1 = f.foldr1,
         map = f.map,
+        partial = f.partial,
         scanl = f.scanl,
         scanl1 = f.scanl1,
         scanr = f.scanr,
@@ -57,5 +58,13 @@ define([
         deepEqual(scanl1("acc+x",   [1,2,3]), [1,3,6],   "scanl1");
         deepEqual(scanr("x+acc", 1, [3,2,1]), [7,4,2,1], "scanr");
         deepEqual(scanr1("x+acc",   [3,2,1]), [6,3,1],   "scanr1");
+    });
+
+    test("partial", function() {
+        var add = function(x,y) {
+            return x+y;
+        };
+        var add5 = partial(add, 5);
+        equal(add5(3), 8, "partial with one arg works");
     });
 }); 
