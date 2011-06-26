@@ -259,18 +259,6 @@ define([
         return scanr(fn, acc, list, object);
     };
 
-    /**
-     * Applies `fn` to each element of `sequence`.
-     * == map(f, [x1, x2...]) = [f(x, 0), f(x2, 1), ...]
-     * :: (a ix -> boolean) [a] -> [a]
-     * >> map('1+', [1,2,3]) -> [2, 3, 4]
-     *
-     * If `object` is supplied, it is the object of the call.
-     *
-     * The fusion rule:
-     * >> map('+1', map('*2', [1,2,3])) -> [3, 5, 7]
-     * >> map(compose('+1', '*2'), [1,2,3]) -> [3, 5, 7]
-     */
     var map = function(fn, list, object) {
         fn = Function.toFunction(fn);
         var res = [];
