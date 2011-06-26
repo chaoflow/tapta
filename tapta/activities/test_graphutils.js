@@ -6,7 +6,11 @@ define([
 ], function(require) {
     module('TaPTa Graph utils');
 
-    var graphutils = require('./graphutils');
+    var graphutils = require('./graphutils'),
+        g = graphutils,
+        hsize = g.hsize,
+    delete g;
+
 
     var colJoin = graphutils.colJoin;
     var pluckId = graphutils.pluckId;
@@ -31,6 +35,8 @@ define([
         var arcs = _.map(A, _.compose(colJoin, pluckId));
         deepEqual(arcs, opts.arcs, "arcs");
 
+        equal(hsize(sources), opts.hsize, "hsize");
+
         var paths = _.map(
             graphutils.paths(sources),
             _.compose(colJoin, pluckId)
@@ -49,6 +55,7 @@ define([
             // the arcs define the graph
             arcs: arcs,
             // aspects to explicitly check in addition to implicit checks
+            hsize: 4,
             paths: ['a:b:d:e',
                     'a:c:d:e'],
             sinks: ['e'],
@@ -71,11 +78,12 @@ define([
             // the arcs define the graph
             arcs: arcs,
             // aspects to explicitly check in addition to implicit checks
+            hsize: 5,
             paths: ["a:b:d:e:h",
                     "a:c:f:e:h",
                     "a:c:g:e:h"],
             sinks: ['h'],
             sources: ['a']
         });
-    });    
-}); 
+    });
+});

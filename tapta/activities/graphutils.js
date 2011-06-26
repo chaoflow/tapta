@@ -3,7 +3,6 @@ define([
     'vendor/underscore.js',
     './functional'
 ], function(require) {
-    ////// generic tools
     var f = require('./functional'),
         extend = f.extend,
         foldl = f.foldl,
@@ -11,6 +10,7 @@ define([
         foldr = f.foldr,
         foldr1 = f.foldr1,
         map = f.map,
+        maximum = f.maximum,
         scanl = f.scanl,
         scanl1 = f.scanl1,
         scanr = f.scanr,
@@ -34,12 +34,15 @@ define([
 
     ////// defining graphs
 
-    // a very basic vertex
     var Vertex = function(id) {
         this.id = id;
+        this._hsize = 1;
         this._next = [];
     };
     _(Vertex.prototype).extend({
+        hsize: function() {
+            return this._hsize;
+        },
         next: function() {
             return this._next;
         }
@@ -125,6 +128,18 @@ define([
             .concat(paths(xs));
     };
 
+    // the maximum hsize of the paths seen from srcs
+    // vertices have variable width
+    var hsize = function(sources) {
+        // enable calling on a single vertex
+        if (sources.length === undefined) sources = [sources];
+        switch (sources.length) {
+        case 0: return 0;
+        case 1: return sources[0].hsize() + hsize(sources[0].next());
+        default: return maximum(map(hsize, sources));
+        }
+    };
+
     // find sinks, vertices not referencing other vertices, outdegree = 0
     var sinks = function(vertices) {
         return _(vertices).select(function(vertex) {
@@ -147,6 +162,7 @@ define([
         arcs: arcs,
         colJoin: colJoin,
         graph: graph,
+        hsize: hsize,
         paths: paths,
         pluckId: pluckId,
         reduce: reduce,
