@@ -84,13 +84,13 @@ define([
             if (vertex.next().length === 0) { return memo; }
             return _.reduce(vertex.next(), function(memo, next) {
                 return _.some(memo, function(arc) {
-                    return arc[0] === vertex 
+                    return arc[0] === vertex
                         && arc[1] === next;
-                }) ? memo : memo.concat([[vertex, next]]); 
+                }) ? memo : memo.concat([[vertex, next]]);
             }, memo);
         }, []);
     };
-    
+
     // // return all paths starting with the given vertices
     // var paths = function(vertices) {
     //     // edge case: return list containing one empty path
