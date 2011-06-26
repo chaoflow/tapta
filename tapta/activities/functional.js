@@ -300,12 +300,16 @@ define([
         // XXX: fn = fn.toFunction && fn.toFunction()
         fn = Function.toFunction(fn);
         return foldl(function(acc, x) {
-            return fn(x) ? acc : acc.concat(x);
+            return fn(x) ? acc : acc.concat([x]);
         }, [], seq);
     };
 
     var maximum = function(seq) {
         return foldl1("acc, x -> x > acc ? x : acc", seq);
+    };
+
+    var sum = function(seq) {
+        return foldl1("acc+x", seq);
     };
 
     // only unary functions so far
@@ -344,6 +348,7 @@ define([
         scanl1: scanl1,
         scanr: scanr,
         scanr1: scanr1,
+        sum: sum,
         without: without
     };
     return functional;

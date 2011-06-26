@@ -30,8 +30,8 @@ define([
     });
 
     test("without", function() {
-        var a = [1,2,3];
-        deepEqual(without("x == 2", a), [1,3], "without");
+        var a = [1,2,[3]];
+        deepEqual(without("x == 2", a), [1,[3]], "without");
     });
 
     test("extend", function() {
