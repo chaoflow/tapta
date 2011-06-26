@@ -17,6 +17,22 @@ define([
      * `x -> x+1` to be used in some contexts as functions.
      */
 
+    ////// based on code from
+    /*
+     * Author: Oliver Steele
+     * Copyright: Copyright 2007 by Oliver Steele.  All rights reserved.
+     * License: MIT License
+     * Homepage: http://osteele.com/javascripts/functional
+     * Source: http://osteele.com/javascripts/functional/functional.js
+     * Changes: http://osteele.com/javascripts/functional/CHANGES
+     * Created: 2007-07-11
+     * Version: 1.0.2
+     *
+     *
+     * This file defines some higher-order methods and functions for
+     * functional and function-level programming.
+     */
+
     /// ^ String lambdas
 
     /**
@@ -198,23 +214,8 @@ define([
     };
 
 
-    ////// map from functional.js
-    // original copyright note, code slightly modified:
-    /*
-     * Author: Oliver Steele
-     * Copyright: Copyright 2007 by Oliver Steele.  All rights reserved.
-     * License: MIT License
-     * Homepage: http://osteele.com/javascripts/functional
-     * Source: http://osteele.com/javascripts/functional/functional.js
-     * Changes: http://osteele.com/javascripts/functional/CHANGES
-     * Created: 2007-07-11
-     * Version: 1.0.2
-     *
-     *
-     * This file defines some higher-order methods and functions for
-     * functional and function-level programming.
-     */
 
+    // XXX: wrong naming ?
     var extend = function(obj1, obj2) {
         return _.extend({}, obj1, obj2);
     };
