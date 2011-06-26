@@ -295,6 +295,9 @@ define([
         return _.map(sequence, fn, object);
     };
 
+    var maximum = function(seq) {
+        return foldl1("acc, x -> x > acc ? x : acc", seq);
+    };
 
     // only unary functions so far
     var compose = function(/*fn1, fn2, ...*/) {
@@ -322,6 +325,7 @@ define([
         foldr1: foldr1,
         map: map,
         map_: map_,
+        maximum: maximum,
         partial: partial,
         scanl: scanl,
         scanl1: scanl1,
