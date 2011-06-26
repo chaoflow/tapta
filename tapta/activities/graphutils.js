@@ -22,16 +22,36 @@ define([
     ////// defining graphs
 
     var Vertex = function(id) {
+        this.attrs = {};
         this.id = id;
         this._hsize = 1;
+        this._vsize = 1;
         this._next = [];
     };
     _(Vertex.prototype).extend({
         hsize: function() {
             return this._hsize;
         },
+        vsize: function() {
+            return this._vsize;
+        },
+        hpos: function() {
+            return this.attrs.hpos;
+        },
+        vpos: function() {
+            return this.attrs.vpos;
+        },
+        hspace: function() {
+            return this.attrs.hspace;
+        },
+        vspace: function() {
+            return this.attrs.vspace;
+        },
         next: function() {
             return this._next;
+        },
+        set: function(obj) {
+            _.extend(this.attrs, obj);
         }
     });
 
@@ -126,6 +146,75 @@ define([
         default: return maximum(map(hsize, sources));
         }
     };
+    var pathHSize = function(path) {
+        return sum(map("vertex.hsize()", path));
+    };
+
+    var pathVSize = function(path) {
+        return maximum(map("vertex.vsize()", path));
+    };
+
+    // allocate space to the vertices
+    var spaceOut = function    (paths, hpad, vpad) {
+        // hsize of longest path in the sense of space required, not item-wise
+        var maxhsize = maximum(map(pathHSize, paths)),
+            longest, lidx,
+            orig_paths = paths;
+        paths = map(function(p) {
+            return _.extend(p.slice(), {h_avail: maxhsize});
+        }, orig_paths);
+        while (paths.length > 0) {
+            // longest path and other paths
+            longest = foldl1(function(acc, p) { return acc < p ? p : acc; }, paths);
+            lidx = _.indexOf(paths, longest);
+            if (lidx == -1) throw "Deep shit!";
+            paths.splice(lidx, 1);
+            var hadd = (longest.h_avail - pathHSize(longest)) / longest.length;
+            _.each(longest, function(vertex) {
+                var vadd = 0,
+                    hspace = vertex.hsize() + hadd,
+                    vspace = vertex.vsize(),
+                    seen = false;
+                longest.h_avail -= hspace;
+                _.each(paths, function(path, idx) {
+                    if (_.include(path, vertex)) {
+                        seen = true;
+                        vspace += pathVSize(path) + vadd;
+                        vadd = 0;
+                        path.splice(_.indexOf(path, vertex),1);
+                        path.h_avail -= hspace;
+                    } else if (seen && path.slice(-1) !== longest.slice(-1)) {
+                        vadd = pathVSize(path);
+                    }
+                });
+                vertex.set({hspace: hspace, vspace: vspace});
+            });
+            // we are using floats...
+            var emargin = 0.00001;
+            if (longest.h_avail > emargin) throw "Unallocated space left!";
+            for (var i = paths.length-1; i >= 0; i--) {
+                if (paths[i].length === 0) {
+                    if (paths[i].h_avail > emargin) throw "Unallocated space left";
+                    paths[i].length || delete paths[i];
+                }
+            }
+        }
+        // set positions
+        var cache = {};
+        var rval = [];
+        _.each(orig_paths, function(path, pidx) {
+            var hpos = 0;
+            _.each(path, function(vertex) {
+                if (!cache[vertex.id]) {
+                    vertex.set({hpos: hpos, vpos: pidx});
+                    rval.push(vertex);
+                }
+                cache[vertex.id] = true;
+                hpos += vertex.hspace();
+            });
+        });
+        return rval;
+    };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
     var sinks = function(vertices) {
@@ -154,6 +243,7 @@ define([
         pluckId: pluckId,
         reduce: reduce,
         sinks: sinks,
-        sources: sources
+        sources: sources,
+        spaceOut: spaceOut
     };
 });
