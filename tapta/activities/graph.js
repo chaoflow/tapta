@@ -1,4 +1,4 @@
-// directed acyclic graph
+// directed acyclic graph - persistent
 define([
     'require',
     'vendor/underscore.js',

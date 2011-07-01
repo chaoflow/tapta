@@ -154,6 +154,23 @@ define([
         return maximum(map("vertex.vsize()", path));
     };
 
+    // find sinks, vertices not referencing other vertices, outdegree = 0
+    var sinks = function(vertices) {
+        return _(vertices).select(function(vertex) {
+            return vertex.next().length === 0;
+        });
+    };
+
+    // find sources, vertices not referenced by other vertices, indegree = 0
+    var sources = function(vertices) {
+        var referenced = _(vertices).chain()
+                .map(function(vertex) { return vertex.next(); })
+                .flatten()
+                .value();
+        // a bit weird syntax that is: this, arguments
+        return _.without.apply(_, [vertices].concat(referenced));
+    };
+
     // allocate space to the vertices
     var spaceOut = function    (paths, hpad, vpad) {
         // hsize of longest path in the sense of space required, not item-wise
@@ -214,23 +231,6 @@ define([
             });
         });
         return rval;
-    };
-
-    // find sinks, vertices not referencing other vertices, outdegree = 0
-    var sinks = function(vertices) {
-        return _(vertices).select(function(vertex) {
-            return vertex.next().length === 0;
-        });
-    };
-
-    // find sources, vertices not referenced by other vertices, indegree = 0
-    var sources = function(vertices) {
-        var referenced = _(vertices).chain()
-                .map(function(vertex) { return vertex.next(); })
-                .flatten()
-                .value();
-        // a bit weird syntax that is: this, arguments
-        return _.without.apply(_, [vertices].concat(referenced));
     };
 
     return {
