@@ -7,9 +7,16 @@ define([
 ], function(require) {
     module('TaPTa Graph');
 
-    var Graph = require('./graph').Graph;
-    var graphutils = require('./graphutils');
-    var pluckId = graphutils.pluckId;
+    var Graph = require('./graph').Graph,
+        Vertex = require('./graph').Vertex,
+        graphutils = require('./graphutils'),
+        pluckId = graphutils.pluckId,
+        tg = require('./test_graphutils'),
+        testgraph = tg.testgraph,
+        graph1 = tg.graph1,
+        graph2 = tg.graph2,
+        graph3 = tg.graph3;
+    delete tg;
 
     var clean = function(model) {
         localStorage.removeItem(model.abspath());
@@ -48,7 +55,7 @@ define([
         c.save();
         deepEqual(a.toJSON().next, [b.id, c.id], "next is serialized to ids");
 
-        
+
         deepEqual(pluckId(graph.arcs()), [
             [a.id, b.id],
             [a.id, c.id],
@@ -61,7 +68,7 @@ define([
         ], "paths");
         deepEqual(pluckId(graph.sources()), [a.id], "sinks");
         deepEqual(pluckId(graph.sinks()), [d.id], "sinks");
-        
+
 
         // fetch a fresh copy
         var graph_ = new Graph();
@@ -122,4 +129,8 @@ define([
         // cleanup
         clean(graph);
     });
-}); 
+
+    test("Graph 1", testgraph(graph1(Vertex)));
+    test("Graph 2", testgraph(graph2(Vertex)));
+    test("Graph 3", testgraph(graph3(Vertex)));
+});

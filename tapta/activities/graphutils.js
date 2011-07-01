@@ -21,9 +21,9 @@ define([
 
     ////// defining graphs
 
-    var Vertex = function(id) {
-        this.attrs = {};
-        this.id = id;
+    var Vertex = function(attrs) {
+        this._space = {};
+        this.id = attrs.id;
         this._hsize = 1;
         this._vsize = 1;
         this._next = [];
@@ -36,22 +36,22 @@ define([
             return this._vsize;
         },
         hpos: function() {
-            return this.attrs.hpos;
+            return this._space.hpos;
         },
         vpos: function() {
-            return this.attrs.vpos;
+            return this._space.vpos;
         },
         hspace: function() {
-            return this.attrs.hspace;
+            return this._space.hspace;
         },
         vspace: function() {
-            return this.attrs.vspace;
+            return this._space.vspace;
         },
         next: function() {
             return this._next;
         },
-        set: function(obj) {
-            _.extend(this.attrs, obj);
+        setSpace: function(obj) {
+            _.extend(this._space, obj);
         }
     });
 
@@ -60,12 +60,13 @@ define([
     // provided as a string "id1:id2" or tuple list ["id1", "id2"].
     // A very basic vertex implementation will be used to create all
     // referenced vertices. A list of all vertices is returned.
-    var graph = function(arcs) {
+    var graph = function(arcs, VertexProto) {
+        VertexProto = VertexProto || Vertex;
         // A is list of strings, let's get a list of tuples
         arcs = map("x.split(':')", arcs);
         // all vertex ids, seen in arcs
         var vids = _(arcs).chain().flatten().uniq().value(),
-            vertices = map(function(id) { return new Vertex(id); }, vids),
+            vertices = map(function(id) { return new VertexProto({id:id}); }, vids),
             cache = foldl("acc,x -> (acc[x.id] = x) && acc", {}, vertices);
         _.each(arcs, function(arc) {
             cache[arc[0]].next().push(cache[arc[1]]);
@@ -204,7 +205,7 @@ define([
                         vadd = pathVSize(path);
                     }
                 });
-                vertex.set({hspace: hspace, vspace: vspace});
+                vertex.setSpace({hspace: hspace, vspace: vspace});
             });
             // we are using floats...
             var emargin = 0.00001;
@@ -223,7 +224,7 @@ define([
             var hpos = 0;
             _.each(path, function(vertex) {
                 if (!cache[vertex.id]) {
-                    vertex.set({hpos: hpos, vpos: pidx});
+                    vertex.setSpace({hpos: hpos, vpos: pidx});
                     rval.push(vertex);
                 }
                 cache[vertex.id] = true;

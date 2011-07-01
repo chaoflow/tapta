@@ -22,8 +22,8 @@ define([
         equal(_.compose(colJoin, pluckId)(list), "1:2", "composed");
     });
 
-    var testgraph = function(opts) {
-        var graph = graphutils.graph(opts.arcs);
+    var testgraph = function(opts) { return function() {
+        var graph = graphutils.graph(opts.arcs, opts.Vertex);
 
         // find sources and sinks of the graph
         var sources = graphutils.sources(graph);
@@ -46,18 +46,19 @@ define([
         deepEqual(map("x.vspace()", vertices), opts.vspace, "vspace");
         deepEqual(map("x.hpos()", vertices), opts.hpos, "hpos");
         deepEqual(map("x.vpos()", vertices), opts.vpos, "vpos");
-    };
+    };};
 
-    test("Graph 1", function() {
+    var graph1 = function(VertexProto) {
         var arcs = [
             'a:b','a:c',
             'b:d','d:e',
             'c:d'
         ];
 
-        testgraph({
+        return {
             // the arcs define the graph
             arcs: arcs,
+            Vertex: VertexProto,
             // aspects to explicitly check in addition to implicit checks
             hsize: 4,
             hspace: [1,1,1,1,1],
@@ -70,10 +71,10 @@ define([
                     'a:c:d:e'],
             sinks: ['e'],
             sources: ['a']
-        });
-    });
+        };
+    };
 
-    test("Graph 2", function() {
+    var graph2 = function(VertexProto) {
         var arcs = [
             'a:b','a:c',
             'b:d',
@@ -84,9 +85,10 @@ define([
             'g:e'
         ];
 
-        testgraph({
+        return {
             // the arcs define the graph
             arcs: arcs,
+            Vertex: VertexProto,
             // aspects to explicitly check in addition to implicit checks
             hsize: 5,
             hspace: [1,1,1,1,1,1,1,1],
@@ -98,10 +100,10 @@ define([
                     "a:c:g:e:h"],
             sinks: ['h'],
             sources: ['a']
-        });
-    });
+        };
+    };
 
-    test("Graph originial test case but als verts 1/1", function() {
+    var graph3 = function(VertexProto) {
         var arcs = [
             'i:a',
             'a:b','a:h','a:p','a:r',
@@ -120,9 +122,10 @@ define([
             'r:e'
         ];
 
-        testgraph({
+        return {
             // the arcs define the graph
             arcs: arcs,
+            Vertex: VertexProto,
             // aspects to explicitly check in addition to implicit checks
             hsize: 9,
             hspace: [1, 1, 1.25, 2.5, 1.25, 1, 1, 1.25, 1.25, 5.75, 1,
@@ -138,6 +141,17 @@ define([
                     "i:a:r:e:q"],
             sinks: ['n','q'],
             sources: ['i']
-        });
-    });
+        };
+    };
+
+    test("Graph 1", testgraph(graph1()));
+    test("Graph 2", testgraph(graph2()));
+    test("Graph originial test case but als verts 1/1", testgraph(graph3()));
+
+    return {
+        graph1: graph1,
+        graph2: graph2,
+        graph3: graph3,
+        testgraph: testgraph
+    };
 });

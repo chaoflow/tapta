@@ -12,6 +12,39 @@ define([
 
     // A vertex is a container that knows its direct successors.
     var Vertex = Model.extend({
+        initialize: function() {
+            this._space = {};
+        },
+        hsize: function() {
+            try {
+                return this.payload().get('hsize');
+            } catch (TypeError) {
+                return 1;
+            }
+        },
+        vsize: function() {
+            try {
+                return this.payload().get('vsize');
+            } catch (TypeError) {
+                return 1;
+            }
+        },
+        hpos: function() {
+            return this._space.hpos;
+        },
+        vpos: function() {
+            return this._space.vpos;
+        },
+        hspace: function() {
+            return this._space.hspace;
+        },
+        vspace: function() {
+            return this._space.vspace;
+        },
+        setSpace: function(obj) {
+            _.extend(this._space, obj);
+            // XXX: trigger event if something changed, carrying what changed
+        },
         // list of direct successors
         next: function() {
             return this.get('next') || this.set({next:[]}).get('next');
