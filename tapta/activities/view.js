@@ -56,7 +56,7 @@ define([
             _.bindAll(this, 'render');
             this.children = _.map(
                 this.model.layers.concat().reverse(),
-                function(layer) { 
+                function(layer) {
                     var child = this.defchild(Layer, {
                         model: layer,
                         name: layer.name
@@ -72,7 +72,7 @@ define([
         render: function() {
             var layers = this;
             $(this.el).html(this.template({layers: this.model.layers}));
-            _.each(this.children, function(child) { 
+            _.each(this.children, function(child) {
                 // at this point the elements exist in the DOM,
                 // created by the layers template
                 child.el = layers.$('#'+child.name);
@@ -108,7 +108,7 @@ define([
         bindEvents: function() {
             // The element views catch DOM events and translate them
             // into user acts, they are executed here.
-            // 
+            //
             // XXX: In case the whole act processing is moved to app level
             // it is the responsibility of the layer to catch all events
             // and enrich them with layermodel:this.model.
@@ -158,7 +158,7 @@ define([
 
             // rerender activity on mode change
             this.bind("change:mode", this.activity.render);
-            
+
             // Events that need a mode to be processed
             this.bind("act:addtoedge", function(load) {
                 if (this.mode.name !== "addingnewnode") { return; }
@@ -204,7 +204,7 @@ define([
                 model: this.model,
                 name: "library"
             }));
-            this.right_pane.add(this.defchild(panes.ActionbarView, { 
+            this.right_pane.add(this.defchild(panes.ActionbarView, {
                 model:this.model,
                 name: "actionbar"
             }));
@@ -225,7 +225,7 @@ define([
         },
         bindToModel: function(model) {
             this.model = model;
-            
+
             // without a model we are finished
             if (model === undefined) { return; }
 
@@ -371,7 +371,7 @@ define([
                 line.attr({stroke: settings.edge.color,
                            "stroke-width": settings.edge.strokewidth});
 
-                // and the arrow head 
+                // and the arrow head
                 var adx = settings.edge.arrow.dx;
                 var ady = settings.edge.arrow.dy;
                 // xl/yl left - xr/yr right when looking in direction of arrow
@@ -645,7 +645,7 @@ define([
             return rect;
         }
     });
-    
+
     var ForkJoin = MIMO.extend({
         symbol: function(canvas, ui, mode) {
             var dx = settings.node.forkjoin.dx;
@@ -682,7 +682,7 @@ define([
             var svgpath = _.template(
                 "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
                     x0:x0, y0:y0, x1:x1, y1:y1});
-            
+
             var droparea = canvas.set();
             // edge area, depending on the mode we
             // make it visible as a drop target.
