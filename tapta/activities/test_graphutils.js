@@ -42,10 +42,10 @@ define([
                   opts.paths, "paths are derived");
 
         vertices = spaceOut(paths);
-        deepEqual(map("x.width()", vertices), opts.width, "width");
-        deepEqual(map("x.height()", vertices), opts.height, "height");
-        deepEqual(map("x.x()", vertices), opts.x, "x");
-        deepEqual(map("x.y()", vertices), opts.y, "y");
+        deepEqual(map("vertex.width", vertices), opts.width, "width");
+        deepEqual(map("vertex.height", vertices), opts.height, "height");
+        deepEqual(map("vertex.x", vertices), opts.x, "x");
+        deepEqual(map("vertex.y", vertices), opts.y, "y");
     };};
 
     var graph1 = function(VertexProto) {

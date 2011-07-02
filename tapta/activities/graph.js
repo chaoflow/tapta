@@ -14,24 +14,8 @@ define([
     var Vertex = Model.extend({
         initialize: function() {
             this._geometry = {};
-        },
-        minwidth: function() {
-            return 1;
-        },
-        minheight: function() {
-            return 1;
-        },
-        x: function() {
-            return this._geometry.x;
-        },
-        y: function() {
-            return this._geometry.y;
-        },
-        width: function() {
-            return this._geometry.width;
-        },
-        height: function() {
-            return this._geometry.height;
+            this._minwidth = 1;
+            this._minheight = 1;
         },
         setGeometry: function(obj) {
             _.extend(this._geometry, obj);
@@ -39,7 +23,6 @@ define([
         },
         // list of direct successors
         next: function() {
-            return this.get('next') || this.set({next:[]}).get('next');
         },
         // string or object, object needs an id
         payload: function() {
@@ -62,6 +45,17 @@ define([
                 return memo;
             }, {});
         }
+    });
+    Object.defineProperties(Vertex.prototype, {
+        minwidth: { get: function() { return this._minwidth; } },
+        minheight: { get: function() { return this._minheight; } },
+        next: { get: function() {
+            return this.get('next') || this.set({next:[]}).get('next');
+        } },
+        x: { get: function() { return this._geometry.x; } },
+        y: { get: function() { return this._geometry.y; } },
+        width: { get: function() { return this._geometry.width;} },
+        height: { get: function() { return this._geometry.height; } }
     });
 
     // a graph is stored as a collection of vertices.

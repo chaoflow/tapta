@@ -47,9 +47,9 @@ define([
         equal(d.payload(), "D", "D created correctly");
 
         // hook them up and save
-        a.next().splice(0, 0, b, c);
-        b.next().splice(0, 0, d);
-        c.next().splice(0, 0, d);
+        a.next.splice(0, 0, b, c);
+        b.next.splice(0, 0, d);
+        c.next.splice(0, 0, d);
         a.save();
         b.save();
         c.save();
@@ -80,7 +80,7 @@ define([
         var c_ = vertices[2];
         var d_ = vertices[3];
 
-        deepEqual(_.pluck(a_.next(), 'id'), [b.id, c.id],
+        deepEqual(_.pluck(a_.next, 'id'), [b.id, c.id],
                   "next is deserialized correctly");
 
         // cleanup

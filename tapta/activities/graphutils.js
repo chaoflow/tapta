@@ -21,38 +21,27 @@ define([
 
     ////// defining graphs
 
+    // XXX: make portions of this reusable for inheritance
     var Vertex = function(attrs) {
         this.id = attrs && attrs.id;
-        this._minheight = 1;
-        this._minwidth = 1;
-        this._next = [];
         this._geometry = {};
+        this._minwidth = 1;
+        this._minheight = 1;
+        this._next = [];
     };
     _(Vertex.prototype).extend({
-        minwidth: function() {
-            return this._minwidth;
-        },
-        minheight: function() {
-            return this._minheight;
-        },
-        x: function() {
-            return this._geometry.x;
-        },
-        y: function() {
-            return this._geometry.y;
-        },
-        width: function() {
-            return this._geometry.width;
-        },
-        height: function() {
-            return this._geometry.height;
-        },
-        next: function() {
-            return this._next;
-        },
         setGeometry: function(obj) {
             _.extend(this._geometry, obj);
         }
+    });
+    Object.defineProperties(Vertex.prototype, {
+        minwidth: { get: function() { return this._minwidth; } },
+        minheight: { get: function() { return this._minheight; } },
+        next: { get: function() { return this._next; } },
+        x: { get: function() { return this._geometry.x; } },
+        y: { get: function() { return this._geometry.y; } },
+        width: { get: function() { return this._geometry.width;} },
+        height: { get: function() { return this._geometry.height; } }
     });
 
     // A graph can be created by only providing arcs.
@@ -69,7 +58,7 @@ define([
             vertices = map(function(id) { return new VertexProto({id:id}); }, vids),
             cache = foldl("acc,x -> (acc[x.id] = x) && acc", {}, vertices);
         _.each(arcs, function(arc) {
-            cache[arc[0]].next().push(cache[arc[1]]);
+            cache[arc[0]].next.push(cache[arc[1]]);
         });
         return vertices;
     };
@@ -81,7 +70,7 @@ define([
     // walk the graph from given vertices reducing it with func and memo
     var reduce = function(vertices, func, memo) {
         return _.reduce(vertices, function(memo, vertex) {
-            return reduce(vertex.next(), func, func(memo, vertex));
+            return reduce(vertex.next, func, func(memo, vertex));
         }, memo);
     };
 
@@ -89,8 +78,8 @@ define([
     // paths starting at vertices.
     var arcs = function(vertices) {
         return reduce(vertices, function(memo, vertex) {
-            if (vertex.next().length === 0) { return memo; }
-            return _.reduce(vertex.next(), function(memo, next) {
+            if (vertex.next.length === 0) { return memo; }
+            return _.reduce(vertex.next, function(memo, next) {
                 return _.some(memo, function(arc) {
                     return arc[0] === vertex
                         && arc[1] === next;
@@ -105,7 +94,7 @@ define([
     //     if (vertices.length === 0) return [[]];
     //     return _.reduce(vertices, function(memo, vertex) {
     //         return memo.concat(
-    //             _.map(paths(vertex.next()), function(path) {
+    //             _.map(paths(vertex.next), function(path) {
     //                 return [vertex].concat(path);
     //             })
     //         );
@@ -120,7 +109,7 @@ define([
     //     var x = vertices.slice(0,1)[0];
     //     var xs = vertices.slice(1);
     //     return _.map(
-    //         paths(x.next()),
+    //         paths(x.next),
     //         function(path) { return [x].concat(path); }
     //     ).concat(paths2(xs));
     // };
@@ -131,7 +120,7 @@ define([
         if (vertices.length === 0) return [];
         var x = vertices.slice(0,1)[0],
             xs = vertices.slice(1),
-            tails = paths(x.next());
+            tails = paths(x.next);
         return map('[this.x].concat(path)', tails.length ? tails : [[]], {x:x})
             .concat(paths(xs));
     };
@@ -143,29 +132,29 @@ define([
         if (sources.length === undefined) sources = [sources];
         switch (sources.length) {
         case 0: return 0;
-        case 1: return sources[0].minwidth() + minwidth(sources[0].next());
+        case 1: return sources[0].minwidth + minwidth(sources[0].next);
         default: return maximum(map(minwidth, sources));
         }
     };
     var path_minwidth = function(path) {
-        return sum(map("vertex.minwidth()", path));
+        return sum(map("vertex.minwidth", path));
     };
 
     var path_minheight = function(path) {
-        return maximum(map("vertex.minheight()", path));
+        return maximum(map("vertex.minheight", path));
     };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
     var sinks = function(vertices) {
         return _(vertices).select(function(vertex) {
-            return vertex.next().length === 0;
+            return vertex.next.length === 0;
         });
     };
 
     // find sources, vertices not referenced by other vertices, indegree = 0
     var sources = function(vertices) {
         var referenced = _(vertices).chain()
-                .map(function(vertex) { return vertex.next(); })
+                .map(function(vertex) { return vertex.next; })
                 .flatten()
                 .value();
         // a bit weird syntax that is: this, arguments
@@ -190,8 +179,8 @@ define([
             var hadd = (longest.h_avail - path_minwidth(longest)) / longest.length;
             _.each(longest, function(vertex) {
                 var vadd = 0,
-                    width = vertex.minwidth() + hadd,
-                    height = vertex.minheight(),
+                    width = vertex.minwidth + hadd,
+                    height = vertex.minheight,
                     seen = false;
                 longest.h_avail -= width;
                 _.each(paths, function(path, idx) {
@@ -230,7 +219,7 @@ define([
                     rval.push(vertex);
                 }
                 cache[vertex.id] = true;
-                x += vertex.width();
+                x += vertex.width;
             });
         });
         return rval;
