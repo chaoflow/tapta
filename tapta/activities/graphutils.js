@@ -22,36 +22,36 @@ define([
     ////// defining graphs
 
     var Vertex = function(attrs) {
-        this._space = {};
-        this.id = attrs.id;
-        this._hsize = 1;
-        this._vsize = 1;
+        this.id = attrs && attrs.id;
+        this._minheight = 1;
+        this._minwidth = 1;
         this._next = [];
+        this._geometry = {};
     };
     _(Vertex.prototype).extend({
-        hsize: function() {
-            return this._hsize;
+        minwidth: function() {
+            return this._minwidth;
         },
-        vsize: function() {
-            return this._vsize;
+        minheight: function() {
+            return this._minheight;
         },
-        hpos: function() {
-            return this._space.hpos;
+        x: function() {
+            return this._geometry.x;
         },
-        vpos: function() {
-            return this._space.vpos;
+        y: function() {
+            return this._geometry.y;
         },
-        hspace: function() {
-            return this._space.hspace;
+        width: function() {
+            return this._geometry.width;
         },
-        vspace: function() {
-            return this._space.vspace;
+        height: function() {
+            return this._geometry.height;
         },
         next: function() {
             return this._next;
         },
-        setSpace: function(obj) {
-            _.extend(this._space, obj);
+        setGeometry: function(obj) {
+            _.extend(this._geometry, obj);
         }
     });
 
@@ -136,23 +136,23 @@ define([
             .concat(paths(xs));
     };
 
-    // the maximum hsize of the paths seen from srcs
+    // the maximum minwidth of the paths seen from srcs
     // vertices have variable width
-    var hsize = function(sources) {
+    var minwidth = function(sources) {
         // enable calling on a single vertex
         if (sources.length === undefined) sources = [sources];
         switch (sources.length) {
         case 0: return 0;
-        case 1: return sources[0].hsize() + hsize(sources[0].next());
-        default: return maximum(map(hsize, sources));
+        case 1: return sources[0].minwidth() + minwidth(sources[0].next());
+        default: return maximum(map(minwidth, sources));
         }
     };
-    var pathHSize = function(path) {
-        return sum(map("vertex.hsize()", path));
+    var path_minwidth = function(path) {
+        return sum(map("vertex.minwidth()", path));
     };
 
-    var pathVSize = function(path) {
-        return maximum(map("vertex.vsize()", path));
+    var path_minheight = function(path) {
+        return maximum(map("vertex.minheight()", path));
     };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
@@ -174,12 +174,12 @@ define([
 
     // allocate space to the vertices
     var spaceOut = function    (paths, hpad, vpad) {
-        // hsize of longest path in the sense of space required, not item-wise
-        var maxhsize = maximum(map(pathHSize, paths)),
+        // minwidth of longest path in the sense of space required, not item-wise
+        var maxminwidth = maximum(map(path_minwidth, paths)),
             longest, lidx,
             orig_paths = paths;
         paths = map(function(p) {
-            return _.extend(p.slice(), {h_avail: maxhsize});
+            return _.extend(p.slice(), {h_avail: maxminwidth});
         }, orig_paths);
         while (paths.length > 0) {
             // longest path and other paths
@@ -187,25 +187,26 @@ define([
             lidx = _.indexOf(paths, longest);
             if (lidx == -1) throw "Deep shit!";
             paths.splice(lidx, 1);
-            var hadd = (longest.h_avail - pathHSize(longest)) / longest.length;
+            var hadd = (longest.h_avail - path_minwidth(longest)) / longest.length;
             _.each(longest, function(vertex) {
                 var vadd = 0,
-                    hspace = vertex.hsize() + hadd,
-                    vspace = vertex.vsize(),
+                    width = vertex.minwidth() + hadd,
+                    height = vertex.minheight(),
                     seen = false;
-                longest.h_avail -= hspace;
+                longest.h_avail -= width;
                 _.each(paths, function(path, idx) {
                     if (_.include(path, vertex)) {
                         seen = true;
-                        vspace += pathVSize(path) + vadd;
+                        height += path_minheight(path) + vadd;
                         vadd = 0;
                         path.splice(_.indexOf(path, vertex),1);
-                        path.h_avail -= hspace;
+                        path.h_avail -= width;
                     } else if (seen && path.slice(-1) !== longest.slice(-1)) {
-                        vadd = pathVSize(path);
+                        vadd = path_minheight(path);
                     }
                 });
-                vertex.setSpace({hspace: hspace, vspace: vspace});
+                // XXX: manage to set width, height and x, y in one call
+                vertex.setGeometry({width: width, height: height});
             });
             // we are using floats...
             var emargin = 0.00001;
@@ -220,15 +221,16 @@ define([
         // set positions
         var cache = {};
         var rval = [];
-        _.each(orig_paths, function(path, pidx) {
-            var hpos = 0;
+        _.each(orig_paths, function(path, path_idx) {
+            var x = 0;
             _.each(path, function(vertex) {
                 if (!cache[vertex.id]) {
-                    vertex.setSpace({hpos: hpos, vpos: pidx});
+                    // XXX: manage to set width, height and x, y in one call
+                    vertex.setGeometry({x: x, y: path_idx});
                     rval.push(vertex);
                 }
                 cache[vertex.id] = true;
-                hpos += vertex.hspace();
+                x += vertex.width();
             });
         });
         return rval;
@@ -239,7 +241,7 @@ define([
         arcs: arcs,
         colJoin: colJoin,
         graph: graph,
-        hsize: hsize,
+        minwidth: minwidth,
         paths: paths,
         pluckId: pluckId,
         reduce: reduce,

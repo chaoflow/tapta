@@ -282,6 +282,11 @@ define([
         return scanr(fn, acc, list, object);
     };
 
+    // XXX: untested
+    var invoke = function(name, list, object) {
+        return map(function(x) { return x[name](); }, list, object);
+    };
+
     var map = function(fn, list, object) {
         fn = Function.toFunction(fn);
         var res = [];
@@ -294,6 +299,15 @@ define([
     var map_ = function(fn, sequence, object) {
         fn = Function.toFunction(fn);
         return _.map(sequence, fn, object);
+    };
+
+    // XXX: untested
+    var range = function(n) {
+        var rval = [];
+        for (var i = 0; i < n; i++) {
+            rval[i] = i;
+        }
+        return rval;
     };
 
     var without = function(fn, seq, obj) {
@@ -344,6 +358,7 @@ define([
         map_: map_,
         maximum: maximum,
         partial: partial,
+        range: range,
         scanl: scanl,
         scanl1: scanl1,
         scanr: scanr,

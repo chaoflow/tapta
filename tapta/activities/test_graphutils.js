@@ -8,7 +8,7 @@ define([
 
     var graphutils = require('./graphutils'),
         g = graphutils,
-        hsize = g.hsize,
+        minwidth = g.minwidth,
         spaceOut = g.spaceOut;
     delete g;
 
@@ -35,17 +35,17 @@ define([
         var arcs = _.map(A, _.compose(colJoin, pluckId));
         deepEqual(arcs, opts.arcs, "arcs");
 
-        equal(hsize(sources), opts.hsize, "hsize");
+        equal(minwidth(sources), opts.minwidth, "minwidth");
 
         var paths = graphutils.paths(sources);
         deepEqual(_.map(paths, _.compose(colJoin, pluckId)),
                   opts.paths, "paths are derived");
 
         vertices = spaceOut(paths);
-        deepEqual(map("x.hspace()", vertices), opts.hspace, "hspace");
-        deepEqual(map("x.vspace()", vertices), opts.vspace, "vspace");
-        deepEqual(map("x.hpos()", vertices), opts.hpos, "hpos");
-        deepEqual(map("x.vpos()", vertices), opts.vpos, "vpos");
+        deepEqual(map("x.width()", vertices), opts.width, "width");
+        deepEqual(map("x.height()", vertices), opts.height, "height");
+        deepEqual(map("x.x()", vertices), opts.x, "x");
+        deepEqual(map("x.y()", vertices), opts.y, "y");
     };};
 
     var graph1 = function(VertexProto) {
@@ -60,13 +60,11 @@ define([
             arcs: arcs,
             Vertex: VertexProto,
             // aspects to explicitly check in addition to implicit checks
-            hsize: 4,
-            hspace: [1,1,1,1,1],
-            vspace: [2,1,2,2,1],
-            hspace: [1,1,1,1,1],
-            vspace: [2,1,2,2,1],
-            hpos: [0,1,2,3,1],
-            vpos: [0,0,0,0,1],
+            minwidth: 4,
+            width: [1,1,1,1,1],
+            height: [2,1,2,2,1],
+            x: [0,1,2,3,1],
+            y: [0,0,0,0,1],
             paths: ['a:b:d:e',
                     'a:c:d:e'],
             sinks: ['e'],
@@ -90,11 +88,11 @@ define([
             arcs: arcs,
             Vertex: VertexProto,
             // aspects to explicitly check in addition to implicit checks
-            hsize: 5,
-            hspace: [1,1,1,1,1,1,1,1],
-            vspace: [3,1,1,3,3,2,1,1],
-            hpos: [0,1,2,3,4,1,2,2],
-            vpos: [0,0,0,0,0,1,1,2],
+            minwidth: 5,
+            width: [1,1,1,1,1,1,1,1],
+            height: [3,1,1,3,3,2,1,1],
+            x: [0,1,2,3,4,1,2,2],
+            y: [0,0,0,0,0,1,1,2],
             paths: ["a:b:d:e:h",
                     "a:c:f:e:h",
                     "a:c:g:e:h"],
@@ -127,12 +125,12 @@ define([
             arcs: arcs,
             Vertex: VertexProto,
             // aspects to explicitly check in addition to implicit checks
-            hsize: 9,
-            hspace: [1, 1, 1.25, 2.5, 1.25, 1, 1, 1.25, 1.25, 5.75, 1,
+            minwidth: 9,
+            width: [1, 1, 1.25, 2.5, 1.25, 1, 1, 1.25, 1.25, 5.75, 1,
                      1, 1, 1, 1, 5, 5],
-            vspace: [6, 6, 3, 1, 2, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            hpos: [0, 1, 2, 3.25, 5.75, 7, 8, 3.25, 4.5, 3.25, 2, 3, 4, 5, 6, 2, 2],
-            vpos: [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 4, 5],
+            height: [6, 6, 3, 1, 2, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            x: [0, 1, 2, 3.25, 5.75, 7, 8, 3.25, 4.5, 3.25, 2, 3, 4, 5, 6, 2, 2],
+            y: [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 4, 5],
             paths: ["i:a:b:c:d:e:q",
                     "i:a:b:f:g:d:e:q",
                     "i:a:b:n",
