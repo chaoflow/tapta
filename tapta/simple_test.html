@@ -1,0 +1,24 @@
+<!DOCTYPE HTML SYSTEM>
+<html>
+  <head>
+    <title>Example test</title>
+    <script type="text/javascript" src="vendor/raphael.js"></script>
+    <script type="text/javascript"
+    src="http://www.broofa.com/Tools/JSLitmus/JSLitmus.js"> </script>
+    <!-- This does not work on Firefox 5. Strange... -->
+    <!-- 
+    <script type="text/javascript" 
+     src="https://raw.github.com/DmitryBaranovskiy/raphael/master/raphael.js"> </script> 
+    -->
+  </head>
+  <body>  
+    <script type="text/javascript">
+window.onload = function(){
+JSLitmus.test('Test drawing a rectangle', function() {
+var paper = Raphael(10, 50, 320, 200);
+var circle = paper.circle(50, 40, 10);
+});
+};
+    </script>
+  </body>
+</html>
