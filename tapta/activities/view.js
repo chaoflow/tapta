@@ -277,6 +277,7 @@ define([
                 this.canvas = Raphael(this.el[0], width, height);
                 // draw rectangle around our canvas
                 // XXX: if we are the toplayer it should not have round corners
+                // XXX: for some reason this is not visible
                 var rect = this.canvas.rect(0, 0, width, height, cfg.canvas.r_corner);
             }
 
