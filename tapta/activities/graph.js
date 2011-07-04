@@ -58,7 +58,8 @@ define([
         minwidth: {get: function() { return this._minwidth; }},
         minheight: {get: function() { return this._minheight; }},
         next: {get: function() {
-            return this.get('next') || this.set({next:[]}).get('next');
+            return this.get('next')
+                || this.set({next:[]}, {silent:true}).get('next');
         }},
         payload: {get: function() { return this.get('payload'); }},
         // If payload has no type its a string with only type info
@@ -78,6 +79,10 @@ define([
         },
         initialize: function(attrs, opts) {
             this.nodelib = opts.nodelib || this.parent && this.parent.nodelib;
+            _.bindAll(this);
+            this.bind("add", this.spaceOut);
+            this.bind("remove", this.spaceOut);
+            this.bind("change:next", this.spaceOut);
         },
         model: Vertex,
         // goes hand-in-hand with Vertex.toJSON
