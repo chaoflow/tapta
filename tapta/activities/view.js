@@ -7,6 +7,7 @@ define([
     'vendor/underscore.js',
     'vendor/raphael.js',
     './base',
+    './controller',
     './model',
     './graphviews',
     './settings',
@@ -16,7 +17,8 @@ define([
         GraphView = require('./graphviews').GraphView,
         model = require('./model'),
         panes = require('./panes'),
-        cfg = require('./settings');
+        CFG = require('./settings'),
+        controller = require('./controller');
 
     var App = base.View.extend({
         // XXX: the id should be unique
@@ -104,6 +106,8 @@ define([
                 model: this.model,
                 name: "rightpane"
             });
+
+            this.bind("all", controller);
 
             this.bindEvents();
         },
@@ -228,8 +232,8 @@ define([
 
             // XXX: will change a bit once we are a pane manager
             // will be used as base for our children and to render the canvas
-            this.height = cfg.canvas.height;
-            this.width = cfg.canvas.width;
+            this.height = CFG.canvas.height;
+            this.width = CFG.canvas.width;
 
             this.graphview = this.defchild(GraphView, {
                 name: "graph",
@@ -278,7 +282,7 @@ define([
                 // draw rectangle around our canvas
                 // XXX: if we are the toplayer it should not have round corners
                 // XXX: for some reason this is not visible
-                var rect = this.canvas.rect(0, 0, width, height, cfg.canvas.r_corner);
+                var rect = this.canvas.rect(0, 0, width, height, CFG.canvas.r_corner);
             }
 
             // tell next layer whether and which activity to display

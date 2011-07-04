@@ -22,7 +22,7 @@ define([
     };
 
     var GraphElement = View.extend({
-        ctrls: function(canvas) { /* No controls by default */ },
+        ctrls: function(canvas) { return []; },
         remove: function() {
             // remove children from canvas - our children are raphael sets
             for (var name in this.children) {
@@ -38,7 +38,17 @@ define([
             this.children["symbol"] = this.symbol(canvas);
 
             // render controls
-            this.children["ctrls"] = this.ctrls(canvas, editmode);
+            var ctrls = this.children.ctrls = this.ctrls(canvas, editmode);
+            // trigger backbone events in case of svg events
+            _.each(ctrls, function(ctrl, idx) {
+                // build a handler that remembers us and the ctrl number
+                var handler = function(idx) {
+                    return function() {
+                        this.trigger("click", {view: this, idx: idx});
+                    };
+                }(idx);
+                ctrl.click(handler, this);
+            }, this);
         },
         symbol: function(canvas) { throw "Not implemented"; }
     });
@@ -57,10 +67,9 @@ define([
                 head = this.srcview.exitpath(this.tgtview),
                 tail = this.tgtview.entrancepath(this.srcview),
                 points = head.concat(tail),
-                ctrls = svgpath(canvas, points);
-            ctrls.attr(cfg.ctrls[editmode]);
-            ctrls.click(function() { console.log("clicked"); });
-            return ctrls;
+                ctrl = svgpath(canvas, points);
+            ctrl.attr(cfg.ctrls[editmode]);
+            return [ctrl];
         },
         // The arc is drawn as an SVG path, see:
         // http://www.w3.org/TR/SVG/paths.html#PathData
