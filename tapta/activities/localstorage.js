@@ -2,12 +2,9 @@ define([
     'require',
     'vendor/underscore.js',
     'vendor/backbone.js',
-    './base',
-    './settings'
+    './base'
 ], function(require) {
     var base = require('./base');
-    var settings = require('./settings');
-    var KEY = settings.localstorage_key;
 
     function S4() {
         return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
@@ -220,7 +217,7 @@ define([
             var idx = model.get('idx');
             model = Collection.prototype._remove.apply(this, arguments);
             var N = this.length-1;
-            var models = this.toArray();            
+            var models = this.toArray();
             for (var i=idx; i<=N; i++) {
                 models[i].set({idx: i}, opts);
                 // only save if model exist in the db
@@ -266,7 +263,7 @@ define([
             resp = store.destroy(model);
             break;
         }
-        
+
         if (resp) {
             success(resp);
         } else {
