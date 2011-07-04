@@ -5,8 +5,10 @@
 define([
     'require',
     'vendor/underscore.js',
+    './debug',
     './functional'
 ], function(require) {
+    var DEBUG = require('./debug');
     require('./functional').install();
 
     // join items of a list with columns
@@ -167,6 +169,7 @@ define([
 
     // allocate space to the vertices
     var spaceOut = function    (paths, hpad, vpad) {
+        DEBUG.spaceout && console.group("spaceout");
         // minwidth of longest path in the sense of space required, not item-wise
         var maxminwidth = maximum(map(path_minwidth, paths)),
             longest, lidx,
@@ -200,6 +203,7 @@ define([
                 });
                 // XXX: manage to set width, height and x, y in one call
                 vertex.setGeometry({width: width, height: height});
+                DEBUG.spaceout && console.log(["size:", vertex.cid, width, height]);
             });
             // we are using floats...
             var emargin = 0.00001;
@@ -221,11 +225,13 @@ define([
                     // XXX: manage to set width, height and x, y in one call
                     vertex.setGeometry({x: x, y: path_idx});
                     rval.push(vertex);
+                    DEBUG.spaceout && console.log(["pos:", vertex.cid, x, path_idx]);
                 }
                 cache[vertex.id] = true;
                 x += vertex.width;
             });
         });
+        DEBUG.spaceout && console.groupEnd();
         return rval;
     };
 
