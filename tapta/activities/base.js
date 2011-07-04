@@ -78,6 +78,7 @@ define([
         constructor: function(props) {
             this.name = props.name;
             this.parent = props.parent;
+            this.children = {};
             console.group("init:"+this.abspath());
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);

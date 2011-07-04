@@ -156,7 +156,7 @@ define([
         r: 10,
         fill: "#424242"
     };
-    cfg.symbols.final_ = {
+    cfg.symbols["final_"] = {
         r_inner: 8,
         r_outer: 12,
         fill: "#424242",

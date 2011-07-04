@@ -82,16 +82,10 @@ define([
         }
     });
 
-    var Node = Model.extend({
-        defaults: {
-            x_req: 1, // varibale size supported
-            y_req: 1  // fixed for now
-        }
-    });
-    var MIMO = Node.extend({});
-    var DecMer = MIMO.extend({});
+    var Node = Model.extend({});
 
     var Action = Node.extend({
+        type: "action",
         toJSON: function() {
             var attributes = _.clone(this.attributes);
             _(['act']).each(function(key){
@@ -119,6 +113,9 @@ define([
         }
     });
 
+    var DecMer = Node.extend({
+        type: "decmer"
+    });
     var DecMers = Collection.extend({
         model: DecMer
     });
@@ -174,7 +171,6 @@ define([
         App: App,
         Layer: Layer,
         Node: Node,
-        MIMO: MIMO,
         Action: Action,
         Actions: Actions,
         DecMer: DecMer,

@@ -2,36 +2,35 @@ define([
     'require',
     'vendor/underscore.js',
     './base',
+    './graph',
     './settings'
 ], function(require) {
     var base = require('./base'),
         View = base.View,
-        cfg = require('./settings');
+        CFG = require('./settings'),
+        Vertex = require('./graph').Vertex;
 
     var xToPix = function(x) {
-        return cfg.gridsize.x * x;
+        return CFG.gridsize.x * x;
     };
     var yToPix = function(y) {
-        return cfg.gridsize.y * y;
+        return CFG.gridsize.y * y;
     };
 
     var GraphElement = View.extend({
         remove: function() {
             // remove children from canvas - our children are raphael sets
-            _.each(this.children, function(set) { set.remove(); });
-            this.children.length = 0;
+            for (var name in this.children) {
+                this.children[name].remove();
+                delete this.children[name];
+            }
         },
-        render: function() {
+        render: function(canvas) {
             // remove previously rendered stuff
             this.remove();
 
-            var canvas = this.parent.canvas;
-
             // render symbol
-            this.children.push(this.symbol(canvas));
-            // render symbol according to our model's payload
-            var nodeview = symbols[this.model.payload.type];
-            this.symbol = symbol.render(canvas, this.geometry);
+            this.children["symbol"] = this.symbol(canvas);
         }
     });
 
@@ -66,14 +65,6 @@ define([
             this.model.bind("change:geometry", function(opts) {
                 // XXX use opts.diff to move existing symol
             });
-        },
-        // render stuff and bind
-        render: function(canvas) {
-            // render symbol according to our model's payload
-            var set = canvas.set(),
-                symbol = symbols[this.model.payload.type];
-            set.push(symbol.render(canvas, this.geometry));
-            return set;
         }
     });
     Object.defineProperties(NodeView.prototype, {
@@ -97,12 +88,12 @@ define([
     var InitialNodeView = NodeView.extend({
         // a filled circle centered with radius r
         symbol: function(canvas) {
-            var cfg = cfg.symbols.initial,
+            var cfg = CFG.symbols.initial,
                 geo = this.geometry,
                 cx = geo.x + cfg.r + (geo.width - 2 * cfg.r) / 2,
                 cy = geo.y + cfg.r + (geo.height - 2 * cfg.r) / 2,
                 symbol = canvas.circle(cx, cy, cfg.r);
-            symbol.attr({fill: cfg.color});
+            symbol.attr({fill: cfg.fill});
             return symbol;
         }
     });
@@ -111,7 +102,7 @@ define([
         // a filled circle surrounded by an empty circle, vertically
         // centered, left aligned
         symbol: function(canvas) {
-            var cfg = cfg.symbols.final_,
+            var cfg = CFG.symbols.final_,
                 geo = this.geometry,
                 cx = geo.x + cfg.r_outer,
                 cy = geo.y + cfg.r_outer + (geo.height - 2 * cfg.r_outer) / 2,
@@ -120,9 +111,9 @@ define([
                 inner = canvas.circle(cx, cy, cfg.r_inner);
             outer.attr({fill: "black",
                         "fill-opacity": 0,
-                        stroke: cfg.color,
+                        stroke: cfg.stroke,
                         "stroke-width": cfg["stroke-width"]});
-            inner.attr({fill: cfg.color});
+            inner.attr({fill: cfg.fill});
             symbol.push(inner);
             symbol.push(outer);
             return symbol;
@@ -132,7 +123,7 @@ define([
     var ActionNodeView = NodeView.extend({
         // a box with round corners and a label, centered
         symbol: function(canvas) {
-            var cfg = cfg.symbols.action,
+            var cfg = CFG.symbols.action,
                 label = this.model.payload.get('label'),
                 geo = this.geometry,
                 x = geo.x + (geo.width - cfg.width) / 2,
@@ -159,7 +150,7 @@ define([
         // they need to stand out, as human needs to do something in
         // contrast to forkjoin and pure merge.
         symbol: function(canvas) {
-            var cfg = this.decision ? cfg.symbols.decision : cfg.symbols.merge,
+            var cfg = this.decision ? CFG.symbols.decision : CFG.symbols.merge,
                 geo = this.geometry,
                 edgelength = Math.sqrt(Math.pow(cfg.width, 2) / 2),
                 x = geo.x + (geo.width - edgelength) / 2,
@@ -178,7 +169,7 @@ define([
 
     var ForkJoinNodeView = NodeView.extend({
         symbol: function(canvas) {
-            var cfg = cfg.symbols.forkjoin,
+            var cfg = CFG.symbols.forkjoin,
                 geo = this.geometry,
                 x = geo.x + (geo.width - cfg.width) / 2,
                 y = geo.y + cfg.padY,
@@ -215,19 +206,24 @@ define([
             // no graph, nothing to do
             if (graph === undefined) return;
 
-            // XXX: a graph should keep its vertices spaced out
-            // spaceOut vertices - needs to happen before views are
-            // created because they would catch events and do nasty
-            // things, like redrawing themselves or moving their symbols
-            // around.
-            graph.spaceOut();
+            // If graph model is empty, add an initial and final node
+            if (graph.length === 0) {
+                var initial = new Vertex({payload: "initial"});
+                var final_ = new Vertex({payload: "final"});
+                initial.next.push(final_);
+                graph.add([initial, final_]);
+            }
 
             // create vertex views and remember them by their models cid
             // we need that to initialize the arc views
             this.vertices = foldl(function(acc, vertex) {
-                return this.defchild(nodeviews[vertex.type], {model: vertex});
-            }, {}, graph.toArray());
-
+                var view = this.defchild(
+                    nodeviews[vertex.type],
+                    {model: vertex, name: "vertex_"+vertex.cid}
+                );
+                acc[vertex.cid] = view;
+                return acc;
+            }, {}, graph.toArray(), this);
 
             // XXX: See how removing of nodes works and then decide
             // who is responsible for rendering arcs. Probably source

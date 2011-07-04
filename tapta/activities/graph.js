@@ -63,6 +63,7 @@ define([
         payload: {get: function() { return this.get('payload'); }},
         // If payload has no type its a string with only type info
         type: {get: function() { return this.payload.type || this.payload; }},
+        geometry: {get: function() { return this._geometry; }},
         x: {get: function() { return this._geometry.x; }},
         y: {get: function() { return this._geometry.y; }},
         width: {get: function() { return this._geometry.width;}},
