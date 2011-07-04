@@ -1,48 +1,12 @@
     Activity
         placeandroute: function() {
             this.layer.fetch();
-            this.graph.fetch();
-            if ((!this.paths.length) && (this.layer !== undefined)) {
-                // don't create path, initial and final node in the
-                // storage, just "add" them. Only if the path is
-                // changed later on, it will be added to the storage.
-                var source = new Initial();
-                var target = new Final();
-                this.layer.initials.add(source);
-                this.layer.finals.add(target);
-                this.paths.add({nodes: [source, target]});
-            }
-            return placeandroute(this.paths, this.cid);
-        },
-
-
-
-
-
-    var ElementView = base.View.extend({
-        constructor: function(opts) {
-            this.parent = opts.parent;
-            if (opts.model.ui === undefined) {
-                // edges
-                opts.model.view = this;
-            } else {
-                opts.model.ui[this.parent.cid].view = this;
-            }
-            base.View.apply(this, arguments);
-            _.bindAll(this, "render");
-            this.model.bind("change", this.render);
         }
-    });
+
+
 
     var Node = ElementView.extend({
-        initialize: function() {
-            _.bindAll(this, "ui");
-        },
         render: function(mode) {
-            var canvas = this.parent.canvas;
-            // ui contains position and size of the whole available area
-            var ui = this.ui();
-            var set = this.set = canvas.set();
             _.each([
                 "symbol",
                 "removearea",
@@ -68,26 +32,6 @@
             }
             return area;
         },
-        ctrlareas: function() {},
-        ui: function() {
-            // return ui info for slot, grid coordinates translated
-            // into pixel coordinates.
-            var slot = this.parent.cid;
-            return {
-                x: xToPix(this.model.ui[slot].x),
-                y: yToPix(this.model.ui[slot].y),
-                dx: xToPix(this.model.ui[slot].dx),
-                dy: yToPix(this.model.ui[slot].dy),
-                incoming: _.map(
-                    this.model.ui[slot].incoming,
-                    this.parent.getView
-                ),
-                outgoing: _.map(
-                    this.model.ui[slot].outgoing,
-                    this.parent.getView
-                )
-            };
-        }
     });
 
     var Final = Node.extend({
@@ -100,13 +44,6 @@
     });
 
     var Action = Node.extend({
-        initialize: function() {
-            this.model.bind("change:label", this.render);
-        },
-        symbol: function(canvas, ui, mode) {
-            this.x_in = x;
-            this.x_out = x + dx;
-        },
         ctrlareas: function(canvas, ui, mode) {
             var ctrl;
             if (mode.name === "selecting") {
@@ -201,14 +138,6 @@
     });
 
     var Edge = ElementView.extend({
-
-            var x0 = ui.x;
-            var y0 = ui.y + ui.dy / 2;
-            var x1 = ui.x + ui.dx;
-            var y1 = y0;
-            var svgpath = _.template(
-                "M <%= x0 %> <%= y0 %> L <%= x1 %> <%= y1 %>")({
-                    x0:x0, y0:y0, x1:x1, y1:y1});
 
             var droparea = canvas.set();
             // edge area, depending on the mode we
