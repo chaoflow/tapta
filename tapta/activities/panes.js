@@ -3,12 +3,15 @@ define([
     'jquery',
     'vendor/jquery.tmpl',
     'vendor/underscore.js',
-    './base',
-    './settings'
+    './base'
 ], function(require) {
     var base = require('./base');
 
-    var PaneManager = base.View.extend({
+
+    // old below here
+
+
+    var PaneManager_ = base.View.extend({
         template: $.template(null, $("#pane_template")),
         initialize: function(){
             this.keys = [];
@@ -153,7 +156,7 @@ define([
     });
 
     return {
-        PaneManager: PaneManager,
+        PaneManager_: PaneManager_,
         PropertiesView: PropertiesView,
         LibraryView: LibraryView,
         ActionbarView: ActionbarView

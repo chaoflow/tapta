@@ -98,11 +98,11 @@ define([
                 model: this.model.activity,
                 name: "activity"
             });
-            this.left_pane = this.defchild(panes.PaneManager, {
+            this.left_pane = this.defchild(panes.PaneManager_, {
                 model:this.model,
                 name: "leftpane"
             });
-            this.right_pane = this.defchild(panes.PaneManager, {
+            this.right_pane = this.defchild(panes.PaneManager_, {
                 model: this.model,
                 name: "rightpane"
             });
