@@ -29,7 +29,7 @@ define([
 
     // XXX: make portions of this reusable for inheritance
     var Vertex = function(attrs) {
-        this.id = attrs && attrs.id;
+        this.id = this.cid = attrs && attrs.id;
         this._geometry = {};
         this._minwidth = 1;
         this._minheight = 1;
@@ -221,13 +221,13 @@ define([
         _.each(orig_paths, function(path, path_idx) {
             var x = 0;
             _.each(path, function(vertex) {
-                if (!cache[vertex.id]) {
+                if (!cache[vertex.cid]) {
                     // XXX: manage to set width, height and x, y in one call
                     vertex.setGeometry({x: x, y: path_idx});
                     rval.push(vertex);
                     DEBUG.spaceout && console.log(["pos:", vertex.cid, x, path_idx]);
                 }
-                cache[vertex.id] = true;
+                cache[vertex.cid] = true;
                 x += vertex.width;
             });
         });
