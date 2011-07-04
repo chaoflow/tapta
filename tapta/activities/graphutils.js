@@ -78,7 +78,7 @@ define([
     // paths starting at vertices.
     var arcs = function(vertices) {
         return reduce(vertices, function(memo, vertex) {
-            if (vertex.next.length === 0) { return memo; }
+            if (vertex.next.length === 0) return memo;
             return _.reduce(vertex.next, function(memo, next) {
                 return _.some(memo, function(arc) {
                     return arc[0] === vertex

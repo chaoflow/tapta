@@ -55,34 +55,22 @@ define([
     };
 
     var head = function(list, item) {
-        if (item === undefined) {
-            return _.head(list);
-        }
-        if (list.indexOf(item) === -1) {
-            throw "Item not in list";
-        }
+        if (item === undefined) return _.head(list);
+        if (list.indexOf(item) === -1) throw "Item not in list";
         return _.head(list, _.indexOf(list, item));
     };
 
     var startswith = function(list, head) {
-        if (head === undefined) {
-            return false;
-        }
+        if (head === undefined) return false;
         for (var i=0; i<head.length; i++) {
-            if (list[i] !== head[i]) {
-                return false;
-            }
+            if (list[i] !== head[i]) return false;
         }
         return true;
     };
 
     var tail = function(list, item) {
-        if (item === undefined) {
-            return _.tail(list);
-        }
-        if (list.indexOf(item) === -1) {
-            throw "Item not in list";
-        }
+        if (item === undefined) return _.tail(list);
+        if (list.indexOf(item) === -1) throw "Item not in list";
         return _.tail(list, _.indexOf(list, item)+1);
     };
 
