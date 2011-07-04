@@ -139,27 +139,6 @@
 
     var Edge = ElementView.extend({
 
-            var droparea = canvas.set();
-            // edge area, depending on the mode we
-            // make it visible as a drop target.
-            // XXX: use css with classes .droptarget and set class here
-            var rect = canvas.rect(ui.x, ui.y, ui.dx, ui.dy);
-            if (mode.name === "addingnewnode") {
-                rect.attr({fill: "green",
-                           stroke: "grey",
-                           "fill-opacity":"0.01",
-                           "stroke-opacity":"0.2"});
-            } else {
-                rect.attr({fill: "white", opacity: 0});
-            }
-            droparea.push(rect);
-
-            // draw the arrow
-            var arrow = canvas.path(svgpath);
-            arrow.attr({stroke: settings.edge.color,
-                        "stroke-width": settings.edge.strokewidth});
-            droparea.push(arrow);
-
             // translate DOM events to user acts
             droparea.click(function() {
                 // we only know that something is added to an edge a
@@ -167,17 +146,6 @@
                 this.trigger("act:addtoedge", [this.model]);
             }, this);
         },
-        ui: function() {
-            // return ui info, grid coordinates translated
-            // into pixel coordinates.
-            var ui = this.model.get('ui');
-            return {
-                x: xToPix(ui.x),
-                y: yToPix(ui.y),
-                dx: xToPix(ui.dx),
-                dy: yToPix(ui.dy)
-            };
-        }
     });
 
 
