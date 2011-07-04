@@ -1,3 +1,7 @@
+// limitations:
+//  - common prefxies need to be adjacent
+//  - adjacent suffixes may be separated by paths with different final node
+//  - only vertical element size of 1
 define([
     'require',
     'vendor/underscore.js',
