@@ -97,9 +97,10 @@ define([
             child.bind("all", _.bind(this.eventForwarder, this));
             var realrender = child.render;
             child.render = function() {
-                //console.group("render:"+this.abspath());
-                return realrender.apply(this, arguments);
-                //console.groupEnd();
+                console.group("render:"+this.abspath());
+                var rval = realrender.apply(this, arguments);
+                console.groupEnd();
+                return rval;
             };
             return child;
         },
