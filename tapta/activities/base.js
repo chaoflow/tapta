@@ -1,8 +1,10 @@
 define([
     'require',
     'vendor/underscore.js',
-    'vendor/backbone.js'
+    'vendor/backbone.js',
+    './debug'
 ], function(require) {
+    var DEBUG = require('./debug');
     var location = function(obj) {
         if (!obj) { obj = this; }
         if (obj.parent) {
@@ -79,10 +81,10 @@ define([
             this.name = props.name;
             this.parent = props.parent;
             this.children = {};
-            console.group("init:"+this.abspath());
+            DEBUG.view.init && console.group("init:"+this.abspath());
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
-            console.groupEnd();
+            DEBUG.view.init && console.groupEnd();
             this.bind("all", function() {
                 if (this.logevents) {
                     console.log(arguments);
@@ -97,9 +99,9 @@ define([
             child.bind("all", _.bind(this.eventForwarder, this));
             var realrender = child.render;
             child.render = function() {
-                console.group("render:"+this.abspath());
+                DEBUG.view.render && console.group("render:"+this.abspath());
                 var rval = realrender.apply(this, arguments);
-                console.groupEnd();
+                DEBUG.view.render && console.groupEnd();
                 return rval;
             };
             return child;
