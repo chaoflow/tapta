@@ -140,7 +140,7 @@ define([
             r_corner: 10
         },
         gridsize: {
-            x: 80,
+            x: 140,
             y: 60
         },
         localstorage_key: 'tapta0',
@@ -149,8 +149,8 @@ define([
     cfg.symbols.edge = {
         adx: 6,
         ady: 5,
-        color: "#424242",
-        strokewidth: 2
+        stroke: "#424242",
+        "stroke-width": 2
     };
     cfg.symbols.initial = {
         r: 10,

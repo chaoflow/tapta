@@ -3,12 +3,14 @@ define([
     'vendor/underscore.js',
     './base',
     './graph',
-    './settings'
+    './settings',
+    './svgtools'
 ], function(require) {
     var base = require('./base'),
         View = base.View,
         CFG = require('./settings'),
-        Vertex = require('./graph').Vertex;
+        Vertex = require('./graph').Vertex,
+        svgarrow = require('./svgtools').svgarrow;
 
     var xToPix = function(x) {
         return CFG.gridsize.x * x;
@@ -35,15 +37,29 @@ define([
     });
 
     // An arcview connects two vertex views
-    // var ArcView = GraphElement.extend({
-    //     initialize: function() {
-    //         // XXX: bind to our source and target
-    //         this.model.bind("change:geometry", function(opts) {
-    //         });
-    //     },
-    //     render: function(canvas) {
-    //     }
-    // });
+    var ArcView = GraphElement.extend({
+        initialize: function(opts) {
+            this.srcview = opts.srcview;
+            this.tgtview = opts.tgtview;
+            // XXX: bind to our source and target
+        },
+        // The arc is drawn as an SVG path, see:
+        // http://www.w3.org/TR/SVG/paths.html#PathData
+        symbol: function(canvas) {
+            var cfg = CFG.symbols.edge,
+                adx = cfg.adx,
+                ady = cfg.ady,
+                // points to leave the source for target
+                head = this.srcview.exitpath(this.tgtview),
+                // points to enter the target from source
+                tail = this.tgtview.entrancepath(this.srcview),
+                points = head.concat(tail),
+                symbol = svgarrow(canvas, points, adx, ady);
+            symbol.attr({stroke: cfg.stroke,
+                         "stroke-width": cfg["stroke-width"]});
+            return symbol;
+        }
+    });
 
 
     // XXX: are we able to be stateless? binding to canvas elements could be a problem
@@ -65,7 +81,11 @@ define([
             this.model.bind("change:geometry", function(opts) {
                 // XXX use opts.diff to move existing symol
             });
-        }
+        },
+        // return via points for entering from source view
+        entrancepath: function(srcview) { throw "No entrance path defined"; },
+        // return via points for exiting to target view
+        exitpath: function(tgtview) { throw "No exit path defined"; }
     });
     Object.defineProperties(NodeView.prototype, {
         // XXX: this would be the place for free positioning.
@@ -94,7 +114,12 @@ define([
                 cy = geo.y + cfg.r + (geo.height - 2 * cfg.r) / 2,
                 symbol = canvas.circle(cx, cy, cfg.r);
             symbol.attr({fill: cfg.fill});
+            this.exitpoint = [cx + cfg.r, cy];
             return symbol;
+        },
+        // fixed exit point
+        exitpath: function(tgtview) {
+            return [this.exitpoint];
         }
     });
 
@@ -114,9 +139,14 @@ define([
                         stroke: cfg.stroke,
                         "stroke-width": cfg["stroke-width"]});
             inner.attr({fill: cfg.fill});
+            this.entrancepoint = [cx - cfg.r_outer - cfg["stroke-width"], cy];
             symbol.push(inner);
             symbol.push(outer);
             return symbol;
+        },
+        // fixed entrance point
+        entrancepath: function(srcview) {
+            return [this.entrancepoint];
         }
     });
 
@@ -196,11 +226,12 @@ define([
             this._geometry = this.options.geometry;
             this.bindToGraph(this.model);
         },
-        // XXX: this could be this.model's setter
         bindToGraph: function(graph) {
             // remove old views and forget about them
             this.remove();
-            this.vertices = {};
+            // XXX: merge these as this.children?
+            this.vertexviews = {};
+            this.arcviews = {};
             this.model = graph;
 
             // no graph, nothing to do
@@ -214,9 +245,9 @@ define([
                 initial.set({next: [final_]});
             }
 
-            // create vertex views and remember them by their models cid
+            // create vertex views and remember them by their models' cid
             // we need that to initialize the arc views
-            this.vertices = foldl(function(acc, vertex) {
+            this.vertexviews = foldl(function(acc, vertex) {
                 var view = this.defchild(
                     nodeviews[vertex.type],
                     {model: vertex, name: "vertex_"+vertex.cid}
@@ -225,30 +256,42 @@ define([
                 return acc;
             }, {}, graph.toArray(), this);
 
-            // XXX: See how removing of nodes works and then decide
-            // who is responsible for rendering arcs. Probably source
-            // node renders and source and target reference it.
-            //
-            // // create arc views
-            // this.views.push.apply(this, _.map(this.graph.arcs(), function(arc) {
-            //     // XXX: probably remember the arc by source and target
-            //     // cid for later removal
-            //     this.defchild(ArcView, {
-            //         source: this.vertices[arc[0].cid],
-            //         target: this.vertices[arc[1].cid]
-            //     });
-            //}));
+            // create arc views
+            this.arcviews = foldl(function(acc, arc) {
+                var name = ["arc", arc[0].cid, arc[1].cid].join("_"),
+                    srcview = this.vertexviews[arc[0].cid],
+                    tgtview = this.vertexviews[arc[1].cid],
+                    view = this.defchild(ArcView, {
+                        name: name,
+                        srcview: srcview,
+                        tgtview: tgtview
+                    });
+                acc[name] = view;
+                return acc;
+            }, {}, graph.arcs(), this);
 
             // We are responsible for selectivly removing or adding views
             // XXX
-            // this.model.graph.bind("add", XXX);
-            // this.model.graph.bind("remove", XXX);
+            // graph.bind("add", XXX);
+            // graph.bind("remove", XXX);
         },
         remove: function() {
-            for (var cid in this.vertices) this.vertices[cid].remove();
+            var name;
+            for (name in this.vertexviews) {
+                this.vertexviews[name].remove();
+            }
+            for (name in this.arcviews) {
+                this.arcviews[name].remove();
+            }
         },
         render: function(canvas) {
-            for (var cid in this.vertices) this.vertices[cid].render(canvas);
+            var name;
+            for (name in this.vertexviews) {
+                this.vertexviews[name].render(canvas);
+            }
+            for (name in this.arcviews) {
+                this.arcviews[name].render(canvas);
+            }
         }
     });
     Object.defineProperties(GraphView.prototype, {
