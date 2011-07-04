@@ -18,7 +18,18 @@ define([
         return symbol;
     };
 
+    var svgpath = function(canvas, points, adx, ady) {
+        if (points.length < 2) throw "Need at least two points!";
+        // svgpath = "M x0 y0 L x1 y1 L x2 y2 ..."
+        var svgpath = ["M"]
+                .concat(foldl1("acc, p -> acc.concat('L', p[0], p[1])", points))
+                .join(" "),
+            symbol = canvas.path(svgpath);
+        return symbol;
+    };
+
     return {
-        svgarrow: svgarrow
+        svgarrow: svgarrow,
+        svgpath: svgpath
     };
 });

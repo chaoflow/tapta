@@ -268,7 +268,7 @@ define([
         },
         render: function() {
             // XXX: where to get flavour (mode) from? how is it changed?
-            var flavor = this.parent.mode,
+            var editmode = this.parent.mode.name,
                 width = this.canvaswidth,
                 height = this.canvasheight;
 
@@ -283,7 +283,7 @@ define([
 
             // tell next layer whether and which activity to display
             this.rake();
-            this.graphview.render(this.canvas, flavor);
+            this.graphview.render(this.canvas, editmode);
         }
     });
     return {

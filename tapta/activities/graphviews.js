@@ -10,7 +10,9 @@ define([
         View = base.View,
         CFG = require('./settings'),
         Vertex = require('./graph').Vertex,
-        svgarrow = require('./svgtools').svgarrow;
+        svgtools = require('./svgtools'),
+        svgarrow = svgtools.svgarrow,
+        svgpath = svgtools.svgpath;
 
     var xToPix = function(x) {
         return CFG.gridsize.x * x;
@@ -20,6 +22,7 @@ define([
     };
 
     var GraphElement = View.extend({
+        ctrls: function(canvas) { /* No controls by default */ },
         remove: function() {
             // remove children from canvas - our children are raphael sets
             for (var name in this.children) {
@@ -27,13 +30,17 @@ define([
                 delete this.children[name];
             }
         },
-        render: function(canvas) {
+        render: function(canvas, editmode) {
             // remove previously rendered stuff
             this.remove();
 
             // render symbol
             this.children["symbol"] = this.symbol(canvas);
-        }
+
+            // render controls
+            this.children["ctrls"] = this.ctrls(canvas, editmode);
+        },
+        symbol: function(canvas) { throw "Not implemented"; }
     });
 
     // An arcview connects two vertex views
@@ -42,6 +49,18 @@ define([
             this.srcview = opts.srcview;
             this.tgtview = opts.tgtview;
             // XXX: bind to our source and target
+        },
+        ctrls: function(canvas, editmode) {
+            // for now just the same line without the arrow head
+            // XXX: maybe reuse or a rect (if needed)
+            var cfg = CFG.symbols.edge,
+                head = this.srcview.exitpath(this.tgtview),
+                tail = this.tgtview.entrancepath(this.srcview),
+                points = head.concat(tail),
+                ctrls = svgpath(canvas, points);
+            ctrls.attr(cfg.ctrls[editmode]);
+            ctrls.click(function() { console.log("clicked"); });
+            return ctrls;
         },
         // The arc is drawn as an SVG path, see:
         // http://www.w3.org/TR/SVG/paths.html#PathData
@@ -290,13 +309,13 @@ define([
                 this.arcviews[name].remove();
             }
         },
-        render: function(canvas) {
+        render: function(canvas, editmode) {
             var name;
             for (name in this.vertexviews) {
-                this.vertexviews[name].render(canvas);
+                this.vertexviews[name].render(canvas, editmode);
             }
             for (name in this.arcviews) {
-                this.arcviews[name].render(canvas);
+                this.arcviews[name].render(canvas, editmode);
             }
         }
     });
