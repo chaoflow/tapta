@@ -14,12 +14,12 @@ define([
          * global activity related
          */
         glob: {
-            
+
             // public objects
             keys: null,
             mouse: null,
             dnd: null,
-            
+
             /*
              * intialize globals
              */
@@ -35,7 +35,7 @@ define([
          * activity events namespace and event types
          */
         events: {
-            
+
             // events
             MOUSE_DOWN : 0,
             MOUSE_UP   : 1,
@@ -45,13 +45,13 @@ define([
             MOUSE_WHEEL: 5,
             KEY_DOWN   : 6,
             KEY_UP     : 7,
-            
+
             // keys
             KEY_SHIFT  : 16,
             KEY_CTL    : 17,
             KEY_ALT    : 18
         },
-        
+
         /*
          * editor settings
          */
@@ -60,7 +60,7 @@ define([
                 res_x: 50,
                 res_y: 50
             },
-            
+
             rendering: {
                 shadowOffsetX   : 2.5,
                 shadowOffsetY   : 2.5,
@@ -76,7 +76,7 @@ define([
                 gridsize        : 120,
                 element_size    : 100,
             },
-            
+
             node: {
                 edgeOffset          : 5,
                 borderWidth         : 2,
@@ -85,14 +85,14 @@ define([
                 selectedFillColor   : '#fff7ae',
                 selectedBorderColor : '#e3ca4b'
             },
-            
+
             edge: {
                 color         : '#333333',
                 lineWidth     : 3,
                 arrowLength   : 15,
                 selectedColor : '#bbbbbb'
             },
-            
+
             overlay: {
                 padding     : 10,
                 fillColor   : '#efefef',
@@ -100,15 +100,15 @@ define([
                 alpha       : 0.9,
                 textColor   : '#222222'
             },
-            
+
             diagram: {
                 childFactories: []
             },
-            
+
             actions: {
-                
+
                 icon_css_sprite_img: "url('icons/activities_sprite.png')",
-                
+
                 // css sprite positions for actions by id
                 icon_css_sprite: {
                     'initial_node'  : 0,
@@ -133,54 +133,61 @@ define([
     });
 
     // new-style
-    return {
-        localstorage_key: 'tapta0',
+    var cfg = {
+        canvas: {
+            width: 900,
+            height: 400,
+            r_corner: 10
+        },
         gridsize: {
             x: 80,
             y: 60
         },
-        canvas: {
-            width: 900,
-            height: 400,
-            r: 10
-        },
-        edge: {
-            arrow: {
-                dx: 6,
-                dy: 5
-            },
-            // XXX: grid coordinates
-            dx: 0.5,
-            color: "#424242",
-            strokewidth: 2
-        },
-        // with inheritance this would be cool
-        node: {
-            initial: {
-                r: 10,
-                color: "#424242"
-            },
-            final: {
-                r: 12,
-                dr: 4,
-                color: "#424242"
-            },
-            action: {
-                dx: 60,
-                dy: 40,
-                r: 4
-            },
-            forkjoin: {
-                dx: 5,
-                pad: 10,
-                color: "#424242"
-            },
-            merge: {
-                color: "#424242"
-            },
-            borderwidth: 2,
-            bordercolor: '#b5d9ea',
-            fillcolor: '#edf7ff'
-        }
+        localstorage_key: 'tapta0',
+        symbols: {}
     };
+    cfg.symbols.edge = {
+        adx: 6,
+        ady: 5,
+        color: "#424242",
+        strokewidth: 2
+    };
+    cfg.symbols.initial = {
+        r: 10,
+        fill: "#424242"
+    };
+    cfg.symbols.final_ = {
+        r_inner: 8,
+        r_outer: 12,
+        fill: "#424242",
+        stroke: "#424242",
+        "stroke-width": 2
+    };
+    cfg.symbols.action = {
+        width: 60,
+        height: 40,
+        r: 4,
+        fill: "edf7ff",
+        stroke: "#b5d9ea",
+        "stroke-width": 2
+    };
+    cfg.symbols.forkjoin = {
+        width: 5,
+        padY: 10,
+        fill: "#424242"
+    };
+    cfg.symbols.decision = {
+        width: 60,
+        fill: "edf7ff",
+        stroke: "#b5d9ea",
+        "stroke-width": 2
+    };
+    cfg.symbols.merge = {
+        width: 60,
+        fill: "424242",
+        stroke: "#424242",
+        "stroke-width": 2
+    };
+
+    return cfg;
 });
