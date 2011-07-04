@@ -13,6 +13,8 @@ define([
         pluckId = graphutils.pluckId,
         tg = require('./test_graphutils'),
         testgraph = tg.testgraph,
+        graph_initfin = tg.graph_initfin,
+        graph_initfin2 = tg.graph_initfin2,
         graph1 = tg.graph1,
         graph2 = tg.graph2,
         graph3 = tg.graph3;
@@ -130,6 +132,8 @@ define([
         clean(graph);
     });
 
+    test("Graph initial final", testgraph(graph_initfin(Vertex)));
+    test("Graph initial final 2", testgraph(graph_initfin2(Vertex)));
     test("Graph 1", testgraph(graph1(Vertex)));
     test("Graph 2", testgraph(graph2(Vertex)));
     test("Graph 3", testgraph(graph3(Vertex)));

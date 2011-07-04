@@ -48,6 +48,46 @@ define([
         deepEqual(map("vertex.y", vertices), opts.y, "y");
     };};
 
+    var graph_initfin = function(VertexProto) {
+        var arcs = ["a:b"];
+
+        return {
+            // the arcs define the graph
+            arcs: arcs,
+            Vertex: VertexProto,
+            // aspects to explicitly check in addition to implicit checks
+            minwidth: 2,
+            width: [1,1],
+            height: [1,1],
+            x: [0,1],
+            y: [0,0],
+            paths: ['a:b'],
+            sinks: ['b'],
+            sources: ['a']
+        };
+    };
+
+    var graph_initfin2 = function(VertexProto) {
+        var arcs = ["a:b",
+                    "c:d"];
+
+        return {
+            // the arcs define the graph
+            arcs: arcs,
+            Vertex: VertexProto,
+            // aspects to explicitly check in addition to implicit checks
+            minwidth: 2,
+            width: [1,1,1,1],
+            height: [1,1,1,1],
+            x: [0,1,0,1],
+            y: [0,0,1,1],
+            paths: ['a:b',
+                    'c:d'],
+            sinks: ['b','d'],
+            sources: ['a','c']
+        };
+    };
+
     var graph1 = function(VertexProto) {
         var arcs = [
             'a:b','a:c',
@@ -142,11 +182,15 @@ define([
         };
     };
 
+    test("Graph: initial - final", testgraph(graph_initfin()));
+    test("Graph: initial - final 2", testgraph(graph_initfin2()));
     test("Graph 1", testgraph(graph1()));
     test("Graph 2", testgraph(graph2()));
     test("Graph originial test case but als verts 1/1", testgraph(graph3()));
 
     return {
+        graph_initfin: graph_initfin,
+        graph_initfin2: graph_initfin2,
         graph1: graph1,
         graph2: graph2,
         graph3: graph3,
