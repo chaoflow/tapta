@@ -283,11 +283,6 @@ define([
 
             // tell next layer whether and which activity to display
             this.rake();
-
-            // finished if we have no model, i.e. the upper level did not rake one
-            // XXX: do we need this or are our children intelligent enough?
-            if (this.model === undefined) return;
-
             this.graphview.render(this.canvas, flavor);
         }
     });
