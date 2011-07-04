@@ -210,8 +210,8 @@ define([
             if (graph.length === 0) {
                 var initial = new Vertex({payload: "initial"});
                 var final_ = new Vertex({payload: "final"});
-                initial.next.push(final_);
-                graph.add([initial, final_]);
+                graph.add([initial, final_], {silent:true});
+                initial.set({next: [final_]});
             }
 
             // create vertex views and remember them by their models cid
