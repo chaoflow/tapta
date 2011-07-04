@@ -115,7 +115,6 @@ define([
             return graphutils.paths(this.sources());
         },
         spaceOut: function() {
-            // XXX: add padding and implement in graphutils for edges to be drawn
             // returns a list of all vertices; assigns position and
             // size as side effect
             return graphutils.spaceOut(this.paths());

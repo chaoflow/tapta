@@ -237,10 +237,16 @@ define([
             // no graph, nothing to do
             if (graph === undefined) return;
 
+            // fetch graph elements
+            graph.fetch();
+
             // If graph model is empty, add an initial and final node
+            // don't create them in the storage, just "add" them.
+            // if something else is added, all of them will be stored
             if (graph.length === 0) {
                 var initial = new Vertex({payload: "initial"});
                 var final_ = new Vertex({payload: "final"});
+                // one event (set next) is enough trigger spaceout
                 graph.add([initial, final_], {silent:true});
                 initial.set({next: [final_]});
             }
