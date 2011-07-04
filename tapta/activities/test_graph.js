@@ -41,10 +41,10 @@ define([
         var b = vertices[1];
         var c = vertices[2];
         var d = vertices[3];
-        equal(a.payload(), "A", "A created correctly");
-        equal(b.payload(), "B", "B created correctly");
-        equal(c.payload(), "C", "C created correctly");
-        equal(d.payload(), "D", "D created correctly");
+        equal(a.payload, "A", "A created correctly");
+        equal(b.payload, "B", "B created correctly");
+        equal(c.payload, "C", "C created correctly");
+        equal(d.payload, "D", "D created correctly");
 
         // hook them up and save
         a.next.splice(0, 0, b, c);
@@ -113,7 +113,7 @@ define([
         graph.create({payload: nodelib.get("idA")});
         vertices = graph.toArray();
         var a = vertices[0];
-        equal(a.payload().id, "idA", "A created correctly");
+        equal(a.payload.id, "idA", "A created correctly");
 
         equal(a.toJSON().payload, "idA", "payload is serialized to id");
 
@@ -124,7 +124,7 @@ define([
         graph_.fetch();
         vertices = graph_.toArray();
         var a_ = vertices[0];
-        equal(a_.payload().id, "idA", "payload is deserialized correctly");
+        equal(a_.payload.id, "idA", "payload is deserialized correctly");
 
         // cleanup
         clean(graph);

@@ -10,7 +10,8 @@ define([
     var Model = storage.Model;
     var Collection = storage.Collection;
 
-    // A vertex is a container that knows its direct successors.
+    // A vertex is a container for a node and knows its direct
+    // successors. A node is eithe a string or an object with an id.
     var Vertex = Model.extend({
         initialize: function() {
             this._geometry = {};
@@ -18,15 +19,22 @@ define([
             this._minheight = 1;
         },
         setGeometry: function(obj) {
+            var g = this._geometry,
+                before = {},
+                diff = {},
+                changed = false;
+            _.each(["x", "y", "width", "height"], function(name) {
+                var delta = obj[name] === undefined ? 0 : obj[name] - g[name];
+                before[name] = g[name];
+                diff[name] = delta;
+                changed = changed || Boolean(delta);
+            });
             _.extend(this._geometry, obj);
-            // XXX: trigger event if something changed, carrying what changed
-        },
-        // list of direct successors
-        next: function() {
-        },
-        // string or object, object needs an id
-        payload: function() {
-            return this.get('payload');
+            if (changed) {
+                this.trigger("change:geometry", { before: before,
+                                                  now: g,
+                                                  diff: diff });
+            }
         },
         // goes hand-in-hand with Graph.parse
         toJSON: function() {
@@ -47,22 +55,28 @@ define([
         }
     });
     Object.defineProperties(Vertex.prototype, {
-        minwidth: { get: function() { return this._minwidth; } },
-        minheight: { get: function() { return this._minheight; } },
-        next: { get: function() {
+        minwidth: {get: function() { return this._minwidth; }},
+        minheight: {get: function() { return this._minheight; }},
+        next: {get: function() {
             return this.get('next') || this.set({next:[]}).get('next');
-        } },
-        x: { get: function() { return this._geometry.x; } },
-        y: { get: function() { return this._geometry.y; } },
-        width: { get: function() { return this._geometry.width;} },
-        height: { get: function() { return this._geometry.height; } }
+        }},
+        payload: {get: function() { return this.get('payload'); }},
+        // If payload has no type its a string with only type info
+        type: {get: function() { return this.payload.type || this.payload; }},
+        x: {get: function() { return this._geometry.x; }},
+        y: {get: function() { return this._geometry.y; }},
+        width: {get: function() { return this._geometry.width;}},
+        height: {get: function() { return this._geometry.height; }}
     });
 
     // a graph is stored as a collection of vertices.
-    // arcs are stored as direct successors on vertices
+    // arcs are stored implicitly as direct successors on vertices
     var Graph = Collection.extend({
         arcs: function() {
             return graphutils.arcs(this.sources());
+        },
+        initialize: function(attrs, opts) {
+            this.nodelib = opts.nodelib || this.parent && this.parent.nodelib;
         },
         model: Vertex,
         // goes hand-in-hand with Vertex.toJSON
@@ -93,6 +107,12 @@ define([
         },
         paths: function() {
             return graphutils.paths(this.sources());
+        },
+        spaceOut: function() {
+            // XXX: add padding and implement in graphutils for edges to be drawn
+            // returns a list of all vertices; assigns position and
+            // size as side effect
+            return graphutils.spaceOut(self.paths());
         },
         sinks: function() {
             return graphutils.sinks(this.models);
