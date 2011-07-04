@@ -4,9 +4,22 @@ define([
 ], function(require) {
     var DEBUG = require('./debug').controller;
 
-    // will run in the context of the one using it: layer
-    var controller = function(event, info) {
-        debugger;
+    // XXX: work with abspath and stuff?
+    // a controller that attaches to a layer
+    var LayerController = function(layer) {
+        this.layer = layer;
     };
-    return controller;
+    _(LayerController.prototype).extend({
+        handler: function(event, info) {
+            DEBUG && console.group(
+                "controller:" +this.abspath() + ": "
+                    + [event, info.view.name].join(", ")
+            );
+
+
+            DEBUG && console.groupEnd();
+        }
+    });
+
+    return LayerController;
 });

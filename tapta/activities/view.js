@@ -18,7 +18,7 @@ define([
         model = require('./model'),
         panes = require('./panes'),
         CFG = require('./settings'),
-        controller = require('./controller');
+        Controller = require('./controller');
 
     var App = base.View.extend({
         // XXX: the id should be unique
@@ -107,7 +107,8 @@ define([
                 name: "rightpane"
             });
 
-            this.bind("all", controller);
+            var controller = new Controller(this);
+            this.bind("all", controller.handler);
 
             this.bindEvents();
         },
