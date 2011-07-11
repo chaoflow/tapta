@@ -28,20 +28,20 @@ define([
         ),
         initialize: function() {
             _.bindAll(this, 'render');
-            this.children = _.map(
-                this.model.layers.concat().reverse(),
-                function(layer) {
-                    var child = this.defchild(Layer, {
-                        model: layer,
-                        name: layer.name
-                    });
-                    return child;
-                },
-                this
-            ).reverse();
-            for (var i=0; i<this.children.length; i++) {
-                this[i] = this.children[i];
-            }
+            // this.children = _.map(
+            //     this.model.layers.concat().reverse(),
+            //     function(layer) {
+            //         var child = this.defchild(Layer, {
+            //             model: layer,
+            //             name: layer.name
+            //         });
+            //         return child;
+            //     },
+            //     this
+            // ).reverse();
+            // for (var i=0; i<this.children.length; i++) {
+            //     this[i] = this.children[i];
+            // }
         }
 //        render: function() {
             // var layers = this;
@@ -134,7 +134,7 @@ define([
             });
 
             // rerender activity on mode change
-            this.bind("change:mode", this.activity.render);
+//            this.bind("change:mode", this.activity.render);
 
             // Events that need a mode to be processed
             this.bind("act:addtoedge", function(load) {
