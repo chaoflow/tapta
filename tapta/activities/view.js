@@ -42,8 +42,8 @@ define([
             for (var i=0; i<this.children.length; i++) {
                 this[i] = this.children[i];
             }
-        },
-        render: function() {
+        }
+//        render: function() {
             // var layers = this;
             // $(this.el).html(this.template({layers: this.model.layers}));
             // _.each(this.children, function(child) {
@@ -52,7 +52,7 @@ define([
             //     child.el = layers.$('#'+child.name);
             //     child.render();
             // }, this);
-        }
+//        }
     });
 
     var Layer = base.View.extend({

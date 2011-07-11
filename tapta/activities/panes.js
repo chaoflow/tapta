@@ -13,7 +13,12 @@ define([
         tagName: "div",
         className: "pane",
         render: function() {
-            if (DEBUG.panes) $(this.el).text("Empty pane");
+            if ((DEBUG.panes) && (this.children.length === 0)) {
+                $(this.el).text("Empty pane");
+            }
+            _.each(this.children, function(child) {
+                $(this.el).append(child.render().el);
+            }, this);
             return this;
         }
     });
