@@ -6,6 +6,7 @@ define([
     'vendor/jquery.tmpl',
     'vendor/underscore.js',
     'vendor/raphael.js',
+    './debug',
     './base',
     './controller',
     './model',
@@ -13,7 +14,8 @@ define([
     './settings',
     './panes'
 ], function(require) {
-    var base = require('./base'),
+    var DEBUG = require('./debug'),
+        base = require('./base'),
         GraphView = require('./graphviews').GraphView,
         model = require('./model'),
         panes = require('./panes'),

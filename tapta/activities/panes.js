@@ -3,8 +3,8 @@ define([
     'jquery',
     'vendor/jquery.tmpl',
     'vendor/underscore.js',
-    './base',
-    './debug'
+    './debug',
+    './base'
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base');
