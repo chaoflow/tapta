@@ -11,16 +11,7 @@ define([
 
     var Pane = base.View.extend({
         tagName: "div",
-        className: "pane",
-        render: function() {
-            if ((DEBUG.panes) && (this.children.length === 0)) {
-                $(this.el).text("Empty pane");
-            }
-            _.each(this.children, function(child) {
-                $(this.el).append(child.render().el);
-            }, this);
-            return this;
-        }
+        className: "pane"
     });
 
     // a div with special divs as children
@@ -55,15 +46,6 @@ define([
             }, this);
 
             return pane;
-        },
-        render: function() {
-            if ((DEBUG.panes) && (this.children.length === 0)) {
-                $(this.el).text("No panes");
-            }
-            _.each(this.children, function(child) {
-                $(this.el).append(child.render().el);
-            }, this);
-            return this;
         }
     });
 

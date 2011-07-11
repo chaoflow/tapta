@@ -125,6 +125,15 @@ define([
         },
         eventForwarder: function() {
             this.trigger.apply(this, arguments);
+        },
+        render: function() {
+            if ((DEBUG.view.render) && (this.children.length === 0)) {
+                $(this.el).text("View without children: "+this.abspath());
+            }
+            _.each(this.children, function(child) {
+                $(this.el).append(child.render().el);
+            }, this);
+            return this;
         }
     });
 
