@@ -77,13 +77,24 @@ define([
     };
 
     var View = Backbone.View.extend({
+        // consider using initialize, with the downside that
+        // subclasses need to "super"-call, and the upside, that its
+        // clearer what is called when.
         constructor: function(props) {
+            // these two are needed by this.abspath
+            if (props.name === undefined) throw "Need a name";
             this.name = props.name;
             this.parent = props.parent;
-            this.children = {};
             if (DEBUG.view.init) console.group("init:"+this.abspath());
+
+            this.children = [];
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
+
+            this.bind("all", function() {
+                if (this.logevents) console.log(arguments);
+            });
+
             if (DEBUG.view.render) {
                 var realrender = this.render;
                 this.render = function() {
@@ -94,15 +105,21 @@ define([
                 };
             }
             if (DEBUG.view.init) console.groupEnd();
-            this.bind("all", function() {
-                if (this.logevents) console.log(arguments);
-            });
         },
         abspath: abspath,
         location: location,
-        defchild: function(View, props) {
+        append: function(ViewProto, props) {
+            if (this[props.name] !== undefined) throw "Name collision";
+            var child = this.defchild(ViewProto, props);
+            this[props.name] = child;
+            $(child.el).addClass(props.name);
+            this.children.push(child);
+            return child;
+        },
+        defchild: function(ViewProto, props) {
+            // XXX: remove explicit setting of props.parent
             props.parent = props.parent || this;
-            var child = new View(props);
+            var child = new ViewProto(props);
             child.bind("all", _.bind(this.eventForwarder, this));
             return child;
         },
