@@ -84,6 +84,15 @@ define([
             if (DEBUG.view.init) console.group("init:"+this.abspath());
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
+            if (DEBUG.view.render) {
+                var realrender = this.render;
+                this.render = function() {
+                    console.group("render:"+this.abspath());
+                    var rval = realrender.apply(this, arguments);
+                    console.groupEnd();
+                    return rval;
+                };
+            }
             if (DEBUG.view.init) console.groupEnd();
             this.bind("all", function() {
                 if (this.logevents) console.log(arguments);
@@ -95,13 +104,6 @@ define([
             props.parent = props.parent || this;
             var child = new View(props);
             child.bind("all", _.bind(this.eventForwarder, this));
-            var realrender = child.render;
-            child.render = function() {
-                if (DEBUG.view.render) console.group("render:"+this.abspath());
-                var rval = realrender.apply(this, arguments);
-                if (DEBUG.view.render) console.groupEnd();
-                return rval;
-            };
             return child;
         },
         eventForwarder: function() {
