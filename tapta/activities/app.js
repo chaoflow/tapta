@@ -3,12 +3,12 @@ define([
     'jquery',
     './base',
     './panes',
-    './view'
+    './layerviews'
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base'),
         panes = require('./panes'),
-        Layers = require('./view').Layers;
+        LayersView = require('./layerviews').LayersView;
 
     var AppView = panes.PaneManager.extend({
         panescfg: [
@@ -23,9 +23,9 @@ define([
             ]},
             {name: "center", content: [
                  {
-                     ViewProto: Layers,
+                     ViewProto: LayersView,
+                     // will be evaluated in the context of the new AppView
                      propscallback: function() {
-                         // will be evaluated in the context of the new AppView
                          return {name: "layers", model: this.model};
                      }
                  }
