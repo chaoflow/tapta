@@ -36,15 +36,11 @@ define([
 
             // add its content
             _.each(cfg.content, function(cfg) {
-                // cfg = [Prototype, {/*props*/}]
-                var ViewProto = cfg[0];
-                var props = cfg[1];
-                // props might be a callback that is to be evaulated
-                // in our context to return the real props.
-                var realprops = props.call === undefined
-                        ? props
-                        : props.call(this);
-                pane.append(ViewProto, realprops);
+                var ViewProto = cfg.ViewProto,
+                    props = cfg.propscallback !== undefined
+                        ? cfg.propscallback.call(this)
+                        : cfg.props;
+                pane.append(ViewProto, props);
             }, this);
 
             return pane;
