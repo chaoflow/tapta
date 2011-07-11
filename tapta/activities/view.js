@@ -24,7 +24,6 @@ define([
         Controller = require('./controller');
 
     // An activity view creates a canvas. Its graph is drawn by a graph view.
-    // XXX: needs to be reworked as a pane manager
     var ActivityView = base.View.extend({
         initialize: function() {
             _.bindAll(this,
@@ -32,7 +31,10 @@ define([
                       'rake',
                       'render'
                      );
+            // XXX: w00t?
             var graph = this.model && this.model.graph;
+
+            this.layer = this.options.layer;
 
             // XXX: will change a bit once we are a pane manager
             // will be used as base for our children and to render the canvas
@@ -64,7 +66,7 @@ define([
         },
         rake: function() {
             // tell the next layer whether and which activity to display
-            var layer = this.parent.model;
+            var layer = this.layer;
             if (layer.next) {
                 var raked = this.model && this.model.get('raked');
                 var activity = raked && raked.get('activity');
@@ -75,23 +77,23 @@ define([
             }
         },
         render: function() {
-            // // XXX: where to get flavour (mode) from? how is it changed?
-            // var editmode = this.parent.mode.name,
-            //     width = this.canvaswidth,
-            //     height = this.canvasheight;
+            // XXX: where to get flavour (mode) from? how is it changed?
+            var editmode = this.layer.mode.name,
+                width = this.canvaswidth,
+                height = this.canvasheight;
 
-            // // initialize canvas
-            // if (!this.canvas) {
-            //     this.canvas = Raphael(this.el[0], width, height);
-            //     // draw rectangle around our canvas
-            //     // XXX: if we are the toplayer it should not have round corners
-            //     // XXX: for some reason this is not visible
-            //     var rect = this.canvas.rect(0, 0, width, height, CFG.canvas.r_corner);
-            // }
+            // initialize canvas
+            if (!this.canvas) {
+                this.canvas = Raphael(this.el[0], width, height);
+                // draw rectangle around our canvas
+                // XXX: if we are the toplayer it should not have round corners
+                // XXX: for some reason this is not visible
+                var rect = this.canvas.rect(0, 0, width, height, CFG.canvas.r_corner);
+            }
 
-            // // tell next layer whether and which activity to display
-            // this.rake();
-            // this.graphview.render(this.canvas, editmode);
+            // tell next layer whether and which activity to display
+            this.rake();
+            this.graphview.render(this.canvas, editmode);
             return this;
         }
     });

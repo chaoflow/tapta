@@ -44,7 +44,10 @@ define([
                     // will be evaluated in the context of the new LayerView
                     propscallback: function() {
                         // XXX: consider default name for views
-                        return {name: "activity", model: this.model.activity};
+                        return {name: "activity",
+                                model: this.model.activity,
+                                // XXX: consider only this.controller here
+                                layer: this};
                     }
                 }
             ]},
