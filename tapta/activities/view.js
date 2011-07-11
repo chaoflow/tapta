@@ -20,34 +20,26 @@ define([
         CFG = require('./settings'),
         Controller = require('./controller');
 
-    var App = base.View.extend({
-        // XXX: the id should be unique
-        el: $('#tapta_app'),
-        initialize: function() {
-            _.bindAll(this, 'render');
-            // the layers view piggy-backs on our model as
-            // this.model.layers is not a collection but just a plain
-            // list for now.
-            this.layers = this.defchild(Layers, {
-                // this element already exists in the App template
-                // XXX: the id should be unique
-                el: this.$('#layers'),
-                model: this.model,
-                name: "layers"
-            });
-            var app = this;
-            this.$("#destroyall").click(function() {
-                localStorage.clear();
-                app.model.fetch();
-                app.render();
-            });
-        },
-        render: function() {
-            // we were not defined by defchild, no render wrapper
-            console.group("render:"+this.abspath());
-            this.layers.render();
-            console.groupEnd();
-        }
+    var AppView = panes.PaneManager.extend({
+        panenames: ["center"]
+        // initialize: function() {
+        //     _.bindAll(this, 'render');
+        //     // the layers view piggy-backs on our model as
+        //     // this.model.layers is not a collection but just a plain
+        //     // list for now.
+        //     // this.layers = this.defchild(Layers, {
+        //     //     // this element already exists in the App template
+        //     //     // XXX: the id should be unique
+        //     //     el: this.$('#layers'),
+        //     //     model: this.model,
+        //     //     name: "layers"
+        //     // });
+        //     // var app = this;
+        //     // this.$("#destroyall").click(function() {
+        //     //     localStorage.clear();
+        //     //     app.model.fetch();
+        //     //     app.render();
+        //     // });
     });
 
     var Layers = base.View.extend({
@@ -292,7 +284,7 @@ define([
         }
     });
     return {
-        App: App,
+        AppView: AppView,
         Layer: Layer,
         Layers: Layers,
         Activity: ActivityView

@@ -3,10 +3,47 @@ define([
     'jquery',
     'vendor/jquery.tmpl',
     'vendor/underscore.js',
-    './base'
+    './base',
+    './debug'
 ], function(require) {
     var base = require('./base');
+    var DEBUG = require('./debug');
 
+    var Pane = base.View.extend({
+        tagName: "div",
+        className: "pane",
+        render: function() {
+            if (DEBUG.panes) $(this.el).text("Empty pane");
+            return this;
+        }
+    });
+
+    // a div with special divs as children
+    var PaneManager = base.View.extend({
+        tagName: "div",
+        className: "panemanager",
+        initialize: function(props) {
+            $(this.el).addClass(this.name);
+            // panenames can be overridden per instance
+            if (props.panenames !== undefined) this.panenames = props.panenames;
+            this.panes = _.reduce(this.panenames, function(acc, name) {
+                if (this[name] !== undefined) throw "Name collision";
+                this[name] = this.defchild(Pane, {name:name});
+                $(this[name].el).addClass(name);
+                acc.push(this[name]);
+                return acc;
+            }, [], this);
+        },
+        render: function() {
+            if ((DEBUG.panes) && (this.panes.length === 0)) {
+                $(this.el).text("No panes");
+            }
+            _.each(this.panes, function(pane) {
+                $(this.el).append(pane.render().el);
+            }, this);
+            return this;
+        }
+    });
 
     // old below here
 
@@ -156,6 +193,8 @@ define([
     });
 
     return {
+        PaneManager: PaneManager,
+
         PaneManager_: PaneManager_,
         PropertiesView: PropertiesView,
         LibraryView: LibraryView,

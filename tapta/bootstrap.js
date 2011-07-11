@@ -6,11 +6,11 @@ define([
 ], function(require) {
     require.ready(function(){
         // create an application
-        var model = require('./activities/model');
-        var view = require('./activities/view');
-        var app = new model.App();
-        var appview = new view.App({model: app, name:"app"});
-        appview.render();
+        var App = require('./activities/model').App;
+        var AppView = require('./activities/view').AppView;
+        var app = new App();
+        var appview = new AppView({model: app, name:"app"});
+        $("#tapta_app").html(appview.render().el);
         window.tapta = appview;
     });
 });
