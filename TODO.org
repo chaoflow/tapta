@@ -41,7 +41,31 @@ factor out stuff and write tests for it
 *** DONE BUG: removing left last path with idx != 0
 CLOSED: [2011-06-14 Tue 02:59]
 factor out stuff and write tests for it
-*** TODO Graph/vertices instead of paths
+*** DONE Graph/vertices instead of paths
+CLOSED: [2011-07-12 Tue 01:46]
+*** DONE fix x_req/y_req - edges have also space and padding?
+CLOSED: [2011-07-12 Tue 01:48]
+elements have a size, optional x/y padding which needs to be accounted
+for in the space allocation
+
+--> edges have no real space, the edge area is drawn along the arrow,
+    the arrow is drawn between vertices - that's it
+*** TODO new local action bar
+goes with [[*port%20to%20new%20controller][port to new controller]]
+*** TODO port to new controller
+**** render previous panels with new infrastructure
+**** rewrite to make use of controller
+events should not be that informative
+
+the controller knows whats going on, and whoever triggers an event
+puts as much information in as sanely available
+*** TODO new properties too
+*** TODO (fix) CSS
+ideally seems: parse the overall structure vie js and assign fixed
+positions according to horizontal/vertical weight of contained divs
+**** requires
+***** setting CSS via js
+***** querying of browser size via js -> available space
 *** TODO merge path into other, ie. drag final node onto mimo
 *** TODO display name of actions
 *** TODO panes
@@ -63,9 +87,6 @@ factor out stuff and write tests for it
 *** TODO edges to query source node for label
 **** bind edges to their source node to update label
 **** background: decmers provide their answers to be displayed on outedges
-*** TODO fix x_req/y_req - edges have also space and padding?
-elements have a size, optional x/y padding which needs to be accounted
-for in the space allocation
 *** TODO clear rake hierarchy when raked action is removed
 ** med prio
 *** DONE fix existing tests
@@ -109,10 +130,14 @@ to run
 http://siliconforks.com/jscoverage/
 http://blog.siliconforks.com/2010/04/28/jscoverage-jquery/
 looks good
-*** TODO full test coverage
+*** DONE full test coverage
+CLOSED: [2011-07-12 Tue 01:49]
 **** for non-view
+--> mostly done
 **** for view?
-*** TODO move ctrl area style to css
+--> not sure how to do: new ticket
+*** TODO test coverage for view code?
+*** TODO move ctrl area style to css?
 *** TODO move drawing code into raphael plugin: raphael.fn.tapta?
 ** low prio and easy
 Theses tasks are meant for newbies to enter the project
