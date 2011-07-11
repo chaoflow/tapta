@@ -32,7 +32,13 @@ define([
             $(this.el).addClass(this.name);
             if (props.panescfg !== undefined) this.panescfg = props.panescfg;
             _.each(this.panescfg, this.append, this);
+            //this.init(props);
         },
+        // Backbone uses the constructor which calls initialize
+        // Our framework uses initialize which calls init
+        // init is to be used by users of the framework, e.g. tapta
+        // XXX: we'll see whether it is really needed
+        //init: function(props) {},
         append: function(cfg) {
             // create the pane
             var pane = base.View.prototype.append.call(
