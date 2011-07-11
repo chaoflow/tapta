@@ -20,28 +20,6 @@ define([
         CFG = require('./settings'),
         Controller = require('./controller');
 
-    var AppView = panes.PaneManager.extend({
-        panenames: ["center"]
-        // initialize: function() {
-        //     _.bindAll(this, 'render');
-        //     // the layers view piggy-backs on our model as
-        //     // this.model.layers is not a collection but just a plain
-        //     // list for now.
-        //     // this.layers = this.defchild(Layers, {
-        //     //     // this element already exists in the App template
-        //     //     // XXX: the id should be unique
-        //     //     el: this.$('#layers'),
-        //     //     model: this.model,
-        //     //     name: "layers"
-        //     // });
-        //     // var app = this;
-        //     // this.$("#destroyall").click(function() {
-        //     //     localStorage.clear();
-        //     //     app.model.fetch();
-        //     //     app.render();
-        //     // });
-    });
-
     var Layers = base.View.extend({
         template: _.template(
             '<% _.each(layers, function(layer) {%>'
@@ -66,15 +44,44 @@ define([
             }
         },
         render: function() {
-            var layers = this;
-            $(this.el).html(this.template({layers: this.model.layers}));
-            _.each(this.children, function(child) {
-                // at this point the elements exist in the DOM,
-                // created by the layers template
-                child.el = layers.$('#'+child.name);
-                child.render();
-            }, this);
+            // var layers = this;
+            // $(this.el).html(this.template({layers: this.model.layers}));
+            // _.each(this.children, function(child) {
+            //     // at this point the elements exist in the DOM,
+            //     // created by the layers template
+            //     child.el = layers.$('#'+child.name);
+            //     child.render();
+            // }, this);
         }
+    });
+
+    var AppView = panes.PaneManager.extend({
+        panescfg: [
+            {name: "center", content: [
+                [Layers, function() {
+                    // will be evaluated in the context of the new AppView
+                    return {name: "layers", model: this.model};
+                }]
+            ]}
+        ]
+        // initialize: function() {
+        //     _.bindAll(this, 'render');
+        //     // the layers view piggy-backs on our model as
+        //     // this.model.layers is not a collection but just a plain
+        //     // list for now.
+        //     // this.layers = this.defchild(Layers, {
+        //     //     // this element already exists in the App template
+        //     //     // XXX: the id should be unique
+        //     //     el: this.$('#layers'),
+        //     //     model: this.model,
+        //     //     name: "layers"
+        //     // });
+        //     // var app = this;
+        //     // this.$("#destroyall").click(function() {
+        //     //     localStorage.clear();
+        //     //     app.model.fetch();
+        //     //     app.render();
+        //     // });
     });
 
     var Layer = base.View.extend({

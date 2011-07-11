@@ -22,24 +22,39 @@ define([
     var PaneManager = base.View.extend({
         tagName: "div",
         className: "panemanager",
+        panescfg: [],
         initialize: function(props) {
             $(this.el).addClass(this.name);
-            // panenames can be overridden per instance
-            if (props.panenames !== undefined) this.panenames = props.panenames;
-            this.panes = _.reduce(this.panenames, function(acc, name) {
-                if (this[name] !== undefined) throw "Name collision";
-                this[name] = this.defchild(Pane, {name:name});
-                $(this[name].el).addClass(name);
-                acc.push(this[name]);
-                return acc;
-            }, [], this);
+            if (props.panescfg !== undefined) this.panescfg = props.panescfg;
+            _.each(this.panescfg, this.append, this);
+        },
+        append: function(cfg) {
+            // create the pane
+            var pane = base.View.prototype.append.call(
+                this, Pane, {name: cfg.name}
+            );
+
+            // add its content
+            _.each(cfg.content, function(cfg) {
+                // cfg = [Prototype, {/*props*/}]
+                var ViewProto = cfg[0];
+                var props = cfg[1];
+                // props might be a callback that is to be evaulated
+                // in our context to return the real props.
+                var realprops = props.call === undefined
+                        ? props
+                        : props.call(this);
+                pane.append(ViewProto, realprops);
+            }, this);
+
+            return pane;
         },
         render: function() {
-            if ((DEBUG.panes) && (this.panes.length === 0)) {
+            if ((DEBUG.panes) && (this.children.length === 0)) {
                 $(this.el).text("No panes");
             }
-            _.each(this.panes, function(pane) {
-                $(this.el).append(pane.render().el);
+            _.each(this.children, function(child) {
+                $(this.el).append(child.render().el);
             }, this);
             return this;
         }
