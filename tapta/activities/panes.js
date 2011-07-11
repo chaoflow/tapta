@@ -6,8 +6,8 @@ define([
     './base',
     './debug'
 ], function(require) {
-    var base = require('./base');
-    var DEBUG = require('./debug');
+    var DEBUG = require('./debug'),
+        base = require('./base');
 
     var Pane = base.View.extend({
         tagName: "div",
