@@ -81,14 +81,12 @@ define([
             this.name = props.name;
             this.parent = props.parent;
             this.children = {};
-            DEBUG.view.init && console.group("init:"+this.abspath());
+            if (DEBUG.view.init) console.group("init:"+this.abspath());
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
-            DEBUG.view.init && console.groupEnd();
+            if (DEBUG.view.init) console.groupEnd();
             this.bind("all", function() {
-                if (this.logevents) {
-                    console.log(arguments);
-                }
+                if (this.logevents) console.log(arguments);
             });
         },
         abspath: abspath,
@@ -99,9 +97,9 @@ define([
             child.bind("all", _.bind(this.eventForwarder, this));
             var realrender = child.render;
             child.render = function() {
-                DEBUG.view.render && console.group("render:"+this.abspath());
+                if (DEBUG.view.render) console.group("render:"+this.abspath());
                 var rval = realrender.apply(this, arguments);
-                DEBUG.view.render && console.groupEnd();
+                if (DEBUG.view.render) console.groupEnd();
                 return rval;
             };
             return child;
