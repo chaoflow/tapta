@@ -16,68 +16,57 @@ define([
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base'),
+        panes = require('./panes'),
+
         GraphView = require('./graphviews').GraphView,
         model = require('./model'),
-        panes = require('./panes'),
         CFG = require('./settings'),
         Controller = require('./controller');
 
-    var Layers = base.View.extend({
-        template: _.template(
-            '<% _.each(layers, function(layer) {%>'
-                + '<div id="<%= layer.name %>" class="layer"></div>'
-                + '<%});%>'
-        ),
+    var LayersView = base.View.extend({
         initialize: function() {
-            _.bindAll(this, 'render');
-            // this.children = _.map(
-            //     this.model.layers.concat().reverse(),
-            //     function(layer) {
-            //         var child = this.defchild(Layer, {
-            //             model: layer,
-            //             name: layer.name
-            //         });
-            //         return child;
-            //     },
-            //     this
-            // ).reverse();
-            // for (var i=0; i<this.children.length; i++) {
-            //     this[i] = this.children[i];
-            // }
+            _.each(this.model.layers.concat().reverse(), function(layer) {
+                this.append(LayerView, {
+                    model: layer,
+                    name: layer.name
+                });
+            }, this);
         }
-//        render: function() {
-            // var layers = this;
-            // $(this.el).html(this.template({layers: this.model.layers}));
-            // _.each(this.children, function(child) {
-            //     // at this point the elements exist in the DOM,
-            //     // created by the layers template
-            //     child.el = layers.$('#'+child.name);
-            //     child.render();
-            // }, this);
-//        }
     });
 
-    var Layer = base.View.extend({
+    var LayerView = panes.PaneManager.extend({
+        extraClassNames: ["layer"],
         logevents: true,
-        template: _.template($("#layer-template").html()),
-        initialize: function() {
+        panescfg: [
+            {name: "left", content: [
+            ]},
+            {name: "center", content: [
+                {
+                    ViewProto: ActivityView,
+                    // will be evaluated in the context of the new LayerView
+                    propscallback: function() {
+                        // XXX: consider default name for views
+                        return {name: "activity", model: this.model.activity};
+                    }
+                }
+            ]},
+            {name: "right", content: [
+            ]}
+        ],
+        init: function() {
             this.mode = {name:"selecting"};
             _.bindAll(this, "activityChanged", 'render', "bindEvents");
             this.model.bind("change:activity", this.activityChanged);
 
             // initialize our child views
-            this.activity = this.defchild(ActivityView, {
-                model: this.model.activity,
-                name: "activity"
-            });
-            this.left_pane = this.defchild(panes.PaneManager_, {
-                model:this.model,
-                name: "leftpane"
-            });
-            this.right_pane = this.defchild(panes.PaneManager_, {
-                model: this.model,
-                name: "rightpane"
-            });
+            // this.left_pane = this.defchild(panes.PaneManager_, {
+            //     model:this.model,
+            //     name: "leftpane"
+            // });
+            // this.right_pane = this.defchild(panes.PaneManager_, {
+            //     model: this.model,
+            //     name: "rightpane"
+            // });
 
             var controller = new Controller(this);
             this.bind("all", controller.handler);
@@ -165,31 +154,31 @@ define([
         activityChanged: function() {
             this.activity.bindToModel(this.model.activity);
             this.activity.render();
-        },
-        render: function() {
-            $(this.el).html(this.template());
-            this.activity.el = this.$('.activity');
-            this.activity.render();
-            this.left_pane.el = this.$('.left-pane');
-            this.right_pane.el = this.$('.right-pane');
-
-            // XXX: initialize beforehand?
-            this.left_pane.add(this.defchild(panes.PropertiesView, {
-                model: this.model.activity,
-                name: "props"
-            }));
-            // XXX: initialzie beforehand?
-            this.right_pane.add(this.defchild(panes.LibraryView, {
-                model: this.model,
-                name: "library"
-            }));
-            this.right_pane.add(this.defchild(panes.ActionbarView, {
-                model:this.model,
-                name: "actionbar"
-            }));
-            this.left_pane.render();
-            this.right_pane.render();
         }
+        // render: function() {
+        //     $(this.el).html(this.template());
+        //     this.activity.el = this.$('.activity');
+        //     this.activity.render();
+        //     this.left_pane.el = this.$('.left-pane');
+        //     this.right_pane.el = this.$('.right-pane');
+
+        //     // XXX: initialize beforehand?
+        //     this.left_pane.add(this.defchild(panes.PropertiesView, {
+        //         model: this.model.activity,
+        //         name: "props"
+        //     }));
+        //     // XXX: initialzie beforehand?
+        //     this.right_pane.add(this.defchild(panes.LibraryView, {
+        //         model: this.model,
+        //         name: "library"
+        //     }));
+        //     this.right_pane.add(this.defchild(panes.ActionbarView, {
+        //         model:this.model,
+        //         name: "actionbar"
+        //     }));
+        //     this.left_pane.render();
+        //     this.right_pane.render();
+        // }
     });
 
     // An activity view creates a canvas. Its graph is drawn by a graph view.
@@ -264,8 +253,8 @@ define([
         }
     });
     return {
-        Layer: Layer,
-        Layers: Layers,
+        LayerView: LayerView,
+        LayersView: LayersView,
         Activity: ActivityView
     };
 });
