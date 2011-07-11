@@ -77,6 +77,7 @@ define([
     };
 
     var View = Backbone.View.extend({
+        extraClassNames: [],
         // consider using initialize, with the downside that
         // subclasses need to "super"-call, and the upside, that its
         // clearer what is called when.
@@ -94,6 +95,11 @@ define([
             this.bind("all", function() {
                 if (this.logevents) console.log(arguments);
             });
+
+            // add name and extraClassNames as additional classes
+            _.each([this.name].concat(this.extraClassNames), function(cls) {
+                $(this.el).addClass(cls);
+            }, this);
 
             if (DEBUG.view.render) {
                 var realrender = this.render;

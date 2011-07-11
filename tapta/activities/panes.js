@@ -20,7 +20,6 @@ define([
         className: "panemanager",
         panescfg: [],
         initialize: function(props) {
-            $(this.el).addClass(this.name);
             if (props.panescfg !== undefined) this.panescfg = props.panescfg;
             _.each(this.panescfg, this.append, this);
             this.init(props);
