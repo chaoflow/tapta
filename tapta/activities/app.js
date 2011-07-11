@@ -30,14 +30,13 @@ define([
                      }
                  }
             ]}
-        ]
-        // initialize: function() {
-        //     // var app = this;
-        //     // this.$("#destroyall").click(function() {
-        //     //     localStorage.clear();
-        //     //     app.model.fetch();
-        //     //     app.render();
-        //     // });
+        ],
+        events: {"click .destroyall": "destroyall"},
+        destroyall: function() {
+            localStorage.clear();
+            this.model.fetch();
+            this.render();
+        }
     });
 
     return {
