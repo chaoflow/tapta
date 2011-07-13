@@ -134,7 +134,7 @@ define([
         },
         render: function() {
             if ((DEBUG.view.render) && (this.children.length === 0)) {
-                $(this.el).text("View without children: "+this.abspath());
+                $(this.el).text("empty:"+this.abspath());
             }
             _.each(this.children, function(child) {
                 $(this.el).append(child.render().el);
