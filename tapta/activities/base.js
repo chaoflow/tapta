@@ -97,9 +97,10 @@ define([
             });
 
             // add name and extraClassNames as additional classes
-            _.each([this.name].concat(this.extraClassNames), function(cls) {
-                $(this.el).addClass(cls);
-            }, this);
+            var classes = [this.name];
+            classes = classes.concat(this.extraClassNames);
+            classes = classes.concat(props.extraClassNames);
+            _.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
 
             if (DEBUG.view.render) {
                 var realrender = this.render;
@@ -118,7 +119,6 @@ define([
             if (this[props.name] !== undefined) throw "Name collision";
             var child = this.defchild(ViewProto, props);
             this[props.name] = child;
-            $(child.el).addClass(props.name);
             this.children.push(child);
             return child;
         },
