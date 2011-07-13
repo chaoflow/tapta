@@ -135,8 +135,8 @@ define([
     // new-style
     var cfg = {
         canvas: {
-            width: 900,
-            height: 400,
+            width: 600,
+            height: 300,
             r_corner: 10
         },
         gridsize: {
