@@ -33,11 +33,11 @@ define([
     });
 
     var LayerView = panes.PaneManager.extend({
-        extraClassNames: ["layer"],
+        extraClassNames: ["layer", "row"],
         logevents: true,
         panescfg: [
             {name: "left", content: [
-            ]},
+            ], extraClassNames: ["cell", "width-2", "position-0"]},
             {name: "center", content: [
                 {
                     ViewProto: ActivityView,
@@ -50,9 +50,9 @@ define([
                                 layer: this};
                     }
                 }
-            ]},
+            ], extraClassNames: ["cell", "width-8", "position-2"]},
             {name: "right", content: [
-            ]}
+            ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],
         init: function() {
             this.mode = {name:"selecting"};

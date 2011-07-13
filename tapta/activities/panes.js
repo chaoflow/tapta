@@ -31,7 +31,8 @@ define([
         append: function(cfg) {
             // create the pane
             var pane = base.View.prototype.append.call(
-                this, Pane, {name: cfg.name}
+                this, Pane, {name: cfg.name,
+                             extraClassNames: cfg.extraClassNames}
             );
 
             // add its content
