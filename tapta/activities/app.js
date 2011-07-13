@@ -34,6 +34,7 @@ define([
         events: {"click .destroyall": "destroyall"},
         destroyall: function() {
             localStorage.clear();
+            console.log("Content of localstorage destroyed");
             this.model.fetch();
             this.render();
         }

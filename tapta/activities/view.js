@@ -77,23 +77,23 @@ define([
             }
         },
         render: function() {
-            // XXX: where to get flavour (mode) from? how is it changed?
-            var editmode = this.layer.mode.name,
-                width = this.canvaswidth,
-                height = this.canvasheight;
+            // // XXX: where to get flavour (mode) from? how is it changed?
+            // var editmode = this.layer.mode.name,
+            //     width = this.canvaswidth,
+            //     height = this.canvasheight;
 
-            // initialize canvas
-            if (!this.canvas) {
-                this.canvas = Raphael(this.el[0], width, height);
-                // draw rectangle around our canvas
-                // XXX: if we are the toplayer it should not have round corners
-                // XXX: for some reason this is not visible
-                var rect = this.canvas.rect(0, 0, width, height, CFG.canvas.r_corner);
-            }
+            // // initialize canvas
+            // if (!this.canvas) {
+            //     this.canvas = Raphael(this.el[0], width, height);
+            //     // draw rectangle around our canvas
+            //     // XXX: if we are the toplayer it should not have round corners
+            //     // XXX: for some reason this is not visible
+            //     var rect = this.canvas.rect(0, 0, width, height, CFG.canvas.r_corner);
+            // }
 
-            // tell next layer whether and which activity to display
-            this.rake();
-            this.graphview.render(this.canvas, editmode);
+            // // tell next layer whether and which activity to display
+            // this.rake();
+            // this.graphview.render(this.canvas, editmode);
             return this;
         }
     });
