@@ -70,7 +70,7 @@ define([
         ],
         init: function() {
             this.mode = {name:"selecting"};
-            _.bindAll(this, "activityChanged", 'render', "bindEvents");
+            _.bindAll(this, "activityChanged", "bindEvents");
             this.model.bind("change:activity", this.activityChanged);
 
             // initialize our child views
@@ -138,9 +138,6 @@ define([
                 this.mode = {name: "removing"};
                 this.trigger("change:mode");
             });
-
-            // rerender activity on mode change
-//            this.bind("change:mode", this.activity.render);
 
             // Events that need a mode to be processed
             this.bind("act:addtoedge", function(load) {
