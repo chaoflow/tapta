@@ -282,8 +282,9 @@ define([
             // no graph, nothing to do
             if (graph === undefined) return;
 
-            // fetch graph elements
+            // fetch graph elements and space them out
             graph.fetch();
+            graph.spaceOut();
 
             // If graph model is empty, add an initial and final node
             // don't create them in the storage, just "add" them.
