@@ -102,7 +102,9 @@ define([
         };
         _.extend(NodeLib.prototype, {
             get: function(id) {
-                return this.nodes[id];
+                var res = this.nodes[id];
+                if (res === undefined) throw "No node by id: "+id;
+                return res;
             }
         });
         var nodelib = new NodeLib({
@@ -117,7 +119,7 @@ define([
         var a = vertices[0];
         equal(a.payload.id, "idA", "A created correctly");
 
-        equal(a.toJSON().payload, "idA", "payload is serialized to id");
+        equal(a.toJSON().payload, "id:idA", "payload is serialized to id");
 
         // fetch a fresh copy
         var graph_ = new Graph();

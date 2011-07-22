@@ -45,7 +45,8 @@ define([
                     if (key === "payload") {
                         if (_.isString(val)) return val;
                         if (val.id === undefined) throw "Payload needs an id!";
-                        return val.id;
+                        // prepend 'id:' so we later recognize it
+                        return "id:"+val.id;
                     }
                     if (key === "next") return _.pluck(val, 'id');
                     return val;
@@ -102,9 +103,9 @@ define([
             _.each(vertices, function(vertex) {
                 var attrs = vertex.attributes,
                     payload = attrs['payload'];
-                // If we have a nodelib and the payload is an uuid
-                if (this.nodelib && payload && payload.indexOf('-') !== -1) {
-                    attrs['payload'] = this.nodelib.get(attrs['payload']);
+                if (payload && payload.slice(0,3) === "id:") {
+                    if (!this.nodelib) throw "Need a nodelib";
+                    attrs['payload'] = this.nodelib.get(payload.slice(3));
                 }
                 _.each(['next'], function(name) {
                     attrs[name] = _.map(attrs[name], function(id) {
