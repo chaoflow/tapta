@@ -1,9 +1,3 @@
-    Activity
-        placeandroute: function() {
-            this.layer.fetch();
-        }
-
-
 
     var Node = ElementView.extend({
         render: function(mode) {
@@ -136,24 +130,6 @@
             return rect;
         }
     });
-
-    var Edge = ElementView.extend({
-
-            // translate DOM events to user acts
-            droparea.click(function() {
-                // we only know that something is added to an edge a
-                // previous event defined what is going to be added.
-                this.trigger("act:addtoedge", [this.model]);
-            }, this);
-        },
-    });
-
-
-
-
-
-
-
 
 
 
