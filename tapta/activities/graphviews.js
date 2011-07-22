@@ -2,14 +2,12 @@ define([
     'require',
     'vendor/underscore.js',
     './base',
-    './graph',
     './settings',
     './svgtools'
 ], function(require) {
     var base = require('./base'),
         View = base.View,
         CFG = require('./settings'),
-        Vertex = require('./graph').Vertex,
         svgtools = require('./svgtools'),
         svgarrow = svgtools.svgarrow,
         svgpath = svgtools.svgpath;
@@ -300,8 +298,8 @@ define([
             // don't create them in the storage, just "add" them.
             // if something else is added, all of them will be stored
             if (graph.length === 0) {
-                var initial = new Vertex({payload: "initial"});
-                var final_ = new Vertex({payload: "final"});
+                var initial = new graph.model({payload: "initial"});
+                var final_ = new graph.model({payload: "final"});
                 // one event (set next) is enough trigger spaceout
                 graph.add([initial, final_], {silent:true});
                 initial.set({next: [final_]});
