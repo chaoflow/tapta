@@ -34,8 +34,13 @@ define([
             // remove previously rendered stuff
             this.remove();
 
-            // render symbol
-            this.children["symbol"] = this.symbol(canvas);
+            // FUTURE: investigate how/whether to use group/symbol/... SVG elements
+            // render symbol, will return a set
+            var symset = this.children["symbol"] = this.symbol(canvas);
+            _.each(symset, function(sym) {
+                sym.node.setAttribute("class", "symbol");
+                sym.node.setAttribute("id", this.name);
+            }, this);
 
             // render controls
             var ctrls = this.children.ctrls = this.ctrls(canvas, editmode);
@@ -82,9 +87,11 @@ define([
                 // points to enter the target from source
                 tail = this.tgtview.entrancepath(this.srcview),
                 points = head.concat(tail),
-                symbol = svgarrow(canvas, points, adx, ady);
-            symbol.attr({stroke: cfg.stroke,
+                symbol = canvas.set(),
+                arrow = svgarrow(canvas, points, adx, ady);
+            arrow.attr({stroke: cfg.stroke,
                          "stroke-width": cfg["stroke-width"]});
+            symbol.push(arrow);
             return symbol;
         }
     });
@@ -140,8 +147,10 @@ define([
                 geo = this.geometry,
                 cx = geo.x + cfg.r + (geo.width - 2 * cfg.r) / 2,
                 cy = geo.y + cfg.r + (geo.height - 2 * cfg.r) / 2,
-                symbol = canvas.circle(cx, cy, cfg.r);
-            symbol.attr({fill: cfg.fill});
+                symbol = canvas.set(),
+                circle = canvas.circle(cx, cy, cfg.r);
+            circle.attr({fill: cfg.fill});
+            symbol.push(circle);
             this.exitpoint = [cx + cfg.r, cy];
             return symbol;
         },
