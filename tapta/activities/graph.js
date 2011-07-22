@@ -78,6 +78,7 @@ define([
             return graphutils.arcs(this.sources());
         },
         initialize: function(attrs, opts) {
+            // A nodelib returns nodes by id: nodelib.get(id) -> node
             this.nodelib = opts.nodelib || this.parent && this.parent.nodelib;
             _.bindAll(this);
             this.bind("add", this.spaceOut);
@@ -99,8 +100,10 @@ define([
 
             // replace ids with the real objects
             _.each(vertices, function(vertex) {
-                var attrs = vertex.attributes;
-                if (this.nodelib && attrs['payload']) {
+                var attrs = vertex.attributes,
+                    payload = attrs['payload'];
+                // If we have a nodelib and the payload is an uuid
+                if (this.nodelib && payload && payload.indexOf('-') !== -1) {
                     attrs['payload'] = this.nodelib.get(attrs['payload']);
                 }
                 _.each(['next'], function(name) {
