@@ -78,10 +78,11 @@ define([
                 head = this.srcview.exitpath(this.tgtview),
                 tail = this.tgtview.entrancepath(this.srcview),
                 points = head.concat(tail),
+                ctrls = canvas.set(),
                 ctrl = svgpath(canvas, points);
             ctrl.attr(cfg.ctrls[editmode]);
-            // XXX: set instead of array?
-            return [ctrl];
+            ctrls.push(ctrl);
+            return ctrls;
         },
         // The arc is drawn as an SVG path, see:
         // http://www.w3.org/TR/SVG/paths.html#PathData
