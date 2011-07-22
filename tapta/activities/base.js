@@ -78,6 +78,7 @@ define([
 
     var View = Backbone.View.extend({
         extraClassNames: [],
+        propagateEvents: true,
         // consider using initialize, with the downside that
         // subclasses need to "super"-call, and the upside, that its
         // clearer what is called when.
@@ -89,7 +90,6 @@ define([
             if (DEBUG.view.init) console.group("init:"+this.abspath());
 
             this.children = [];
-            _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
 
             if (DEBUG.view.events) {
@@ -130,11 +130,12 @@ define([
             // XXX: remove explicit setting of props.parent
             props.parent = props.parent || this;
             var child = new ViewProto(props);
-            child.bind("all", _.bind(this.eventForwarder, this));
+            if (child.propagateEvents) {
+                child.bind("all", _.bind(function() {
+                    this.trigger.apply(this, arguments);
+                }, this));
+            }
             return child;
-        },
-        eventForwarder: function() {
-            this.trigger.apply(this, arguments);
         },
         render: function() {
             if ((DEBUG.view.render) && (this.children.length === 0)) {
