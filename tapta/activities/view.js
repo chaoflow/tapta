@@ -90,9 +90,11 @@ define([
                 var rect = this.canvas.rect(0, 0, width, height, CFG.canvas.r_corner);
             }
 
+            this.graphview.render(this.canvas, editmode);
+
             // tell next layer whether and which activity to display
             this.rake();
-            this.graphview.render(this.canvas, editmode);
+
             return this;
         }
     });
