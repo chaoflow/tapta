@@ -156,6 +156,11 @@ define([
                 stroke: "green",
                 "stroke-width": 25,
                 opacity: 0.2
+            },
+            selecting: {
+                stroke: "green",
+                "stroke-width": 25,
+                opacity: 0
             }
         }
     };
