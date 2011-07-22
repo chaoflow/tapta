@@ -67,19 +67,21 @@ define([
             // XXX: turn this into decisions only - merges are not in the lib
             this.decmers = this.defchild(DecMers, [], {name:"decmers"});
             this.activities = this.defchild(Activities, [], {name:'activities'});
+            this.nodelib = {
+                get: function(id) {
+            var res;
+                    res = this.actions.get(id); if (res) return res;
+                    res = this.decmers.get(id); if (res) return res;
+                    res = this.activities.get(id); if (res) return res;
+                    throw "Could not find node for id: "+id;
+                }
+            };
         },
         fetch: function() {
             this.actions.fetch();
             this.decmers.fetch();
             this.activities.fetch();
         },
-        obj: function(id) {
-            var res;
-            res = this.actions.get(id); if (res) { return res; }
-            res = this.decmers.get(id); if (res) { return res; }
-            res = this.activities.get(id); if (res) { return res; }
-            throw "Could not find node for id "+id;
-        }
     });
 
     var Node = Model.extend({});
