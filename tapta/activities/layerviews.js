@@ -59,6 +59,10 @@ define([
                 }
             ], extraClassNames: ["cell", "width-8", "position-2"]},
             {name: "right", content: [
+                {
+                    ViewProto: panes.ToolbarView,
+                    props: {name: "toolbar"}
+                }
             ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],
         init: function() {
