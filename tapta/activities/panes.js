@@ -48,6 +48,39 @@ define([
         }
     });
 
+
+    // things to be put in panes
+    var ToolView = base.View.extend({
+        tagName: "li",
+        className: "tool",
+        events: {
+            "click": "clicked"
+        },
+        clicked: function() {
+            this.trigger("click", {view: this});
+        },
+        render: function() {
+            $(this.el).text(this.name);
+            return this;
+        }
+    });
+
+    var ToolbarView = base.View.extend({
+        tagName: "ul",
+        className: "toolbar",
+        initialize: function() {
+            _.each([
+                "select",
+                "addnewaction",
+                "addnewdecmer",
+                "addnewforkjoin",
+                "remove"
+            ], function(name) {
+                this.append(ToolView, {name: name});
+            }, this);
+        }
+    });
+
     // old below here
 
 
@@ -197,6 +230,7 @@ define([
 
     return {
         PaneManager: PaneManager,
+        ToolbarView: ToolbarView,
 
         PaneManager_: PaneManager_,
         PropertiesView: PropertiesView,
