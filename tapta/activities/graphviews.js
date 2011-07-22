@@ -205,6 +205,8 @@ define([
                 y = geo.y + (geo.height - cfg.height) / 2,
                 symbol = canvas.set(),
                 rect = canvas.rect(x, y, cfg.width, cfg.height, cfg.r);
+            this.entrancepoint = [x - cfg["stroke-width"], y + cfg.height / 2];
+            this.exitpoint = [x + cfg.width, y + cfg.height / 2];
             rect.attr({fill: cfg.fill,
                        stroke: cfg.stroke,
                        "stroke-width": cfg["stroke-width"]});
@@ -214,6 +216,14 @@ define([
                 symbol.push(text);
             }
             return symbol;
+        },
+        // fixed entrance point
+        entrancepath: function(srcview) {
+            return [this.entrancepoint];
+        },
+        // fixed exit point
+        exitpath: function(tgtview) {
+            return [this.exitpoint];
         }
     });
 
