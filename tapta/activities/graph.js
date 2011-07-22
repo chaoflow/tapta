@@ -82,9 +82,13 @@ define([
             // A nodelib returns nodes by id: nodelib.get(id) -> node
             this.nodelib = opts.nodelib;
             _.bindAll(this);
+            // space out if something is added but no next was
+            // changed, i.e. a new completely parallel path
             this.bind("add", this.spaceOut);
-            this.bind("remove", this.spaceOut);
+            // an existing path was changed
             this.bind("change:next", this.spaceOut);
+            // XXX: add and change:next needed - not sure why
+            // this.bind("remove", this.spaceOut);
         },
         model: Vertex,
         // goes hand-in-hand with Vertex.toJSON

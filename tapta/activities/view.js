@@ -60,6 +60,13 @@ define([
 
             this.graphview.bindToGraph(this.model.graph);
 
+            // XXX: for now we just rebind if the graph changes
+            var graph = this.model.graph;
+            graph.bind("rebind", _.bind(function() {
+                this.graphview.bindToGraph(graph);
+                this.graphview.render(this.canvas, this.editmode);
+            }, this));
+
             // next level has to display another activity
             this.model.bind("change:raked", this.rake);
         },
@@ -77,7 +84,7 @@ define([
         },
         render: function() {
             // XXX: where to get flavour (mode) from? how is it changed?
-            var editmode = this.layer.mode.name,
+            var editmode = this.editmode = this.layer.mode.name,
                 width = this.canvaswidth,
                 height = this.canvasheight;
 
