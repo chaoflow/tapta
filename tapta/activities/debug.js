@@ -6,8 +6,12 @@ define([
         spaceout: true,
         panes: true,
         view: {
+            events: true,
             init: true,
             render: true
+        },
+        model: {
+            events: true
         }
     };
 

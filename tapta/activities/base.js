@@ -92,9 +92,13 @@ define([
             _.bindAll(this, "eventForwarder");
             Backbone.View.apply(this, arguments);
 
-            this.bind("all", function() {
-                if (this.logevents) console.log(arguments);
-            });
+            if (DEBUG.view.events) {
+                this.bind("all", function() {
+                    console.group("event:"+this.abspath());
+                    console.log(arguments);
+                    console.groupEnd();
+                });
+            }
 
             // add name and extraClassNames as additional classes
             var classes = [this.name];

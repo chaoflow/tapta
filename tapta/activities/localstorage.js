@@ -2,7 +2,8 @@ define([
     'require',
     'vendor/underscore.js',
     'vendor/backbone.js',
-    './base'
+    './base',
+    './debug'
 ], function(require) {
     var base = require('./base');
 
@@ -79,6 +80,8 @@ define([
 
     // XXX: move most of this to base, except the very storage
 
+    var DEBUG = require('./debug');
+
     var Model = Backbone.Model.extend({
         abspath: base.abspath,
         location: base.location,
@@ -86,11 +89,13 @@ define([
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
             Backbone.Model.apply(this, arguments);
-            this.bind("all", function() {
-                if (this.logevents) {
+            if (DEBUG.model.events) {
+                this.bind("all", function() {
+                    console.group("event:"+this.abspath());
                     console.log(arguments);
-                }
-            });
+                    console.groupEnd();
+                });
+            }
         },
         defchild: function(Proto, attr, opts) {
             if (opts.parent === undefined) {
@@ -138,11 +143,13 @@ define([
             this.name = opts && opts.name;
             this.parent = opts && opts.parent;
             Backbone.Collection.apply(this, arguments);
-            this.bind("all", function() {
-                if (this.logevents) {
+            if (DEBUG.model.events) {
+                this.bind("all", function() {
+                    console.group("event:"+this.abspath());
                     console.log(arguments);
-                }
-            });
+                    console.groupEnd();
+                });
+            }
         },
         // XXX: not sure whether a good idea, its not called early
         // enough, we are safer of to take id and collection as
