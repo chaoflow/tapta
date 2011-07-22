@@ -74,6 +74,7 @@ define([
                 points = head.concat(tail),
                 ctrl = svgpath(canvas, points);
             ctrl.attr(cfg.ctrls[editmode]);
+            // XXX: set instead of array?
             return [ctrl];
         },
         // The arc is drawn as an SVG path, see:
