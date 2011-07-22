@@ -319,6 +319,7 @@ define([
             }
         },
         render: function(canvas, editmode) {
+            // XXX: switch to use a set as container for all children
             var name;
             for (name in this.vertexviews) {
                 this.vertexviews[name].render(canvas, editmode);
