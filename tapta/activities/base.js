@@ -133,8 +133,8 @@ define([
             props.parent = props.parent || this;
             var child = new ViewProto(props);
             if (child.propagateEvents) {
-                child.bind("all", _.bind(function() {
-                    this.trigger.apply(this, arguments);
+                child.bind("all", _.bind(function(name, info) {
+                    if (!info.reverse) this.trigger.apply(this, arguments);
                 }, this));
             }
             return child;
@@ -147,6 +147,13 @@ define([
                 $(this.el).append(child.render().el);
             }, this);
             return this;
+        },
+        triggerReverse: function(name, info) {
+            info.reverse = true;
+            _.each(this.children, function(child) {
+                child.trigger(name, info);
+                child.triggerReverse(name, info);
+            });
         }
     });
 
