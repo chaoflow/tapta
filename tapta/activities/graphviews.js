@@ -234,8 +234,8 @@ define([
                 height = geo.height - 2 * cfg.padY,
                 symbol = canvas.rect(x, y, cfg.width, height);
             symbol.attr({fill: cfg.fill,
-                       stroke: cfg.stroke,
-                       "stroke-width": cfg["stroke-width"]});
+                         stroke: cfg.stroke,
+                         "stroke-width": cfg["stroke-width"]});
             return symbol;
         }
     });
