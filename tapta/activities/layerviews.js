@@ -62,6 +62,8 @@ define([
             ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],
         init: function() {
+            this.activityview = this.center.activity;
+
             this.mode = {name:"selecting"};
             _.bindAll(this, "activityChanged", "bindEvents");
             this.model.bind("change:activity", this.activityChanged);
@@ -157,8 +159,8 @@ define([
             });
         },
         activityChanged: function() {
-            this.activity.bindToModel(this.model.activity);
-            this.activity.render();
+            this.activityview.bindToModel(this.model.activity);
+            this.activityview.render();
         }
         // render: function() {
         //     $(this.el).html(this.template());

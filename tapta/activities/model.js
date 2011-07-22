@@ -57,6 +57,7 @@ define([
                 act = toplayer.activities.first();
             }
             toplayer.activity = act;
+            toplayer.trigger("change:activity");
         }
     });
 
