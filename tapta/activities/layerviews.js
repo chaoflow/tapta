@@ -40,13 +40,6 @@ define([
         // move node (editmode: select):
         // - drag final, drop on MIMO
         // - drag action, drop on edge (cut and paste)
-        events: {
-            "click .symbol": "huhu"
-        },
-        huhu: function(e) {
-            console.log(arguments);
-            console.log("huhu");
-        },
         extraClassNames: ["layer", "row"],
         logevents: true,
         panescfg: [
