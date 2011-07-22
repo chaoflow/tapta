@@ -21,6 +21,11 @@ define([
         return CFG.gridsize.y * y;
     };
 
+    // ATTENTION: GraphElements are no real views: their el is not
+    // added to the DOM, instead they render SVG elements on a
+    // canvas. They also catch certain events and translate them into
+    // backbone events triggered on themselves, thus propagating them
+    // up the view hierarchy.
     var GraphElement = View.extend({
         ctrls: function(canvas) { return []; },
         remove: function() {
@@ -34,25 +39,26 @@ define([
             // remove previously rendered stuff
             this.remove();
 
+            // used to create handlers for specific events and aspects of us
+            // event is the name of an event, eg. click
+            // idx is either 'symbol' or the idx of the ctrl
+            var handler = function(event, idx) {
+                return function() {
+                    // trigger backbone events for svg events, this
+                    // corresponds to backbone's delegateEvents mechanism
+                    this.trigger(event, {view: this, idx: idx});
+                };
+            };
+
             // FUTURE: investigate how/whether to use group/symbol/... SVG elements
             // render symbol, will return a set
-            var symset = this.children["symbol"] = this.symbol(canvas);
-            _.each(symset, function(sym) {
-                sym.node.setAttribute("class", "symbol");
-                sym.node.setAttribute("id", this.name);
-            }, this);
+            var symbol = this.children["symbol"] = this.symbol(canvas);
+            symbol.click(handler("click", "symbol"), this);
 
             // render controls
             var ctrls = this.children.ctrls = this.ctrls(canvas, editmode);
-            // trigger backbone events in case of svg events
             _.each(ctrls, function(ctrl, idx) {
-                // build a handler that remembers us and the ctrl number
-                var handler = function(idx) {
-                    return function() {
-                        this.trigger("click", {view: this, idx: idx});
-                    };
-                }(idx);
-                ctrl.click(handler, this);
+                ctrl.click(handler("click", idx), this);
             }, this);
         },
         symbol: function(canvas) { throw "Not implemented"; }
