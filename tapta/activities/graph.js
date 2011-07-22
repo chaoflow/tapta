@@ -80,7 +80,7 @@ define([
         },
         initialize: function(attrs, opts) {
             // A nodelib returns nodes by id: nodelib.get(id) -> node
-            this.nodelib = opts.nodelib || this.parent && this.parent.nodelib;
+            this.nodelib = opts.nodelib;
             _.bindAll(this);
             this.bind("add", this.spaceOut);
             this.bind("remove", this.spaceOut);

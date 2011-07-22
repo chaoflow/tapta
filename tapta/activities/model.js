@@ -124,8 +124,11 @@ define([
 
     var Activity = Model.extend({
         initialize: function(attrs, opts) {
-            this.graph = this.defchild(Graph, [], {name:'graph'});
             this.layer = opts.layer || this.collection.parent;
+            this.graph = this.defchild(Graph, [], {
+                name: 'graph',
+                nodelib: this.layer.nodelib
+            });
         },
         // remove a node from all paths
         remove: function(node) {
