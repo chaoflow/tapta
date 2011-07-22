@@ -326,6 +326,16 @@ define([
             // XXX
             // graph.bind("add", XXX);
             // graph.bind("remove", XXX);
+            graph.bind("add", _.bind(this.createAndRenderVertexView, this));
+        },
+        createAndRenderVertexView: function(model) {
+            var view = this.defchild(
+                nodeviews[model.type],
+                {model: model, name: "vertex_"+model.cid}
+            );
+            this.vertexviews[model.cid] = view;
+            view.render(this.canvas, this.editmode);
+            return view;
         },
         remove: function() {
             var name;
@@ -337,6 +347,9 @@ define([
             }
         },
         render: function(canvas, editmode) {
+            // remember these for views of later added vertices
+            this.canvas = canvas;
+            this.editmode = editmode;
             // XXX: switch to use a set as container for all children
             var name;
             for (name in this.vertexviews) {
