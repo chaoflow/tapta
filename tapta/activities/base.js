@@ -89,6 +89,8 @@ define([
             this.parent = props.parent;
             if (DEBUG.view.init) console.group("init:"+this.abspath());
 
+            // children by name and in an ordered list
+            this.child = {};
             this.children = [];
             Backbone.View.apply(this, arguments);
 
@@ -120,9 +122,9 @@ define([
         abspath: abspath,
         location: location,
         append: function(ViewProto, props) {
-            if (this[props.name] !== undefined) throw "Name collision";
+            if (this.child[props.name] !== undefined) throw "Name collision";
             var child = this.defchild(ViewProto, props);
-            this[props.name] = child;
+            this.child[props.name] = child;
             this.children.push(child);
             return child;
         },
