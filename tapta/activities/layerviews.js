@@ -191,6 +191,16 @@ define([
         //     this.right_pane.render();
         // }
     });
+    Object.defineProperties(LayerView.prototype, {
+        editmode: {
+            get: function() { return this._editmode; },
+            set: function(val) {
+                if (val === this._editmode) return;
+                this._editmode = val;
+                this.triggerReverse("editmode", {name: val, view: this});
+            }
+        }
+    });
 
     return {
         LayerView: LayerView,

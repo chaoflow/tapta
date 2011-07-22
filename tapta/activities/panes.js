@@ -57,7 +57,16 @@ define([
             "click": "clicked"
         },
         clicked: function() {
-            this.trigger("click", {view: this});
+            this.trigger("editmode", {name: this.name, view: this});
+        },
+        initialize: function() {
+            this.bind("editmode", function(info) {
+                if (info.name === this.name) {
+                    $(this.el).addClass("highlight");
+                } else {
+                    $(this.el).removeClass("highlight");
+                }
+            });
         },
         render: function() {
             $(this.el).text(this.name);

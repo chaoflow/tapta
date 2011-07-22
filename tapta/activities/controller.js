@@ -1,22 +1,36 @@
 define([
     'require',
+    './base',
     './debug',
     './graphviews'
 ], function(require) {
     var DEBUG = require('./debug').controller,
-        g = require('./graph');
+        base = require('./base'),
+        g = require('./graph'),
         gv = require('./graphviews');
 
     // a controller that attaches to a layer
-    var LayerController = function() {
-        // will run in the context of the layer using it
+    var LayerController = function(layerview) {
+        this.name = "controller";
+        this.parent = layerview;
+        this.layerview = layerview;
+        _.bindAll(this, "handler");
+        this.layerview.editmode = "select";
     };
     _(LayerController.prototype).extend({
+        abspath: base.abspath,
+        location: base.location,
         handler: function(event, info) {
             DEBUG && console.group(
                 "controller:" +this.abspath() + ": "
                     + [event, info.view.name].join(", ")
             );
+
+            switch (event) {
+            case "editmode":
+                this.layerview.editmode = info.name;
+                break;
+            }
 
             // supported operations
             //
@@ -37,10 +51,10 @@ define([
                     target = info.view.tgtview.model;
 
                 // create action
-                var node = this.model.actions.create();
+                var node = this.layerview.model.actions.create();
 
                 // create new vertex with action as payload
-                var graph = this.model.activity.graph,
+                var graph = this.layerview.model.activity.graph,
                     // XXX: this triggers already spaceOut and
                     // silent:true seems not to work
                     newvert = new graph.model({payload: node});

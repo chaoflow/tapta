@@ -4,3 +4,6 @@ body {
 .destroyall {
     cursor: pointer;
 }
+.toolbar .tool.highlight {
+    color: red;
+}
