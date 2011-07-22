@@ -27,7 +27,7 @@ define([
     // backbone events triggered on themselves, thus propagating them
     // up the view hierarchy.
     var GraphElement = View.extend({
-        ctrls: function(canvas) { return []; },
+        ctrls: function(canvas) { return canvas.set(); },
         remove: function() {
             // remove children from canvas - our children are raphael sets
             for (var name in this.children) {
