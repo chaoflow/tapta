@@ -66,7 +66,7 @@ define([
             ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],
         init: function() {
-            this.activityview = this.child.center.activity;
+            this.activityview = this.child.center.child.activity;
 
             this.mode = {name:"selecting"};
             _.bindAll(this, "activityChanged", "bindEvents");
