@@ -57,6 +57,7 @@ define([
             "click": "clicked"
         },
         clicked: function() {
+            // XXX: don't pass the full view, but just what is needed
             this.trigger("editmode", {name: this.name, view: this});
         },
         initialize: function() {
