@@ -34,7 +34,7 @@ define([
             // XXX: w00t?
             var graph = this.model && this.model.graph;
 
-            this.layer = this.options.layer;
+            this.layerview = this.options.layerview;
 
             // will be used as base for our children and to render the canvas
             this.canvasheight = CFG.canvas.height;
@@ -64,28 +64,28 @@ define([
             var graph = this.model.graph;
             graph.bind("rebind", _.bind(function() {
                 this.graphview.bindToGraph(graph);
-                this.graphview.render(this.canvas, this.editmode);
+                this.graphview.render(this.canvas, this.layerview.editmode);
             }, this));
 
             // next level has to display another activity
             this.model.bind("change:raked", this.rake);
         },
         rake: function() {
+            // XXX: rethink whether this should be the layerview or model
             // tell the next layer whether and which activity to display
-            var layer = this.layer;
-            if (layer.next) {
+            var layerview = this.layerview;
+            if (layerview.next) {
                 var raked = this.model && this.model.get('raked');
                 var activity = raked && raked.get('activity');
-                if (layer.next.activity !== activity) {
-                    layer.next.activity = activity;
-                    layer.next.trigger("change:activity");
+                if (layerview.next.activity !== activity) {
+                    layerview.next.activity = activity;
+                    layerview.next.trigger("change:activity");
                 }
             }
         },
         render: function() {
             // XXX: where to get flavour (mode) from? how is it changed?
-            var editmode = this.editmode = this.layer.mode.name,
-                width = this.canvaswidth,
+            var width = this.canvaswidth,
                 height = this.canvasheight;
 
             // initialize canvas
@@ -97,7 +97,7 @@ define([
                 var rect = this.canvas.rect(0, 0, width, height, CFG.canvas.r_corner);
             }
 
-            this.graphview.render(this.canvas, editmode);
+            this.graphview.render(this.canvas, this.layerview.editmode);
 
             // tell next layer whether and which activity to display
             this.rake();

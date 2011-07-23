@@ -54,7 +54,7 @@ define([
                         return {name: "activity",
                                 model: this.model.activity,
                                 // XXX: consider only this.controller here
-                                layer: this};
+                                layerview: this};
                     }
                 }
             ], extraClassNames: ["cell", "width-8", "position-2"]},
