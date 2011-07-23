@@ -103,6 +103,7 @@ define([
             }
 
             // add name and extraClassNames as additional classes
+            // XXX: maybe should happen during render
             var classes = [this.name];
             classes = classes.concat(this.extraClassNames);
             classes = classes.concat(props.extraClassNames);
