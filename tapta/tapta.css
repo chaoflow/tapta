@@ -3,6 +3,7 @@ body {
 }
 .destroyall {
     cursor: pointer;
+    margin-top: 40px;
 }
 .layer.editmode-addnewnode path.ctrl {
     opacity: 0.2;
