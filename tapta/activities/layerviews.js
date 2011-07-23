@@ -33,17 +33,18 @@ define([
     });
 
     var LayerView = panes.PaneManager.extend({
-        // supported operations
-        // new node:
-        // - click lib, click edge
-        // - drag from lib, drop on edge
-        // move node (editmode: select):
-        // - drag final, drop on MIMO
-        // - drag action, drop on edge (cut and paste)
         extraClassNames: ["layer", "row"],
-        logevents: true,
+        propagateEvents: false,
         panescfg: [
             {name: "left", content: [
+                // XXX: waits for rewrite
+                // {
+                //     ViewProto: panes.PropertiesView,
+                //     propscallback: function() {
+                //         return {name: "props",
+                //                 model: this.model.activity};
+                //     }
+                // }
             ], extraClassNames: ["cell", "width-2", "position-0"]},
             {name: "center", content: [
                 {
