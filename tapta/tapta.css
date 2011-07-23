@@ -4,6 +4,14 @@ body {
 .destroyall {
     cursor: pointer;
 }
+.layer.editmode-addnewnode path.ctrl {
+    opacity: 0.2;
+    stroke: green;
+    stroke-width: 25;
+}
+.tool {
+    cursor: pointer;
+}
 .toolbar .tool.highlight {
     color: red;
 }

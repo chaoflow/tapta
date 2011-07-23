@@ -150,19 +150,7 @@ define([
         adx: 6,
         ady: 5,
         stroke: "#424242",
-        "stroke-width": 2,
-        ctrls : {
-            addingnewmode: {
-                stroke: "green",
-                "stroke-width": 25,
-                opacity: 0.2
-            },
-            selecting: {
-                stroke: "green",
-                "stroke-width": 25,
-                opacity: 0
-            }
-        }
+        "stroke-width": 2
     };
     cfg.symbols.initial = {
         r: 10,

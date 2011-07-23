@@ -78,7 +78,7 @@ define([
                 points = head.concat(tail),
                 ctrls = canvas.set(),
                 ctrl = svgpath(canvas, points);
-            ctrl.attr(cfg.ctrls[editmode]);
+            ctrl.node.setAttribute("class", "ctrl");
             ctrls.push(ctrl);
             return ctrls;
         },
