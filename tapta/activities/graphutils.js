@@ -168,7 +168,7 @@ define([
     };
 
     // allocate space to the vertices
-    var spaceOut = function    (paths, hpad, vpad) {
+    var spaceOut = function    (paths) {
         DEBUG.spaceout && console.group("spaceout");
         // minwidth of longest path in the sense of space required, not item-wise
         var maxminwidth = maximum(map(path_minwidth, paths)),
