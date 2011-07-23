@@ -77,11 +77,13 @@ define([
     var Graph = Collection.extend({
         model: Vertex,
         arcs: function() {
+//            throw "Broken, see comment at paths";
             return graphutils.arcs(this.sources());
         },
         initialize: function(attrs, opts) {
             // A nodelib returns nodes by id: nodelib.get(id) -> node
             this.nodelib = opts.nodelib;
+            this.arcstorage = {};
             _.bindAll(this);
             // space out if something is added but no next was
             // changed, i.e. a new completely parallel path
@@ -119,7 +121,9 @@ define([
             return vertices;
         },
         paths: function() {
-            return graphutils.paths(this.sources());
+            // we need to generate arcs between the vertices and once
+            // generated we always need to return the very same arcs
+            return graphutils.paths(this.sources(), this.arcstorage);
         },
         spaceOut: function() {
             // returns a list of all vertices; assigns position and

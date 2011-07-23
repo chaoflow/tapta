@@ -15,6 +15,9 @@ define([
     var colJoin = function(list) {
         return list.join(':');
     };
+    var commaJoin = function(list) {
+        return list.join(', ');
+    };
 
     // turn a list of items into a list of their ids
     var pluckId = function(list) {
@@ -27,13 +30,35 @@ define([
 
     ////// defining graphs
 
+    // XXX: not yet working
+    // var GraphElement = function() {
+    //     this._geometry = {};
+    //     this._minwidth = 1;
+    //     this._minheight = 1;
+    // };
+    // _(GraphElement.prototype).extend({
+    //     setGeometry: function(obj) {
+    //         _.extend(this._geometry, obj);
+    //     }
+    // });
+    // Object.defineProperties(GraphElement.prototype, {
+    //     minwidth: { get: function() { return this._minwidth; } },
+    //     minheight: { get: function() { return this._minheight; } },
+    //     next: { get: function() { return this._next; } },
+    //     x: { get: function() { return this._geometry.x; } },
+    //     y: { get: function() { return this._geometry.y; } },
+    //     width: { get: function() { return this._geometry.width;} },
+    //     height: { get: function() { return this._geometry.height; } }
+    // });
+
+
     // XXX: make portions of this reusable for inheritance
     var Vertex = function(attrs) {
         this.id = this.cid = attrs && attrs.id;
+        this._next = [];
         this._geometry = {};
         this._minwidth = 1;
         this._minheight = 1;
-        this._next = [];
     };
     _(Vertex.prototype).extend({
         setGeometry: function(obj) {
@@ -41,6 +66,29 @@ define([
         }
     });
     Object.defineProperties(Vertex.prototype, {
+        minwidth: { get: function() { return this._minwidth; } },
+        minheight: { get: function() { return this._minheight; } },
+        next: { get: function() { return this._next; } },
+        x: { get: function() { return this._geometry.x; } },
+        y: { get: function() { return this._geometry.y; } },
+        width: { get: function() { return this._geometry.width;} },
+        height: { get: function() { return this._geometry.height; } }
+    });
+
+    var Arc = function(source, target) {
+        this.id = this.cid = [source.cid, target.cid].join(':');
+        this.source = source;
+        this.target = target;
+        this._geometry = {};
+        this._minwidth = 1;
+        this._minheight = 1;
+    };
+    _(Arc.prototype).extend({
+        setGeometry: function(obj) {
+            _.extend(this._geometry, obj);
+        }
+    });
+    Object.defineProperties(Arc.prototype, {
         minwidth: { get: function() { return this._minwidth; } },
         minheight: { get: function() { return this._minheight; } },
         next: { get: function() { return this._next; } },
@@ -82,7 +130,9 @@ define([
 
     // return uniq list of arcs seen while walking the graph along the
     // paths starting at vertices.
-    var arcs = function(vertices) {
+    // If arcstorage is defined, it will always return the same arc objects.
+    // XXX: broken, arcstorage needs to be implemented
+    var arcs = function(vertices, arcstorage) {
         return reduce(vertices, function(memo, vertex) {
             if (vertex.next.length === 0) return memo;
             return _.reduce(vertex.next, function(memo, next) {
@@ -121,33 +171,60 @@ define([
     // };
 
     // return all paths starting with the given vertices
-    var paths = function(vertices) {
+    // a path consist of pathelements (vertices and arcs)
+    // XXX: maybe rename vertices to sources here
+    // algorithm in action:
+    // A.next = [B, C], B.next = [D], C.next = [D]
+    // --> [[A, AB, B, BD, D],
+    //      [A, AC, C, CD, D]]
+    // x = D, tails = [[]]
+    // --> [D]
+    // x = B, tails = [D]
+    // --> [B, BD, D]
+    // ...
+    var paths = function(vertices, arcstorage) {
+        // If arcstorage is defined, it will use it to return always
+        // the same arc objects.
         // edge case: return list containing one empty path
+        if (arcstorage === undefined) arcstorage = {};
         if (vertices.length === 0) return [];
         var x = vertices.slice(0,1)[0],
             xs = vertices.slice(1),
-            tails = paths(x.next);
-        return map('[this.x].concat(path)', tails.length ? tails : [[]], {x:x})
-            .concat(paths(xs));
+            tails = paths(x.next, arcstorage);
+        if (tails.length === 0) tails = [[]];
+        return map(function(tail) {
+            var res = [x];
+            // If there is a tail, create an Arc from x to it
+            if (tail.length) {
+                var arcid = [x.cid, tail[0].cid].join(':'),
+                    arc = arcstorage && arcstorage[arcid];
+                arc = arc || new Arc(x, tail[0]);
+                if (arcstorage) arcstorage[arcid] = arc;
+                res.push(arc);
+            }
+            res = res.concat(tail);
+            return res;
+        }, tails).concat(paths(xs, arcstorage));
     };
 
+    // XXX: broken, as it does not account for arcs
     // the maximum minwidth of the paths seen from srcs
     // vertices have variable width
-    var minwidth = function(sources) {
-        // enable calling on a single vertex
-        if (sources.length === undefined) sources = [sources];
-        switch (sources.length) {
-        case 0: return 0;
-        case 1: return sources[0].minwidth + minwidth(sources[0].next);
-        default: return maximum(map(minwidth, sources));
-        }
-    };
+    // var minwidth = function(sources) {
+    //     // enable calling on a single vertex
+    //     if (sources.length === undefined) sources = [sources];
+    //     switch (sources.length) {
+    //     case 0: return 0;
+    //     case 1: return sources[0].minwidth + minwidth(sources[0].next);
+    //     default: return maximum(map(minwidth, sources));
+    //     }
+    // };
     var path_minwidth = function(path) {
-        return sum(map("vertex.minwidth", path));
+        return sum(map("pathelement.minwidth", path));
     };
 
     var path_minheight = function(path) {
-        return maximum(map("vertex.minheight", path));
+        return maximum(map("pathelement.minheight", path));
     };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
@@ -184,26 +261,29 @@ define([
             if (lidx == -1) throw "Deep shit!";
             paths.splice(lidx, 1);
             var hadd = (longest.h_avail - path_minwidth(longest)) / longest.length;
-            _.each(longest, function(vertex) {
+            _.each(longest, function(pathelement) {
                 var vadd = 0,
-                    width = vertex.minwidth + hadd,
-                    height = vertex.minheight,
+                    width = pathelement.minwidth + hadd,
+                    height = pathelement.minheight,
                     seen = false;
                 longest.h_avail -= width;
                 _.each(paths, function(path, idx) {
-                    if (_.include(path, vertex)) {
+                    if (_.include(path, pathelement)) {
                         seen = true;
                         height += path_minheight(path) + vadd;
                         vadd = 0;
-                        path.splice(_.indexOf(path, vertex),1);
+                        path.splice(_.indexOf(path, pathelement),1);
                         path.h_avail -= width;
                     } else if (seen && path.slice(-1) !== longest.slice(-1)) {
                         vadd = path_minheight(path);
                     }
                 });
                 // XXX: manage to set width, height and x, y in one call
-                vertex.setGeometry({width: width, height: height});
-                DEBUG.spaceout && console.log(["size:", vertex.cid, width, height]);
+                pathelement.setGeometry({width: width, height: height});
+                DEBUG.spaceout && console.log([
+                    "size:",
+                    pathelement.cid, width, height
+                ]);
             });
             // we are using floats...
             var emargin = 0.00001;
@@ -220,15 +300,18 @@ define([
         var rval = [];
         _.each(orig_paths, function(path, path_idx) {
             var x = 0;
-            _.each(path, function(vertex) {
-                if (!cache[vertex.cid]) {
+            _.each(path, function(pathelement) {
+                if (!cache[pathelement.cid]) {
                     // XXX: manage to set width, height and x, y in one call
-                    vertex.setGeometry({x: x, y: path_idx});
-                    rval.push(vertex);
-                    DEBUG.spaceout && console.log(["pos:", vertex.cid, x, path_idx]);
+                    pathelement.setGeometry({x: x, y: path_idx});
+                    rval.push(pathelement);
+                    DEBUG.spaceout && console.log([
+                        "pos:",
+                        pathelement.cid, x, path_idx
+                    ]);
                 }
-                cache[vertex.cid] = true;
-                x += vertex.width;
+                cache[pathelement.cid] = true;
+                x += pathelement.width;
             });
         });
         DEBUG.spaceout && console.groupEnd();
@@ -239,8 +322,9 @@ define([
         Vertex: Vertex,
         arcs: arcs,
         colJoin: colJoin,
+        commaJoin: commaJoin,
         graph: graph,
-        minwidth: minwidth,
+//        minwidth: minwidth,
         paths: paths,
         pluckId: pluckId,
         reduce: reduce,
