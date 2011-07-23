@@ -377,6 +377,7 @@ define([
     });
 
     return {
+        ArcView: ArcView,
         GraphView: GraphView
     };
 });

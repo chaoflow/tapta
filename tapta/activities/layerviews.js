@@ -159,6 +159,13 @@ define([
                 if (this._editmode) {
                     // Do nothing if we are already in the "new" edit mode
                     if (this._editmode.name === editmode.name) return;
+
+                    // Tell old editmode not to listen to our events anymore
+                    // XXX: should the view be the editmode?
+                    // XXX: if not, should it carry the editmode and
+                    // we just store that?
+                    this._editmode.view.unlisten(this);
+
                     // remove old editmode's CSS classes
                     var oldname = this._editmode.name,
                         oldview = this._editmode.view,
@@ -167,6 +174,7 @@ define([
                         $(this.el).removeClass("editmode-"+cls);
                     }, this);
                 }
+
                 // set new editmode's CSS classes
                 var newname = editmode.name,
                     newview = editmode.view,
@@ -174,8 +182,13 @@ define([
                 _.each(newclasses, function(cls) {
                     $(this.el).addClass("editmode-"+cls);
                 }, this);
-                // remember the editmode we are in now
+
+                // remember the editmode we are in now and tell it to
+                // listen to our events, it will handle events its
+                // interested in
                 this._editmode = editmode;
+                this._editmode.view.listen(this);
+
                 // XXX: If this is only used to change style it could
                 // be replaced by CSS rules.
                 this.triggerReverse("editmode", editmode);

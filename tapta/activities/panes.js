@@ -4,7 +4,8 @@ define([
     'vendor/jquery.tmpl',
     'vendor/underscore.js',
     './debug',
-    './base'
+    './base',
+    './graphviews'
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base');
@@ -60,6 +61,18 @@ define([
             // XXX: don't pass the full view, but just what is needed
             this.trigger("editmode", {name: this.name, view: this});
         },
+        // XXX: what is info?
+        act: function(info) {
+            throw "Tool needs to define act";
+        },
+        listen: function(layerview) {
+            this.layerview = layerview;
+            layerview.bind("click", this.act);
+        },
+        unlisten: function(layerview) {
+            this.layerview = undefined;
+            layerview.unbind("click", this.act);
+        },
         initialize: function() {
             this.bind("editmode", function(info) {
                 if (info.name === this.name) {
@@ -68,6 +81,7 @@ define([
                     $(this.el).removeClass("highlight");
                 }
             });
+            _.bindAll(this, "act");
         },
         render: function() {
             $(this.el).text(this.name);
@@ -78,8 +92,36 @@ define([
     var SelectTool = Tool.extend({
     });
 
+    var gv = require('./graphviews');
+
     var AddNewNodeTool = Tool.extend({
-        extraClassNames: ['addnewnode']
+        extraClassNames: ['addnewnode'],
+        act: function(info) {
+            if (info.view instanceof gv.ArcView) {
+                var source = info.view.srcview.model,
+                    target = info.view.tgtview.model;
+
+                // create node
+                var collection = this.layerview.model[this.options.collection];
+                var node = collection.create();
+
+                // create new vertex with action as payload
+                var graph = this.layerview.model.activity.graph,
+                    // XXX: this triggers already spaceOut and
+                    // silent:true seems not to work
+                    newvert = new graph.model({payload: node});
+
+                // change next of source without triggering an event
+                source.next.splice(source.next.indexOf(target), 1, newvert);
+                newvert.next.push(target);
+                graph.add(newvert, {silent:true});
+                target.save();
+                newvert.save();
+                source.save();
+                // XXX: this currently triggers rebinding of the graphview
+                graph.trigger("rebind");
+            }
+        }
     });
 
     var RemoveTool = Tool.extend({
@@ -90,9 +132,12 @@ define([
         className: "toolbar",
         initialize: function() {
             this.append(SelectTool, {name: "select"});
-            this.append(AddNewNodeTool, {name: "addnewaction"});
-            this.append(AddNewNodeTool, {name: "addnewdecmer"});
-            this.append(AddNewNodeTool, {name: "addnewforkjoin"});
+            this.append(AddNewNodeTool, {name: "addnewaction",
+                                         collection: "actions"});
+            this.append(AddNewNodeTool, {name: "addnewdecmer",
+                                         collection: "decmers"});
+            this.append(AddNewNodeTool, {name: "addnewforkjoin",
+                                         collection: "forkjoins"});
             this.append(RemoveTool, {name: "remove"});
         }
     });
