@@ -83,6 +83,8 @@ define([
 
             var controller = new Controller(this);
             this.bind("all", controller.handler);
+            // set default editmode, a bit hackish
+            this.child.right.child.toolbar.child.select.clicked();
 
             this.bindEvents();
         },
