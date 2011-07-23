@@ -15,7 +15,6 @@ define([
         this.parent = layerview;
         this.layerview = layerview;
         _.bindAll(this, "handler");
-        this.layerview.editmode = "select";
     };
     _(LayerController.prototype).extend({
         abspath: base.abspath,
@@ -28,7 +27,8 @@ define([
 
             switch (event) {
             case "editmode":
-                this.layerview.editmode = info.name;
+                // switch to editmode
+                this.layerview.editmode = info;
                 break;
             }
 

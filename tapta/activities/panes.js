@@ -50,7 +50,7 @@ define([
 
 
     // things to be put in panes
-    var ToolView = base.View.extend({
+    var Tool = base.View.extend({
         tagName: "li",
         className: "tool",
         events: {
@@ -74,19 +74,25 @@ define([
         }
     });
 
+    var SelectTool = Tool.extend({
+    });
+
+    var AddNewNodeTool = Tool.extend({
+        extraClassNames: ['addnewnode']
+    });
+
+    var RemoveTool = Tool.extend({
+    });
+
     var ToolbarView = base.View.extend({
         tagName: "ul",
         className: "toolbar",
         initialize: function() {
-            _.each([
-                "select",
-                "addnewaction",
-                "addnewdecmer",
-                "addnewforkjoin",
-                "remove"
-            ], function(name) {
-                this.append(ToolView, {name: name});
-            }, this);
+            this.append(SelectTool, {name: "select"});
+            this.append(AddNewNodeTool, {name: "addnewaction"});
+            this.append(AddNewNodeTool, {name: "addnewdecmer"});
+            this.append(AddNewNodeTool, {name: "addnewforkjoin"});
+            this.append(RemoveTool, {name: "remove"});
         }
     });
 

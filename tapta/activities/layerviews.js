@@ -68,7 +68,6 @@ define([
         init: function() {
             this.activityview = this.child.center.child.activity;
 
-            this.mode = {name:"selecting"};
             _.bindAll(this, "activityChanged", "bindEvents");
             this.model.bind("change:activity", this.activityChanged);
 
@@ -122,22 +121,6 @@ define([
                 this.model.set({selected: actionmodel});
             });
 
-            // Events that have no immediate effect, but are used to
-            // change the mode. The mode influences rendering of
-            // ctrlareas.
-            this.bind("mode:selecting", function(load) {
-                this.mode = _.extend({name: "selecting"});
-                this.trigger("change:mode");
-            });
-            this.bind("mode:addingnewnode", function(load) {
-                this.mode = _.extend({name: "addingnewnode"}, load[0]);
-                this.trigger("change:mode");
-            });
-            this.bind("mode:removing", function(load) {
-                this.mode = {name: "removing"};
-                this.trigger("change:mode");
-            });
-
             // Events that need a mode to be processed
             this.bind("act:addtoedge", function(load) {
                 if (this.mode.name !== "addingnewnode") { return; }
@@ -166,38 +149,34 @@ define([
             this.activityview.bindToModel(this.model.activity);
             this.activityview.render();
         }
-        // render: function() {
-        //     $(this.el).html(this.template());
-        //     this.activity.el = this.$('.activity');
-        //     this.activity.render();
-        //     this.left_pane.el = this.$('.left-pane');
-        //     this.right_pane.el = this.$('.right-pane');
-
-        //     // XXX: initialize beforehand?
-        //     this.left_pane.add(this.defchild(panes.PropertiesView, {
-        //         model: this.model.activity,
-        //         name: "props"
-        //     }));
-        //     // XXX: initialzie beforehand?
-        //     this.right_pane.add(this.defchild(panes.LibraryView, {
-        //         model: this.model,
-        //         name: "library"
-        //     }));
-        //     this.right_pane.add(this.defchild(panes.ActionbarView, {
-        //         model:this.model,
-        //         name: "actionbar"
-        //     }));
-        //     this.left_pane.render();
-        //     this.right_pane.render();
-        // }
     });
     Object.defineProperties(LayerView.prototype, {
         editmode: {
             get: function() { return this._editmode; },
-            set: function(val) {
-                if (val === this._editmode) return;
-                this._editmode = val;
-                this.triggerReverse("editmode", {name: val, view: this});
+            set: function(editmode) {
+                if (this._editmode) {
+                    // Do nothing if we are already in the "new" edit mode
+                    if (this._editmode.name === editmode.name) return;
+                    // remove old editmode's CSS classes
+                    var oldname = this._editmode.name,
+                        oldview = this._editmode.view,
+                        oldclasses = [oldname].concat(oldview.extraClassNames);
+                    _.each(oldclasses, function(cls) {
+                        $(this.el).removeClass("editmode-"+cls);
+                    }, this);
+                }
+                // set new editmode's CSS classes
+                var newname = editmode.name,
+                    newview = editmode.view,
+                    newclasses = [newname].concat(newview.extraClassNames);
+                _.each(newclasses, function(cls) {
+                    $(this.el).addClass("editmode-"+cls);
+                }, this);
+                // remember the editmode we are in now
+                this._editmode = editmode;
+                // XXX: If this is only used to change style it could
+                // be replaced by CSS rules.
+                this.triggerReverse("editmode", editmode);
             }
         }
     });
