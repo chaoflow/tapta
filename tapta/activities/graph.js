@@ -75,6 +75,7 @@ define([
     // a graph is stored as a collection of vertices.
     // arcs are stored implicitly as direct successors on vertices
     var Graph = Collection.extend({
+        model: Vertex,
         arcs: function() {
             return graphutils.arcs(this.sources());
         },
@@ -87,10 +88,8 @@ define([
             this.bind("add", this.spaceOut);
             // an existing path was changed
             this.bind("change:next", this.spaceOut);
-            // XXX: add and change:next needed - not sure why
             // this.bind("remove", this.spaceOut);
         },
-        model: Vertex,
         // goes hand-in-hand with Vertex.toJSON
         parse: function(resp) {
             // create vertices and cache them by id. in the next step
