@@ -15,8 +15,13 @@ define([
     var Vertex = Model.extend({
         initialize: function() {
             this._geometry = {};
+            // XXX: define node sizes in relation to grid size
+            // and use their size here
             this._minwidth = 1;
             this._minheight = 1;
+            // XXX: hack
+            if (this.payload === "initial") this._minwidth = 1/6;
+            if (this.payload === "final") this._minwidth = 1/5;
         },
         setGeometry: function(obj) {
             var g = this._geometry,

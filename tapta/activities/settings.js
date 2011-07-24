@@ -140,7 +140,7 @@ define([
             r_corner: 10
         },
         gridsize: {
-            x: 140,
+            x: 60,
             y: 60
         },
         localstorage_key: 'tapta0',
