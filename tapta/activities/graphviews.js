@@ -61,6 +61,24 @@ define([
         },
         symbol: function(canvas) { throw "Not implemented"; }
     });
+    Object.defineProperties(GraphElement.prototype, {
+        // this would be the place for free positioning.
+        geometry: {
+            // We use fixed size and do not scale depending on available space
+            get: function() {
+                var pg = this.parent.geometry,
+                    mg = this.model.geometry,
+                    geometry = {
+                        x: pg.x + xToPix(mg.x),
+                        y: pg.y + yToPix(mg.y),
+                        width: xToPix(mg.width),
+                        height: yToPix(mg.height)
+                    };
+                return geometry;
+            }
+        }
+    });
+
 
     // An arcview connects two vertex views
     var ArcView = GraphElement.extend({
@@ -129,23 +147,6 @@ define([
         entrancepath: function(srcview) { throw "No entrance path defined"; },
         // return via points for exiting to target view
         exitpath: function(tgtview) { throw "No exit path defined"; }
-    });
-    Object.defineProperties(NodeView.prototype, {
-        // XXX: this would be the place for free positioning.
-        geometry: {
-            // We use fixed size and do not scale depending on available space
-            get: function() {
-                var pg = this.parent.geometry,
-                    mg = this.model.geometry,
-                    geometry = {
-                        x: pg.x + xToPix(mg.x),
-                        y: pg.y + yToPix(mg.y),
-                        width: xToPix(mg.width),
-                        height: yToPix(mg.height)
-                    };
-                return geometry;
-            }
-        }
     });
 
     var InitialNodeView = NodeView.extend({
