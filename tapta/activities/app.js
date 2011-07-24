@@ -12,15 +12,6 @@ define([
 
     var AppView = panes.PaneManager.extend({
         panescfg: [
-            {name: "center", content: [
-                 {
-                     ViewProto: LayersView,
-                     // will be evaluated in the context of the new AppView
-                     propscallback: function() {
-                         return {name: "layers", model: this.model};
-                     }
-                 }
-            ]},
             {name: "bottom", content: [
                 {
                     ViewProto: base.View.extend({
@@ -30,7 +21,16 @@ define([
                     }),
                     props: {name: "destroyall"}
                 }
-            ], extraClassNames: ["row"]}
+            ], extraClassNames: ["row"]},
+            {name: "center", content: [
+                 {
+                     ViewProto: LayersView,
+                     // will be evaluated in the context of the new AppView
+                     propscallback: function() {
+                         return {name: "layers", model: this.model};
+                     }
+                 }
+            ]}
         ],
         events: {"click .destroyall": "destroyall"},
         destroyall: function() {
