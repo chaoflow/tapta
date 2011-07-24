@@ -66,6 +66,7 @@ define([
         }
     });
     Object.defineProperties(Vertex.prototype, {
+        geometry: {get: function() { return this._geometry; }},
         minwidth: { get: function() { return this._minwidth; } },
         minheight: { get: function() { return this._minheight; } },
         next: { get: function() { return this._next; } },
@@ -89,6 +90,7 @@ define([
         }
     });
     Object.defineProperties(Arc.prototype, {
+        geometry: {get: function() { return this._geometry; }},
         minwidth: { get: function() { return this._minwidth; } },
         minheight: { get: function() { return this._minheight; } },
         next: { get: function() { return this._next; } },

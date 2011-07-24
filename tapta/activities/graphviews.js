@@ -108,6 +108,7 @@ define([
             var cfg = CFG.symbols.edge,
                 adx = cfg.adx,
                 ady = cfg.ady,
+                geo = this.geometry,
                 // points to leave the source for target
                 head = this.srcview.exitpath(this.tgtview),
                 // points to enter the target from source
@@ -328,6 +329,7 @@ define([
                     tgtview = this.vertexviews[arc.target.cid],
                     view = this.defchild(ArcView, {
                         name: name,
+                        model: arc,
                         srcview: srcview,
                         tgtview: tgtview
                     });
