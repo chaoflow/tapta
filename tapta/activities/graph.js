@@ -77,8 +77,13 @@ define([
     var Graph = Collection.extend({
         model: Vertex,
         arcs: function() {
-//            throw "Broken, see comment at paths";
-            return graphutils.arcs(this.sources());
+            // XXX: spaceOut needs to run before that, NOT nice!
+            return _.values(this.arcstorage);
+        },
+        fetch: function() {
+            // fetch results in new cids, arcstorage uses cids
+            Collection.prototype.fetch.call(this);
+            this.arcstorage = {};
         },
         initialize: function(attrs, opts) {
             // A nodelib returns nodes by id: nodelib.get(id) -> node

@@ -67,6 +67,8 @@ define([
         initialize: function(opts) {
             this.srcview = opts.srcview;
             this.tgtview = opts.tgtview;
+            if (opts.srcview === undefined) throw "Need srcview";
+            if (opts.tgtview === undefined) throw "Need tgtview";
             // XXX: bind to our source and target
         },
         ctrls: function(canvas, editmode) {
@@ -243,6 +245,7 @@ define([
             symbol.attr({fill: cfg.fill,
                          stroke: cfg.stroke,
                          "stroke-width": cfg["stroke-width"]});
+            return symbol;
         }
     });
     Object.defineProperties(DecMerNodeView.prototype, {
@@ -316,11 +319,12 @@ define([
                 return acc;
             }, {}, graph.toArray(), this);
 
+            // XXX: adapt to new graph.arcs format
             // create arc views
             this.arcviews = foldl(function(acc, arc) {
-                var name = ["arc", arc[0].cid, arc[1].cid].join("_"),
-                    srcview = this.vertexviews[arc[0].cid],
-                    tgtview = this.vertexviews[arc[1].cid],
+                var name = ["arc", arc.source.cid, arc.target.cid].join("_"),
+                    srcview = this.vertexviews[arc.source.cid],
+                    tgtview = this.vertexviews[arc.target.cid],
                     view = this.defchild(ArcView, {
                         name: name,
                         srcview: srcview,
