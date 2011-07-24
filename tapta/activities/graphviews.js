@@ -1,5 +1,6 @@
 define([
     'require',
+    'jquery',
     'vendor/underscore.js',
     './base',
     './settings',
@@ -93,9 +94,19 @@ define([
             // for now just the same line without the arrow head
             // XXX: maybe reuse or a rect (if needed)
             var cfg = CFG.symbols.edge,
-                head = this.srcview.exitpath(this.tgtview),
-                tail = this.tgtview.entrancepath(this.srcview),
-                points = head.concat(tail),
+                geo = this.geometry,
+                x = geo.x + (geo.width - cfg.width) / 2,
+                y = geo.y + (geo.height - cfg.height) / 2,
+                entrancepoint = [geo.x, geo.y + geo.height / 2],
+                exitpoint = [geo.x + geo.width, geo.y + geo.height / 2],
+                // points to leave the source to our entrancepoint
+                head = this.srcview.exitpath(entrancepoint),
+                // points to enter the target from our exitpoint
+                tail = this.tgtview.entrancepath(exitpoint),
+                points = head
+                    .concat([entrancepoint])
+                    .concat([exitpoint])
+                    .concat(tail),
                 ctrls = canvas.set(),
                 ctrl = svgpath(canvas, points);
             ctrl.node.setAttribute("class", "ctrl");
@@ -109,11 +120,18 @@ define([
                 adx = cfg.adx,
                 ady = cfg.ady,
                 geo = this.geometry,
-                // points to leave the source for target
-                head = this.srcview.exitpath(this.tgtview),
-                // points to enter the target from source
-                tail = this.tgtview.entrancepath(this.srcview),
-                points = head.concat(tail),
+                x = geo.x + (geo.width - cfg.width) / 2,
+                y = geo.y + (geo.height - cfg.height) / 2,
+                entrancepoint = [geo.x, geo.y + geo.height / 2],
+                exitpoint = [geo.x + geo.width, geo.y + geo.height / 2],
+                // points to leave the source to our entrancepoint
+                head = this.srcview.exitpath(entrancepoint),
+                // points to enter the target from our exitpoint
+                tail = this.tgtview.entrancepath(exitpoint),
+                points = head
+                    .concat([entrancepoint])
+                    .concat([exitpoint])
+                    .concat(tail),
                 symbol = canvas.set(),
                 arrow = svgarrow(canvas, points, adx, ady);
             arrow.attr({stroke: cfg.stroke,
@@ -144,10 +162,10 @@ define([
                 // XXX use opts.diff to move existing symol
             });
         },
-        // return via points for entering from source view
-        entrancepath: function(srcview) { throw "No entrance path defined"; },
-        // return via points for exiting to target view
-        exitpath: function(tgtview) { throw "No exit path defined"; }
+        // return via points for entering from source point
+        entrancepath: function(srcpoint) { throw "No entrance path defined"; },
+        // return via points for exiting to target point
+        exitpath: function(tgtpoint) { throw "No exit path defined"; }
     });
 
     var InitialNodeView = NodeView.extend({
@@ -164,8 +182,9 @@ define([
             this.exitpoint = [cx + cfg.r, cy];
             return symbol;
         },
-        // fixed exit point
-        exitpath: function(tgtview) {
+        // XXX: this is not really needed, as the arc stretches to our border
+        exitpath: function(tgtpoint) {
+            // fixed exit point
             return [this.exitpoint];
         }
     });
@@ -191,8 +210,9 @@ define([
             symbol.push(outer);
             return symbol;
         },
-        // fixed entrance point
-        entrancepath: function(srcview) {
+        // XXX: this is not really needed, as the arc stretches to our border
+        entrancepath: function(srcpoint) {
+            // fixed entrance point
             return [this.entrancepoint];
         }
     });
@@ -219,12 +239,14 @@ define([
             }
             return symbol;
         },
-        // fixed entrance point
-        entrancepath: function(srcview) {
+        // XXX: this is not really needed, as the arc stretches to our border
+        entrancepath: function(srcpoint) {
+            // fixed entrance point
             return [this.entrancepoint];
         },
-        // fixed exit point
-        exitpath: function(tgtview) {
+        // XXX: this is not really needed, as the arc stretches to our border
+        exitpath: function(tgtpoint) {
+            // fixed exit point
             return [this.exitpoint];
         }
     });
@@ -243,11 +265,21 @@ define([
                 x = geo.x + (geo.width - edgelength) / 2,
                 y = geo.y + (geo.height - edgelength) / 2,
                 symbol = canvas.rect(x, y, edgelength, edgelength);
-            symbol.rotate(45);
+            // XXX: for some reason after a reload it does not rotate
+            // around the rect center, but 0,0
+            symbol.rotate(45, x + edgelength / 2, y + edgelength / 2);
             symbol.attr({fill: cfg.fill,
                          stroke: cfg.stroke,
                          "stroke-width": cfg["stroke-width"]});
             return symbol;
+        },
+        entrancepath: function(srcpoint) {
+            // XXX: implement
+            return [];
+        },
+        exitpath: function(tgtpoint) {
+            // XXX: implement
+            return [];
         }
     });
     Object.defineProperties(DecMerNodeView.prototype, {
@@ -267,6 +299,14 @@ define([
                          stroke: cfg.stroke,
                          "stroke-width": cfg["stroke-width"]});
             return symbol;
+        },
+        entrancepath: function(srcpoint) {
+            // XXX: implement
+            return [];
+        },
+        exitpath: function(tgtpoint) {
+            // XXX: implement
+            return [];
         }
     });
 
