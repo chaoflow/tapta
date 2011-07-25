@@ -15,8 +15,17 @@ body {
     opacity: 0.2;
     fill: green;
 }
+.layer.editmode-addnewnode .mimoctrl {
+    opacity: 0.2;
+    fill: green;
+    stroke: green;
+}
 .layer.editmode-remove .subtractable {
     stroke: red;
+}
+.mimoctrl {
+    fill: None;
+    stroke: None;
 }
 .tool {
     cursor: pointer;

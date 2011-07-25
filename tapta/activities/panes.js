@@ -99,7 +99,7 @@ define([
         act: function(info) {
             if (info.view instanceof gv.ArcView) {
                 var source = info.view.srcview.model,
-                    target = info.view.tgtview.model;
+                    target = info.view.tgtview && info.view.tgtview.model;
 
                 // create node
                 var collection = this.layerview.model[this.options.collection];
@@ -111,8 +111,15 @@ define([
                     // silent:true seems not to work
                     newvert = new graph.model({payload: node});
 
-                // change next of source without triggering an event
-                source.next.splice(source.next.indexOf(target), 1, newvert);
+                if (target === undefined) {
+                    // Open arc of a MIMO, create final node
+                    target = new graph.model({payload: "final"});
+                    graph.add(target, {silent:true});
+                    source.next.splice(info.view.addnewidx, 0, newvert);
+                } else {
+                    // change next of source without triggering an event
+                    source.next.splice(source.next.indexOf(target), 1, newvert);
+                }
                 newvert.next.push(target);
                 graph.add(newvert, {silent:true});
                 target.save();

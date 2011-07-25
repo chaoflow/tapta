@@ -3,12 +3,14 @@ define([
     'jquery',
     'vendor/underscore.js',
     './base',
+    './graphutils',
     './settings',
     './svgtools'
 ], function(require) {
     var base = require('./base'),
         View = base.View,
         CFG = require('./settings'),
+        Arc = require('./graphutils').Arc,
         svgtools = require('./svgtools'),
         svgarrow = svgtools.svgarrow,
         svgpath = svgtools.svgpath;
@@ -31,9 +33,9 @@ define([
         ctrls: function(canvas) { return canvas.set(); },
         remove: function() {
             // remove children from canvas - our children are raphael sets
-            for (var name in this.children) {
-                this.children[name].remove();
-                delete this.children[name];
+            for (var name in this.child) {
+                this.child[name].remove();
+                delete this.child[name];
             }
         },
         render: function(canvas, editmode) {
@@ -53,7 +55,7 @@ define([
 
             // FUTURE: investigate how/whether to use group/symbol/... SVG elements
             // render symbol, will return a set
-            var symbol = this.children["symbol"] = this.symbol(canvas);
+            var symbol = this.child.symbol = this.symbol(canvas);
             symbol.click(handler("click", "symbol"), this);
             if (this.subtractable) {
                 _.each(symbol, function(part) {
@@ -62,7 +64,7 @@ define([
             }
 
             // render controls
-            var ctrls = this.children.ctrls = this.ctrls(canvas, editmode);
+            var ctrls = this.child.ctrls = this.ctrls(canvas, editmode);
             _.each(ctrls, function(ctrl, idx) {
                 ctrl.click(handler("click", idx), this);
             }, this);
@@ -95,7 +97,9 @@ define([
             this.srcview = opts.srcview;
             this.tgtview = opts.tgtview;
             if (opts.srcview === undefined) throw "Need srcview";
-            if (opts.tgtview === undefined) throw "Need tgtview";
+            // An arcview can also be drawn as a ctrl of a MIMO. In
+            // that case it is an open arc, without a target.
+            // if (opts.tgtview === undefined) throw "Need tgtview";
             // XXX: bind to our source and target
         },
         ctrls: function(canvas, editmode) {
@@ -120,7 +124,7 @@ define([
                 // points to leave the source to our entrancepoint
                 head = this.srcview.exitpath(entrancepoint),
                 // points to enter the target from our exitpoint
-                tail = this.tgtview.entrancepath(exitpoint),
+                tail = this.tgtview ? this.tgtview.entrancepath(exitpoint) : [],
                 points = head
                     .concat([entrancepoint])
                     .concat([exitpoint])
@@ -250,6 +254,47 @@ define([
 
     // DecMer and ForkJoin are MIMOs
     var MIMONodeView = NodeView.extend({
+        ctrls: function(canvas, editmode) {
+            // our models successors are arcs
+            // Before, in between and after them we need to create
+            // open arcs (models+views), they are our ctrls.
+            // it's all about model geometry
+            var geos = map("succ.geometry", this.model.successors),
+                lastgeo = _.last(geos),
+                ourgeo = this.model.geometry,
+                ctrls = canvas.set();
+            // add one fake geo after the last
+            geos.push({
+                x: geos[0].x,
+                y: lastgeo.y + lastgeo.height
+            });
+            _.each(geos, function(geo, idx) {
+                var model = new Arc({source: this.model});
+                model.setGeometry({
+                    x: geo.x - ourgeo.x,
+                    y: geo.y - ourgeo.y,
+                    height: 0,
+                    width: model.minwidth
+                });
+                var arcview = this.append(ArcView, {
+                    name: "mimoctrlarc_"+idx,
+                    model: model,
+                    srcview: this
+                });
+                arcview.addnewidx = idx;
+                arcview.render(canvas, editmode);
+                _.each(_.values(arcview.child), function(set) {
+                    _.each(set, function(elem) {
+                        elem.node.setAttribute(
+                            "class",
+                            elem.node.getAttribute("class") + " mimoctrl"
+                        );
+                    });
+                    ctrls.push(set);
+                });
+            }, this);
+            return ctrls;
+        }
     });
     Object.defineProperties(MIMONodeView.prototype, {
         // more than one outgoing edge: decision

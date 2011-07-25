@@ -79,7 +79,7 @@ define([
     });
 
     var Arc = function(source, target) {
-        this.id = this.cid = [source.cid, target.cid].join(':');
+        this.id = this.cid = [source.cid, target && target.cid].join(':');
         this.source = source;
         this.target = target;
         this._geometry = {};
@@ -331,6 +331,7 @@ define([
     };
 
     return {
+        Arc: Arc,
         Vertex: Vertex,
         arcs: arcs,
         colJoin: colJoin,
