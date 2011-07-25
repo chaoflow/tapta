@@ -264,7 +264,7 @@ define([
             paths.splice(lidx, 1);
             var hadd = (longest.h_avail - path_minwidth(longest)) / longest.length;
             _.each(longest, function(graphelement) {
-                var vadd = 0,
+                var height_add = 0,
                     width = graphelement.minwidth + hadd,
                     height = graphelement.minheight,
                     seen = false;
@@ -272,12 +272,12 @@ define([
                 _.each(paths, function(path, idx) {
                     if (_.include(path, graphelement)) {
                         seen = true;
-                        height += path_minheight(path) + vadd;
-                        vadd = 0;
+                        height += path_minheight(path) + height_add;
+                        height_add = 0;
                         path.splice(_.indexOf(path, graphelement),1);
                         path.h_avail -= width;
                     } else if (seen && path.slice(-1) !== longest.slice(-1)) {
-                        vadd = path_minheight(path);
+                        height_add = path_minheight(path);
                     }
                 });
                 // XXX: manage to set width, height and x, y in one call
