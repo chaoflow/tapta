@@ -125,6 +125,24 @@ define([
     });
 
     var RemoveTool = Tool.extend({
+        act: function(info) {
+            // If the element cannot be subtracted from the graph, we
+            // have nothing to do
+            if (!(info.view.subtractable)) return;
+            var model = info.view.model,
+                // model -> arc -> model
+                predecessor = model.predecessors[0].predecessors[0],
+                predenext = predecessor.next,
+                // model <- arc <- model
+                successor = model.successors[0].successors[0],
+                graph = this.layerview.model.activity.graph;
+            if (model.predecessors.length !== 1) throw "Not subtractable";
+            if (model.successors.length !== 1) throw "Not subtractable";
+            predenext.splice(predenext.indexOf(model), 1, successor);
+            predecessor.save();
+            model.destroy();
+            graph.remove(model);
+        }
     });
 
     var ToolbarView = base.View.extend({

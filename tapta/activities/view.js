@@ -62,10 +62,14 @@ define([
 
             // XXX: for now we just rebind if the graph changes
             var graph = this.model.graph;
-            graph.bind("rebind", _.bind(function() {
+            var redrawGraph = _.bind(function() {
                 this.graphview.bindToGraph(graph);
                 this.graphview.render(this.canvas, this.layerview.editmode);
-            }, this));
+            }, this);
+            // new node was added
+            graph.bind("rebind", redrawGraph);
+            // node was removed
+            graph.bind("remove", redrawGraph);
 
             // next level has to display another activity
             this.model.bind("change:raked", this.rake);

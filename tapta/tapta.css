@@ -9,6 +9,9 @@ body {
     stroke: green;
     stroke-width: 25;
 }
+.layer.editmode-remove .subtractable {
+    stroke: red;
+}
 .tool {
     cursor: pointer;
 }

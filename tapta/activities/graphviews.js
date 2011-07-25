@@ -26,6 +26,8 @@ define([
     // backbone events triggered on themselves, thus propagating them
     // up the view hierarchy.
     var GraphElement = View.extend({
+        // whether an element can be subtracted from a graph
+        subtractable: false,
         ctrls: function(canvas) { return canvas.set(); },
         remove: function() {
             // remove children from canvas - our children are raphael sets
@@ -53,6 +55,11 @@ define([
             // render symbol, will return a set
             var symbol = this.children["symbol"] = this.symbol(canvas);
             symbol.click(handler("click", "symbol"), this);
+            if (this.subtractable) {
+                _.each(symbol, function(part) {
+                    part.node.setAttribute("class", "subtractable");
+                });
+            }
 
             // render controls
             var ctrls = this.children.ctrls = this.ctrls(canvas, editmode);
@@ -77,7 +84,8 @@ define([
                     };
                 return geometry;
             }
-        }
+        },
+        subtractable: {get: function() { return false; }}
     });
 
 
@@ -217,6 +225,7 @@ define([
         }
     });
 
+
     var ActionNodeView = NodeView.extend({
         // a box with round corners and a label, centered
         symbol: function(canvas) {
@@ -250,8 +259,21 @@ define([
             return [this.exitpoint];
         }
     });
+    Object.defineProperties(ActionNodeView.prototype, {
+        subtractable: {get: function() { return true; }}
+    });
 
-    var DecMerNodeView = NodeView.extend({
+
+    // DecMer and ForkJoin are MIMOs
+    var MIMONodeView = NodeView.extend({
+    });
+    Object.defineProperties(MIMONodeView.prototype, {
+        // more than one outgoing edge: decision
+        subtractable: {get: function() { return ((this.model.predecessors.length === 1) &&
+                                          (this.model.successors.length === 1)); }}
+    });
+
+    var DecMerNodeView = MIMONodeView.extend({
         // a diamond: colored bigger in case of decision (two outgoing)
         // without color and smaller in case of pure merge (one outgoing)
         // reasoning: a decmer with only one outgoing edge is at most a
@@ -264,13 +286,15 @@ define([
                 edgelength = Math.sqrt(Math.pow(cfg.width, 2) / 2),
                 x = geo.x + (geo.width - edgelength) / 2,
                 y = geo.y + (geo.height - edgelength) / 2,
-                symbol = canvas.rect(x, y, edgelength, edgelength);
+                symbol = canvas.set(),
+                rect = canvas.rect(x, y, edgelength, edgelength);
             // XXX: for some reason after a reload it does not rotate
             // around the rect center, but 0,0
-            symbol.rotate(45, x + edgelength / 2, y + edgelength / 2);
-            symbol.attr({fill: cfg.fill,
-                         stroke: cfg.stroke,
-                         "stroke-width": cfg["stroke-width"]});
+            rect.rotate(45, x + edgelength / 2, y + edgelength / 2);
+            rect.attr({fill: cfg.fill,
+                       stroke: cfg.stroke,
+                       "stroke-width": cfg["stroke-width"]});
+            symbol.push(rect);
             return symbol;
         },
         entrancepath: function(srcpoint) {
@@ -283,21 +307,23 @@ define([
         }
     });
     Object.defineProperties(DecMerNodeView.prototype, {
-        // more than one outgoing edge: decision
-        decision: {get: function() { return (this.outgoing > 1); }}
+        // more than one outgoing edge: decision, otherwise at most a merge
+        decision: {get: function() { return (this.successors > 1); }}
     });
 
-    var ForkJoinNodeView = NodeView.extend({
+    var ForkJoinNodeView = MIMONodeView.extend({
         symbol: function(canvas) {
             var cfg = CFG.symbols.forkjoin,
                 geo = this.geometry,
                 x = geo.x + (geo.width - cfg.width) / 2,
                 y = geo.y + cfg.padY,
                 height = geo.height - 2 * cfg.padY,
-                symbol = canvas.rect(x, y, cfg.width, height);
-            symbol.attr({fill: cfg.fill,
+                symbol = canvas.set(),
+                rect = canvas.rect(x, y, cfg.width, height);
+            rect.attr({fill: cfg.fill,
                          stroke: cfg.stroke,
                          "stroke-width": cfg["stroke-width"]});
+            symbol.push(rect);
             return symbol;
         },
         entrancepath: function(srcpoint) {
