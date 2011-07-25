@@ -99,8 +99,6 @@ define([
             // XXX: bind to our source and target
         },
         ctrls: function(canvas, editmode) {
-            // for now just the same line without the arrow head
-            // XXX: maybe reuse or a rect (if needed)
             var cfg = CFG.symbols.arc.ctrl,
                 geo = this.geometry,
                 y = geo.y + geo.height / 2 - cfg.height / 2,
