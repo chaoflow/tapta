@@ -1,19 +1,5 @@
 
     var Node = ElementView.extend({
-        render: function(mode) {
-            _.each([
-                "symbol",
-                "removearea",
-                "ctrlareas"
-            ], function(item) {
-                var elem = this[item](canvas, ui, mode);
-                if (elem) {
-                    set.push(elem);
-                    this.elems = this.elems || {};
-                    this.elems[item] = elem;
-                }
-            }, this);
-        },
         removable: function() { return false; },
         removearea: function(canvas, ui, mode) {
             var area;
@@ -25,7 +11,7 @@
                 }, this);
             }
             return area;
-        },
+        }
     });
 
     var Final = Node.extend({
