@@ -59,6 +59,8 @@ define([
         this._geometry = {};
         this._minwidth = 1;
         this._minheight = 1;
+        this.predecessors = [];
+        this.successors = [];
     };
     _(Vertex.prototype).extend({
         setGeometry: function(obj) {
@@ -83,6 +85,8 @@ define([
         this._geometry = {};
         this._minwidth = 1;
         this._minheight = 1;
+        this.predecessors = [];
+        this.successors = [];
     };
     _(Arc.prototype).extend({
         setGeometry: function(obj) {
@@ -301,7 +305,8 @@ define([
         var cache = {};
         var rval = [];
         _.each(orig_paths, function(path, path_idx) {
-            var x = 0;
+            var x = 0,
+                prev_ge;
             _.each(path, function(graphelement) {
                 if (!cache[graphelement.cid]) {
                     // XXX: manage to set width, height and x, y in one call
@@ -314,6 +319,11 @@ define([
                 }
                 cache[graphelement.cid] = true;
                 x += graphelement.width;
+                if (prev_ge) {
+                    prev_ge.successors.push(graphelement);
+                    graphelement.predecessors.push(prev_ge);
+                }
+                prev_ge = graphelement;
             });
         });
         DEBUG.spaceout && console.groupEnd();

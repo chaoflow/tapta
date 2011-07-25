@@ -22,6 +22,8 @@ define([
             // XXX: hack
             if (this.payload === "initial") this._minwidth = 1/6;
             if (this.payload === "final") this._minwidth = 1/5;
+            this.predecessors = [];
+            this.successors = [];
         },
         setGeometry: function(obj) {
             var g = this._geometry,
