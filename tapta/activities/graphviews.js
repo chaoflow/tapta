@@ -101,35 +101,22 @@ define([
         ctrls: function(canvas, editmode) {
             // for now just the same line without the arrow head
             // XXX: maybe reuse or a rect (if needed)
-            var cfg = CFG.symbols.edge,
+            var cfg = CFG.symbols.arc.ctrl,
                 geo = this.geometry,
-                x = geo.x + (geo.width - cfg.width) / 2,
-                y = geo.y + (geo.height - cfg.height) / 2,
-                entrancepoint = [geo.x, geo.y + geo.height / 2],
-                exitpoint = [geo.x + geo.width, geo.y + geo.height / 2],
-                // points to leave the source to our entrancepoint
-                head = this.srcview.exitpath(entrancepoint),
-                // points to enter the target from our exitpoint
-                tail = this.tgtview.entrancepath(exitpoint),
-                points = head
-                    .concat([entrancepoint])
-                    .concat([exitpoint])
-                    .concat(tail),
+                y = geo.y + geo.height / 2 - cfg.height / 2,
                 ctrls = canvas.set(),
-                ctrl = svgpath(canvas, points);
-            ctrl.node.setAttribute("class", "ctrl");
+                ctrl = canvas.rect(geo.x, y, geo.width, cfg.height);
+            ctrl.node.setAttribute("class", "arc ctrl");
             ctrls.push(ctrl);
             return ctrls;
         },
         // The arc is drawn as an SVG path, see:
         // http://www.w3.org/TR/SVG/paths.html#PathData
         symbol: function(canvas) {
-            var cfg = CFG.symbols.edge,
+            var cfg = CFG.symbols.arc,
                 adx = cfg.adx,
                 ady = cfg.ady,
                 geo = this.geometry,
-                x = geo.x + (geo.width - cfg.width) / 2,
-                y = geo.y + (geo.height - cfg.height) / 2,
                 entrancepoint = [geo.x, geo.y + geo.height / 2],
                 exitpoint = [geo.x + geo.width, geo.y + geo.height / 2],
                 // points to leave the source to our entrancepoint
@@ -142,8 +129,7 @@ define([
                     .concat(tail),
                 symbol = canvas.set(),
                 arrow = svgarrow(canvas, points, adx, ady);
-            arrow.attr({stroke: cfg.stroke,
-                         "stroke-width": cfg["stroke-width"]});
+            arrow.node.setAttribute("class", "arc");
             symbol.push(arrow);
             return symbol;
         }

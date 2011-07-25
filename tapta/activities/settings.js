@@ -146,11 +146,12 @@ define([
         localstorage_key: 'tapta0',
         symbols: {}
     };
-    cfg.symbols.edge = {
+    cfg.symbols.arc = {
         adx: 6,
         ady: 5,
-        stroke: "#424242",
-        "stroke-width": 2
+        ctrl: {
+            height: 24
+        }
     };
     cfg.symbols.initial = {
         r: 10,

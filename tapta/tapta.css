@@ -1,13 +1,19 @@
+.arc {
+    stroke: #424242;
+    stroke-width: 2;
+}
+.arc.ctrl {
+    opacity: 0;
+}
 body {
     max-width: 960px;
 }
 .destroyall {
     cursor: pointer;
 }
-.layer.editmode-addnewnode path.ctrl {
+.layer.editmode-addnewnode .arc.ctrl {
     opacity: 0.2;
-    stroke: green;
-    stroke-width: 25;
+    fill: green;
 }
 .layer.editmode-remove .subtractable {
     stroke: red;
