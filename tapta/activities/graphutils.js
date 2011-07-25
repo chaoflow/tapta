@@ -173,7 +173,7 @@ define([
     // };
 
     // return all paths starting with the given vertices
-    // a path consist of pathelements (vertices and arcs)
+    // a path consist of graphelements (vertices and arcs)
     // XXX: maybe rename vertices to sources here
     // algorithm in action:
     // A.next = [B, C], B.next = [D], C.next = [D]
@@ -222,11 +222,11 @@ define([
     //     }
     // };
     var path_minwidth = function(path) {
-        return sum(map("pathelement.minwidth", path));
+        return sum(map("graphelement.minwidth", path));
     };
 
     var path_minheight = function(path) {
-        return maximum(map("pathelement.minheight", path));
+        return maximum(map("graphelement.minheight", path));
     };
 
     // find sinks, vertices not referencing other vertices, outdegree = 0
@@ -263,28 +263,28 @@ define([
             if (lidx == -1) throw "Deep shit!";
             paths.splice(lidx, 1);
             var hadd = (longest.h_avail - path_minwidth(longest)) / longest.length;
-            _.each(longest, function(pathelement) {
+            _.each(longest, function(graphelement) {
                 var vadd = 0,
-                    width = pathelement.minwidth + hadd,
-                    height = pathelement.minheight,
+                    width = graphelement.minwidth + hadd,
+                    height = graphelement.minheight,
                     seen = false;
                 longest.h_avail -= width;
                 _.each(paths, function(path, idx) {
-                    if (_.include(path, pathelement)) {
+                    if (_.include(path, graphelement)) {
                         seen = true;
                         height += path_minheight(path) + vadd;
                         vadd = 0;
-                        path.splice(_.indexOf(path, pathelement),1);
+                        path.splice(_.indexOf(path, graphelement),1);
                         path.h_avail -= width;
                     } else if (seen && path.slice(-1) !== longest.slice(-1)) {
                         vadd = path_minheight(path);
                     }
                 });
                 // XXX: manage to set width, height and x, y in one call
-                pathelement.setGeometry({width: width, height: height});
+                graphelement.setGeometry({width: width, height: height});
                 DEBUG.spaceout && console.log([
                     "size:",
-                    pathelement.cid, width, height
+                    graphelement.cid, width, height
                 ]);
             });
             // we are using floats...
@@ -302,18 +302,18 @@ define([
         var rval = [];
         _.each(orig_paths, function(path, path_idx) {
             var x = 0;
-            _.each(path, function(pathelement) {
-                if (!cache[pathelement.cid]) {
+            _.each(path, function(graphelement) {
+                if (!cache[graphelement.cid]) {
                     // XXX: manage to set width, height and x, y in one call
-                    pathelement.setGeometry({x: x, y: path_idx});
-                    rval.push(pathelement);
+                    graphelement.setGeometry({x: x, y: path_idx});
+                    rval.push(graphelement);
                     DEBUG.spaceout && console.log([
                         "pos:",
-                        pathelement.cid, x, path_idx
+                        graphelement.cid, x, path_idx
                     ]);
                 }
-                cache[pathelement.cid] = true;
-                x += pathelement.width;
+                cache[graphelement.cid] = true;
+                x += graphelement.width;
             });
         });
         DEBUG.spaceout && console.groupEnd();
