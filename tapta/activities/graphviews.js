@@ -298,8 +298,10 @@ define([
     });
     Object.defineProperties(MIMONodeView.prototype, {
         // more than one outgoing edge: decision
-        subtractable: {get: function() { return ((this.model.predecessors.length === 1) &&
-                                          (this.model.successors.length === 1)); }}
+        subtractable: {get: function() {
+            return ((this.model.predecessors.length === 1) &&
+                    (this.model.successors.length === 1));
+        }}
     });
 
     var DecMerNodeView = MIMONodeView.extend({
