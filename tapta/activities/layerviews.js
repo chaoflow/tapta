@@ -165,7 +165,7 @@ define([
                     // XXX: should the view be the editmode?
                     // XXX: if not, should it carry the editmode and
                     // we just store that?
-                    this._editmode.view.unlisten(this);
+                    this._editmode.view.deactivate(this);
 
                     // remove old editmode's CSS classes
                     var oldname = this._editmode.name,
@@ -188,7 +188,7 @@ define([
                 // listen to our events, it will handle events its
                 // interested in
                 this._editmode = editmode;
-                this._editmode.view.listen(this);
+                this._editmode.view.activate(this);
 
                 // XXX: If this is only used to change style it could
                 // be replaced by CSS rules.

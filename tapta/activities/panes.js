@@ -65,11 +65,11 @@ define([
         act: function(info) {
             throw "Tool needs to define act";
         },
-        listen: function(layerview) {
+        activate: function(layerview) {
             this.layerview = layerview;
             layerview.bind("click", this.act);
         },
-        unlisten: function(layerview) {
+        deactivate: function(layerview) {
             this.layerview = undefined;
             layerview.unbind("click", this.act);
         },
