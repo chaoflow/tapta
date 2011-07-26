@@ -39,9 +39,8 @@ body {
     opacity: 0.2;
     fill: green;
 }
-.layer.editmode-addnewnode .mimoctrl {
+.layer.editmode-addnewnode .arc.mimoctrl {
     opacity: 0.2;
-    fill: green;
     stroke: green;
 }
 .layer.editmode-remove .subtractable {

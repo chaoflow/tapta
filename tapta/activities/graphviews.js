@@ -135,6 +135,7 @@ define([
                 symbol = canvas.set(),
                 arrow = svgarrow(canvas, points, adx, ady);
             arrow.node.setAttribute("class", "arc");
+            arrow.toBack();
             symbol.push(arrow);
             return symbol;
         }
@@ -272,7 +273,7 @@ define([
                     x: geo.x - ourgeo.x,
                     y: geo.y - ourgeo.y,
                     height: 0,
-                    width: model.minwidth
+                    width: model.minwidth / 3
                 });
                 var arcview = this.append(ArcView, {
                     name: "mimoctrlarc_"+idx,
@@ -328,12 +329,11 @@ define([
             return symbol;
         },
         entrancepath: function(srcpoint) {
-            // XXX: implement
             return [];
         },
         exitpath: function(tgtpoint) {
-            // XXX: implement
-            return [];
+            var geo = this.geometry;
+            return [[geo.x + geo.width / 2, geo.y + geo.height / 2]];
         }
     });
     Object.defineProperties(DecMerNodeView.prototype, {
