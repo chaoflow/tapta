@@ -321,8 +321,12 @@ define([
                 cache[graphelement.cid] = true;
                 x += graphelement.width;
                 if (prev_ge) {
-                    prev_ge.successors.push(graphelement);
-                    graphelement.predecessors.push(prev_ge);
+                    if (prev_ge.successors.indexOf(graphelement) === -1) {
+                        prev_ge.successors.push(graphelement);
+                    }
+                    if (graphelement.predecessors.indexOf(prev_ge) === -1) {
+                        graphelement.predecessors.push(prev_ge);
+                    }
                 }
                 prev_ge = graphelement;
             });
