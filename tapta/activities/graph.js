@@ -140,7 +140,7 @@ define([
         spaceOut: function() {
             // returns a list of all vertices; assigns position and
             // size as side effect
-            return graphutils.spaceOut(this.paths());
+            return graphutils.spaceOut(this.paths(), 0.5);
         },
         sinks: function() {
             return graphutils.sinks(this.models);

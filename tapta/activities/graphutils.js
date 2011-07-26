@@ -251,7 +251,7 @@ define([
     };
 
     // allocate space to the vertices
-    var spaceOut = function    (paths) {
+    var spaceOut = function    (paths, vpad) {
         DEBUG.spaceout && console.group("spaceout");
         // minwidth of longest path in the sense of space required, not item-wise
         var maxminwidth = maximum(map(path_minwidth, paths)),
@@ -277,12 +277,12 @@ define([
                 _.each(paths, function(path, idx) {
                     if (_.include(path, graphelement)) {
                         seen = true;
-                        height += path_minheight(path) + height_add;
+                        height += path_minheight(path) + height_add + vpad;
                         height_add = 0;
                         path.splice(_.indexOf(path, graphelement),1);
                         path.width_avail -= width;
                     } else if (seen && path.slice(-1) !== longest.slice(-1)) {
-                        height_add = path_minheight(path);
+                        height_add = path_minheight(path) + vpad;
                     }
                 });
                 // XXX: manage to set width, height and x, y in one call
@@ -311,7 +311,7 @@ define([
             _.each(path, function(graphelement) {
                 if (!cache[graphelement.cid]) {
                     // XXX: manage to set width, height and x, y in one call
-                    graphelement.setGeometry({x: x, y: path_idx});
+                    graphelement.setGeometry({x: x, y: path_idx * (1 + vpad)});
                     rval.push(graphelement);
                     DEBUG.spaceout && console.log([
                         "pos:",
