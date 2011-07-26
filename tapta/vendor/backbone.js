@@ -273,7 +273,7 @@
       options || (options = {});
       var model = this;
       var success = function(resp) {
-        if (model.collection) model.collection.remove(model);
+        if (model.collection) model.collection.remove(model, options);
         if (options.success) options.success(model, resp);
       };
       var error = wrapError(options.error, model, options);
