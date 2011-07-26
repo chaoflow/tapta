@@ -163,9 +163,9 @@ define([
             });
         },
         // return via points for entering from source point
-        entrancepath: function(srcpoint) { throw "No entrance path defined"; },
+        entrancepath: function(srcpoint) { return []; },
         // return via points for exiting to target point
-        exitpath: function(tgtpoint) { throw "No exit path defined"; }
+        exitpath: function(tgtpoint) { return []; }
     });
 
     var InitialNodeView = NodeView.extend({
@@ -180,11 +180,6 @@ define([
             circle.node.setAttribute("class", "initial node");
             symbol.push(circle);
             return symbol;
-        },
-        // XXX: this is not really needed, as the arc stretches to our border
-        exitpath: function(tgtpoint) {
-            // fixed exit point
-            return [];
         }
     });
 
@@ -205,10 +200,6 @@ define([
             symbol.push(inner);
             symbol.push(outer);
             return symbol;
-        },
-        // XXX: this is not really needed, as the arc stretches to our border
-        entrancepath: function(srcpoint) {
-            return [];
         }
     });
 
@@ -229,16 +220,6 @@ define([
                 symbol.push(text);
             }
             return symbol;
-        },
-        // XXX: this is not really needed, as the arc stretches to our border
-        entrancepath: function(srcpoint) {
-            // fixed entrance point
-            return [];
-        },
-        // XXX: this is not really needed, as the arc stretches to our border
-        exitpath: function(tgtpoint) {
-            // fixed exit point
-            return [];
         }
     });
     Object.defineProperties(ActionNodeView.prototype, {
@@ -323,6 +304,7 @@ define([
             return symbol;
         },
         entrancepath: function(srcpoint) {
+            // XXX: implement
             return [];
         },
         exitpath: function(tgtpoint) {
@@ -343,14 +325,6 @@ define([
             rect.node.setAttribute("class", "forkjoin node");
             symbol.push(rect);
             return symbol;
-        },
-        entrancepath: function(srcpoint) {
-            // XXX: implement
-            return [];
-        },
-        exitpath: function(tgtpoint) {
-            // XXX: implement
-            return [];
         }
     });
 
