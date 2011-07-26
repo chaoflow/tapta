@@ -143,52 +143,16 @@ define([
             x: 60,
             y: 60
         },
-        localstorage_key: 'tapta0',
-        symbols: {}
+        localstorage_key: 'tapta0'
     };
-    cfg.symbols.arc = {
-        adx: 6,
-        ady: 5,
-        ctrl: {
-            height: 24
-        }
-    };
-    cfg.symbols.initial = {
-        r: 10,
-        fill: "#424242"
-    };
-    cfg.symbols["final_"] = {
-        r_inner: 8,
-        r_outer: 12,
-        fill: "#424242",
-        stroke: "#424242",
-        "stroke-width": 2
-    };
-    cfg.symbols.action = {
-        width: 60,
-        height: 40,
-        r: 4,
-        fill: "edf7ff",
-        stroke: "#b5d9ea",
-        "stroke-width": 2
-    };
-    cfg.symbols.forkjoin = {
-        width: 5,
-        padY: 10,
-        fill: "#424242"
-    };
-    cfg.symbols.decision = {
-        width: 60,
-        fill: "edf7ff",
-        stroke: "#b5d9ea",
-        "stroke-width": 2
-    };
-    cfg.symbols.merge = {
-        width: 60,
-        fill: "424242",
-        stroke: "#424242",
-        "stroke-width": 2
-    };
+    cfg.symbols = {};
+    cfg.symbols.arc = { adx: 6, ady: 5, ctrl: { height: 24 } };
+    cfg.symbols.initial = { r: 10 };
+    cfg.symbols["final_"] = { r_inner: 8, r_outer: 12 };
+    cfg.symbols.action = { width: 60, height: 40, r: 4 };
+    cfg.symbols.forkjoin = { width: 5 };
+    cfg.symbols.decision = { width: 60 };
+    cfg.symbols.merge = { width: 20 };
 
     return cfg;
 });

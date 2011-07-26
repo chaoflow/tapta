@@ -59,7 +59,10 @@ define([
             symbol.click(handler("click", "symbol"), this);
             if (this.subtractable) {
                 _.each(symbol, function(part) {
-                    part.node.setAttribute("class", "subtractable");
+                    part.node.setAttribute(
+                        "class",
+                        part.node.getAttribute("class") + " subtractable"
+                    );
                 });
             }
 
@@ -173,7 +176,7 @@ define([
                 cy = geo.y + cfg.r + (geo.height - 2 * cfg.r) / 2,
                 symbol = canvas.set(),
                 circle = canvas.circle(cx, cy, cfg.r);
-            circle.attr({fill: cfg.fill});
+            circle.node.setAttribute("class", "initialnode");
             symbol.push(circle);
             this.exitpoint = [cx + cfg.r, cy];
             return symbol;
@@ -196,11 +199,8 @@ define([
                 symbol = canvas.set(),
                 outer = canvas.circle(cx, cy, cfg.r_outer),
                 inner = canvas.circle(cx, cy, cfg.r_inner);
-            outer.attr({fill: "black",
-                        "fill-opacity": 0,
-                        stroke: cfg.stroke,
-                        "stroke-width": cfg["stroke-width"]});
-            inner.attr({fill: cfg.fill});
+            inner.node.setAttribute("class", "finalnode inner");
+            outer.node.setAttribute("class", "finalnode outer");
             this.entrancepoint = [cx - cfg.r_outer - cfg["stroke-width"], cy];
             symbol.push(inner);
             symbol.push(outer);
@@ -226,9 +226,7 @@ define([
                 rect = canvas.rect(x, y, cfg.width, cfg.height, cfg.r);
             this.entrancepoint = [x - cfg["stroke-width"], y + cfg.height / 2];
             this.exitpoint = [x + cfg.width, y + cfg.height / 2];
-            rect.attr({fill: cfg.fill,
-                       stroke: cfg.stroke,
-                       "stroke-width": cfg["stroke-width"]});
+            rect.node.setAttribute("class", "actionnode");
             symbol.push(rect);
             if (label) {
                 var text = canvas.text(x+5, y+5, label);
@@ -322,9 +320,10 @@ define([
             // XXX: for some reason after a reload it does not rotate
             // around the rect center, but 0,0
             rect.rotate(45, x + edgelength / 2, y + edgelength / 2);
-            rect.attr({fill: cfg.fill,
-                       stroke: cfg.stroke,
-                       "stroke-width": cfg["stroke-width"]});
+            rect.node.setAttribute(
+                "class",
+                this.decision ? "decisionnode" : "mergenode"
+            );
             symbol.push(rect);
             return symbol;
         },
@@ -339,7 +338,7 @@ define([
     });
     Object.defineProperties(DecMerNodeView.prototype, {
         // more than one outgoing edge: decision, otherwise at most a merge
-        decision: {get: function() { return (this.successors > 1); }}
+        decision: {get: function() { return (this.model.successors.length > 1); }}
     });
 
     var ForkJoinNodeView = MIMONodeView.extend({
@@ -351,9 +350,7 @@ define([
                 height = geo.height - 2 * cfg.padY,
                 symbol = canvas.set(),
                 rect = canvas.rect(x, y, cfg.width, height);
-            rect.attr({fill: cfg.fill,
-                         stroke: cfg.stroke,
-                         "stroke-width": cfg["stroke-width"]});
+            rect.node.setAttribute("class", "forkjoinnode");
             symbol.push(rect);
             return symbol;
         },
