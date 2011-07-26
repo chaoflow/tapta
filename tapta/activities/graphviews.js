@@ -177,7 +177,7 @@ define([
                 cy = geo.y + cfg.r + (geo.height - 2 * cfg.r) / 2,
                 symbol = canvas.set(),
                 circle = canvas.circle(cx, cy, cfg.r);
-            circle.node.setAttribute("class", "initialnode");
+            circle.node.setAttribute("class", "initial node");
             symbol.push(circle);
             this.exitpoint = [cx + cfg.r, cy];
             return symbol;
@@ -200,8 +200,8 @@ define([
                 symbol = canvas.set(),
                 outer = canvas.circle(cx, cy, cfg.r_outer),
                 inner = canvas.circle(cx, cy, cfg.r_inner);
-            inner.node.setAttribute("class", "finalnode inner");
-            outer.node.setAttribute("class", "finalnode outer");
+            inner.node.setAttribute("class", "final node inner");
+            outer.node.setAttribute("class", "final node outer");
             this.entrancepoint = [cx - cfg.r_outer - cfg["stroke-width"], cy];
             symbol.push(inner);
             symbol.push(outer);
@@ -227,7 +227,7 @@ define([
                 rect = canvas.rect(x, y, cfg.width, cfg.height, cfg.r);
             this.entrancepoint = [x - cfg["stroke-width"], y + cfg.height / 2];
             this.exitpoint = [x + cfg.width, y + cfg.height / 2];
-            rect.node.setAttribute("class", "actionnode");
+            rect.node.setAttribute("class", "action node");
             symbol.push(rect);
             if (label) {
                 var text = canvas.text(x+5, y+5, label);
@@ -323,7 +323,7 @@ define([
             rect.rotate(45, x + edgelength / 2, y + edgelength / 2);
             rect.node.setAttribute(
                 "class",
-                this.decision ? "decisionnode" : "mergenode"
+                this.decision ? "decision node" : "merge node"
             );
             symbol.push(rect);
             return symbol;

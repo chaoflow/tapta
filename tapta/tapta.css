@@ -1,8 +1,3 @@
-.actionnode {
-    fill: edf7ff;
-    stroke: #b5d9ea;
-    stroke-width: 2;
-}
 .arc {
     stroke: #424242;
     stroke-width: 2;
@@ -13,27 +8,8 @@
 body {
     max-width: 960px;
 }
-.decisionnode {
-    fill: #edf7ff;
-    stroke: #b5d9ea;
-    stroke-width: 2;
-}
 .destroyall {
     cursor: pointer;
-}
-.finalnode.inner {
-    fill: #424242;
-}
-.finalnode.outer {
-    fill: white;
-    stroke: #424242;
-    stroke-width: 2;
-}
-.forkjoinnode {
-    fill: #424242;
-}
-.initialnode {
-    fill: #424242;
 }
 .layer.editmode-addnewnode .arc.ctrl {
     opacity: 0.2;
@@ -46,11 +22,39 @@ body {
 .layer.editmode-remove .subtractable {
     stroke: red;
 }
-.mergenode {
-    fill: #424242;
-}
 .mimoctrl {
     fill: None;
+    stroke: None;
+}
+.node.action {
+    fill: edf7ff;
+    stroke: #b5d9ea;
+    stroke-width: 2;
+}
+.node.decision {
+    fill: #edf7ff;
+    stroke: #b5d9ea;
+    stroke-width: 2;
+}
+.node.final.inner {
+    fill: #424242;
+    stroke: None;
+}
+.node.final.outer {
+    fill: white;
+    stroke: #424242;
+    stroke-width: 2;
+}
+.node.forkjoin {
+    fill: #424242;
+    stroke: None;
+}
+.node.initial {
+    fill: #424242;
+    stroke: None;
+}
+.node.merge {
+    fill: #424242;
     stroke: None;
 }
 .tool {
