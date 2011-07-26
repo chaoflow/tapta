@@ -102,8 +102,13 @@ define([
                     target = info.view.tgtview && info.view.tgtview.model;
 
                 // create node
-                var collection = this.layerview.model[this.options.collection];
-                var node = collection.create();
+                var collection = this.layerview.model[this.options.collection],
+                    node;
+                if (collection === undefined) {
+                    node = "forkjoin";
+                } else {
+                    node = collection.create();
+                }
 
                 // create new vertex with action as payload
                 var graph = this.layerview.model.activity.graph,

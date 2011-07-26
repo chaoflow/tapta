@@ -345,12 +345,9 @@ define([
         symbol: function(canvas) {
             var cfg = CFG.symbols.forkjoin,
                 geo = this.geometry,
-                x = geo.x + (geo.width - cfg.width) / 2,
-                y = geo.y + cfg.padY,
-                height = geo.height - 2 * cfg.padY,
                 symbol = canvas.set(),
-                rect = canvas.rect(x, y, cfg.width, height);
-            rect.node.setAttribute("class", "forkjoinnode");
+                rect = canvas.rect(geo.x, geo.y, geo.width, geo.height);
+            rect.node.setAttribute("class", "forkjoin node");
             symbol.push(rect);
             return symbol;
         },
