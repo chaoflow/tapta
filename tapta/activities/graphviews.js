@@ -171,21 +171,20 @@ define([
     var InitialNodeView = NodeView.extend({
         // a filled circle centered with radius r
         symbol: function(canvas) {
-            var cfg = CFG.symbols.initial,
-                geo = this.geometry,
-                cx = geo.x + cfg.r + (geo.width - 2 * cfg.r) / 2,
-                cy = geo.y + cfg.r + (geo.height - 2 * cfg.r) / 2,
-                symbol = canvas.set(),
-                circle = canvas.circle(cx, cy, cfg.r);
+            var geo = this.geometry,
+                cx = geo.x + geo.width / 2,
+                cy = geo.y + geo.height / 2,
+                r = geo.width / 2,
+                circle = canvas.circle(cx, cy, r),
+                symbol = canvas.set();
             circle.node.setAttribute("class", "initial node");
             symbol.push(circle);
-            this.exitpoint = [cx + cfg.r, cy];
             return symbol;
         },
         // XXX: this is not really needed, as the arc stretches to our border
         exitpath: function(tgtpoint) {
             // fixed exit point
-            return [this.exitpoint];
+            return [];
         }
     });
 
@@ -193,24 +192,23 @@ define([
         // a filled circle surrounded by an empty circle, vertically
         // centered, left aligned
         symbol: function(canvas) {
-            var cfg = CFG.symbols.final_,
-                geo = this.geometry,
-                cx = geo.x + cfg.r_outer,
-                cy = geo.y + cfg.r_outer + (geo.height - 2 * cfg.r_outer) / 2,
-                symbol = canvas.set(),
-                outer = canvas.circle(cx, cy, cfg.r_outer),
-                inner = canvas.circle(cx, cy, cfg.r_inner);
+            var geo = this.geometry,
+                cx = geo.x + geo.width / 2,
+                cy = geo.y + geo.height / 2,
+                r_outer = geo.width / 2,
+                r_inner = r_outer - 4,
+                outer = canvas.circle(cx, cy, r_outer),
+                inner = canvas.circle(cx, cy, r_inner),
+                symbol = canvas.set();
             inner.node.setAttribute("class", "final node inner");
             outer.node.setAttribute("class", "final node outer");
-            this.entrancepoint = [cx - cfg.r_outer - cfg["stroke-width"], cy];
             symbol.push(inner);
             symbol.push(outer);
             return symbol;
         },
         // XXX: this is not really needed, as the arc stretches to our border
         entrancepath: function(srcpoint) {
-            // fixed entrance point
-            return [this.entrancepoint];
+            return [];
         }
     });
 
@@ -221,16 +219,13 @@ define([
             var cfg = CFG.symbols.action,
                 label = this.model.payload.get('label'),
                 geo = this.geometry,
-                x = geo.x + (geo.width - cfg.width) / 2,
                 y = geo.y + (geo.height - cfg.height) / 2,
-                symbol = canvas.set(),
-                rect = canvas.rect(x, y, cfg.width, cfg.height, cfg.r);
-            this.entrancepoint = [x - cfg["stroke-width"], y + cfg.height / 2];
-            this.exitpoint = [x + cfg.width, y + cfg.height / 2];
+                rect = canvas.rect(geo.x, y, geo.width, cfg.height, cfg.r),
+                symbol = canvas.set();
             rect.node.setAttribute("class", "action node");
             symbol.push(rect);
             if (label) {
-                var text = canvas.text(x+5, y+5, label);
+                var text = canvas.text(geo.x+5, y+5, label);
                 symbol.push(text);
             }
             return symbol;
@@ -238,12 +233,12 @@ define([
         // XXX: this is not really needed, as the arc stretches to our border
         entrancepath: function(srcpoint) {
             // fixed entrance point
-            return [this.entrancepoint];
+            return [];
         },
         // XXX: this is not really needed, as the arc stretches to our border
         exitpath: function(tgtpoint) {
             // fixed exit point
-            return [this.exitpoint];
+            return [];
         }
     });
     Object.defineProperties(ActionNodeView.prototype, {
@@ -311,13 +306,12 @@ define([
         // they need to stand out, as human needs to do something in
         // contrast to forkjoin and pure merge.
         symbol: function(canvas) {
-            var cfg = this.decision ? CFG.symbols.decision : CFG.symbols.merge,
-                geo = this.geometry,
-                edgelength = Math.sqrt(Math.pow(cfg.width, 2) / 2),
+            var geo = this.geometry,
+                edgelength = geo.width / Math.sqrt(2),
                 x = geo.x + (geo.width - edgelength) / 2,
                 y = geo.y + (geo.height - edgelength) / 2,
-                symbol = canvas.set(),
-                rect = canvas.rect(x, y, edgelength, edgelength);
+                rect = canvas.rect(x, y, edgelength, edgelength),
+                symbol = canvas.set();
             // XXX: for some reason after a reload it does not rotate
             // around the rect center, but 0,0
             rect.rotate(45, x + edgelength / 2, y + edgelength / 2);
@@ -343,10 +337,9 @@ define([
 
     var ForkJoinNodeView = MIMONodeView.extend({
         symbol: function(canvas) {
-            var cfg = CFG.symbols.forkjoin,
-                geo = this.geometry,
-                symbol = canvas.set(),
-                rect = canvas.rect(geo.x, geo.y, geo.width, geo.height);
+            var geo = this.geometry,
+                rect = canvas.rect(geo.x, geo.y, geo.width, geo.height),
+                symbol = canvas.set();
             rect.node.setAttribute("class", "forkjoin node");
             symbol.push(rect);
             return symbol;
