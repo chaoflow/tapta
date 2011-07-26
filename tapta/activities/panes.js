@@ -145,10 +145,22 @@ define([
                 graph = this.layerview.model.activity.graph;
             if (model.predecessors.length !== 1) throw "Not subtractable";
             if (model.successors.length !== 1) throw "Not subtractable";
-            predenext.splice(predenext.indexOf(model), 1, successor);
-            predecessor.save();
-            model.destroy();
-            graph.remove(model);
+            // XXX: order of the calls is important to always have a valid model
+            // silencing events would be a solution but somehow did
+            // not work, therefore the code duplication for now.
+            if ((successor.payload === "final") && (predenext.length > 1)) {
+                predenext.splice(predenext.indexOf(model), 1);
+                predecessor.save();
+                model.destroy();
+                graph.remove(model);
+                successor.destroy();
+                graph.remove(successor);
+            } else {
+                predenext.splice(predenext.indexOf(model), 1, successor);
+                predecessor.save();
+                model.destroy();
+                graph.remove(model);
+            }
         }
     });
 
