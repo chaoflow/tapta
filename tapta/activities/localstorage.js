@@ -235,7 +235,7 @@ define([
         }
     });
 
-    Backbone.sync = function(method, model, success, error) {
+    Backbone.sync = function(method, model, options) {
         // model is either a collection or a model
         var resp;
         var store;
@@ -272,9 +272,9 @@ define([
         }
 
         if (resp) {
-            success(resp);
+            options.success(resp);
         } else {
-            error("Record not found");
+            options.error("Record not found");
         }
     };
 
