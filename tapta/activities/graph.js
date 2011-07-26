@@ -3,12 +3,14 @@ define([
     'require',
     'vendor/underscore.js',
     './graphutils',
-    './localstorage'
+    './localstorage',
+    './settings'
 ], function(require) {
     var graphutils = require('./graphutils');
     var storage = require('./localstorage');
     var Model = storage.Model;
     var Collection = storage.Collection;
+    var CFG = require('./settings');
 
     // A vertex is a container for a node and knows its direct
     // successors. A node is eithe a string or an object with an id.
@@ -63,7 +65,7 @@ define([
         }
     });
     Object.defineProperties(Vertex.prototype, {
-        minwidth: {get: function() { return this._minwidth; }},
+        minwidth: {get: function() { return this.fixedwidth || this._minwidth; }},
         minheight: {get: function() { return this._minheight; }},
         next: {get: function() {
             return this.get('next')
@@ -72,6 +74,14 @@ define([
         payload: {get: function() { return this.get('payload'); }},
         // If payload has no type its a string with only type info
         type: {get: function() { return this.payload.type || this.payload; }},
+        fixedwidth: {get: function() {
+            // XXX: not nice, maybe decision and pure merge should be
+            // two different things after all.
+            var type = (this.type !== "decmer")
+                    ? this.type
+                    : (this.next.length > 1) ? "decision" : "merge"; 
+            return CFG.nodes[type].fixedwidth;
+        }},
         geometry: {get: function() { return this._geometry; }},
         x: {get: function() { return this._geometry.x; }},
         y: {get: function() { return this._geometry.y; }},

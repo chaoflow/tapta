@@ -147,12 +147,15 @@ define([
     };
     cfg.symbols = {};
     cfg.symbols.arc = { adx: 6, ady: 5, ctrl: { height: 24 } };
-    cfg.symbols.initial = { r: 10 };
-    cfg.symbols["final_"] = { r_inner: 8, r_outer: 12 };
-    cfg.symbols.action = { width: 60, height: 40, r: 4 };
-    cfg.symbols.forkjoin = { width: 5 };
-    cfg.symbols.decision = { width: 60 };
-    cfg.symbols.merge = { width: 20 };
+    cfg.symbols.action = { height: 40, r: 4 };
+
+    cfg.nodes = {};
+    cfg.nodes.action = { fixedwidth: 1 };
+    cfg.nodes.decision = { fixedwidth: 1 };
+    cfg.nodes["final"] = { fixedwidth: 1/3 };
+    cfg.nodes.forkjoin = { fixedwidth: 1/12 };
+    cfg.nodes.initial = { fixedwidth: 1/4 };
+    cfg.nodes.merge = { fixedwidth: 1/3 };
 
     return cfg;
 });

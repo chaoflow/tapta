@@ -266,30 +266,33 @@ define([
             lidx = _.indexOf(paths, longest);
             if (lidx == -1) throw "Deep shit!";
             paths.splice(lidx, 1);
+            // distribute space among variable width elements
+            var varwidth_elems = _.compact(_.map(longest, function(elem) {
+                return elem.fixedwidth ? undefined : elem;
+            }));
             var width_add = (longest.width_avail - path_minwidth(longest))
-                    / longest.length;
-            _.each(longest, function(graphelement) {
+                    / varwidth_elems.length;
+            _.each(longest, function(elem) {
                 var height_add = 0,
-                    width = graphelement.minwidth + width_add,
-                    height = graphelement.minheight,
+                    width = elem.fixedwidth || elem.minwidth + width_add,
+                    height = elem.minheight,
                     seen = false;
                 longest.width_avail -= width;
                 _.each(paths, function(path, idx) {
-                    if (_.include(path, graphelement)) {
+                    if (_.include(path, elem)) {
                         seen = true;
                         height += path_minheight(path) + height_add + vpad;
                         height_add = 0;
-                        path.splice(_.indexOf(path, graphelement),1);
+                        path.splice(_.indexOf(path, elem),1);
                         path.width_avail -= width;
                     } else if (seen && path.slice(-1) !== longest.slice(-1)) {
                         height_add = path_minheight(path) + vpad;
                     }
                 });
                 // XXX: manage to set width, height and x, y in one call
-                graphelement.setGeometry({width: width, height: height});
+                elem.setGeometry({width: width, height: height});
                 DEBUG.spaceout && console.log([
-                    "size:",
-                    graphelement.cid, width, height
+                    "size:", elem.cid, width, height
                 ]);
             });
             // we are using floats...
@@ -308,27 +311,26 @@ define([
         _.each(orig_paths, function(path, path_idx) {
             var x = 0,
                 prev_ge;
-            _.each(path, function(graphelement) {
-                if (!cache[graphelement.cid]) {
+            _.each(path, function(elem) {
+                if (!cache[elem.cid]) {
                     // XXX: manage to set width, height and x, y in one call
-                    graphelement.setGeometry({x: x, y: path_idx * (1 + vpad)});
-                    rval.push(graphelement);
+                    elem.setGeometry({x: x, y: path_idx * (1 + vpad)});
+                    rval.push(elem);
                     DEBUG.spaceout && console.log([
-                        "pos:",
-                        graphelement.cid, x, path_idx
+                        "pos:", elem.cid, x, path_idx
                     ]);
                 }
-                cache[graphelement.cid] = true;
-                x += graphelement.width;
+                cache[elem.cid] = true;
+                x += elem.width;
                 if (prev_ge) {
-                    if (prev_ge.successors.indexOf(graphelement) === -1) {
-                        prev_ge.successors.push(graphelement);
+                    if (prev_ge.successors.indexOf(elem) === -1) {
+                        prev_ge.successors.push(elem);
                     }
-                    if (graphelement.predecessors.indexOf(prev_ge) === -1) {
-                        graphelement.predecessors.push(prev_ge);
+                    if (elem.predecessors.indexOf(prev_ge) === -1) {
+                        elem.predecessors.push(prev_ge);
                     }
                 }
-                prev_ge = graphelement;
+                prev_ge = elem;
             });
         });
         DEBUG.spaceout && console.groupEnd();
