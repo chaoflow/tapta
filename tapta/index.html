@@ -13,11 +13,6 @@
   </head>
   <body>
     <!-- editor templates -->
-    <script type="text/html" id="editor_action">
-      <a href="#"
-         title="${title}"
-         class="${id}">&nbsp;</a>
-    </script>
     <script type="text/template" id="properties_template">
       <strong>Properties</strong>
       <div class="props">
@@ -44,39 +39,6 @@
         <li id="${$value.id}">${$value.label}</li>
         {{/each}}
       </ul>
-    </script>
-    <script type="text/template" id="actionbar_template">
-      <ul class="menubar">
-        <li class="select">
-          Select
-        </li>
-        <li class="new_node new_action">
-        </li>
-        <li class="new_node new_decmer">
-        </li>
-        <li class="new_node new_forkjoin">
-        </li>
-        <li class="remove">
-        </li>
-      </ul>
-    </script>
-    <script type="text/html" id="actions_template">
-      <ul>
-        {{each actions}}
-        <li id="${$value.id}">${$value.get("name")}</li>
-        {{/each}}
-      </ul>
-    </script>
-    <script type="text/html" id="diagram_template">
-      <div class="diagram_container" id="${name}">
-        <div class="element_properties">
-          No Element selected
-        </div>
-        <div class="canvas_container">
-        </div>
-        <div class="selectable_actions">
-        </div>
-      </div>
     </script>
 
     <!-- tapta app -->
