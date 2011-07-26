@@ -109,9 +109,9 @@ define([
             _.bindAll(this);
             // space out if something is added but no next was
             // changed, i.e. a new completely parallel path
-            this.bind("add", this.spaceOut);
+            //this.bind("add", this.spaceOut);
             // an existing path was changed
-            this.bind("change:next", this.spaceOut);
+            //this.bind("change:next", this.spaceOut);
             // this.bind("remove", this.spaceOut);
         },
         // goes hand-in-hand with Vertex.toJSON

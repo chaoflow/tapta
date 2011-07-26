@@ -355,7 +355,6 @@ define([
 
             // fetch graph elements and space them out
             graph.fetch();
-            graph.spaceOut();
 
             // If graph model is empty, add an initial and final node
             // don't create them in the storage, just "add" them.
@@ -367,6 +366,8 @@ define([
                 graph.add([initial, final_], {silent:true});
                 initial.set({next: [final_]});
             }
+
+            graph.spaceOut();
 
             // create vertex views and remember them by their models' cid
             // we need that to initialize the arc views

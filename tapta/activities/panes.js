@@ -156,16 +156,14 @@ define([
             if ((successor.payload === "final") && (predenext.length > 1)) {
                 predenext.splice(predenext.indexOf(model), 1);
                 predecessor.save();
-                model.destroy();
-                graph.remove(model);
-                successor.destroy();
-                graph.remove(successor);
+                successor.destroy({silent: true});
+                model.destroy({silent: true});
             } else {
                 predenext.splice(predenext.indexOf(model), 1, successor);
                 predecessor.save();
-                model.destroy();
-                graph.remove(model);
+                model.destroy({silent: true});
             }
+            graph.trigger("rebind");
         }
     });
 
