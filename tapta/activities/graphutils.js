@@ -270,6 +270,9 @@ define([
             var varwidth_elems = _.compact(_.map(longest, function(elem) {
                 return elem.fixedwidth ? undefined : elem;
             }));
+            if (varwidth_elems.length === 0) {
+                throw "Need at least one variable width element";
+            }
             var width_add = (longest.width_avail - path_minwidth(longest))
                     / varwidth_elems.length;
             _.each(longest, function(elem) {
