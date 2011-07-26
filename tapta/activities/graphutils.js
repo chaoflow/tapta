@@ -258,7 +258,7 @@ define([
             longest, lidx,
             orig_paths = paths;
         paths = map(function(p) {
-            return _.extend(p.slice(), {h_avail: maxminwidth});
+            return _.extend(p.slice(), {width_avail: maxminwidth});
         }, orig_paths);
         while (paths.length > 0) {
             // longest path and other paths
@@ -266,20 +266,21 @@ define([
             lidx = _.indexOf(paths, longest);
             if (lidx == -1) throw "Deep shit!";
             paths.splice(lidx, 1);
-            var hadd = (longest.h_avail - path_minwidth(longest)) / longest.length;
+            var width_add = (longest.width_avail - path_minwidth(longest))
+                    / longest.length;
             _.each(longest, function(graphelement) {
                 var height_add = 0,
-                    width = graphelement.minwidth + hadd,
+                    width = graphelement.minwidth + width_add,
                     height = graphelement.minheight,
                     seen = false;
-                longest.h_avail -= width;
+                longest.width_avail -= width;
                 _.each(paths, function(path, idx) {
                     if (_.include(path, graphelement)) {
                         seen = true;
                         height += path_minheight(path) + height_add;
                         height_add = 0;
                         path.splice(_.indexOf(path, graphelement),1);
-                        path.h_avail -= width;
+                        path.width_avail -= width;
                     } else if (seen && path.slice(-1) !== longest.slice(-1)) {
                         height_add = path_minheight(path);
                     }
@@ -293,10 +294,10 @@ define([
             });
             // we are using floats...
             var emargin = 0.00001;
-            if (longest.h_avail > emargin) throw "Unallocated space left!";
+            if (longest.width_avail > emargin) throw "Unallocated space left!";
             for (var i = paths.length-1; i >= 0; i--) {
                 if (paths[i].length === 0) {
-                    if (paths[i].h_avail > emargin) throw "Unallocated space left";
+                    if (paths[i].width_avail > emargin) throw "Unallocated space left";
                     paths[i].length || delete paths[i];
                 }
             }
