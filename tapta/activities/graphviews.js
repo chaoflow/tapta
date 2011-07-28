@@ -28,6 +28,7 @@ define([
     // backbone events triggered on themselves, thus propagating them
     // up the view hierarchy.
     var GraphElement = View.extend({
+        draggable: false,
         // whether an element can be subtracted from a graph
         subtractable: false,
         ctrls: function(canvas) { return canvas.set(); },
@@ -46,10 +47,11 @@ define([
             // event is the name of an event, eg. click
             // idx is either 'symbol' or the idx of the ctrl
             var handler = function(event, idx) {
-                return function() {
+                // in case of dndmove its dx and dy
+                return function(dx, dy) {
                     // trigger backbone events for svg events, this
                     // corresponds to backbone's delegateEvents mechanism
-                    this.trigger(event, {view: this, idx: idx});
+                    this.trigger(event, {view: this, idx: idx, dx: dx, dy: dy});
                 };
             };
 
@@ -57,6 +59,14 @@ define([
             // render symbol, will return a set
             var symbol = this.child.symbol = this.symbol(canvas);
             symbol.click(handler("click", "symbol"), this);
+            if (this.draggable) {
+                symbol.drag(
+                    handler("dndmove", "symbol"),
+                    handler("dndstart", "symbol"),
+                    handler("dndstop", "symbol"),
+                    this
+                );
+            }
             if (this.subtractable) {
                 _.each(symbol, function(part) {
                     part.node.setAttribute(
@@ -99,11 +109,14 @@ define([
         initialize: function(opts) {
             this.srcview = opts.srcview;
             this.tgtview = opts.tgtview;
-            if (opts.srcview === undefined) throw "Need srcview";
             // An arcview can also be drawn as a ctrl of a MIMO. In
-            // that case it is an open arc, without a target.
+            // that case it is an open arc, without a target/source
+            // if (opts.srcview === undefined) throw "Need srcview";
             // if (opts.tgtview === undefined) throw "Need tgtview";
             // XXX: bind to our source and target
+            // XXX: hack - should be in GraphElement
+            this.predecessors = [];
+            this.successors = [];
         },
         ctrls: function(canvas, editmode) {
             var cfg = CFG.symbols.arc.ctrl,
@@ -122,18 +135,23 @@ define([
                 adx = cfg.adx,
                 ady = cfg.ady,
                 geo = this.geometry,
-                entrancepoint = [geo.x, geo.y + geo.height / 2],
-                exitpoint = [geo.x + geo.width, geo.y + geo.height / 2],
+                begin = [geo.x, geo.y + geo.height / 2],
+                end = [geo.x + geo.width, geo.y + geo.height / 2],
                 // points to leave the source to our entrancepoint
-                head = this.srcview.exitpath(entrancepoint),
+                head = this.srcview ? this.srcview.exitpath(begin) : [],
                 // points to enter the target from our exitpoint
-                tail = this.tgtview ? this.tgtview.entrancepath(exitpoint) : [],
+                tail = this.tgtview ? this.tgtview.entrancepath(end) : [],
                 points = head
-                    .concat([entrancepoint])
-                    .concat([exitpoint])
-                    .concat(tail),
+                    .concat([begin])
+                    .concat([end]),
                 symbol = canvas.set(),
                 arrow = svgarrow(canvas, points, adx, ady);
+            if (tail.length > 0) {
+                var path = svgpath(canvas, [end].concat(tail));
+                path.node.setAttribute("class", "arc");
+                path.toBack();
+                symbol.push(path);
+            }
             arrow.node.setAttribute("class", "arc");
             arrow.toBack();
             symbol.push(arrow);
@@ -161,6 +179,9 @@ define([
             this.model.bind("change:geometry", function(opts) {
                 // XXX use opts.diff to move existing symol
             });
+            // XXX: hack - should be in GraphElement
+            this.predecessors = [];
+            this.successors = [];
         },
         // return via points for entering from source point
         entrancepath: function(srcpoint) { return []; },
@@ -184,6 +205,7 @@ define([
     });
 
     var FinalNodeView = NodeView.extend({
+        draggable: true,
         // a filled circle surrounded by an empty circle, vertically
         // centered, left aligned
         symbol: function(canvas) {
@@ -244,16 +266,16 @@ define([
                 y: lastgeo.y + lastgeo.height
             });
             _.each(geos, function(geo, idx) {
-                var model = new Arc({source: this.model});
-                model.setGeometry({
+                var arc = new Arc({source: this.model});
+                arc.setGeometry({
                     x: geo.x - ourgeo.x,
                     y: geo.y - ourgeo.y,
                     height: 0,
-                    width: model.minwidth / 3
+                    width: arc.minwidth / 3
                 });
                 var arcview = this.append(ArcView, {
                     name: "mimoctrlarc_"+idx,
-                    model: model,
+                    model: arc,
                     srcview: this
                 });
                 arcview.addnewidx = idx;
@@ -304,11 +326,13 @@ define([
             return symbol;
         },
         entrancepath: function(srcpoint) {
-            // XXX: implement
-            return [];
+            var geo = this.geometry;
+            // center
+            return [[geo.x + geo.width / 2, geo.y + geo.height / 2]];
         },
         exitpath: function(tgtpoint) {
             var geo = this.geometry;
+            // center
             return [[geo.x + geo.width / 2, geo.y + geo.height / 2]];
         }
     });
@@ -386,13 +410,18 @@ define([
                 var name = ["arc", arc.source.cid, arc.target.cid].join("_"),
                     srcview = this.vertexviews[arc.source.cid],
                     tgtview = this.vertexviews[arc.target.cid],
-                    view = this.defchild(ArcView, {
+                    arcview = this.defchild(ArcView, {
                         name: name,
                         model: arc,
                         srcview: srcview,
                         tgtview: tgtview
                     });
-                acc[name] = view;
+                acc[name] = arcview;
+                // tell the vertex views its predecessors and successors
+                arcview.predecessors.push(srcview);
+                arcview.successors.push(tgtview);
+                srcview.successors.push(arcview);
+                tgtview.predecessors.push(arcview);
                 return acc;
             }, {}, graph.arcs(), this);
 

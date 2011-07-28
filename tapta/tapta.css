@@ -19,6 +19,14 @@ body {
     opacity: 0.2;
     stroke: green;
 }
+.layer.editmode-pathmerge .arc.ctrl.pathmerge {
+    opacity: 0.2;
+    fill: green;
+}
+.layer.editmode-pathmerge .arc.mimoctrl.pathmerge {
+    opacity: 0.2;
+    stroke: green;
+}
 .layer.editmode-remove .subtractable {
     stroke: red;
 }
