@@ -259,6 +259,7 @@ define([
             longest = foldl1(function(acc, p) { return acc < p ? p : acc; }, paths);
             lidx = _.indexOf(paths, longest);
             if (lidx == -1) throw "Deep shit!";
+            if (longest.length === 0) throw "Longest path is empty";
             paths.splice(lidx, 1);
             // distribute space among variable width elements
             var varwidth_elems = _.compact(_.map(longest, function(elem) {
@@ -295,10 +296,10 @@ define([
             // we are using floats...
             var emargin = 0.00001;
             if (longest.width_avail > emargin) throw "Unallocated space left!";
-            for (var i = paths.length-1; i >= 0; i--) {
+            for (var i = paths.length - 1; i >=0; i--) {
                 if (paths[i].length === 0) {
                     if (paths[i].width_avail > emargin) throw "Unallocated space left";
-                    paths[i].length || delete paths[i];
+                    paths.splice(i,1);
                 }
             }
         }
