@@ -95,7 +95,9 @@ define([
             Backbone.View.apply(this, arguments);
 
             if (DEBUG.view.events) {
-                this.bind("all", function() {
+                this.bind("all", function(event) {
+                    // XXX: hack to reduce noise
+                    if (event === "dndmove") return;
                     console.group("event:"+this.abspath());
                     console.log(arguments);
                     console.groupEnd();
