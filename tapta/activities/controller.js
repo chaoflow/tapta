@@ -15,16 +15,28 @@ define([
     var PathMergeMode = function() {
         // XXX: legacy
         this.view = this;
+        this.draggednodeview = undefined;
         this.odx = 0;
         this.ody = 0;
         this.ctrls = [];
-        _.bindAll(this, "dndmove");
+        _.bindAll(this, "act", "dndmove");
     };
     _(PathMergeMode.prototype).extend({
         extraClassNames: [],
         name: "pathmerge",
+        act: function(info) {
+            var mimoarcview = info.view,
+                finmodel = this.draggednodeview.model,
+                b4final = finmodel.predecessors[0].predecessors[0],
+                mimo = mimoarcview.tgtview.model;
+            this.deactivate(this.layerview);
+            b4final.next.splice(b4final.next.indexOf(finmodel), 1, mimo);
+            b4final.save();
+            finmodel.destroy();
+        },
         activate: function(layerview) {
             layerview.bind("dndmove", this.dndmove);
+            layerview.bind("mouseup", this.act);
             this.layerview = layerview;
             var ctrls = this.ctrls;
             // idx = 0 / -1
@@ -89,9 +101,12 @@ define([
             mimos(this.draggednodeview, true, true);
         },
         deactivate: function(layerview) {
+            if (this.draggednodeview === undefined) return;
             layerview.unbind(this.dndmove);
+            layerview.unbind(this.act);
             delete this.layerview;
             this.draggednodeview.child.symbol.translate(-this.odx, -this.ody);
+            delete this.draggednodeview;
             this.odx = this.ody = 0;
             _.each(this.ctrls, function(ctrl) { ctrl.remove(); });
             this.ctrls = [];

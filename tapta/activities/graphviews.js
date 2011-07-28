@@ -80,6 +80,7 @@ define([
             var ctrls = this.child.ctrls = this.ctrls(canvas, editmode);
             _.each(ctrls, function(ctrl, idx) {
                 ctrl.click(handler("click", idx), this);
+                ctrl.mouseup(handler("mouseup", idx), this);
             }, this);
         },
         symbol: function(canvas) { throw "Not implemented"; }
