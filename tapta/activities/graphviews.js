@@ -408,16 +408,15 @@ define([
             // XXX: adapt to new graph.arcs format
             // create arc views
             this.arcviews = foldl(function(acc, arc) {
-                var name = ["arc", arc.source.cid, arc.target.cid].join("_"),
-                    srcview = this.vertexviews[arc.source.cid],
+                var srcview = this.vertexviews[arc.source.cid],
                     tgtview = this.vertexviews[arc.target.cid],
                     arcview = this.defchild(ArcView, {
-                        name: name,
+                        name: arc.cid,
                         model: arc,
                         srcview: srcview,
                         tgtview: tgtview
                     });
-                acc[name] = arcview;
+                acc[arc.cid] = arcview;
                 // tell the vertex views its predecessors and successors
                 arcview.predecessors.push(srcview);
                 arcview.successors.push(tgtview);

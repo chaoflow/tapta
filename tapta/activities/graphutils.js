@@ -78,8 +78,8 @@ define([
         height: { get: function() { return this._geometry.height; } }
     });
 
-    var Arc = function(source, target) {
-        this.id = this.cid = [source.cid, target && target.cid].join(':');
+    var Arc = function(id, source, target) {
+        this.id = this.cid = id;
         this.source = source;
         this.target = target;
         this._geometry = {};
@@ -176,41 +176,35 @@ define([
     //     ).concat(paths2(xs));
     // };
 
-    // return all paths starting with the given vertices
+    // return all paths starting with the given vertex
     // a path consist of graphelements (vertices and arcs)
     // XXX: maybe rename vertices to sources here
     // algorithm in action:
     // A.next = [B, C], B.next = [D], C.next = [D]
-    // --> [[A, AB, B, BD, D],
-    //      [A, AC, C, CD, D]]
+    // --> [[A, A:0:B, B, B:0:D, D],
+    //      [A, A:1:C, C, C:0:D, D]]
     // x = D, tails = [[]]
     // --> [D]
     // x = B, tails = [D]
-    // --> [B, BD, D]
+    // --> [B, B:0:D, D]
     // ...
-    var paths = function(vertices, arcstorage) {
-        // If arcstorage is defined, it will use it to return always
+    var paths = function(vertex, arcstorage) {
+        // If arcstorage is defined, it will be used to return always
         // the same arc objects.
-        // edge case: return list containing one empty path
         if (arcstorage === undefined) arcstorage = {};
-        if (vertices.length === 0) return [];
-        var x = vertices.slice(0,1)[0],
-            xs = vertices.slice(1),
-            tails = paths(x.next, arcstorage);
-        if (tails.length === 0) tails = [[]];
-        return map(function(tail) {
-            var res = [x];
-            // If there is a tail, create an Arc from x to it
-            if (tail.length) {
-                var arcid = [x.cid, tail[0].cid].join(':'),
-                    arc = arcstorage && arcstorage[arcid];
-                arc = arc || new Arc(x, tail[0]);
-                if (arcstorage) arcstorage[arcid] = arc;
-                res.push(arc);
-            }
-            res = res.concat(tail);
-            return res;
-        }, tails).concat(paths(xs, arcstorage));
+        if (_.isArray(vertex)) return foldl(function(acc, x) {
+                return acc.concat(paths(x, arcstorage));
+        }, [], vertex);
+        // edge case: no next vertices -> one path with only the current vertex
+        if (vertex.next.length === 0) return [[vertex]];
+        return foldl("acc.concat(x)", [], map(function(next, idx) {
+            return map(function(tail) {
+                var arcid = [vertex.cid, idx, tail[0].cid].join(':'),
+                    arc = arcstorage[arcid] ||
+                        (arcstorage[arcid] = new Arc(arcid, vertex, tail[0]));
+                return [vertex, arc].concat(tail);
+            }, paths(next, arcstorage));
+        }, vertex.next));
     };
 
     // XXX: broken, as it does not account for arcs

@@ -42,7 +42,7 @@ define([
         deepEqual(_.map(paths, _.compose(commaJoin, pluckId)),
                   opts.paths, "paths are derived");
 
-        vertices = spaceOut(paths);
+        vertices = spaceOut(paths, 0);
         deepEqual(map("vertex.width", vertices), opts.width, "width");
         deepEqual(map("vertex.height", vertices), opts.height, "height");
         deepEqual(map("vertex.x", vertices), opts.x, "x");
@@ -62,7 +62,7 @@ define([
             height: [1,1,1],
             x: [0,1,2],
             y: [0,0,0],
-            paths: ['a, a:b, b'],
+            paths: ['a, a:0:b, b'],
             sinks: ['b'],
             sources: ['a']
         };
@@ -82,8 +82,8 @@ define([
             height: [1,1,1,1,1,1],
             x: [0,1,2,0,1,2],
             y: [0,0,0,1,1,1],
-            paths: ['a, a:b, b',
-                    'c, c:d, d'],
+            paths: ['a, a:0:b, b',
+                    'c, c:0:d, d'],
             sinks: ['b','d'],
             sources: ['a','c']
         };
@@ -106,8 +106,8 @@ define([
             height: [2,1,1,1,2,2,2,1,1,1],
             x: [0,1,2,3,4,5,6,1,2,3],
             y: [0,0,0,0,0,0,0,1,1,1],
-            paths: ['a, a:b, b, b:d, d, d:e, e',
-                    'a, a:c, c, c:d, d, d:e, e'],
+            paths: ['a, a:0:b, b, b:0:d, d, d:0:e, e',
+                    'a, a:1:c, c, c:0:d, d, d:0:e, e'],
             sinks: ['e'],
             sources: ['a']
         };
@@ -134,9 +134,9 @@ define([
             height: [3,1,1,1,1,1,3,3,3,2,2,1,1,1,1,1,1],
             x: [0,1,2,3,4,5,6,7,8,1,2,3,4,5,3,4,5],
             y: [0,0,0,0,0,0,0,0,0,1,1,1,1,1,2,2,2],
-            paths: ["a, a:b, b, b:d, d, d:e, e, e:h, h",
-                    "a, a:c, c, c:f, f, f:e, e, e:h, h",
-                    "a, a:c, c, c:g, g, g:e, e, e:h, h"],
+            paths: ["a, a:0:b, b, b:0:d, d, d:0:e, e, e:0:h, h",
+                    "a, a:1:c, c, c:0:f, f, f:0:e, e, e:0:h, h",
+                    "a, a:1:c, c, c:1:g, g, g:0:e, e, e:0:h, h"],
             sinks: ['h'],
             sources: ['a']
         };
@@ -172,12 +172,12 @@ define([
             height: [6, 6, 3, 1, 2, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             x: [0, 1, 2, 3.25, 5.75, 7, 8, 3.25, 4.5, 3.25, 2, 3, 4, 5, 6, 2, 2],
             y: [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 4, 5],
-            paths: ["i, i:a, a, a:b, b, b:c, c, c:d, d, d:e, e, e:q, q",
-                    "i, i:a, a, a:b, b, b:f, f, f:g, g, g:d, d, d:e, e, e:q, q",
-                    "i, i:a, a, a:b, b, b:n, n",
-                    "i, i:a, a, a:h, h, h:j, j, j:k, k, k:l, l, l:m, m, m:e, e, e:q, q",
-                    "i, i:a, a, a:p, p, p:e, e, e:q, q",
-                    "i, i:a, a, a:r, r, r:e, e, e:q, q"],
+            paths: ["i, i:0:a, a, a:0:b, b, b:0:c, c, c:0:d, d, d:0:e, e, e:0:q, q",
+                    "i, i:0:a, a, a:0:b, b, b:1:f, f, f:0:g, g, g:0:d, d, d:0:e, e, e:0:q, q",
+                    "i, i:0:a, a, a:0:b, b, b:2:n, n",
+                    "i, i:0:a, a, a:1:h, h, h:0:j, j, j:0:k, k, k:0:l, l, l:0:m, m, m:0:e, e, e:0:q, q",
+                    "i, i:0:a, a, a:2:p, p, p:0:e, e, e:0:q, q",
+                    "i, i:0:a, a, a:3:r, r, r:0:e, e, e:0:q, q"],
             sinks: ['n','q'],
             sources: ['i']
         };
