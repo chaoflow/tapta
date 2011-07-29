@@ -102,8 +102,8 @@ define([
         },
         deactivate: function(layerview) {
             if (this.draggednodeview === undefined) return;
-            layerview.unbind(this.dndmove);
-            layerview.unbind(this.act);
+            layerview.unbind("dndmove", this.dndmove);
+            layerview.unbind("mouseup", this.act);
             delete this.layerview;
             this.draggednodeview.child.symbol.translate(-this.odx, -this.ody);
             delete this.draggednodeview;
@@ -149,6 +149,7 @@ define([
                 // XXX: if creating a new pathmergemode the old
                 // one does not vanish but is still around and translates
                 // the previous node
+                // XXX: unbind was not done properly - should be fixed by now
                 pathmergemode.draggednodeview = info.view;
                 this.layerview.editmode = pathmergemode;
                 break;
