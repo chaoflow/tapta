@@ -89,6 +89,7 @@ define([
         this.successors = [];
     };
     _(Arc.prototype).extend({
+        type: "arc",
         setGeometry: function(obj) {
             _.extend(this._geometry, obj);
         }
