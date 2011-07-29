@@ -30,6 +30,10 @@ body {
 .layer.editmode-remove .subtractable {
     stroke: red;
 }
+.layer.editmode-remove .ctrl.subtractable {
+    opacity: 0.2;
+    fill: red;
+}
 .mimoctrl {
     fill: None;
     stroke: None;

@@ -126,6 +126,10 @@ define([
                 ctrls = canvas.set(),
                 ctrl = canvas.rect(geo.x, y, geo.width, cfg.height);
             ctrl.node.setAttribute("class", "arc ctrl");
+            if (this.subtractable) ctrl.node.setAttribute(
+                "class",
+                ctrl.node.getAttribute("class") + " subtractable"
+            );
             ctrls.push(ctrl);
             return ctrls;
         },
@@ -158,6 +162,19 @@ define([
             symbol.push(arrow);
             return symbol;
         }
+    });
+    Object.defineProperties(ArcView.prototype, {
+        subtractable: {get: function() {
+            if (this.srcview === undefined) return false;
+            if (this.tgtview === undefined) return false;
+            if ((this.srcview.model.type !== "decmer") &&
+                (this.srcview.model.type !== "forkjoin")) return false;
+            if ((this.tgtview.model.type !== "decmer") &&
+                (this.tgtview.model.type !== "forkjoin")) return false;
+            if (this.srcview.successors.length === 1) return false;
+            if (this.tgtview.predecessors.length === 1) return false;
+            return true;
+        }}
     });
 
 

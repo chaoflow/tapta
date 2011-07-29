@@ -142,26 +142,34 @@ define([
             // have nothing to do
             if (!(info.view.subtractable)) return;
             var model = info.view.model,
-                // model -> arc -> model
-                predecessor = model.predecessors[0].predecessors[0],
-                predenext = predecessor.next,
-                // model <- arc <- model
-                successor = model.successors[0].successors[0],
                 graph = this.layerview.model.activity.graph;
-            if (model.predecessors.length !== 1) throw "Not subtractable";
-            if (model.successors.length !== 1) throw "Not subtractable";
-            // XXX: order of the calls is important to always have a valid model
-            // silencing events would be a solution but somehow did
-            // not work, therefore the code duplication for now.
-            if ((successor.payload === "final") && (predenext.length > 1)) {
-                predenext.splice(predenext.indexOf(model), 1);
-                predecessor.save();
-                successor.destroy({silent: true});
-                model.destroy({silent: true});
+            if (model.type === "arc") {
+                // prede -> arc(model) -> succ
+                var prede = model.predecessors[0],
+                    succ = model.successors[0];
+                prede.next.splice(prede.next.indexOf(succ), 1);
+                prede.save();
             } else {
-                predenext.splice(predenext.indexOf(model), 1, successor);
-                predecessor.save();
-                model.destroy({silent: true});
+                // node -> arc -> node
+                var predecessor = model.predecessors[0].predecessors[0],
+                    predenext = predecessor.next,
+                    // node -> arc -> node
+                    successor = model.successors[0].successors[0];
+                if (model.predecessors.length !== 1) throw "Not subtractable";
+                if (model.successors.length !== 1) throw "Not subtractable";
+                // XXX: order of the calls is important to always have a valid model
+                // silencing events would be a solution but somehow did
+                // not work, therefore the code duplication for now.
+                if ((successor.payload === "final") && (predenext.length > 1)) {
+                    predenext.splice(predenext.indexOf(model), 1);
+                    predecessor.save();
+                    successor.destroy({silent: true});
+                    model.destroy({silent: true});
+                } else {
+                    predenext.splice(predenext.indexOf(model), 1, successor);
+                    predecessor.save();
+                    model.destroy({silent: true});
+                }
             }
             graph.trigger("rebind");
         }
