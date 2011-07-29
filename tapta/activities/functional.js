@@ -322,6 +322,10 @@ define([
         return foldl1("acc, x -> x > acc ? x : acc", seq);
     };
 
+    var minimum = function(seq) {
+        return foldl1("acc, x -> x < acc ? x : acc", seq);
+    };
+
     var sum = function(seq) {
         return foldl1("acc+x", seq);
     };
@@ -357,6 +361,7 @@ define([
         map: map,
         map_: map_,
         maximum: maximum,
+        minimum: minimum,
         partial: partial,
         range: range,
         scanl: scanl,
