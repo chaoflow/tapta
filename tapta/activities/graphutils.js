@@ -250,33 +250,38 @@ define([
         DEBUG.spaceout && console.group("spaceout");
         // minwidth of longest path in the sense of space required, not item-wise
         var maxminwidth = maximum(map(path_minwidth, paths)),
-            longest, lidx,
+            crucial, cidx,
             orig_paths = paths;
         paths = map(function(p) {
             return _.extend(p.slice(), {width_avail: maxminwidth});
         }, orig_paths);
         while (paths.length > 0) {
-            // longest path and other paths
-            longest = foldl1(function(acc, p) { return acc < p ? p : acc; }, paths);
-            lidx = _.indexOf(paths, longest);
-            if (lidx == -1) throw "Deep shit!";
-            if (longest.length === 0) throw "Longest path is empty";
-            paths.splice(lidx, 1);
+            // crucial path and other paths
+            // the first path with only one element is crucial
+            // If there is no such path, the longest path is crucial
+            crucial = _.detect(paths, function(path) { return (path.length === 1); });
+            if (crucial === undefined) {
+                crucial = foldl1(function(acc, p) { return acc < p ? p : acc; }, paths);
+            }
+            cidx = _.indexOf(paths, crucial);
+            if (cidx == -1) throw "Deep shit!";
+            if (crucial.length === 0) throw "Crucial path is empty";
+            paths.splice(cidx, 1);
             // distribute space among variable width elements
-            var varwidth_elems = _.compact(_.map(longest, function(elem) {
+            var varwidth_elems = _.compact(_.map(crucial, function(elem) {
                 return elem.fixedwidth ? undefined : elem;
             }));
             if (varwidth_elems.length === 0) {
                 throw "Need at least one variable width element";
             }
-            var width_add = (longest.width_avail - path_minwidth(longest))
+            var width_add = (crucial.width_avail - path_minwidth(crucial))
                     / varwidth_elems.length;
-            _.each(longest, function(elem) {
+            _.each(crucial, function(elem) {
                 var height_add = 0,
                     width = elem.fixedwidth || elem.minwidth + width_add,
                     height = elem.minheight,
                     seen = false;
-                longest.width_avail -= width;
+                crucial.width_avail -= width;
                 _.each(paths, function(path, idx) {
                     if (_.include(path, elem)) {
                         seen = true;
@@ -284,7 +289,7 @@ define([
                         height_add = 0;
                         path.splice(_.indexOf(path, elem),1);
                         path.width_avail -= width;
-                    } else if (seen && path.slice(-1) !== longest.slice(-1)) {
+                    } else if (seen && path.slice(-1) !== crucial.slice(-1)) {
                         height_add = path_minheight(path) + vpad;
                     }
                 });
@@ -296,7 +301,8 @@ define([
             });
             // we are using floats...
             var emargin = 0.00001;
-            if (longest.width_avail > emargin) throw "Unallocated space left!";
+            if (crucial.width_avail > emargin) throw "Unallocated space left!";
+            // remove empty paths
             for (var i = paths.length - 1; i >=0; i--) {
                 if (paths[i].length === 0) {
                     if (paths[i].width_avail > emargin) throw "Unallocated space left";
