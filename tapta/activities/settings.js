@@ -150,12 +150,12 @@ define([
     cfg.symbols.action = { height: 40, r: 4 };
 
     cfg.nodes = {};
-    cfg.nodes.action = { fixedwidth: 1 };
-    cfg.nodes.decision = { fixedwidth: 1 };
-    cfg.nodes["final"] = { fixedwidth: 1/3 };
-    cfg.nodes.forkjoin = { fixedwidth: 1/12 };
-    cfg.nodes.initial = { fixedwidth: 1/4 };
-    cfg.nodes.merge = { fixedwidth: 1/3 };
+    cfg.nodes.action = { fixedwidth: 1000 };
+    cfg.nodes.decision = { fixedwidth: 1000 };
+    cfg.nodes["final"] = { fixedwidth: 333 };
+    cfg.nodes.forkjoin = { fixedwidth: 83 };
+    cfg.nodes.initial = { fixedwidth: 250 };
+    cfg.nodes.merge = { fixedwidth: 333 };
 
     return cfg;
 });

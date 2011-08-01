@@ -57,8 +57,8 @@ define([
         this.id = this.cid = attrs && attrs.id;
         this._next = [];
         this._geometry = {};
-        this._minwidth = 1;
-        this._minheight = 1;
+        this._minwidth = 1000;
+        this._minheight = 1000;
         this.predecessors = [];
         this.successors = [];
     };
@@ -83,8 +83,8 @@ define([
         this.source = source;
         this.target = target;
         this._geometry = {};
-        this._minwidth = 1;
-        this._minheight = 1;
+        this._minwidth = 1000;
+        this._minheight = 1000;
         this.predecessors = [];
         this.successors = [];
     };

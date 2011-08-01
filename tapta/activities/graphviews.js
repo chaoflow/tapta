@@ -16,10 +16,10 @@ define([
         svgpath = svgtools.svgpath;
 
     var xToPix = function(x) {
-        return Math.round(CFG.gridsize.x * x);
+        return Math.round(CFG.gridsize.x * x / 1000);
     };
     var yToPix = function(y) {
-        return Math.round(CFG.gridsize.y * y);
+        return Math.round(CFG.gridsize.y * y / 1000);
     };
 
     // ATTENTION: GraphElements are no real views: their el is not
