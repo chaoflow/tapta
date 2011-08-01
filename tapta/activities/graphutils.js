@@ -245,18 +245,19 @@ define([
         return _.without.apply(_, [vertices].concat(referenced));
     };
 
-    // allocate space to the vertices
-    var spaceOut = function    (paths, vpad) {
-        DEBUG.spaceout && console.group("spaceout");
-        // minwidth of longest path in the sense of space required, not item-wise
-        var maxminwidth = maximum(map(path_minwidth, paths)),
-            crucial, cidx,
-            orig_paths = paths;
+    var calcWidth = function(paths, geos) {
+        DEBUG.spaceout && console.group("width");
+        var cidx, crucial,
+            maxminwidth = maximum(map(path_minwidth, paths));
+        // create a working copy of paths
         paths = map(function(p) {
+            // the maximum minimally needed width defines the width of
+            // the whole graph and therefore the available width for each
+            // path.
             return _.extend(p.slice(), {width_avail: maxminwidth});
-        }, orig_paths);
+        }, paths);
         while (paths.length > 0) {
-            // crucial path and other paths
+            // The crucial path ultimately defines the size of its elements.
             // the first path with only one element is crucial
             // If there is no such path, the longest path is crucial
             crucial = _.detect(paths, function(path) { return (path.length === 1); });
@@ -266,67 +267,103 @@ define([
             cidx = _.indexOf(paths, crucial);
             if (cidx == -1) throw "Deep shit!";
             if (crucial.length === 0) throw "Crucial path is empty";
+            // remove crucial path from paths
             paths.splice(cidx, 1);
+
             // distribute space among variable width elements
-            var varwidth_elems = _.compact(_.map(crucial, function(elem) {
+            var n_varwidth = _.compact(_.map(crucial, function(elem) {
                 return elem.fixedwidth ? undefined : elem;
-            }));
-            if (varwidth_elems.length === 0) {
+            })).length;
+            if (n_varwidth === 0) {
                 throw "Need at least one variable width element";
             }
-            var width_add = (crucial.width_avail - path_minwidth(crucial))
-                    / varwidth_elems.length;
+            var width_needed = path_minwidth(crucial);
             _.each(crucial, function(elem) {
-                var height_add = 0,
-                    width = elem.fixedwidth || elem.minwidth + width_add,
-                    height = elem.minheight,
-                    seen = false;
-                crucial.width_avail -= width;
+                var geo = geos[elem.cid] || (geos[elem.cid] = {});
+                geo.width = elem.fixedwidth || elem.minwidth + Math.round(
+                    (crucial.width_avail - width_needed) / n_varwidth--
+                );
+                crucial.width_avail -= geo.width;
+                width_needed -= geo.width;
+                // remove element from the other paths and subtract
+                // its width from their available widths
                 _.each(paths, function(path, idx) {
                     if (_.include(path, elem)) {
-                        seen = true;
-                        height += path_minheight(path) + height_add + vpad;
-                        height_add = 0;
                         path.splice(_.indexOf(path, elem),1);
-                        path.width_avail -= width;
-                    } else if (seen && path.slice(-1) !== crucial.slice(-1)) {
-                        height_add = path_minheight(path) + vpad;
+                        path.width_avail -= geo.width;
                     }
                 });
-                // XXX: manage to set width, height and x, y in one call
-                elem.setGeometry({width: width, height: height});
-                DEBUG.spaceout && console.log([
-                    "size:", elem.cid, width, height
-                ]);
             });
-            // we are using floats...
-            var emargin = 0.00001;
-            if (crucial.width_avail > emargin) throw "Unallocated space left!";
+            if (crucial.width_avail > 0) throw "Unallocated space left!";
             // remove empty paths
             for (var i = paths.length - 1; i >=0; i--) {
                 if (paths[i].length === 0) {
-                    if (paths[i].width_avail > emargin) throw "Unallocated space left";
+                    if (paths[i].width_avail > 0) throw "Unallocated space left";
                     paths.splice(i,1);
                 }
             }
         }
-        // set positions
-        var cache = {};
-        var rval = [];
-        _.each(orig_paths, function(path, path_idx) {
-            var x = 0,
-                prev_ge;
-            _.each(path, function(elem) {
-                if (!cache[elem.cid]) {
-                    // XXX: manage to set width, height and x, y in one call
-                    elem.setGeometry({x: x, y: path_idx * (1 + vpad)});
-                    rval.push(elem);
-                    DEBUG.spaceout && console.log([
-                        "pos:", elem.cid, x, path_idx
-                    ]);
+        DEBUG.spaceout && console.groupEnd();
+        return geos;
+    };
+
+    var calcX = function(paths, geos) {
+        return foldl(function(seen, path) {
+            var x = 0;
+            return foldl(function(seen, elem) {
+                if (!(seen[elem.cid])) {
+                    geos[elem.cid].x = x;
+                    seen[elem.cid] = elem;
                 }
-                cache[elem.cid] = true;
-                x += elem.width;
+                x += geos[elem.cid].width;
+                return seen;
+            }, seen, path);
+        }, {}, paths);
+    };
+
+    var calcHeight = function(elem, geos, h_add, smallest) {
+        if (h_add === undefined) h_add = 1;
+        if (smallest === undefined) smallest = h_add;
+        if (_.isArray(elem)) {
+            if (elem.length === 0) return smallest;
+            h_add = h_add / elem.length;
+            return minimum(map(function(el) {
+                return calcHeight(el, geos, h_add, smallest);
+            }, elem));
+        }
+        if (!geos[elem.cid].height) geos[elem.cid].height = 0;
+        geos[elem.cid].height += h_add;
+        if (geos[elem.cid].height < smallest) {
+            smallest = geos[elem.cid].height;
+        }
+        var size = calcHeight(elem.successors, geos, h_add, smallest);
+        return (size < smallest) ? size : smallest;
+    };
+
+    var normHeightCalcY = function(elem, geos, norm, y) {
+        if (y === undefined) y = 0;
+        if (_.isArray(elem)) {
+            return foldl(function(height, el) {
+                return height + normHeightCalcY(el, geos, norm, y+height);
+            }, 0, elem);
+        } else if (geos[elem.cid].y === undefined) {
+            geos[elem.cid].height = Math.round(
+                geos[elem.cid].height * norm
+            );
+            geos[elem.cid].y = y;
+            normHeightCalcY(elem.successors, geos, norm, y);
+        }
+        return geos[elem.cid].height;
+    };
+
+    // allocate space to the vertices
+    var spaceOut = function    (paths, vpad) {
+        DEBUG.spaceout && console.group("spaceout");
+
+        // set predecessors and successors
+        _.each(paths, function(path) {
+            var prev_ge;
+            _.each(path, function(elem) {
                 if (prev_ge) {
                     if (prev_ge.successors.indexOf(elem) === -1) {
                         prev_ge.successors.push(elem);
@@ -336,6 +373,42 @@ define([
                     }
                 }
                 prev_ge = elem;
+            });
+        });
+
+        var geos = {};
+        // calculate element widths and store in geos
+        calcWidth(paths, geos);
+        // determine horizontal positions
+        var graphelements = _.values(calcX(paths, geos)),
+            srcs = _.select(graphelements, function(ge) {
+                return (ge.predecessors.length === 0);
+            });
+        // calc height
+        calcHeight(srcs, geos, 1);
+        // find smallest element
+        var smallest = minimum(map("geo.height", _.values(geos)));
+        // normalize height and set vertical position
+        normHeightCalcY(srcs, geos, 1000 / smallest);
+
+        // set positions
+        var cache = {};
+        var rval = [];
+        _.each(paths, function(path, path_idx) {
+            _.each(path, function(elem) {
+                if (!cache[elem.cid]) {
+                    elem.setGeometry(geos[elem.cid]);
+                    rval.push(elem);
+                    DEBUG.spaceout && console.log([
+                        "x, y, w, h:",
+                        elem.cid,
+                        elem.geometry.x,
+                        elem.geometry.y,
+                        elem.geometry.width,
+                        elem.geometry.height
+                    ]);
+                }
+                cache[elem.cid] = true;
             });
         });
         DEBUG.spaceout && console.groupEnd();
