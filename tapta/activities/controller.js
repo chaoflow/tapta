@@ -140,11 +140,12 @@ define([
             );
             switch (event) {
             case "click":
+                var layer = this.layerview.model;
                 if ((info.view.model.type === "action") &&
-                    (info.idx === 0)) {
+                    (info.idx === 0))
+                {
                     // tell next layer which activity to display
-                    var action = info.view.model.payload,
-                        layer = this.layerview.model;
+                    var action = info.view.model.payload;
                     if (action.get('activity') === undefined) {
                         action.set({
                             activity: layer.next.activities.create()
@@ -152,6 +153,14 @@ define([
                         action.save();
                     }
                     layer.activity.set({raked: action});
+                    layer.activity.save();
+                }
+                if ((info.view.model.payload) &&
+                    (info.view.model.payload.type))
+                {
+                    layer.activity.set({
+                        selected: info.view.model.payload
+                    });
                     layer.activity.save();
                 }
                 break;
