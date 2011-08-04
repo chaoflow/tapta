@@ -36,7 +36,7 @@
     cursor: pointer;
 }
 .library .libitem.highlight {
-    color: red;
+    color: green;
 }
 .mimoctrl {
     fill: None;
@@ -81,7 +81,7 @@
     cursor: pointer;
 }
 .toolbar .tool.highlight {
-    color: red;
+    color: green;
 }
 /* scratchpad below here, should be replaced with proper classes */
 body {
