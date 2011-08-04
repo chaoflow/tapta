@@ -256,6 +256,9 @@ define([
                 }
             }
             graph.trigger("rebind");
+            if (model.payload === this.layer.activity.get('raked')) {
+                this.layer.activity.set({raked: undefined});
+            }
         }
     });
 
