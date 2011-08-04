@@ -42,6 +42,10 @@ define([
         render: function(canvas, editmode) {
             // remove previously rendered stuff
             this.remove();
+            if (canvas) this.canvas = canvas;
+            else canvas = this.canvas;
+            if (editmode) this.editmode = editmode;
+            else editmode = this.editmode;
 
             // used to create handlers for specific events and aspects of us
             // event is the name of an event, eg. click
@@ -245,6 +249,12 @@ define([
 
 
     var ActionNodeView = NodeView.extend({
+        initialize: function() {
+            NodeView.prototype.initialize.call(this);
+            this.model.payload.bind("change:label", _.bind(function() {
+                this.render();
+            }, this));
+        },
         // a box with round corners and a label, centered
         symbol: function(canvas) {
             var cfg = CFG.symbols.action,
@@ -256,7 +266,10 @@ define([
             rect.node.setAttribute("class", "action node");
             symbol.push(rect);
             if (label) {
-                var text = canvas.text(geo.x+5, y+5, label);
+                // XXX: position after initial load and label change differs
+                var text = canvas.text(geo.x + geo.width / 2,
+                                       geo.y + geo.height / 2,
+                                       label);
                 symbol.push(text);
             }
             return symbol;
