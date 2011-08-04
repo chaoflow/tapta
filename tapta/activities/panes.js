@@ -69,10 +69,12 @@ define([
         },
         activate: function(layerview) {
             this.layerview = layerview;
+            this.layer = layerview.model;
             layerview.bind("click", this.act);
         },
         deactivate: function(layerview) {
             this.layerview = undefined;
+            this.layer = undefined;
             layerview.unbind("click", this.act);
         },
         initialize: function() {
@@ -210,7 +212,10 @@ define([
                 source.save();
                 // XXX: this currently triggers rebinding of the graphview
                 graph.trigger("rebind");
-                // XXX: select newly added node and move focus to label field
+                this.layer.activity.set({
+                    selected: node
+                });
+                this.layer.activity.save();
             }
         }
     });
