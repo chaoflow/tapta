@@ -258,46 +258,6 @@ define([
     // old below here
 
 
-    // var PropertiesView = base.View.extend({
-    //     template: $.template($("#properties_template")),
-    //     initialize: function(){
-    //         _.bindAll(this, "handle_update");
-    //     },
-    //     handle_update: function(){
-    //         if(this.elem instanceof model.Action){
-    //             this.elem.set({
-    //                 label: this.el.find("input[name=label]").val(),
-    //                 description: this.el.find("input[name=description]").val()
-    //             });
-    //             this.elem.save();
-    //         }
-    //     },
-    //     render: function(){
-    //         if(this.model === undefined){
-    //             return;
-    //         }
-    //         if(this.model.get("selected") === undefined) {
-    //             return;
-    //         }
-    //         var elem = this.model.get("selected");
-    //         this.elem = elem;
-    //         this.el.empty();
-    //         var attrs = {};
-    //         attrs.hidden = {
-    //             id: elem.id,
-    //             cid: elem.cid
-    //         };
-    //         attrs.singleline = {
-    //             label: elem.get("label") || ""
-    //         };
-    //         attrs.multiline = {
-    //             description: elem.get("description") || ""
-    //         };
-    //         $.tmpl(this.template, attrs).appendTo(this.el);
-    //         this.el.find('input[type=button]').unbind().bind("click", this.handle_update);
-    //     }
-    // });
-
     // var LibraryView = base.View.extend({
     //     template: $.template($("#library_template")),
     //     events: {
