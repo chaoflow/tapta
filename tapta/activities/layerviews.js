@@ -68,84 +68,14 @@ define([
         init: function() {
             this.activityview = this.child.center.child.activity;
 
-            _.bindAll(this, "activityChanged", "bindEvents");
+            _.bindAll(this, "activityChanged");
             this.model.bind("change:activity", this.activityChanged);
-
-            // initialize our child views
-            // this.left_pane = this.defchild(panes.PaneManager_, {
-            //     model:this.model,
-            //     name: "leftpane"
-            // });
-            // this.right_pane = this.defchild(panes.PaneManager_, {
-            //     model: this.model,
-            //     name: "rightpane"
-            // });
 
             var controller = new Controller(this);
             this.bind("all", controller.handler);
+
             // set default editmode, a bit hackish
             this.child.right.child.toolbar.child.select.clicked();
-
-            this.bindEvents();
-        },
-        bindEvents: function() {
-            // The element views catch DOM events and translate them
-            // into user acts, they are executed here.
-            //
-            // XXX: In case the whole act processing is moved to app level
-            // it is the responsibility of the layer to catch all events
-            // and enrich them with layermodel:this.model.
-            //
-            // XXX: the whole thing still feels rough. If we are in
-            // delete mode and a rake is clicked, should it rake or the
-            // node be delete. Currently it would rake, as the the
-            // rake.click event handler already makes the decision
-            // what the click means.
-            this.bind("act:rake", function(load) {
-                var actionmodel = load[0];
-                var layermodel = this.model;
-                // If the action model does not point to an activity
-                // yet, create an activity in the next layer and assign
-                // it.
-                if (actionmodel.get('activity') === undefined) {
-                    var newact = layermodel.next.activities.create();
-                    actionmodel.set({activity: newact});
-                    actionmodel.save();
-                }
-                // remember for the activity being displayed on the
-                // current layer which activity to display on the next
-                // layer.
-                this.activity.model.set({raked: actionmodel});
-                this.activity.model.save();
-            });
-            this.bind("act:select:node", function(load) {
-                var actionmodel = load[0];
-                this.model.set({selected: actionmodel});
-            });
-
-            // Events that need a mode to be processed
-            this.bind("act:addtoedge", function(load) {
-                if (this.mode.name !== "addingnewnode") { return; }
-                var edgemodel = load[0];
-                var node = this.mode.collection.create();
-                edgemodel.insert(node);
-            });
-            this.bind("act:addnewpath", function(load) {
-                if (this.mode.name !== "addingnewnode") { return; }
-                // XXX: confusing; this.mode vs this.model
-                var node = this.mode.collection.create();
-                var final = this.model.finals.create();
-                this.activity.model.paths.newpath(_.extend(load, {
-                    nodes: [node, final]
-                }));
-                // XXX: workaround: we currently don't catch the model event
-                this.activity.render();
-            });
-            this.bind("act:remove", function(load) {
-                var nodemodel = load[0];
-                this.activity.model.remove(nodemodel);
-                this.activity.render();
-            });
         },
         activityChanged: function() {
             this.activityview.bindToModel(this.model.activity);
