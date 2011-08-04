@@ -145,8 +145,13 @@ define([
             }
             return child;
         },
+        removeChildren: function() {
+            _.each(this.children, function(child) { child.remove(); });
+            this.child = {};
+            this.children = [];
+        },
         render: function() {
-            if ((DEBUG.view.render) && (this.children.length === 0)) {
+            if ((DEBUG.view.renderempty) && (this.children.length === 0)) {
                 $(this.el).text("empty:"+this.abspath());
             }
             _.each(this.children, function(child) {

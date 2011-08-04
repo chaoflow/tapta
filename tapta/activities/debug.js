@@ -8,7 +8,8 @@ define([
         view: {
             events: true,
             init: true,
-            render: true
+            render: true,
+            renderempty: false
         },
         model: {
             events: true

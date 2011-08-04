@@ -308,7 +308,6 @@ define([
                 source.save();
                 // XXX: this currently triggers rebinding of the graphview
                 graph.trigger("rebind");
-                // XXX: select newly added node and move focus to label field
             }
         },
         clicked: function() {
@@ -337,17 +336,28 @@ define([
         initialize: function(props) {
             this.layer = props.layer;
             this.collection = this.layer[this.name];
+            _.bindAll(this, "handle_add", "handle_refresh");
+            this.init_children();
+            this.collection.bind("add", this.handle_add);
+            this.collection.bind("refresh", this.handle_refresh);
+        },
+        handle_add: function(model) {
+            var view = this.append(LibItemView, {name: model.id,
+                                                 layer: this.layer,
+                                                 model: model});
+            $(this.el).append(view.render().el);
+        },
+        handle_refresh: function() {
+            this.removeChildren();
+            this.init_children();
+            this.render();
+        },
+        init_children: function() {
             _.each(this.collection.toArray(), function(action) {
                 this.append(LibItemView, {name: action.id,
                                           layer: this.layer,
                                           model: action});
             }, this);
-            this.collection.bind("add", _.bind(function(model) {
-                var view = this.append(LibItemView, {name: model.id,
-                                                     layer: this.layer,
-                                                     model: model});
-                $(this.el).append(view.render().el);
-            }, this));
         }
     });
 
