@@ -153,6 +153,7 @@ define([
             this.layerview.model.activity.set({
                 selected: info.view.model.payload
             });
+            this.layerview.model.activity.save();
         }
     });
 

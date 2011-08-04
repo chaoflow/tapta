@@ -166,7 +166,7 @@ define([
             var layer = this.parent;
             var activities = _.map(response, function(attrs) {
                 _(["raked", "selected"]).each(function(key){
-                    attrs[key] = attrs[key] && layer.obj(attrs[key]);
+                    attrs[key] = attrs[key] && layer.nodelib.get(attrs[key]);
                 }, this);
                 return new Activity(attrs, {layer: layer});
             });
