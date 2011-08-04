@@ -41,7 +41,7 @@ define([
                     ViewProto: panes.PropertiesView,
                     propscallback: function() {
                         return {name: "properties",
-                                activity: this.model.activity};
+                                layer: this.model};
                     }
                 }
             ], extraClassNames: ["cell", "width-2", "position-0"]},

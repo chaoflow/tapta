@@ -98,7 +98,15 @@ define([
             "keyup" : "keyup"
         },
         initialize: function(props) {
-            this.activity = props.activity;
+            this.layer = props.layer;
+            this.bindToActivity();
+            _.bindAll(this, "bindToActivity");
+            this.layer.bind("change:activity", this.bindToActivity);
+        },
+        bindToActivity: function() {
+            if (this.layer.activity === this.activity) return;
+            if (this.activity) this.activity.unbind(this.render);
+            this.activity = this.layer.activity;
             if (this.activity === undefined) return;
             this.activity.bind("change:selected", this.render);
         },
