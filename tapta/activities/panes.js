@@ -341,46 +341,6 @@ define([
         }
     });
 
-    // old below here
-
-
-    // var LibraryView = base.View.extend({
-    //     template: $.template($("#library_template")),
-    //     events: {
-    //         "click li" : "clicked"
-    //     },
-    //     render: function(){
-    //         if(this.model === undefined){
-    //             return;
-    //         }
-    //         var attrs = {};
-    //         attrs.id = this.id; 
-    //         this.id = _.uniqueId();
-    //         var actions = _(
-    //             _(this.model.actions.models).map(function(action){
-    //                 return {id: action.id, label: action.get("label")};
-    //             })).filter(function(action){
-    //                 return action.label !== undefined;
-    //             });
-    //         attrs.action = actions;
-    //         $.tmpl(this.template, attrs).appendTo(this.el);
-    //         this.delegateEvents(this.events);
-    //     },
-    //     clicked: function(event){
-    //         var node = this.model.actions.get(event.target.id);
-    //         if(this.model.activity.indexOf(node) == -1){
-    //             this.model.activity.actions.add(node);
-    //             $(event.target).addClass("highlight");
-    //             this.trigger("add", [function (stack){
-    //                 stack.push({event: "add",
-    //                             detailed_event: "library_add",
-    //                             node: node,
-    //                             activity: this.model.activity});
-    //             }]);;
-    //         }
-    //     }
-    // });
-
     return {
         LibraryView: LibraryView,
         PaneManager: PaneManager,
