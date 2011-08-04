@@ -92,6 +92,18 @@ define([
             // children by name and in an ordered list
             this.child = {};
             this.children = [];
+
+            if (DEBUG.view.render) {
+                var realrender = this.render;
+                this.render = function() {
+                    console.group("render:"+this.abspath());
+                    var rval = realrender.apply(this, arguments);
+                    console.groupEnd();
+                    return rval;
+                };
+            }
+            _.bindAll(this, "render");
+
             Backbone.View.apply(this, arguments);
 
             if (DEBUG.view.events) {
@@ -111,15 +123,6 @@ define([
             classes = classes.concat(props.extraClassNames);
             _.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
 
-            if (DEBUG.view.render) {
-                var realrender = this.render;
-                this.render = function() {
-                    console.group("render:"+this.abspath());
-                    var rval = realrender.apply(this, arguments);
-                    console.groupEnd();
-                    return rval;
-                };
-            }
             if (DEBUG.view.init) console.groupEnd();
         },
         abspath: abspath,
