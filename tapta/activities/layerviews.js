@@ -62,6 +62,13 @@ define([
                 {
                     ViewProto: panes.ToolbarView,
                     props: {name: "toolbar"}
+                },
+                {
+                    ViewProto: panes.LibraryView,
+                    propscallback: function() {
+                        return {name: "actions",
+                                layer: this.model};
+                    }
                 }
             ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],

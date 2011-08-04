@@ -168,7 +168,7 @@ define([
     var gv = require('./graphviews');
 
     var AddNewNodeTool = Tool.extend({
-        extraClassNames: ['addnewnode'],
+        extraClassNames: ['addnode', 'addnewnode'],
         act: function(info) {
             if (info.view instanceof gv.ArcView) {
                 var source = info.view.srcview.model,
@@ -264,6 +264,78 @@ define([
         }
     });
 
+    var LibItemView = Tool.extend({
+        className: "libitem",
+        extraClassNames: ["addnode", "addlibnode"],
+        act: function(info) {
+            if (info.view instanceof gv.ArcView) {
+                var source = info.view.srcview.model,
+                    target = info.view.tgtview && info.view.tgtview.model,
+                    node = this.model;
+
+                // XXX: code just copied from AddNewNodeTooh
+                // needs to be merged
+
+                // create new vertex with action as payload
+                var graph = this.layerview.model.activity.graph,
+                    // XXX: this triggers already spaceOut and
+                    // silent:true seems not to work
+                    newvert = new graph.model({payload: node});
+
+                if (target === undefined) {
+                    // Open arc of a MIMO, create final node
+                    target = new graph.model({payload: "final"});
+                    graph.add(target, {silent:true});
+                    source.next.splice(info.view.addnewidx, 0, newvert);
+                } else {
+                    // change next of source without triggering an event
+                    source.next.splice(source.next.indexOf(target), 1, newvert);
+                }
+                newvert.next.push(target);
+                graph.add(newvert, {silent:true});
+                target.save();
+                newvert.save();
+                source.save();
+                // XXX: this currently triggers rebinding of the graphview
+                graph.trigger("rebind");
+                // XXX: select newly added node and move focus to label field
+            }
+        },
+        clicked: function() {
+            // XXX: hackish - or maybe not - we are and editmode tool
+            // and want to select the action for the propertiesview
+            Tool.prototype.clicked.call(this);
+            this.layer.activity.set({
+                selected: this.model
+            });
+            this.layer.activity.save();
+        },
+        initialize: function(props) {
+            Tool.prototype.initialize.call(this, props);
+            this.layer = props.layer;
+            this.model.bind("change:label", this.render);
+        },
+        render: function() {
+            $(this.el).text(this.model.get('label') || "unnamed");
+            return this;
+        }
+    });
+
+    var LibraryView = base.View.extend({
+        tagName: "ul",
+        className: "library",
+        initialize: function(props) {
+            this.layer = props.layer;
+            this.collection = this.layer[this.name];
+            _.each(this.collection.toArray(), function(action) {
+                this.append(LibItemView, {name: action.id,
+                                          layer: this.layer,
+                                          model: action});
+            }, this);
+            // XXX listen on remove/add/change events of actions
+        }
+    });
+
     // old below here
 
 
@@ -305,10 +377,9 @@ define([
     // });
 
     return {
+        LibraryView: LibraryView,
         PaneManager: PaneManager,
-        ToolbarView: ToolbarView,
-        PropertiesView: PropertiesView
-
-//        LibraryView: LibraryView
+        PropertiesView: PropertiesView,
+        ToolbarView: ToolbarView
     };
 });

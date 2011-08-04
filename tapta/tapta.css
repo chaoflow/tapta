@@ -9,11 +9,11 @@
 .destroyall {
     cursor: pointer;
 }
-.layer.editmode-addnewnode .arc.ctrl {
+.layer.editmode-addnode .arc.ctrl {
     opacity: 0.2;
     fill: green;
 }
-.layer.editmode-addnewnode .arc.mimoctrl {
+.layer.editmode-addnode .arc.mimoctrl {
     opacity: 0.2;
     stroke: green;
 }
@@ -31,6 +31,12 @@
 .layer.editmode-remove .subtractable.ctrl {
     opacity: 0.2;
     fill: red;
+}
+.library .libitem{
+    cursor: pointer;
+}
+.library .libitem.highlight {
+    color: red;
 }
 .mimoctrl {
     fill: None;
