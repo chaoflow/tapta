@@ -117,7 +117,11 @@ define([
             $(this.el).html(_.template(
                 'Node: <%= type %>, <%= cid %><br>'
                 + 'Label: '
-                + '<input type="input" name="label" value="<%= label %>" /><br>'
+                + '<input type="input"'
+                + ' name="label"'
+                + ' value="<%= label %>"'
+                + ' class="label"'
+                + ' /><br>'
                 + 'Description: '
                 + '<textarea name="description" rows="10">'
                 + '<%= description %>'
@@ -128,6 +132,7 @@ define([
                 label: this.selected.get('label') || '',
                 description: this.selected.get('description') || ''
             }));
+            this.$(".label")[0].focus();
             return this;
         },
         keyup: function(info) {
