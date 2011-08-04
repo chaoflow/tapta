@@ -120,6 +120,7 @@ define([
             this.ody = info.dy;
         }
     });
+    // XXX: this is bad!
     var pathmergemode = new PathMergeMode();
 
     // a controller that attaches to a layer
