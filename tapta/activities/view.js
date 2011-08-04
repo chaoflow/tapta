@@ -55,10 +55,9 @@ define([
         bindToModel: function(model) {
             this.model = model;
 
-            // without a model we are finished
-            if (model === undefined) return;
+            this.graphview.bindToGraph(model && this.model.graph);
 
-            this.graphview.bindToGraph(this.model.graph);
+            if (model === undefined) return;
 
             // XXX: for now we just rebind if the graph changes
             var graph = this.model.graph;
@@ -75,17 +74,21 @@ define([
             this.model.bind("change:raked", this.rake);
         },
         rake: function() {
+            console.group("rake: "+this.abspath());
             // XXX: rethink whether this should be the layerview or model
             // tell the next layer whether and which activity to display
-            var layerview = this.layerview;
-            if (layerview.next) {
+            var layer = this.layerview.model;
+            if (layer.next) {
                 var raked = this.model && this.model.get('raked');
                 var activity = raked && raked.get('activity');
-                if (layerview.next.activity !== activity) {
-                    layerview.next.activity = activity;
-                    layerview.next.trigger("change:activity");
+                console.log("Setting activity: ", activity);
+                if (layer.next.activity !== activity) {
+                    console.log("really");
+                    layer.next.activity = activity;
+                    layer.next.trigger("change:activity");
                 }
             }
+            console.groupEnd();
         },
         render: function() {
             // XXX: where to get flavour (mode) from? how is it changed?

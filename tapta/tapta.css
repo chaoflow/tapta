@@ -67,6 +67,10 @@
     fill: #424242;
     stroke: None;
 }
+.rake {
+    fill: white;
+    stroke: grey;
+}
 .tool {
     cursor: pointer;
 }

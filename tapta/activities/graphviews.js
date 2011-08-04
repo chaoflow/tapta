@@ -255,6 +255,19 @@ define([
                 this.render();
             }, this));
         },
+        ctrls: function(canvas) {
+            var cfg = CFG.symbols.action,
+                ctrls = canvas.set(),
+                geo = this.geometry,
+                width = geo.width / 3,
+                height = cfg.height / 3,
+                x = geo.x + 2/3 * geo.width,
+                y = geo.y + (geo.height + cfg.height) / 2 - height,
+                rect = canvas.rect(x, y, width, height, cfg.r);
+            rect.node.setAttribute("class", "rake");
+            ctrls.push(rect);
+            return ctrls;
+        },
         // a box with round corners and a label, centered
         symbol: function(canvas) {
             var cfg = CFG.symbols.action,

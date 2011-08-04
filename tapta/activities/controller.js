@@ -139,9 +139,21 @@ define([
             );
 
             switch (event) {
-            case "editmode":
-                // switch to editmode
-                this.layerview.editmode = info;
+            case "click":
+                if ((info.view.model.type === "action") &&
+                    (info.idx === 0)) {
+                    // tell next layer which activity to display
+                    var action = info.view.model.payload,
+                        layer = this.layerview.model;
+                    if (action.get('activity') === undefined) {
+                        action.set({
+                            activity: layer.next.activities.create()
+                        });
+                        action.save();
+                    }
+                    layer.activity.set({raked: action});
+                    layer.activity.save();
+                }
                 break;
             case "dndstart":
                 // switch to pathmergemode
@@ -155,6 +167,11 @@ define([
                 break;
             case "dndstop":
                 this.layerview.editmode = this.prev_editmode;
+                break;
+            case "editmode":
+                // switch to editmode
+                this.layerview.editmode = info;
+                break;
             }
 
             // supported operations
