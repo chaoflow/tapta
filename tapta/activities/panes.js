@@ -50,7 +50,9 @@ define([
     });
 
 
-    // things to be put in panes
+    // things to be put in panes - APIs are not stable here
+    // especially some mixup/mashup of editmode and tool right now
+
     var Tool = base.View.extend({
         tagName: "li",
         className: "tool",
@@ -89,7 +91,69 @@ define([
         }
     });
 
+    var PropertiesView = base.View.extend({
+        tagName: "div",
+        className: "properties",
+        events: {
+            "keyup" : "keyup"
+        },
+        initialize: function(props) {
+            this.activity = props.activity;
+            if (this.activity === undefined) return;
+            this.activity.bind("change:selected", this.render);
+        },
+        render: function() {
+            $(this.el).text("");
+            if (this.activity === undefined) return this;
+            if (this.activity.get('selected') === undefined) return this;
+            $(this.el).html(_.template(
+                'Node: <%= type %>, <%= cid %><br>'
+                + 'Label: '
+                + '<input type="input" name="label" value="<%= label %>" /><br>'
+                + 'Description: '
+                + '<textarea name="description" rows="10">'
+                + '<%= description %>'
+                + '</textarea><br>'
+            , {
+                cid: this.selected.cid,
+                type: this.selected.type,
+                label: this.selected.get('label') || '',
+                description: this.selected.get('description') || ''
+            }));
+            return this;
+        },
+        keyup: function(info) {
+            this.unsaved(info);
+            this.save(info);
+        },
+        save: _.debounce(function(info) {
+            var data = {},
+                field = info.srcElement;
+            data[field.name] = field.value;
+            this.selected.set(data);
+            this.selected.save();
+            $(field).removeClass("unsaved");
+        }, 500),
+        unsaved: function(info) {
+            $(info.srcElement).addClass("unsaved");
+        }
+    });
+    Object.defineProperties(PropertiesView.prototype, {
+        selected: { get: function() { return this.activity.get('selected'); } }
+    });
+
+
+    // click -> select for changing properties
+    // drag final node -> drop on mimo ctrl area
     var SelectTool = Tool.extend({
+        act: function(info) {
+            var node = info.view.model.payload;
+            // ignore nodes, that have non-object payloads (initial, final,...)
+            if (node.type === undefined) return;
+            this.layerview.model.activity.set({
+                selected: info.view.model.payload
+            });
+        }
     });
 
     var gv = require('./graphviews');
@@ -132,6 +196,7 @@ define([
                 source.save();
                 // XXX: this currently triggers rebinding of the graphview
                 graph.trigger("rebind");
+                // XXX: select newly added node and move focus to label field
             }
         }
     });

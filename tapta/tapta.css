@@ -1,12 +1,10 @@
+/* keep this alphabetically sorted at all costs */
 .arc {
     stroke: #424242;
     stroke-width: 2;
 }
 .arc.ctrl {
     opacity: 0;
-}
-body {
-    max-width: 960px;
 }
 .destroyall {
     cursor: pointer;
@@ -19,18 +17,18 @@ body {
     opacity: 0.2;
     stroke: green;
 }
-.layer.editmode-pathmerge .arc.ctrl.pathmerge {
+.layer.editmode-pathmerge .arc.pathmerge.ctrl {
     opacity: 0.2;
     fill: green;
 }
-.layer.editmode-pathmerge .arc.mimoctrl.pathmerge {
+.layer.editmode-pathmerge .arc.pathmerge.mimoctrl {
     opacity: 0.2;
     stroke: green;
 }
 .layer.editmode-remove .subtractable {
     stroke: red;
 }
-.layer.editmode-remove .ctrl.subtractable {
+.layer.editmode-remove .subtractable.ctrl {
     opacity: 0.2;
     fill: red;
 }
@@ -74,4 +72,19 @@ body {
 }
 .toolbar .tool.highlight {
     color: red;
+}
+/* scratchpad below here, should be replaced with proper classes */
+body {
+    max-width: 960px;
+}
+input {
+    outline-color: green;
+    width: 100%;
+}
+textarea {
+    outline-color: green;
+    width: 100%
+}
+.unsaved {
+    outline-color: orange;
 }

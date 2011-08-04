@@ -37,14 +37,13 @@ define([
         propagateEvents: false,
         panescfg: [
             {name: "left", content: [
-                // XXX: waits for rewrite
-                // {
-                //     ViewProto: panes.PropertiesView,
-                //     propscallback: function() {
-                //         return {name: "props",
-                //                 model: this.model.activity};
-                //     }
-                // }
+                {
+                    ViewProto: panes.PropertiesView,
+                    propscallback: function() {
+                        return {name: "properties",
+                                activity: this.model.activity};
+                    }
+                }
             ], extraClassNames: ["cell", "width-2", "position-0"]},
             {name: "center", content: [
                 {
