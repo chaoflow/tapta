@@ -337,7 +337,12 @@ define([
                                           layer: this.layer,
                                           model: action});
             }, this);
-            // XXX listen on remove/add/change events of actions
+            this.collection.bind("add", _.bind(function(model) {
+                var view = this.append(LibItemView, {name: model.id,
+                                                     layer: this.layer,
+                                                     model: model});
+                $(this.el).append(view.render().el);
+            }, this));
         }
     });
 
