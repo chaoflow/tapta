@@ -41,7 +41,7 @@ define([
                 var ViewProto = cfg.ViewProto,
                     props = cfg.propscallback !== undefined
                         ? cfg.propscallback.call(this)
-                        : cfg.props;
+                        : _.clone(cfg.props);
                 pane.append(ViewProto, props);
             }, this);
 
