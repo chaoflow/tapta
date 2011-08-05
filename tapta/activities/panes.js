@@ -97,7 +97,7 @@ define([
         tagName: "div",
         className: "properties",
         events: {
-            "keyup" : "keyup"
+            "keydown" : "keydown"
         },
         initialize: function(props) {
             this.layer = props.layer;
@@ -137,7 +137,7 @@ define([
             this.$(".label")[0].focus();
             return this;
         },
-        keyup: function(info) {
+        keydown: function(info) {
             this.unsaved(info);
             this.save(info);
         },
