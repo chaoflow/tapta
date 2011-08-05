@@ -74,21 +74,17 @@ define([
             this.model.bind("change:raked", this.rake);
         },
         rake: function() {
-            console.group("rake: "+this.abspath());
             // XXX: rethink whether this should be the layerview or model
             // tell the next layer whether and which activity to display
             var layer = this.layerview.model;
             if (layer.next) {
                 var raked = this.model && this.model.get('raked');
                 var activity = raked && raked.get('activity');
-                console.log("Setting activity: ", activity);
                 if (layer.next.activity !== activity) {
-                    console.log("really");
                     layer.next.activity = activity;
                     layer.next.trigger("change:activity");
                 }
             }
-            console.groupEnd();
         },
         render: function() {
             // XXX: where to get flavour (mode) from? how is it changed?
