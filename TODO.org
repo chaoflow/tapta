@@ -50,54 +50,96 @@ for in the space allocation
 
 --> edges have no real space, the edge area is drawn along the arrow,
     the arrow is drawn between vertices - that's it
-*** TODO new local action bar
+*** DONE new local action bar
+CLOSED: [2011-08-05 Fri 13:22]
 goes with [[*port%20to%20new%20controller][port to new controller]]
-*** TODO port to new controller
+*** DONE port to new controller
+CLOSED: [2011-08-05 Fri 13:22]
 **** render previous panels with new infrastructure
 **** rewrite to make use of controller
 events should not be that informative
 
 the controller knows whats going on, and whoever triggers an event
 puts as much information in as sanely available
-*** TODO new properties too
-*** TODO (fix) CSS
+*** DONE (fix) CSS
+CLOSED: [2011-08-05 Fri 13:23]
 ideally seems: parse the overall structure vie js and assign fixed
 positions according to horizontal/vertical weight of contained divs
 **** requires
 ***** setting CSS via js
 ***** querying of browser size via js -> available space
-*** TODO merge path into other, ie. drag final node onto mimo
-*** TODO display name of actions
-*** TODO panes
+--> deco grid
+*** DONE display name of actions
+CLOSED: [2011-08-05 Fri 13:24]
+*** DONE clear rake hierarchy when raked action is removed
+CLOSED: [2011-08-05 Fri 13:25]
+*** DONE panes
+CLOSED: [2011-08-05 Fri 13:24]
 **** flags to enable hiding: left, top, right, bottom
 **** handles to hide if enabled in an direction
 **** global and layer-local mode
-**** TODO rethink panes, how are they rerendered and learn about new activity
-**** TODO base class for tools to be docked in panes
-**** TODO properties tool, layer-local, docked by default on the left
+**** DONE rethink panes, how are they rerendered and learn about new activity
+CLOSED: [2011-08-05 Fri 13:24]
+**** DONE base class for tools to be docked in panes
+CLOSED: [2011-08-05 Fri 13:24]
+**** DONE properties tool, layer-local, docked by default on the left
+CLOSED: [2011-08-05 Fri 13:24]
 ***** instant delayed update of changed properties
 ***** label and description
-**** TODO action library tool, layer-local, docked by default on the right
+**** DONE action library tool, layer-local, docked by default on the right
+CLOSED: [2011-08-05 Fri 13:24]
 ***** show all actions of the layer
 ***** filter on action label (name is now used within the storage)
 ***** new node functionality via menubar
 ***** delete node
 ****** only if not used anywhere anymore
 ****** maybe not delete, but just blacklist
+*** DONE new properties too
+CLOSED: [2011-08-05 Fri 17:00]
+saving of properties does not work on tablet
+*** DONE debug infrastructure for fennec (mobile firefox)
+CLOSED: [2011-08-05 Fri 17:01]
+console², mobile tools, nightly tester
+well - better than nothing
+*** TODO merge path into other, ie. drag final node onto mimo
+dragging of final node does not work on 
 *** TODO edges to query source node for label
 **** bind edges to their source node to update label
 **** background: decmers provide their answers to be displayed on outedges
-*** TODO clear rake hierarchy when raked action is removed
+*** TODO removing must not select
+*** TODO fix spaceOut
 ** med prio
 *** DONE fix existing tests
 CLOSED: [2011-06-04 Sat 03:48]
-*** TODO select arrow (for properties) icon
+*** DONE select arrow (for properties) icon
+CLOSED: [2011-08-05 Fri 13:25]
 exist but without icon so far
+*** DONE tool to measure test coverage
+CLOSED: [2011-06-21 Tue 08:44]
+**** firebug extension
+https://addons.mozilla.org/en-US/firefox/addon/code-coverage-v2-for-firebug/
+however, with firebug 1.7.3 and firefox 5 the result varies from run
+to run
+**** jscoverage
+http://siliconforks.com/jscoverage/
+http://blog.siliconforks.com/2010/04/28/jscoverage-jquery/
+looks good
+*** DONE action library tool
+CLOSED: [2011-08-05 Fri 13:25]
+*** DONE draw vertical lines for decmers
+CLOSED: [2011-08-05 Fri 13:25]
+*** DONE full test coverage
+CLOSED: [2011-07-12 Tue 01:49]
+**** for non-view
+--> mostly done
+**** for view?
+--> not sure how to do: new ticket
+*** DONE move ctrl area style to css?
+CLOSED: [2011-08-05 Fri 13:26]
 *** TODO print
 **** 6 layers, one per page, landscape
 **** zoom to fit?
 **** generate pdf or use browser?
-*** TODO action library tool
 *** TODO decmer library tool,
 **** like action lib but on decmers
 **** show only decmers that have a name
@@ -116,28 +158,10 @@ XXX: this might be outdated
 *** TODO move diagram around within one layer
 *** TODO zooming within one layer
 *** TODO draw rake symbol
-*** TODO draw vertical lines for decmers
 *** TODO tests need to properly cleanup after themselves
 **** properly destroy all elements
 **** localstorage: remove empty keys
-*** DONE tool to measure test coverage
-CLOSED: [2011-06-21 Tue 08:44]
-**** firebug extension
-https://addons.mozilla.org/en-US/firefox/addon/code-coverage-v2-for-firebug/
-however, with firebug 1.7.3 and firefox 5 the result varies from run
-to run
-**** jscoverage
-http://siliconforks.com/jscoverage/
-http://blog.siliconforks.com/2010/04/28/jscoverage-jquery/
-looks good
-*** DONE full test coverage
-CLOSED: [2011-07-12 Tue 01:49]
-**** for non-view
---> mostly done
-**** for view?
---> not sure how to do: new ticket
 *** TODO test coverage for view code?
-*** TODO move ctrl area style to css?
 *** TODO move drawing code into raphael plugin: raphael.fn.tapta?
 ** low prio and easy
 Theses tasks are meant for newbies to enter the project
