@@ -97,7 +97,7 @@ define([
         tagName: "div",
         className: "properties",
         events: {
-            "keydown" : "keydown"
+            "keydown": "keydown"
         },
         initialize: function(props) {
             this.layer = props.layer;
@@ -125,9 +125,10 @@ define([
                 + ' class="label"'
                 + ' /><br>'
                 + 'Description: '
-                + '<textarea name="description" rows="10">'
+                + '<textarea class="description" name="description" rows="10">'
                 + '<%= description %>'
                 + '</textarea><br>'
+                + '<div width="100%" class="update">Update</div>'
             , {
                 cid: this.selected.cid,
                 type: this.selected.type,
@@ -135,22 +136,30 @@ define([
                 description: this.selected.get('description') || ''
             }));
             this.$(".label")[0].focus();
+            this.$(".update").click(_.bind(function() {
+                this.save([this.$(".label")[0], this.$(".description")[0]]);
+            }, this));
             return this;
         },
         keydown: function(info) {
-            this.unsaved(info);
-            this.save(info);
+            this.unsaved(info.srcElement);
+            this.save_debounced([info.srcElement]);
         },
-        save: _.debounce(function(info) {
-            var data = {},
-                field = info.srcElement;
-            data[field.name] = field.value;
+        save: function(els) {
+            console.log("huhu");
+            var data = foldl(function(acc, el) {
+                $(el).removeClass("unsaved");
+                acc[el.name] = el.value;
+                return acc;
+            }, {}, els);
             this.selected.set(data);
             this.selected.save();
-            $(field).removeClass("unsaved");
-        }, 500),
-        unsaved: function(info) {
-            $(info.srcElement).addClass("unsaved");
+        },
+        save_debounced: _.debounce(function(els) {
+            this.save(els);
+        }, 400),
+        unsaved: function(el) {
+            $(el).addClass("unsaved");
         }
     });
     Object.defineProperties(PropertiesView.prototype, {
