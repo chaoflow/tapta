@@ -74,7 +74,7 @@ define([
             // two different things after all.
             var type = (this.type !== "decmer")
                     ? this.type
-                    : (this.next.length > 1) ? "decision" : "merge"; 
+                    : (this.next.length > 1) ? "decision" : "merge";
             return CFG.nodes[type].fixedwidth;
         }},
         geometry: {get: function() { return this._geometry; }},
