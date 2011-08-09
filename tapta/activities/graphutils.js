@@ -56,9 +56,11 @@ define([
     var Vertex = function(attrs) {
         this.id = this.cid = attrs && attrs.id;
         this._next = [];
-        this._geometry = {};
         this._minwidth = 1000;
         this._minheight = 1000;
+        this._geometry = {
+            height: this._minheight
+        };
         this.predecessors = [];
         this.successors = [];
     };
@@ -79,17 +81,34 @@ define([
     });
 
     var Arc = function(id, source, target) {
+        // XXX: should we really provide this.id
         this.id = this.cid = id;
         this.source = source;
         this.target = target;
-        this._geometry = {};
         this._minwidth = 1000;
         this._minheight = 1000;
-        this.predecessors = [];
-        this.successors = [];
+        this._geometry = {
+            height: this._minheight
+        };
+        if (source !== undefined) {
+            this.predecessors = [source];
+            source.successors.push(this);
+        }
+        if (target !== undefined) {
+            this.successors = [target];
+            target.predecessors.push(this);
+        }
     };
     _(Arc.prototype).extend({
         type: "arc",
+        destroy: function() {
+            var srcidx = this.source.successors.indexOf(this),
+                tgtidx = this.target.successors.indexOf(this);
+            if (srcidx === -1) throw "Deep shit!";
+            if (tgtidx === -1) throw "Deep shit!";
+            this.source.successors.splice(srcidx, 1);
+            this.target.predecessors.splice(tgtidx, 1);
+        },
         setGeometry: function(obj) {
             _.extend(this._geometry, obj);
         }
