@@ -16,9 +16,11 @@ define([
     // successors. A node is eithe a string or an object with an id.
     var Vertex = Model.extend({
         initialize: function() {
-            this._geometry = {};
             this._minwidth = 1000;
             this._minheight = 1000;
+            this._geometry = {
+                height: this._minheight
+            };
             this.predecessors = [];
             this.successors = [];
         },
@@ -88,20 +90,28 @@ define([
     // arcs are stored implicitly as direct successors on vertices
     var Graph = Collection.extend({
         model: Vertex,
-        arcs: function() {
-            // XXX: spaceOut needs to run before that, NOT nice!
-            return _.values(this.arcstorage);
-        },
-        fetch: function() {
-            // fetch results in new cids, arcstorage uses cids
-            Collection.prototype.fetch.call(this);
-            this.arcstorage = {};
-        },
         initialize: function(attrs, opts) {
             // A nodelib returns nodes by id: nodelib.get(id) -> node
             this.nodelib = opts.nodelib;
-            this.arcstorage = {};
+            this._arcstorage = {};
             _.bindAll(this);
+            this.bind("change:next", function(vertex, next) {
+                var oldnext = vertex.previous('next') || [];
+                // remove arcs for removed targets
+                _.each(_.difference(oldnext, next), function(target) {
+                    var arcid = [vertex.cid, idx, target.cid].join(':'),
+                        arc = this._arcstorage[arcid];
+                    arc.destroy();
+                    delete this._arcstorage[arcid];
+                }, this);
+                // add arcs for new vertices
+                _.each(next, function(target, idx) {
+                    if (oldnext.indexOf(target) !== -1) return;
+                    var arcid = [vertex.cid, idx, target.cid].join(':'),
+                        arc = new graphutils.Arc(arcid, vertex, target);
+                    this._arcstorage[arcid] = arc;
+                }, this);
+            }, this);
             // space out if something is added but no next was
             // changed, i.e. a new completely parallel path
             //this.bind("add", this.spaceOut);
@@ -111,6 +121,8 @@ define([
         },
         // goes hand-in-hand with Vertex.toJSON
         parse: function(resp) {
+            // reset arc storage
+            this._arcstorage = {};
             // create vertices and cache them by id. in the next step
             // this is used to replace references to ids with the real
             // vertices.
@@ -121,7 +133,7 @@ define([
                 return vertex;
             }, this);
 
-            // replace ids with the real objects
+            // replace ids with the real objects and generate arcs
             _.each(vertices, function(vertex) {
                 var attrs = vertex.attributes,
                     payload = attrs['payload'];
@@ -129,30 +141,28 @@ define([
                     if (!this.nodelib) throw "Need a nodelib";
                     attrs['payload'] = this.nodelib.get(payload.slice(3));
                 }
-                _.each(['next'], function(name) {
-                    attrs[name] = _.map(attrs[name], function(id) {
-                        return cache[id];
-                    });
-                });
+                attrs.next = _.map(attrs.next, function(id, idx) {
+                    var target = cache[id],
+                        arcid = [vertex.cid, idx, target.cid].join(':'),
+                        arc = new graphutils.Arc(arcid, vertex, target);
+                    this._arcstorage[arcid] = arc;
+                    return target;
+                }, this);
             }, this);
             return vertices;
-        },
-        paths: function() {
-            // we need to generate arcs between the vertices and once
-            // generated we always need to return the very same arcs
-            return graphutils.paths(this.sources(), this.arcstorage);
         },
         spaceOut: function() {
             // returns a list of all vertices; assigns position and
             // size as side effect
-            return graphutils.spaceOut(this.paths(), 0.5);
-        },
-        sinks: function() {
-            return graphutils.sinks(this.models);
-        },
-        sources: function() {
-            return graphutils.sources(this.models);
+            return graphutils.spaceOut(this.sources, 600);
         }
+    });
+    Object.defineProperties(Graph.prototype, {
+        arcs: {get: function() { return _.values(this._arcstorage); }},
+        // sinks are vertices without successors
+        sinks: {get: function() { return graphutils.sinks(this.models); }},
+        // sources are vertices without predecessors
+        sources: {get: function() { return graphutils.sources(this.models); }}
     });
 
     return {

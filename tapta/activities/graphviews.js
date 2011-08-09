@@ -466,7 +466,7 @@ define([
                 srcview.successors.push(arcview);
                 tgtview.predecessors.push(arcview);
                 return acc;
-            }, {}, graph.arcs(), this);
+            }, {}, graph.arcs, this);
 
             // XXX: for now we just rebind to graph
             // We are responsible for selectivly removing or adding views
