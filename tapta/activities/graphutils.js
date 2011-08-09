@@ -208,7 +208,7 @@ define([
     // x = B, tails = [D]
     // --> [B, B:0:D, D]
     // ...
-    var paths = function(vertex, arcstorage) {
+    var paths_creating_arcs = function(vertex, arcstorage) {
         // If arcstorage is defined, it will be used to return always
         // the same arc objects.
         if (arcstorage === undefined) arcstorage = {};
@@ -225,6 +225,19 @@ define([
                 return [vertex, arc].concat(tail);
             }, paths(next, arcstorage));
         }, vertex.next));
+    };
+
+    var sources2paths = function(vertex) {
+        if (_.isArray(vertex)) return foldl(function(acc, x) {
+            return acc.concat(sources2paths(x));
+        }, [], vertex);
+        // edge case: no next vertices -> one path with only the current vertex
+        if (vertex.successors.length === 0) return [[vertex]];
+        return foldl("acc.concat(x)", [], map(function(successor) {
+            return map(function(tail) {
+                return [vertex].concat(tail);
+            }, sources2paths(successor));
+        }, vertex.successors));
     };
 
     // XXX: broken, as it does not account for arcs
@@ -442,7 +455,6 @@ define([
         commaJoin: commaJoin,
         graph: graph,
 //        minwidth: minwidth,
-        paths: paths,
         pluckId: pluckId,
         reduce: reduce,
         sinks: sinks,
