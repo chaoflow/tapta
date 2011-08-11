@@ -81,6 +81,13 @@ define([
             var controller = new Controller(this);
             this.bind("all", controller.handler);
 
+            if (this.model.prev === undefined) {
+                $(this.el).addClass("top");
+            }
+            if (this.model.next === undefined) {
+                $(this.el).addClass("bottom");
+            }
+
             // set default editmode, a bit hackish
             this.child.right.child.toolbar.child.select.clicked();
         },

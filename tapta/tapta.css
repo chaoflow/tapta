@@ -1,4 +1,11 @@
 /* keep this alphabetically sorted at all costs */
+.layer .activity {
+    border: solid 1px;
+    border-radius: 15px;
+}
+.layer.top .activity {
+    border-radius: 0px;
+}
 .arc {
     stroke: #424242;
     stroke-width: 2;
