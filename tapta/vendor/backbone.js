@@ -804,8 +804,9 @@
     //
     //     var el = this.make('li', {'class': 'row'}, this.model.escape('title'));
     //
-    make : function(tagName, attributes, content) {
-      var el = document.createElement(tagName);
+    make : function(tagName, attributes, content, xmlns) {
+      var el = xmlns ? document.createElementNS(xmlns, tagName)
+                     : document.createElement(tagName);
       if (attributes) $(el).attr(attributes);
       if (content) $(el).html(content);
       return el;
@@ -861,7 +862,7 @@
       var attrs = {};
       if (this.id) attrs.id = this.id;
       if (this.className) attrs["class"] = this.className;
-      this.el = this.make(this.tagName, attrs);
+      this.el = this.make(this.tagName, attrs, "", this.xmlns);
     }
 
   });
