@@ -92,6 +92,9 @@ define([
             this.child = {};
             this.children = [];
 
+            if (props.attrs) this.attrs = _.extend(this.attrs || {},
+                                                   props.attrs);
+
             if (DEBUG.view.render) {
                 var realrender = this.render;
                 this.render = function() {
