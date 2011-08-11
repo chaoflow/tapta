@@ -378,7 +378,7 @@
         }
         return newf;
     }
- 
+
     R.getRGB = cacher(function (colour) {
         if (!colour || !!((colour = Str(colour)).indexOf("-") + 1)) {
             return {r: -1, g: -1, b: -1, hex: "none", error: 1};
@@ -518,7 +518,7 @@
             return {x: 0, y: 0, width: 0, height: 0};
         }
         path = path2curve(path);
-        var x = 0, 
+        var x = 0,
             y = 0,
             X = [],
             Y = [],
@@ -1374,7 +1374,7 @@
                                 $(ig, {x: 0, y: 0});
                                 ig.setAttributeNS(o.paper.xlink, "href", isURL[1]);
                                 el[appendChild](ig);
- 
+
                                 var img = doc.createElement("img");
                                 img.style.cssText = "position:absolute;left:-9999em;top-9999em";
                                 img.onload = function () {
@@ -1442,7 +1442,7 @@
                     }
                 }
             }
-            
+
             tuneText(o, params);
             if (rotxy) {
                 o.rotate(rotxy.join(S));
@@ -1458,7 +1458,7 @@
             var a = el.attrs,
                 node = el.node,
                 fontSize = node.firstChild ? toInt(doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size"), 10) : 10;
- 
+
             if (params[has]("text")) {
                 a.text = params.text;
                 while (node.firstChild) {
@@ -1832,7 +1832,7 @@
     } else {
         paperproto.safari = function () {};
     }
- 
+
     // Events
     var preventDefault = function () {
         this.returnValue = false;
@@ -2705,7 +2705,7 @@
         return "Rapha\xebl\u2019s object";
     };
     R.ae = animationElements;
- 
+
     // Set
     var Set = function (items) {
         this.items = [];
