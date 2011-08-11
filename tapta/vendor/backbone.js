@@ -929,9 +929,14 @@
     //
     //     var el = this.make('li', {'class': 'row'}, this.model.escape('title'));
     //
-    make : function(tagName, attributes, content) {
-      var el = document.createElement(tagName);
-      if (attributes) $(el).attr(attributes);
+    make : function(tagName, attributes, content, xmlns) {
+      var el = xmlns ? document.createElementNS(xmlns, tagName)
+                     : document.createElement(tagName);
+      // XXX: $(el).attr fails on SVG for height and width, version works
+      //if (attributes) $(el).attr(attributes);
+      for (var key in attributes) {
+        el.setAttribute(key, attributes[key]);
+      }
       if (content) $(el).html(content);
       return el;
     },
@@ -987,10 +992,10 @@
     // an element from the `id`, `className` and `tagName` proeprties.
     _ensureElement : function() {
       if (!this.el) {
-        var attrs = this.attributes || {};
+        var attrs = this.attrs ? _.clone(this.attrs) : {};
         if (this.id) attrs.id = this.id;
         if (this.className) attrs['class'] = this.className;
-        this.el = this.make(this.tagName, attrs);
+        this.el = this.make(this.tagName, attrs, "", this.xmlns);
       } else if (_.isString(this.el)) {
         this.el = $(this.el).get(0);
       }
