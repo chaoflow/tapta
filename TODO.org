@@ -101,13 +101,22 @@ saving of properties does not work on tablet
 CLOSED: [2011-08-05 Fri 17:01]
 console², mobile tools, nightly tester
 well - better than nothing
+*** DONE fix spaceOut
+CLOSED: [2011-08-11 Thu 16:40]
+good enough
+*** TODO labels for decisions
 *** TODO merge path into other, ie. drag final node onto mimo
-dragging of final node does not work on 
+dragging of final node does not work on tablets
 *** TODO edges to query source node for label
 **** bind edges to their source node to update label
 **** background: decmers provide their answers to be displayed on outedges
 *** TODO removing must not select
-*** TODO fix spaceOut
+*** TODO investigate keyup/down events in firefox, propertiesview
+*** TODO json export/import to filesystem
+*** TODO scrolling: move diagram around within one layer
+*** TODO top-layer without edges
+***** how do we place them?
+*** TODO bottom-layer without rakes
 ** med prio
 *** DONE fix existing tests
 CLOSED: [2011-06-04 Sat 03:48]
@@ -155,16 +164,12 @@ models/collection with parent set and models that are a member of
 collections.
 
 XXX: this might be outdated
-*** TODO move diagram around within one layer
 *** TODO zooming within one layer
 *** TODO draw rake symbol
 *** TODO tests need to properly cleanup after themselves
 **** properly destroy all elements
 **** localstorage: remove empty keys
-*** TODO test coverage for view code?
-*** TODO move drawing code into raphael plugin: raphael.fn.tapta?
 ** low prio and easy
 Theses tasks are meant for newbies to enter the project
-*** TODO top-layer without edges
-***** how do we place them?
-*** TODO bottom-layer without rakes
+*** TODO move drawing code into raphael plugin: raphael.fn.tapta?
+*** TODO test coverage for view code?
