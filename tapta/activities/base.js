@@ -131,6 +131,8 @@ define([
         append: function(ViewProto, props) {
             if (this.child[props.name] !== undefined) throw "Name collision";
             var child = this.defchild(ViewProto, props);
+            // XXX: rethink this, do we need default store for named children?
+            // check eg. ActivityView with svg for an alternative
             this.child[props.name] = child;
             this.children.push(child);
             return child;
