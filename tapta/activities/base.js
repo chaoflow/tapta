@@ -117,12 +117,16 @@ define([
 
             // add name and extraClassNames as additional classes
             // XXX: maybe should happen during render
-            var classes = [this.name];
+            var classes = [this.name],
+                existing = this.el.getAttribute("class");
+            if (existing) classes = [existing].concat(classes);
             classes = classes.concat(this.extraClassNames);
             if (props && props.extraClassNames) {
                 classes = classes.concat(props.extraClassNames);
             }
-            _.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
+            // XXX: this does now work with SVG elements
+            //_.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
+            this.el.setAttribute("class", classes.join(" "));
 
             if (DEBUG.view.init) console.groupEnd();
         },
