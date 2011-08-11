@@ -807,7 +807,11 @@
     make : function(tagName, attributes, content, xmlns) {
       var el = xmlns ? document.createElementNS(xmlns, tagName)
                      : document.createElement(tagName);
-      if (attributes) $(el).attr(attributes);
+      // XXX: $(el).attr fails on SVG for height and width, version works
+      for (var key in attributes) {
+        el.setAttribute(key, attributes[key]);
+      }
+      //if (attributes) $(el).attr(attributes);
       if (content) $(el).html(content);
       return el;
     },
@@ -859,7 +863,7 @@
     // Ensure that the View has a DOM element to render into.
     _ensureElement : function() {
       if (this.el) return;
-      var attrs = {};
+      var attrs = this.attrs ? _.clone(this.attrs) : {};
       if (this.id) attrs.id = this.id;
       if (this.className) attrs["class"] = this.className;
       this.el = this.make(this.tagName, attrs, "", this.xmlns);
