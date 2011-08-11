@@ -83,10 +83,9 @@ define([
         // subclasses need to "super"-call, and the upside, that its
         // clearer what is called when.
         constructor: function(props) {
-            // these two are needed by this.abspath
-            if (props.name === undefined) throw "Need a name";
-            this.name = props.name;
-            this.parent = props.parent;
+            // these two are used by this.abspath
+            if (props && props.name) this.name = props.name;
+            if (props && props.parent) this.parent = props.parent;
             if (DEBUG.view.init) console.group("init:"+this.abspath());
 
             // children by name and in an ordered list
@@ -120,7 +119,9 @@ define([
             // XXX: maybe should happen during render
             var classes = [this.name];
             classes = classes.concat(this.extraClassNames);
-            classes = classes.concat(props.extraClassNames);
+            if (props && props.extraClassNames) {
+                classes = classes.concat(props.extraClassNames);
+            }
             _.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
 
             if (DEBUG.view.init) console.groupEnd();
