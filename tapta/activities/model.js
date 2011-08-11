@@ -124,6 +124,7 @@ define([
         model: DecMer
     });
 
+    // An activity has a graph and remembers the raked and selected nodes
     var Activity = Model.extend({
         initialize: function(attrs, opts) {
             this.layer = opts.layer || this.collection.parent;
@@ -131,25 +132,6 @@ define([
                 name: 'graph',
                 nodelib: this.layer.nodelib
             });
-        },
-        // remove a node from all paths
-        remove: function(node) {
-            _.each(this.paths.toArray(), function(path) {
-                var nodes = path.get('nodes');
-                var idx = nodes.indexOf(node);
-                if (idx !== -1) {
-                    if (node instanceof Final) {
-                        path.destroy();
-                        this.paths.remove(path);
-                        node.destroy();
-                        this.layer.finals.remove(node);
-                    } else {
-                        nodes.splice(idx,1);
-                        path.set({nodes: nodes});
-                        path.save();
-                    }
-                }
-            }, this);
         },
         toJSON: function() {
             var attributes = _.clone(this.attributes);
