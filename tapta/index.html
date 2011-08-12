@@ -17,35 +17,6 @@
           media="screen" />
   </head>
   <body>
-    <!-- editor templates -->
-    <script type="text/template" id="properties_template">
-      <strong>Properties</strong>
-      <div class="props">
-        {{each hidden}}
-        <input type="input
-                     " name="${$index}" value="${$value}" >
-        {{/each}}
-        {{each singleline}}
-        Label:
-        <input type="input" name="${$index}" value="${$value}" >
-        {{/each}}
-        {{each multiline}}
-        Description:
-        <textarea name="${$index}">${$value}</textarea>
-        {{/each}}
-        <input type="button"
-               name="update"
-               value="update"
-               class="update" />
-    </script>
-    <script type="text/template" id="library_template">
-      <ul>
-        {{each action}}
-        <li id="${$value.id}">${$value.label}</li>
-        {{/each}}
-      </ul>
-    </script>
-
     <!-- tapta app -->
     <div id="tapta_app" class="tapta_app">
       Nothing was rendered
