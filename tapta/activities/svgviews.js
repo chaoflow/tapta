@@ -27,12 +27,15 @@ define([
             $(document).unbind(".panning");
         };
         var reset = function(e) {
-            this.$('.graph')[0].removeAttribute("transform");
+            this.$('.graph')[0].setAttribute(
+                "transform", "translate(0,0)"
+            );
             state[this.abspath()] = {};
         };
         var start = function(e) {
             // Ignore, if not received by us directly
-            if (event.target !== this.el) return;
+            if (e.target !== this.el) return;
+            if (e.button !== 0) return;
             // register for mousemove and mouseup
             $(this.el).bind("dblclick", _.bind(reset, this));
             $(this.el).bind("mousemove.panning", _.bind(mousemove, this));
