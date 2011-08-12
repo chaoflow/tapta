@@ -80,7 +80,7 @@ define([
         height: { get: function() { return this._geometry.height; } }
     });
 
-    var Arc = function(id, source, target) {
+    var Arc = function(id, source, target, stealthmodeo) {
         // XXX: should we really provide this.id
         this.id = this.cid = id;
         this.source = source;
@@ -90,13 +90,15 @@ define([
         this._geometry = {
             height: this._minheight
         };
-        if (source !== undefined) {
-            this.predecessors = [source];
-            source.successors.push(this);
-        }
-        if (target !== undefined) {
-            this.successors = [target];
-            target.predecessors.push(this);
+        if (!stealthmode) {
+            if (source !== undefined) {
+                this.predecessors = [source];
+                source.successors.push(this);
+            }
+            if (target !== undefined) {
+                this.successors = [target];
+                target.predecessors.push(this);
+            }
         }
     };
     _(Arc.prototype).extend({
