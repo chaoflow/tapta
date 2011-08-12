@@ -5,15 +5,13 @@ define([
     './base',
     './graphutils',
     './settings',
-    './svgtools'
+    './svgviews'
 ], function(require) {
     var base = require('./base'),
         View = base.View,
         CFG = require('./settings'),
         Arc = require('./graphutils').Arc,
-        svgtools = require('./svgtools'),
-        svgarrow = svgtools.svgarrow,
-        svgpath = svgtools.svgpath;
+        svg = require('./svgviews');
 
     var xToPix = function(x) {
         return Math.round(CFG.gridsize.x * x / 1000);
@@ -22,77 +20,38 @@ define([
         return Math.round(CFG.gridsize.y * y / 1000);
     };
 
-    // ATTENTION: GraphElements are no real views: their el is not
-    // added to the DOM, instead they render SVG elements on a
-    // canvas. They also catch certain events and translate them into
-    // backbone events triggered on themselves, thus propagating them
-    // up the view hierarchy.
-    var GraphElement = View.extend({
+    var GraphElement = svg.Group.extend({
+        // whether an element can be moved around
         draggable: false,
         // whether an element can be subtracted from a graph
         subtractable: false,
-        ctrls: function(canvas) { return canvas.set(); },
-        remove: function() {
-            // remove children from canvas - our children are raphael sets
-            for (var name in this.child) {
-                this.child[name].remove();
-                delete this.child[name];
-            }
-        },
-        render: function(canvas, editmode) {
-            // remove previously rendered stuff
-            this.remove();
-            if (canvas) this.canvas = canvas;
-            else canvas = this.canvas;
-            if (editmode) this.editmode = editmode;
-            else editmode = this.editmode;
-
-            // used to create handlers for specific events and aspects of us
-            // event is the name of an event, eg. click
-            // idx is either 'symbol' or the idx of the ctrl
-            var handler = function(event, idx) {
-                // in case of dndmove its dx and dy
-                return function(dx, dy) {
-                    // trigger backbone events for svg events, this
-                    // corresponds to backbone's delegateEvents mechanism
-                    this.trigger(event, {view: this, idx: idx, dx: dx, dy: dy});
-                };
-            };
-
-            // FUTURE: investigate how/whether to use group/symbol/... SVG elements
-            // render symbol, will return a set
-            var symbol = this.child.symbol = this.symbol(canvas);
-            symbol.click(handler("click", "symbol"), this);
-            if (this.draggable) {
-                symbol.drag(
-                    handler("dndmove", "symbol"),
-                    handler("dndstart", "symbol"),
-                    handler("dndstop", "symbol"),
-                    this
-                );
-            }
-            if (this.subtractable) {
-                _.each(symbol, function(part) {
-                    part.node.setAttribute(
-                        "class",
-                        part.node.getAttribute("class") + " subtractable"
-                    );
-                });
-            }
-
-            // render controls
-            var ctrls = this.child.ctrls = this.ctrls(canvas, editmode);
-            _.each(ctrls, function(ctrl, idx) {
-                ctrl.click(handler("click", idx), this);
-                ctrl.mouseup(handler("mouseup", idx), this);
+        ctrls: function() { return []; },
+        initialize: function() {
+            this.predecessors = [];
+            this.successors = [];
+            _.each(this.symbol(), function(sym) {
+                sym.el.setAttribute("class", _.compact([
+                    sym.el.getAttribute("class"),
+                    this.subtractable ? "subtractable" : "",
+                    "symbol"
+                ]).join(" "));
+            }, this);
+            _.each(this.ctrls(), function(ctrl) {
+                ctrl.el.setAttribute("class", _.compact([
+                    ctrl.el.getAttribute("class"),
+                    "ctrl"
+                ]).join(" "));
             }, this);
         },
-        symbol: function(canvas) { throw "Not implemented"; }
+        symbol: function() { throw "Not implemented"; }
     });
     Object.defineProperties(GraphElement.prototype, {
-        // this would be the place for free positioning.
+        cfg: {get: function() {
+            return foldl("acc[x]", CFG.graphelement, this.extraClassNames);
+        }},
+        // geometry of the element and shortcuts
+        geo: {get: function() { return this.geometry; }},
         geometry: {
-            // We use fixed size and do not scale depending on available space
             get: function() {
                 var pg = this.parent.geometry,
                     mg = this.model.geometry,
@@ -105,74 +64,71 @@ define([
                 return geometry;
             }
         },
+        x: {get: function() { return this.geo.x; }},
+        y: {get: function() { return this.geo.y; }},
+        width: {get: function() { return this.geo.width; }},
+        height: {get: function() { return this.geo.height; }},
+        // center of the area and radius of circle that fits into the area
+        cx: {get: function() { return this.geo.x + this.geo.width / 2; }},
+        cy: {get: function() { return this.geo.y + this.geo.height / 2; }},
+        r: {get: function() {
+            return ((this.width < this.height) ? this.width : this.height) / 2;
+        }},
+        // whether an element can be removed from the graph (name collision)
         subtractable: {get: function() { return false; }}
     });
 
 
     // An arcview connects two vertex views
     var ArcView = GraphElement.extend({
-        initialize: function(opts) {
-            this.srcview = opts.srcview;
-            this.tgtview = opts.tgtview;
-            // An arcview can also be drawn as a ctrl of a MIMO. In
-            // that case it is an open arc, without a target/source
-            // if (opts.srcview === undefined) throw "Need srcview";
-            // if (opts.tgtview === undefined) throw "Need tgtview";
-            // XXX: bind to our source and target
-            // XXX: hack - should be in GraphElement
-            this.predecessors = [];
-            this.successors = [];
+        extraClassNames: ["arc"],
+        ctrls: function() {
+            return [
+                this.append(svg.Rect, {
+                    attrs: {
+                        x: this.x,
+                        y: this.y + (this.height - this.cfg.ctrl.height) / 2,
+                        width: this.width,
+                        height: this.cfg.ctrl.height
+                    }
+                })
+            ];
         },
-        ctrls: function(canvas, editmode) {
-            var cfg = CFG.symbols.arc.ctrl,
-                geo = this.geometry,
-                y = geo.y + geo.height / 2 - cfg.height / 2,
-                ctrls = canvas.set(),
-                ctrl = canvas.rect(geo.x, y, geo.width, cfg.height);
-            ctrl.node.setAttribute("class", "arc ctrl");
-            if (this.subtractable) ctrl.node.setAttribute(
-                "class",
-                ctrl.node.getAttribute("class") + " subtractable"
-            );
-            ctrls.push(ctrl);
-            return ctrls;
-        },
-        // The arc is drawn as an SVG path, see:
-        // http://www.w3.org/TR/SVG/paths.html#PathData
-        symbol: function(canvas) {
-            var cfg = CFG.symbols.arc,
-                adx = cfg.adx,
-                ady = cfg.ady,
-                geo = this.geometry,
-                begin = [geo.x, geo.y + geo.height / 2],
-                end = [geo.x + geo.width, geo.y + geo.height / 2],
+        symbol: function() {
+            var begin = [this.x, this.y + this.height / 2],
+                end = [this.x + this.width, this.y + this.height / 2],
                 // points to leave the source to our entrancepoint
                 head = this.srcview ? this.srcview.exitpath(begin) : [],
                 // points to enter the target from our exitpoint
                 tail = this.tgtview ? this.tgtview.entrancepath(end) : [],
-                points = head
-                    .concat([begin])
-                    .concat([end]),
-                symbol = canvas.set(),
-                arrow = svgarrow(canvas, points, adx, ady);
-            if (tail.length > 0) {
-                var path = svgpath(canvas, [end].concat(tail));
-                path.node.setAttribute("class", "arc");
-                path.toBack();
-                symbol.push(path);
-            }
-            arrow.node.setAttribute("class", "arc");
-            arrow.toBack();
-            symbol.push(arrow);
-            return symbol;
+                points = head.concat([begin]).concat([end]);
+            return _.compact([
+                this.append(svg.Path, {
+                    name:"arrow",
+                    points: points,
+                    arrowhead: {
+                        dx: this.cfg.adx,
+                        dy: this.cfg.ady
+                    }
+                }),
+                (tail.length > 0) ? this.append(svg.Path, {
+                    name:"tail",
+                    points: [end].concat(tail)
+                }) : ""
+            ]);
         }
     });
     Object.defineProperties(ArcView.prototype, {
+        // source and target view
+        srcview: {get: function() { return this.options.srcview; }},
+        tgtview: {get: function() { return this.options.tgtview; }},
+        // whether the arc can be removed from the graph (not the canvas)
         subtractable: {get: function() {
             if (this.srcview === undefined) return false;
             if (this.tgtview === undefined) return false;
             if ((this.srcview.model.type !== "decmer") &&
                 (this.srcview.model.type !== "forkjoin")) return false;
+            // XXX: rethink
             if ((this.tgtview.model.type !== "decmer") &&
                 (this.tgtview.model.type !== "forkjoin")) return false;
             if (this.srcview.successors.length === 1) return false;
@@ -182,110 +138,100 @@ define([
     });
 
 
-    // XXX: are we able to be stateless? binding to canvas elements could be a problem
-
-    // if our elements do not exist anymore we do not have to care whether
-    // we have bound functions to it. apart from that we can manage
-    // everything stateless. the render method in this case needs to receive
-    // the container geometry and the mode it shall render. It is possible
-    // that one graph is displayed twice with different mode and will
-    // generate events accordingly.
-
-    // Let's call modes flavours!
-
     // vertex is the thing without knowledge of its payload. We are
     // not viewing the vertex, but it's payload, which is a node.
+    // Well, let's at least pretend it makes sense.
     var NodeView = GraphElement.extend({
-        initialize: function() {
-            // bind to our model
-            this.model.bind("change:geometry", function(opts) {
-                // XXX use opts.diff to move existing symol
-            });
-            // XXX: hack - should be in GraphElement
-            this.predecessors = [];
-            this.successors = [];
-        },
-        // return via points for entering from source point
+        // for drawing arcs, return via points to enter from source point
         entrancepath: function(srcpoint) { return []; },
-        // return via points for exiting to target point
+        // for drawing arcs, return via points to exit to target point
         exitpath: function(tgtpoint) { return []; }
     });
 
+
     var InitialNodeView = NodeView.extend({
-        // a filled circle centered with radius r
-        symbol: function(canvas) {
-            var geo = this.geometry,
-                cx = geo.x + geo.width / 2,
-                cy = geo.y + geo.height / 2,
-                r = geo.width / 2,
-                circle = canvas.circle(cx, cy, r),
-                symbol = canvas.set();
-            circle.node.setAttribute("class", "initial node");
-            symbol.push(circle);
-            return symbol;
-        }
+        extraClassNames: ["node", "initial"],
+        // a filled circle
+        symbol: function() { return [
+            this.append(svg.Circle, {
+                attrs: {
+                    cx: this.cx,
+                    cy: this.cy,
+                    r: this.r
+                }
+            })
+        ]; }
     });
 
     var FinalNodeView = NodeView.extend({
         draggable: true,
-        // a filled circle surrounded by an empty circle, vertically
-        // centered, left aligned
-        symbol: function(canvas) {
-            var geo = this.geometry,
-                cx = geo.x + geo.width / 2,
-                cy = geo.y + geo.height / 2,
-                r_outer = geo.width / 2,
-                r_inner = r_outer - 4,
-                outer = canvas.circle(cx, cy, r_outer),
-                inner = canvas.circle(cx, cy, r_inner),
-                symbol = canvas.set();
-            inner.node.setAttribute("class", "final node inner");
-            outer.node.setAttribute("class", "final node outer");
-            symbol.push(inner);
-            symbol.push(outer);
-            return symbol;
-        }
+        extraClassNames: ["node", "final"],
+        // a filled circle surrounded by an empty circle
+        symbol: function() { return [
+            this.append(svg.Circle, {
+                name: "outer",
+                attrs: {
+                    cx: this.cx,
+                    cy: this.cy,
+                    r: this.r
+                }
+            }),
+            this.append(svg.Circle, {
+                name: "inner",
+                attrs: {
+                    cx: this.cx,
+                    cy: this.cy,
+                    r: this.r_inner
+                }
+            })
+        ]; }
+    });
+    Object.defineProperties(FinalNodeView.prototype, {
+        r_inner: {get: function() { return this.r - 4; }}
     });
 
-
     var ActionNodeView = NodeView.extend({
+        extraClassNames: ["node", "action"],
         initialize: function() {
             NodeView.prototype.initialize.call(this);
             this.model.payload.bind("change:label", _.bind(function() {
                 this.render();
             }, this));
         },
-        ctrls: function(canvas) {
-            var cfg = CFG.symbols.action,
-                ctrls = canvas.set(),
-                geo = this.geometry,
-                width = geo.width / 3,
-                height = cfg.height / 3,
-                x = geo.x + 2/3 * geo.width,
-                y = geo.y + (geo.height + cfg.height) / 2 - height,
-                rect = canvas.rect(x, y, width, height, cfg.r);
-            rect.node.setAttribute("class", "rake");
-            ctrls.push(rect);
-            return ctrls;
+        ctrls: function() {
+            var width = this.width / 3,
+                height = this.height / 3,
+                x = this.x + 2/3 * this.width,
+                y = this.y + (this.height + this.cfg.height) / 2 - height;
+            return [
+                this.append(svg.Rect, {
+                    name: "rake",
+                    attrs: {
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height,
+                        r: this.cfg.r
+                    }
+                })
+            ];
         },
         // a box with round corners and a label, centered
-        symbol: function(canvas) {
-            var cfg = CFG.symbols.action,
-                label = this.model.payload.get('label'),
-                geo = this.geometry,
-                y = geo.y + (geo.height - cfg.height) / 2,
-                rect = canvas.rect(geo.x, y, geo.width, cfg.height, cfg.r),
-                symbol = canvas.set();
-            rect.node.setAttribute("class", "action node");
-            symbol.push(rect);
-            if (label) {
-                // XXX: position after initial load and label change differs
-                var text = canvas.text(geo.x + geo.width / 2,
-                                       geo.y + geo.height / 2,
-                                       label);
-                symbol.push(text);
-            }
-            return symbol;
+        symbol: function() {
+            var label = this.model.payload.get('label');
+            return _.compact([
+                this.append(svg.Rect, {
+                    name: "rect",
+                    attrs: {
+                        x: this.x,
+                        y: this.y + (this.height - this.cfg.height) / 2,
+                        width: this.width,
+                        height: this.cfg.height,
+                        r: this.cfg.r
+                    }
+                }),
+                label ? canvas.text(this.cx, this.cy, label) : ""
+            ]);
         }
     });
     Object.defineProperties(ActionNodeView.prototype, {
@@ -295,25 +241,24 @@ define([
 
     // DecMer and ForkJoin are MIMOs
     var MIMONodeView = NodeView.extend({
-        ctrls: function(canvas, editmode) {
+        ctrls: function() {
             // our models successors are arcs
             // Before, in between and after them we need to create
             // open arcs (models+views), they are our ctrls.
             // it's all about model geometry
             var geos = map("succ.geometry", this.model.successors),
                 lastgeo = _.last(geos),
-                ourgeo = this.model.geometry,
-                ctrls = canvas.set();
+                ourmodelgeo = this.model.geometry;
             // add one fake geo after the last
             geos.push({
                 x: geos[0].x,
                 y: lastgeo.y + lastgeo.height
             });
-            _.each(geos, function(geo, idx) {
+            return _.map(geos, function(geo, idx) {
                 var arc = new Arc({source: this.model});
                 arc.setGeometry({
-                    x: geo.x - ourgeo.x,
-                    y: geo.y - ourgeo.y,
+                    x: geo.x - ourmodelgeo.x,
+                    y: geo.y - ourmodelgeo.y,
                     height: 0,
                     width: arc.minwidth / 3
                 });
@@ -323,18 +268,8 @@ define([
                     srcview: this
                 });
                 arcview.addnewidx = idx;
-                arcview.render(canvas, editmode);
-                _.each(_.values(arcview.child), function(set) {
-                    _.each(set, function(elem) {
-                        elem.node.setAttribute(
-                            "class",
-                            elem.node.getAttribute("class") + " mimoctrl"
-                        );
-                    });
-                    ctrls.push(set);
-                });
+                return arcview;
             }, this);
-            return ctrls;
         }
     });
     Object.defineProperties(MIMONodeView.prototype, {
@@ -346,28 +281,24 @@ define([
     });
 
     var DecMerNodeView = MIMONodeView.extend({
+        extraClassNames: ["node", "decmer"],
         // a diamond: colored bigger in case of decision (two outgoing)
         // without color and smaller in case of pure merge (one outgoing)
         // reasoning: a decmer with only one outgoing edge is at most a
         // merge, but not a decision. Only decisions are colorful -
         // they need to stand out, as human needs to do something in
         // contrast to forkjoin and pure merge.
-        symbol: function(canvas) {
-            var geo = this.geometry,
-                edgelength = geo.width / Math.sqrt(2),
-                x = geo.x + (geo.width - edgelength) / 2,
-                y = geo.y + (geo.height - edgelength) / 2,
-                rect = canvas.rect(x, y, edgelength, edgelength),
-                symbol = canvas.set();
-            // XXX: for some reason after a reload it does not rotate
-            // around the rect center, but 0,0
-            rect.rotate(45, x + edgelength / 2, y + edgelength / 2);
-            rect.node.setAttribute(
-                "class",
-                this.decision ? "decision node" : "merge node"
-            );
-            symbol.push(rect);
-            return symbol;
+        symbol: function() {
+            return [
+                this.append(svg.Diamond, {
+                    extraClassNames: [
+                        this.decision ? "decision" : "merge"
+                    ],
+                    cx: this.cx,
+                    cy: this.cy,
+                    r: this.r
+                })
+            ];
         },
         entrancepath: function(srcpoint) {
             var geo = this.geometry;
@@ -386,13 +317,18 @@ define([
     });
 
     var ForkJoinNodeView = MIMONodeView.extend({
-        symbol: function(canvas) {
-            var geo = this.geometry,
-                rect = canvas.rect(geo.x, geo.y, geo.width, geo.height),
-                symbol = canvas.set();
-            rect.node.setAttribute("class", "forkjoin node");
-            symbol.push(rect);
-            return symbol;
+        extraClassNames: ["node", "forkjoin"],
+        symbol: function() {
+            return [
+                this.append(svg.Rect, {
+                    attrs: {
+                        x: this.x,
+                        y: this.y,
+                        width: this.width,
+                        height: this.height
+                    }
+                })
+            ];
         }
     });
 
@@ -404,15 +340,15 @@ define([
         forkjoin: ForkJoinNodeView
     };
 
-    // A graph contains vertices, arcs and control areas
-    var GraphView = base.View.extend({
+    var GraphView = svg.Group.extend({
+        name: "graph",
         initialize: function() {
             this._geometry = this.options.geometry;
             this.bindToGraph(this.model);
         },
         bindToGraph: function(graph) {
             // remove old views and forget about them
-            this.remove();
+            this.removeChildren();
             // XXX: merge these as this.children?
             this.vertexviews = {};
             this.arcviews = {};
@@ -440,7 +376,7 @@ define([
             // create vertex views and remember them by their models' cid
             // we need that to initialize the arc views
             this.vertexviews = foldl(function(acc, vertex) {
-                var view = this.defchild(
+                var view = this.append(
                     nodeviews[vertex.type],
                     {model: vertex, name: "vertex_"+vertex.cid}
                 );
@@ -448,12 +384,11 @@ define([
                 return acc;
             }, {}, graph.toArray(), this);
 
-            // XXX: adapt to new graph.arcs format
             // create arc views
             this.arcviews = foldl(function(acc, arc) {
                 var srcview = this.vertexviews[arc.source.cid],
                     tgtview = this.vertexviews[arc.target.cid],
-                    arcview = this.defchild(ArcView, {
+                    arcview = this.append(ArcView, {
                         name: arc.cid,
                         model: arc,
                         srcview: srcview,
@@ -471,38 +406,16 @@ define([
             // XXX: for now we just rebind to graph
             // We are responsible for selectivly removing or adding views
             // graph.bind("add", _.bind(this.createAndRenderVertexView, this));
-        },
+        }
         // createAndRenderVertexView: function(model) {
         //     var view = this.defchild(
         //         nodeviews[model.type],
         //         {model: model, name: "vertex_"+model.cid}
         //     );
         //     this.vertexviews[model.cid] = view;
-        //     view.render(this.canvas, this.editmode);
+        //     view.render();
         //     return view;
         // },
-        remove: function() {
-            var name;
-            for (name in this.vertexviews) {
-                this.vertexviews[name].remove();
-            }
-            for (name in this.arcviews) {
-                this.arcviews[name].remove();
-            }
-        },
-        render: function(canvas, editmode) {
-            // // remember these for views of later added vertices
-            // this.canvas = canvas;
-            // this.editmode = editmode;
-            // XXX: switch to use a set as container for all children
-            var name;
-            for (name in this.vertexviews) {
-                this.vertexviews[name].render(canvas, editmode);
-            }
-            for (name in this.arcviews) {
-                this.arcviews[name].render(canvas, editmode);
-            }
-        }
     });
     Object.defineProperties(GraphView.prototype, {
         geometry: {

@@ -145,9 +145,10 @@ define([
         },
         localstorage_key: 'tapta0'
     };
-    cfg.symbols = {};
-    cfg.symbols.arc = { adx: 6, ady: 5, ctrl: { height: 24 } };
-    cfg.symbols.action = { height: 40, r: 4 };
+    cfg.graphelement = {};
+    cfg.graphelement.arc = { adx: 6, ady: 5, ctrl: { height: 24 } };
+    cfg.graphelement.node = {};
+    cfg.graphelement.node.action = { height: 40, r: 4 };
 
     cfg.nodes = {};
     cfg.nodes.action = { fixedwidth: 1000 };

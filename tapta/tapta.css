@@ -1,10 +1,12 @@
 /* keep this alphabetically sorted at all costs */
 .arc {
+    fill: None;
     stroke: #424242;
     stroke-width: 2;
 }
-.arc.ctrl {
-    opacity: 0;
+.arc .ctrl {
+    fill: None;
+    stroke: None;
 }
 .destroyall {
     cursor: pointer;
@@ -16,7 +18,7 @@
 .layer.top .activity {
     border-radius: 0px;
 }
-.layer.editmode-addnode .arc.ctrl {
+.layer.editmode-addnode .arc .ctrl {
     opacity: 0.2;
     fill: green;
 }
@@ -35,7 +37,7 @@
 .layer.editmode-remove .subtractable {
     stroke: red;
 }
-.layer.editmode-remove .subtractable.ctrl {
+.layer.editmode-remove .subtractable .ctrl {
     opacity: 0.2;
     fill: red;
 }
@@ -59,11 +61,11 @@
     stroke: #b5d9ea;
     stroke-width: 2;
 }
-.node.final.inner {
+.node.final circle.inner {
     fill: #424242;
     stroke: None;
 }
-.node.final.outer {
+.node.final circle.outer {
     fill: white;
     stroke: #424242;
     stroke-width: 2;

@@ -5,19 +5,19 @@ define([
     'jquery',
     'vendor/jquery.tmpl',
     'vendor/underscore.js',
-    'vendor/raphael.js',
     './debug',
     './base',
     './controller',
     './model',
     './graphviews',
     './settings',
+    './svgviews',
     './panes'
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base'),
         panes = require('./panes'),
-
+        SVG = require('./svgviews').SVG,
         GraphView = require('./graphviews').GraphView,
         model = require('./model'),
         CFG = require('./settings'),
@@ -40,8 +40,15 @@ define([
             this.canvasheight = CFG.canvas.height;
             this.canvaswidth = CFG.canvas.width;
 
-            this.graphview = this.defchild(GraphView, {
-                name: "graph",
+            // an svg drawing area - should ActivityView inherit from SVG?
+            this.svg = this.append(SVG, {
+                attrs: {
+                    width: CFG.canvas.width,
+                    height: CFG.canvas.height
+                }
+            });
+
+            this.graphview = this.svg.append(GraphView, {
                 geometry: {
                     x: 10,
                     y: 10,
@@ -86,21 +93,46 @@ define([
                 }
             }
         },
-        render: function() {
-            var width = this.canvaswidth,
-                height = this.canvasheight;
+        // render: function() {
+        //     // XXX: normally handled by base.View
+        //     this.svg.render();
 
-            // initialize canvas
-            if (!this.canvas) {
-                this.canvas = Raphael(this.el, width, height);
-            }
+        //     //this.graphview.render(this.canvas, this.layerview.editmode);
+        //     // var graph = $(this.canvas.canvas).children().detach();
+        //     // $(this.canvas.canvas).append("<g></g>");
+        //     // $(this.canvas.canvas).children(0).append(graph);
 
-            this.graphview.render(this.canvas, this.layerview.editmode);
+        //     // tell next layer whether and which activity to display
+        //     this.rake();
 
-            // tell next layer whether and which activity to display
-            this.rake();
-
-            return this;
+        //     return this;
+        // },
+        renderPan: function() {
+            if (this.pan) this.pan.remove();
+            // this.pan = this.canvas.rect(0, 0,
+            //                             this.canvaswidth,
+            //                             this.canvasheight);
+            // this.pan.drag(
+            //     // dndmove
+            //     function(dx, dy) {
+            //         // var ogeo = this.original_geometry;
+            //         // this.graphview.geometry = Object.create(ogeo, {
+            //         //     x: {value: 
+            //         // });
+            //         this.graphview.
+            //     },
+            //     // dndstart
+            //     function() {
+            //         // remember initial geometry
+            //         this.original_geo = this.graphview.geometry;
+            //     },
+            //     // dndstop
+            //     function() {
+            //         delete this.original_geometry;
+            //         this.renderPan();
+            //     },
+            //     this
+            // );
         }
     });
     return {
