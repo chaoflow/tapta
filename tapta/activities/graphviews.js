@@ -257,19 +257,19 @@ define([
                 y: lastgeo.y + lastgeo.height
             });
             return _.map(geos, function(geo, idx) {
-                var arc = new Arc({source: this.model});
+                var arc = new Arc(this.model.cid+":open", this.model);
                 arc.setGeometry({
                     x: geo.x - ourmodelgeo.x,
                     y: geo.y - ourmodelgeo.y,
                     height: 0,
                     width: arc.minwidth / 3
                 });
+                arc.addnewidx = idx;
                 var arcview = this.append(ArcView, {
                     name: "mimoctrlarc_"+idx,
                     model: arc,
                     srcview: this
                 });
-                arcview.addnewidx = idx;
                 return arcview;
             }, this);
         }

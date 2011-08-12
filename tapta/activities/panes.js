@@ -220,7 +220,7 @@ define([
                 // Open arc of a MIMO, create final node
                 target = new graph.model({payload: "final"});
                 graph.add(target, {silent:true});
-                source.next.splice(info.view.addnewidx, 0, newvert);
+                source.next.splice(arcmodel.addnewidx, 0, newvert);
             } else {
                 // change next of source without triggering an event
                     source.next.splice(source.next.indexOf(target), 1, newvert);
