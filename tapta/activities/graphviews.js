@@ -266,7 +266,8 @@ define([
                 });
                 arc.addnewidx = idx;
                 var arcview = this.append(ArcView, {
-                    name: "mimoctrlarc_"+idx,
+                    name: "mimoctrl_"+idx,
+                    extraClassNames: ["mimoctrl"],
                     model: arc,
                     srcview: this
                 });
