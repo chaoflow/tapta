@@ -134,15 +134,7 @@ define([
 
     // new-style
     var cfg = {
-        canvas: {
-            width: 600,
-            height: 400,
-            r_corner: 10
-        },
-        gridsize: {
-            x: 60,
-            y: 60
-        },
+        gridsize: { x: 60, y: 60 },
         localstorage_key: 'tapta0'
     };
     cfg.graphelement = {};
