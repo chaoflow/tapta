@@ -13,6 +13,7 @@
 }
 .layer {
     height: 550px;
+    margin: 2px;
 }
 .layer .activity {
     border: solid 1px;
