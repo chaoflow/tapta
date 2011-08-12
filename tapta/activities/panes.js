@@ -42,6 +42,7 @@ define([
                     props = cfg.propscallback !== undefined
                         ? cfg.propscallback.call(this)
                         : _.clone(cfg.props);
+                props.panemanager = this;
                 pane.append(ViewProto, props);
             }, this);
 
