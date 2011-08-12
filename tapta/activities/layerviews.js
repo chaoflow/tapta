@@ -34,7 +34,6 @@ define([
 
     var LayerView = panes.PaneManager.extend({
         extraClassNames: ["layer", "row"],
-        propagateEvents: false,
         panescfg: [
             {name: "left", content: [
                 {

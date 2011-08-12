@@ -78,7 +78,7 @@ define([
 
     var View = Backbone.View.extend({
         extraClassNames: [],
-        propagateEvents: true,
+        propagateEvents: false,
         // consider using initialize, with the downside that
         // subclasses need to "super"-call, and the upside, that its
         // clearer what is called when.
