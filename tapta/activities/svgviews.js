@@ -10,17 +10,51 @@ define([
         xmlns: "http://www.w3.org/2000/svg"
     });
 
+    var pan = function() {
+        var state = {};
+        var mousemove = function(e) {
+            var s = state[this.abspath()],
+                mouse_dx = e.pageX - s.x,
+                mouse_dy = e.pageY - s.y;
+            s.dx = (s.prev_dx || 0) + mouse_dx;
+            s.dy = (s.prev_dy || 0) + mouse_dy;
+            this.$('.graph')[0].setAttribute("transform",
+                                             "translate("+s.dx+","+s.dy+")");
+        };
+        var mouseup = function(e) {
+            $(this.el).unbind(".panning");
+            $(document).unbind(".panning");
+        };
+        var start = function(e) {
+            // Ignore, if not received by us directly
+            if (event.target !== this.el) return;
+            // register for mousemove and mouseup
+            $(this.el).bind("mousemove.panning", _.bind(mousemove, this));
+            $(document).bind("mouseup.panning", _.bind(mouseup, this));
+            // remember coordinates
+            var s = state[this.abspath()] || (state[this.abspath()] = {});
+            s.x = e.pageX;
+            s.y = e.pageY;
+            if (s.dx) s.prev_dx = s.dx;
+            if (s.dy) s.prev_dy = s.dy;
+        };
+        return start;
+    };
+
     // XXX:
     // the name is used as a CSS class but feels rather pointless here.
-    // The whole "what classes are set on an element" is still a bit
+    // The whole "which classes are set on an element" is still a bit
     // rough, also check base.View for that
 
     var SVG = SVGElement.extend({
+        attrs: { version: "1.1" },
+        events: {
+            "mousedown": "pan"
+        },
         name: "svg",
-        tagName: "svg",
-        attrs: {
-            version: "1.1"
-        }
+        // Let's see whether one instance is enough for all layers
+        pan: pan(),
+        tagName: "svg"
     });
 
     var Circle = SVGElement.extend({
