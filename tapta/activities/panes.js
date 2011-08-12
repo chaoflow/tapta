@@ -186,46 +186,45 @@ define([
     var AddNewNodeTool = Tool.extend({
         extraClassNames: ['addnode', 'addnewnode'],
         act: function(info) {
-            if (info.view instanceof gv.ArcView) {
-                var source = info.view.srcview.model,
-                    target = info.view.tgtview && info.view.tgtview.model;
+            if (!(info.view instanceof gv.ArcView)) throw "Why did you call me";
+            var source = info.view.srcview.model,
+                target = info.view.tgtview && info.view.tgtview.model;
 
-                // create node
-                var collection = this.layerview.model[this.options.collection],
-                    node;
-                if (collection === undefined) {
-                    node = "forkjoin";
-                } else {
-                    node = collection.create();
-                }
-
-                // create new vertex with action as payload
-                var graph = this.layerview.model.activity.graph,
-                    // XXX: this triggers already spaceOut and
-                    // silent:true seems not to work
-                    newvert = new graph.model({payload: node});
-
-                if (target === undefined) {
-                    // Open arc of a MIMO, create final node
-                    target = new graph.model({payload: "final"});
-                    graph.add(target, {silent:true});
-                    source.next.splice(info.view.addnewidx, 0, newvert);
-                } else {
-                    // change next of source without triggering an event
-                    source.next.splice(source.next.indexOf(target), 1, newvert);
-                }
-                newvert.next.push(target);
-                graph.add(newvert, {silent:true});
-                target.save();
-                newvert.save();
-                source.save();
-                // XXX: this currently triggers rebinding of the graphview
-                graph.trigger("rebind");
-                this.layer.activity.set({
-                    selected: node
-                });
-                this.layer.activity.save();
+            // create node
+            var collection = this.layerview.model[this.options.collection],
+                node;
+            if (collection === undefined) {
+                node = "forkjoin";
+            } else {
+                node = collection.create();
             }
+
+            // create new vertex with action as payload
+            var graph = this.layerview.model.activity.graph,
+                // XXX: this triggers already spaceOut and
+                // silent:true seems not to work
+                newvert = new graph.model({payload: node});
+
+            if (target === undefined) {
+                // Open arc of a MIMO, create final node
+                target = new graph.model({payload: "final"});
+                graph.add(target, {silent:true});
+                source.next.splice(info.view.addnewidx, 0, newvert);
+            } else {
+                // change next of source without triggering an event
+                    source.next.splice(source.next.indexOf(target), 1, newvert);
+            }
+            newvert.next.push(target);
+            graph.add(newvert, {silent:true});
+            target.save();
+            newvert.save();
+            source.save();
+            // XXX: this currently triggers rebinding of the graphview
+            graph.trigger("rebind");
+            this.layer.activity.set({
+                selected: node
+            });
+            this.layer.activity.save();
         }
     });
 
