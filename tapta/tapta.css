@@ -11,6 +11,9 @@
 .destroyall {
     cursor: pointer;
 }
+.layer {
+    height: 550px;
+}
 .layer .activity {
     border: solid 1px;
     border-radius: 15px;
@@ -93,9 +96,6 @@
     color: green;
 }
 /* scratchpad below here, should be replaced with proper classes */
-body {
-    max-width: 960px;
-}
 input {
     outline-color: green;
     width: 100%;

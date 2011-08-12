@@ -31,29 +31,16 @@ define([
                       'rake',
                       'render'
                      );
-            // XXX: w00t?
-            var graph = this.model && this.model.graph;
-
             this.layerview = this.options.layerview;
 
-            // will be used as base for our children and to render the canvas
-            this.canvasheight = CFG.canvas.height;
-            this.canvaswidth = CFG.canvas.width;
-
-            // an svg drawing area - should ActivityView inherit from SVG?
-            this.svg = this.append(SVG, {
-                attrs: {
-                    width: CFG.canvas.width,
-                    height: CFG.canvas.height
-                }
-            });
+            // an svg drawing area - should ActivityView inherit from
+            // SVG or do we have some non-svg activity things to display?
+            this.svg = this.append(SVG);
 
             this.graphview = this.svg.append(GraphView, {
                 geometry: {
                     x: 10,
-                    y: 10,
-                    width: this.canvaswidth - 20,
-                    height: this.canvasheight - 20
+                    y: 10
                 }
             });
 
