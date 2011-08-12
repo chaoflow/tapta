@@ -18,17 +18,23 @@ define([
                 mouse_dy = e.pageY - s.y;
             s.dx = (s.prev_dx || 0) + mouse_dx;
             s.dy = (s.prev_dy || 0) + mouse_dy;
-            this.$('.graph')[0].setAttribute("transform",
-                                             "translate("+s.dx+","+s.dy+")");
+            this.$('.graph')[0].setAttribute(
+                "transform", "translate("+s.dx+","+s.dy+")"
+            );
         };
         var mouseup = function(e) {
             $(this.el).unbind(".panning");
             $(document).unbind(".panning");
         };
+        var reset = function(e) {
+            this.$('.graph')[0].removeAttribute("transform");
+            state[this.abspath()] = {};
+        };
         var start = function(e) {
             // Ignore, if not received by us directly
             if (event.target !== this.el) return;
             // register for mousemove and mouseup
+            $(this.el).bind("dblclick", _.bind(reset, this));
             $(this.el).bind("mousemove.panning", _.bind(mousemove, this));
             $(document).bind("mouseup.panning", _.bind(mouseup, this));
             // remember coordinates
