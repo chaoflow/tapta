@@ -136,18 +136,23 @@ define([
         abspath: abspath,
         location: location,
         append: function(ViewProto, props) {
-            if (this.child[props.name] !== undefined) throw "Name collision";
             var child = this.defchild(ViewProto, props);
+            if (child.name === undefined) throw "Child needs name";
+            if (this.child[child.name] !== undefined) throw "Name collision";
             // XXX: rethink this, do we need default store for named children?
             // check eg. ActivityView with svg for an alternative
-            this.child[props.name] = child;
+            this.child[child.name] = child;
             this.children.push(child);
             return child;
         },
         defchild: function(ViewProto, props) {
+            props = props || {};
             // XXX: remove explicit setting of props.parent
             props.parent = props.parent || this;
             var child = new ViewProto(props);
+            // XXX: As now also the SVG elements play nice with
+            // delegateEvents, I'm pretty sure we can soon kick the event
+            // propagation. triggerReverse might still be nice to have.
             if (child.propagateEvents) {
                 child.bind("all", _.bind(function(name, info) {
                     if (!info.reverse) this.trigger.apply(this, arguments);
