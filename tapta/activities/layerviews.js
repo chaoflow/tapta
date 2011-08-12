@@ -42,6 +42,10 @@ define([
                     propscallback: function() {
                         return {name: "properties",
                                 layer: this.model};
+                    },
+                    ViewProto: panes.DebugInfo,
+                    propscallback: function() {
+                        return {layer: this.model};
                     }
                 }
             ], extraClassNames: ["cell", "width-2", "position-0"]},

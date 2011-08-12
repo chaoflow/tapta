@@ -50,6 +50,20 @@ define([
         }
     });
 
+    var DebugInfo = base.View.extend({
+        className: "debuginfo",
+        name: "debuginfo",
+        initialize: function() {
+            this.bind("editmode", this.render);
+        },
+        render: function() {
+            $(this.el)
+                .html("<h4>Debug info</h4>")
+                .append("Editmode: " + (this.options.panemanager.editmode &&
+                                        this.options.panemanager.editmode.name));
+            return this;
+        }
+    });
 
     // things to be put in panes - APIs are not stable here
     // especially some mixup/mashup of editmode and tool right now
@@ -374,6 +388,7 @@ define([
     });
 
     return {
+        DebugInfo: DebugInfo,
         LibraryView: LibraryView,
         PaneManager: PaneManager,
         PropertiesView: PropertiesView,
