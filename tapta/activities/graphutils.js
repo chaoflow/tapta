@@ -80,7 +80,7 @@ define([
         height: { get: function() { return this._geometry.height; } }
     });
 
-    var Arc = function(id, source, target, stealthmodeo) {
+    var Arc = function(id, source, target, stealthmode) {
         // XXX: should we really provide this.id
         this.id = this.cid = id;
         this.source = source;
