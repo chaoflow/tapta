@@ -200,7 +200,7 @@ define([
         },
         ctrls: function() {
             var width = this.width / 3,
-                height = this.height / 3,
+                height = this.cfg.height / 3,
                 x = this.x + 2/3 * this.width,
                 y = this.y + (this.height + this.cfg.height) / 2 - height;
             return [
@@ -211,7 +211,8 @@ define([
                         y: y,
                         width: width,
                         height: height,
-                        r: this.cfg.r
+                        rx: this.cfg.r,
+                        ry: this.cfg.r
                     }
                 })
             ];
@@ -227,7 +228,8 @@ define([
                         y: this.y + (this.height - this.cfg.height) / 2,
                         width: this.width,
                         height: this.cfg.height,
-                        r: this.cfg.r
+                        rx: this.cfg.r,
+                        ry: this.cfg.r
                     }
                 }),
                 label ? canvas.text(this.cx, this.cy, label) : ""
