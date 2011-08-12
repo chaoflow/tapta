@@ -240,12 +240,21 @@ define([
     });
 
     var RemoveTool = Tool.extend({
-        act: function(info) {
+        activate: function(layerview) {
+            this.layerview = layerview;
+            this.layer = layerview.model;
+            $(layerview.el).delegate(".subtractable", "click.editmode", this.act);
+        },
+        deactivate: function(layerview) {
+            this.layerview = undefined;
+            this.layer = undefined;
+            $(layerview.el).undelegate(".editmode");
+        },
+        act: function(e) {
+            var model = this.layerview.traverseToModel(e.target.id),
+                graph = this.layerview.model.activity.graph;
             // If the element cannot be subtracted from the graph, we
             // have nothing to do
-            if (!(info.view.subtractable)) return;
-            var model = info.view.model,
-                graph = this.layerview.model.activity.graph;
             if (model.type === "arc") {
                 // prede -> arc(model) -> succ
                 var prede = model.predecessors[0],
