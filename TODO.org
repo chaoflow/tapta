@@ -104,6 +104,8 @@ well - better than nothing
 *** DONE fix spaceOut
 CLOSED: [2011-08-11 Thu 16:40]
 good enough
+*** DONE scrolling: move diagram around within one layer
+CLOSED: [2011-08-12 Fri 08:08]
 *** TODO labels for decisions
 *** TODO merge path into other, ie. drag final node onto mimo
 dragging of final node does not work on tablets
@@ -113,7 +115,6 @@ dragging of final node does not work on tablets
 *** TODO removing must not select
 *** TODO investigate keyup/down events in firefox, propertiesview
 *** TODO json export/import to filesystem
-*** TODO scrolling: move diagram around within one layer
 *** TODO top-layer without edges
 ***** how do we place them?
 *** TODO bottom-layer without rakes
@@ -157,6 +158,15 @@ CLOSED: [2011-08-05 Fri 13:26]
 **** keep git-like storage above localstorage in mind
 ***** would it help?
 *** TODO drag preview
+*** TODO draw rake symbol
+** low prio and easy or maybe irrelevant
+Theses tasks are meant for newbies to enter the project
+*** TODO move drawing code into raphael plugin: raphael.fn.tapta?
+*** TODO test coverage for view code?
+*** TODO zooming within one layer
+*** TODO tests need to properly cleanup after themselves
+**** properly destroy all elements
+**** localstorage: remove empty keys
 *** TODO collection set parent of their models, in add
 the parent is used to generate the key for the storage. currently in
 several places there is code to differentiate between
@@ -164,12 +174,3 @@ models/collection with parent set and models that are a member of
 collections.
 
 XXX: this might be outdated
-*** TODO zooming within one layer
-*** TODO draw rake symbol
-*** TODO tests need to properly cleanup after themselves
-**** properly destroy all elements
-**** localstorage: remove empty keys
-** low prio and easy
-Theses tasks are meant for newbies to enter the project
-*** TODO move drawing code into raphael plugin: raphael.fn.tapta?
-*** TODO test coverage for view code?
