@@ -78,19 +78,15 @@ define([
             // XXX: don't pass the full view, but just what is needed
             this.trigger("editmode", {name: this.name, view: this});
         },
-        // XXX: what is info?
-        act: function(info) {
-            throw "Tool needs to define act";
-        },
         activate: function(layerview) {
             this.layerview = layerview;
             this.layer = layerview.model;
-            layerview.bind("click", this.act);
+            $(layerview.el).delegate(".arc .ctrl", "click.editmode", this.act);
         },
         deactivate: function(layerview) {
             this.layerview = undefined;
             this.layer = undefined;
-            layerview.unbind("click", this.act);
+            $(layerview.el).undelegate(".editmode");
         },
         initialize: function() {
             this.bind("editmode", function(info) {
@@ -200,11 +196,11 @@ define([
 
     var AddNewNodeTool = Tool.extend({
         extraClassNames: ['addnode', 'addnewnode'],
-        act: function(info) {
-            if (!(info.view instanceof gv.ArcView)) throw "Why did you call me";
-            var source = info.view.srcview.model,
-                target = info.view.tgtview && info.view.tgtview.model;
-
+        act: function(e) {
+            var arcmodel = this.layerview.traverseToModel(e.target.id);
+            if (arcmodel.type !== "arc") throw "Why did you call me?";
+            var source = arcmodel.source,
+                target = arcmodel.target;
             // create node
             var collection = this.layerview.model[this.options.collection],
                 node;

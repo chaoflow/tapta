@@ -92,6 +92,7 @@ define([
             this.child = {};
             this.children = [];
 
+            props.id = this.abspath();
             if (props.attrs) this.attrs = _.extend(this.attrs || {},
                                                    props.attrs);
 
@@ -173,6 +174,17 @@ define([
                 $(this.el).append(child.render().el);
             }, this);
             return this;
+        },
+        traverseToModel: function(path) {
+            var ourpath = this.abspath();
+            if (path.substr(0, ourpath.length) !== ourpath) {
+                throw "head of path does not match";
+            }
+            var rest = _.compact(path.substr(ourpath.length).split('/'));
+            // last view with a model
+            return scanl("acc.child[x]", this, rest).filter(function(x) {
+                return (x.model !== undefined);
+            }).pop().model;
         },
         triggerReverse: function(name, info) {
             info.reverse = true;

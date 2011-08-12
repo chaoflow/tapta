@@ -57,7 +57,7 @@ define([
             var graph = this.model.graph;
             var redrawGraph = _.bind(function() {
                 this.graphview.bindToGraph(graph);
-                this.graphview.render(this.canvas, this.layerview.editmode);
+                this.graphview.render();
             }, this);
             // new node was added
             graph.bind("rebind", redrawGraph);
@@ -84,7 +84,7 @@ define([
         //     // XXX: normally handled by base.View
         //     this.svg.render();
 
-        //     //this.graphview.render(this.canvas, this.layerview.editmode);
+        //     //this.graphview.render();
         //     // var graph = $(this.canvas.canvas).children().detach();
         //     // $(this.canvas.canvas).append("<g></g>");
         //     // $(this.canvas.canvas).children(0).append(graph);
