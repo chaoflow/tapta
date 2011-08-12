@@ -90,6 +90,10 @@
     fill: white;
     stroke: grey;
 }
+.svg {
+    height: 100%;
+    width: 100%;
+}
 .tool {
     cursor: pointer;
 }
