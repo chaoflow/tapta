@@ -23,8 +23,6 @@ define([
     var GraphElement = svg.Group.extend({
         // whether an element can be moved around
         draggable: false,
-        // whether an element can be subtracted from a graph
-        subtractable: false,
         ctrls: function() { return []; },
         initialize: function() {
             this.predecessors = [];
@@ -74,8 +72,7 @@ define([
         r: {get: function() {
             return ((this.width < this.height) ? this.width : this.height) / 2;
         }},
-        // whether an element can be removed from the graph (name collision)
-        subtractable: {get: function() { return false; }}
+        subtractable: {get: function() { return this.model.subtractable; }}
     });
 
 
@@ -121,22 +118,8 @@ define([
     Object.defineProperties(ArcView.prototype, {
         // source and target view
         srcview: {get: function() { return this.options.srcview; }},
-        tgtview: {get: function() { return this.options.tgtview; }},
-        // whether the arc can be removed from the graph (not the canvas)
-        subtractable: {get: function() {
-            if (this.srcview === undefined) return false;
-            if (this.tgtview === undefined) return false;
-            if ((this.srcview.model.type !== "decmer") &&
-                (this.srcview.model.type !== "forkjoin")) return false;
-            // XXX: rethink
-            if ((this.tgtview.model.type !== "decmer") &&
-                (this.tgtview.model.type !== "forkjoin")) return false;
-            if (this.srcview.successors.length === 1) return false;
-            if (this.tgtview.predecessors.length === 1) return false;
-            return true;
-        }}
+        tgtview: {get: function() { return this.options.tgtview; }}
     });
-
 
     // vertex is the thing without knowledge of its payload. We are
     // not viewing the vertex, but it's payload, which is a node.
@@ -147,7 +130,6 @@ define([
         // for drawing arcs, return via points to exit to target point
         exitpath: function(tgtpoint) { return []; }
     });
-
 
     var InitialNodeView = NodeView.extend({
         extraClassNames: ["node", "initial"],
@@ -236,10 +218,6 @@ define([
             ]);
         }
     });
-    Object.defineProperties(ActionNodeView.prototype, {
-        subtractable: {get: function() { return true; }}
-    });
-
 
     // DecMer and ForkJoin are MIMOs
     var MIMONodeView = NodeView.extend({
@@ -274,13 +252,6 @@ define([
                 return arcview;
             }, this);
         }
-    });
-    Object.defineProperties(MIMONodeView.prototype, {
-        // more than one outgoing edge: decision
-        subtractable: {get: function() {
-            return ((this.model.predecessors.length === 1) &&
-                    (this.model.successors.length === 1));
-        }}
     });
 
     var DecMerNodeView = MIMONodeView.extend({

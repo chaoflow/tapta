@@ -117,13 +117,29 @@ define([
     });
     Object.defineProperties(Arc.prototype, {
         geometry: {get: function() { return this._geometry; }},
-        minwidth: { get: function() { return this._minwidth; } },
-        minheight: { get: function() { return this._minheight; } },
-        next: { get: function() { return this._next; } },
-        x: { get: function() { return this._geometry.x; } },
-        y: { get: function() { return this._geometry.y; } },
-        width: { get: function() { return this._geometry.width;} },
-        height: { get: function() { return this._geometry.height; } }
+        minwidth: {get: function() { return this._minwidth; }},
+        minheight: {get: function() { return this._minheight; }},
+        next: {get: function() { return this._next; }},
+        x: {get: function() { return this._geometry.x; }},
+        y: {get: function() { return this._geometry.y; }},
+        width: {get: function() { return this._geometry.width;}},
+        height: {get: function() { return this._geometry.height; }},
+        // whether the arc can be removed from the graph (not the canvas)
+        subtractable: {get: function() {
+            // open arcs are control structures, surely not subtractable
+            if (this.source === undefined) return false;
+            if (this.target === undefined) return false;
+            // we are our source's only successor
+            if (this.source.successors.length === 1) return false;
+            // we are out target's only predecessor
+            if (this.target.predecessors.length === 1) return false;
+            // XXX: what was that?
+            // if ((this.srcview.model.type !== "decmer") &&
+            //     (this.srcview.model.type !== "forkjoin")) return false;
+            // if ((this.tgtview.model.type !== "decmer") &&
+            //     (this.tgtview.model.type !== "forkjoin")) return false;
+            return true;
+        }}
     });
 
     // A graph can be created by only providing arcs.

@@ -83,7 +83,12 @@ define([
         x: {get: function() { return this._geometry.x; }},
         y: {get: function() { return this._geometry.y; }},
         width: {get: function() { return this._geometry.width;}},
-        height: {get: function() { return this._geometry.height; }}
+        height: {get: function() { return this._geometry.height; }},
+        // whether an element can be removed from the graph (name collision)
+        subtractable: {get: function() {
+            return ((this.predecessors.length === 1) &&
+                    (this.successors.length === 1));
+        }}
     });
 
     // a graph is stored as a collection of vertices.
