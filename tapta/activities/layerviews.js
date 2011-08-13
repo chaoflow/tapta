@@ -78,28 +78,23 @@ define([
             ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],
         init: function() {
-            this.activityview = this.child.center.child.activity;
+            if (this.model.prev === undefined) $(this.el).addClass("top");
+            if (this.model.next === undefined) $(this.el).addClass("bottom");
 
-            _.bindAll(this, "activityChanged");
-            this.model.bind("change:activity", this.activityChanged);
-
-            if (this.model.prev === undefined) {
-                $(this.el).addClass("top");
-            }
-            if (this.model.next === undefined) {
-                $(this.el).addClass("bottom");
-            }
+            this.model.bind("change:activity", function() {
+                this.activityview.bindToModel(this.model.activity);
+                this.activityview.render();
+            }, this);
 
             // this will also initialize properties:
             // - this.editmode
             // - this.editmodename
             this.editmodes = new editmodes.EditModes(this);
             this.editmodename = "select";
-        },
-        activityChanged: function() {
-            this.activityview.bindToModel(this.model.activity);
-            this.activityview.render();
         }
+    });
+    Object.defineProperties(LayerView.prototype, {
+        activityview: {get: function() { return this.child.center.child.activity; }}
     });
 
     return {
