@@ -201,13 +201,57 @@ define([
         }
     });
 
+
+    // return the objects list of prototypes, closest first
+    var prototypesOf = function(obj) {
+        var proto = Object.getPrototypeOf(obj);
+        return proto ? [obj].concat(prototypesOf(proto)) : [obj];
+    };
+
+    // accumulate some property over the prototype chain
+    var accumulate = function(name, obj) {
+        if (!name) throw "Need property name!";
+        obj = obj || this;
+        return prototypesOf(obj).reduce(function(acc, x) {
+            return acc.concat(x[name] || []);
+        }, []);
+    };
+
+    // create a set off properties that toggle a state
+    // - name of the state
+    // - on, function called to turn on
+    // - off, function called to turn off
+    var defineToggleProperty = function(name, on_name, on, off_name, off, obj) {
+        var _name = "_" + name,
+            props = {};
+        props[name] = {
+            get: function() { return this[_name]; },
+            set: function(val) {
+                if (val === this[_name]) return;
+                if (val) {
+                    this[on_name]();
+                } else {
+                    this[off_name]();
+                }
+                this[_name] = val;
+            }
+        };
+        props[on_name] = {value: on};
+        props[off_name] = {value: off};
+        if (obj) Object.defineProperties(obj, props);
+        return props;
+    };
+
     return {
         abspath: abspath,
+        accumulate: accumulate,
         groups: groups,
         head: head,
         location: location,
         startswith: startswith,
+        prototypesOf: prototypesOf,
         tail: tail,
+        defineToggleProperty: defineToggleProperty,
         View: View
     };
 });
