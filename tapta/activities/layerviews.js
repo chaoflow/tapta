@@ -66,7 +66,10 @@ define([
             {name: "right", content: [
                 {
                     ViewProto: panes.ToolbarView,
-                    props: {name: "toolbar"}
+                    propscallback: function() {
+                        return {name: "toolbar",
+                                layerview: this};
+                    }
                 },
                 {
                     ViewProto: panes.LibraryView,
