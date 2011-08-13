@@ -177,20 +177,6 @@ define([
     });
 
 
-    // click -> select for changing properties
-    // drag final node -> drop on mimo ctrl area
-    var SelectTool = Tool.extend({
-        act: function(info) {
-            var node = info.view.model.payload;
-            // ignore nodes, that have non-object payloads (initial, final,...)
-            if (node.type === undefined) return;
-            this.layerview.model.activity.set({
-                selected: info.view.model.payload
-            });
-            this.layerview.model.activity.save();
-        }
-    });
-
     var gv = require('./graphviews');
 
     var AddNewNodeTool = Tool.extend({
@@ -257,6 +243,11 @@ define([
         }
     });
 
+    var SelectTool = EditModeChanger.extend({
+        className: "select",
+        name: "select"
+    });
+
     var SubtractTool = EditModeChanger.extend({
         className: "subtract",
         name: "subtract"
@@ -266,7 +257,7 @@ define([
         tagName: "ul",
         className: "toolbar",
         initialize: function() {
-            this.append(SelectTool, {name: "select"});
+            this.append(SelectTool);
             this.append(AddNewNodeTool, {name: "addnewaction",
                                          collection: "actions"});
             this.append(AddNewNodeTool, {name: "addnewdecmer",

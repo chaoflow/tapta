@@ -77,7 +77,7 @@ define([
     Select.prototype = new EditMode();
     Object.defineProperties(Select.prototype, {
         name: {value: "select"},
-        opnames: {value: []}
+        opnames: {value: [ops.Select.prototype.name]}
     });
 
     var Subtract = function() { EditMode.apply(this, arguments); };
@@ -86,6 +86,8 @@ define([
         name: {value: "subtract"},
         opnames: {value: [ops.Subtract.prototype.name]}
     });
+
+    var MODES = [Select, Subtract];
 
     var EditModes = function(layerview) {
         // return, if only used as a prototype
@@ -131,7 +133,7 @@ define([
                 this.layerview.triggerReverse("editmode", name);
             }
         },
-        Modes: {value: [Select, Subtract]}
+        Modes: {value: MODES}
     });
 
     return {

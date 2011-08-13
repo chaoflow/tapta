@@ -35,6 +35,22 @@ define([
         Operation.prototype
     );
 
+    var Select = function() { Operation.apply(this, arguments); };
+    Select.prototype = new Operation();
+    Object.defineProperties(Operation.prototype, {
+        name: {value: "subtract"},
+        delegations: {value: [
+            [".activity .selectable", "click", "select"]
+        ]},
+        select: {value: function(event, model) {
+            var node = model.payload;
+            // ignore nodes, that have non-object payloads (initial, final,...)
+            if (node.type === undefined) throw "Why?";
+            this.layer.activity.set({selected: node});
+            this.layer.activity.save();
+        }}
+    });
+
     /*
      * Subtract an item from the graph, this only removes the vertex
      * or arc, the payload eventually continues to live in the library
@@ -114,6 +130,7 @@ define([
     return {
         Operation: Operation,
         Operations: Operations,
+        Select: Select,
         Subtract: Subtract
     };
 });
