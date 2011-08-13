@@ -97,7 +97,10 @@
 .tool {
     cursor: pointer;
 }
-.toolbar .tool.highlight {
+.toolbar .editmodechanger {
+    cursor: pointer;
+}
+.toolbar .editmodechanger.highlight {
     color: green;
 }
 /* scratchpad below here, should be replaced with proper classes */

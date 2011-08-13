@@ -7,11 +7,13 @@ define([
     './controller',
     './model',
     './panes',
+    './editmodes',
     './view'
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base'),
         panes = require('./panes'),
+        editmodes = require('./editmodes'),
         ActivityView = require('./view').ActivityView,
 
         model = require('./model'),
@@ -81,9 +83,6 @@ define([
             _.bindAll(this, "activityChanged");
             this.model.bind("change:activity", this.activityChanged);
 
-            var controller = new Controller(this);
-            this.bind("all", controller.handler);
-
             if (this.model.prev === undefined) {
                 $(this.el).addClass("top");
             }
@@ -91,55 +90,15 @@ define([
                 $(this.el).addClass("bottom");
             }
 
-            // set default editmode, a bit hackish
-            this.child.right.child.toolbar.child.select.clicked();
+            // this will also initialize properties:
+            // - this.editmode
+            // - this.editmodename
+            this.editmodes = new editmodes.EditModes(this);
+            this.editmodename = "select";
         },
         activityChanged: function() {
             this.activityview.bindToModel(this.model.activity);
             this.activityview.render();
-        }
-    });
-    Object.defineProperties(LayerView.prototype, {
-        editmode: {
-            get: function() { return this._editmode; },
-            set: function(editmode) {
-                if (this._editmode) {
-                    // Do nothing if we are already in the "new" edit mode
-                    if (this._editmode.name === editmode.name) return;
-
-                    // Tell old editmode not to listen to our events anymore
-                    // XXX: should the view be the editmode?
-                    // XXX: if not, should it carry the editmode and
-                    // we just store that?
-                    this._editmode.view.deactivate(this);
-
-                    // remove old editmode's CSS classes
-                    var oldname = this._editmode.name,
-                        oldview = this._editmode.view,
-                        oldclasses = [oldname].concat(oldview.extraClassNames);
-                    _.each(oldclasses, function(cls) {
-                        $(this.el).removeClass("editmode-"+cls);
-                    }, this);
-                }
-
-                // set new editmode's CSS classes
-                var newname = editmode.name,
-                    newview = editmode.view,
-                    newclasses = [newname].concat(newview.extraClassNames);
-                _.each(newclasses, function(cls) {
-                    $(this.el).addClass("editmode-"+cls);
-                }, this);
-
-                // remember the editmode we are in now and tell it to
-                // listen to our events, it will handle events its
-                // interested in
-                this._editmode = editmode;
-                this._editmode.view.activate(this);
-
-                // XXX: If this is only used to change style it could
-                // be replaced by CSS rules.
-                this.triggerReverse("editmode", editmode);
-            }
         }
     });
 

@@ -59,8 +59,7 @@ define([
         render: function() {
             $(this.el)
                 .html("<h4>Debug info</h4>")
-                .append("Editmode: " + (this.options.panemanager.editmode &&
-                                        this.options.panemanager.editmode.name));
+                .append("Editmode: " + (this.options.panemanager.editmodename));
             return this;
         }
     });
@@ -239,55 +238,28 @@ define([
         }
     });
 
-    var RemoveTool = Tool.extend({
-        activate: function(layerview) {
-            this.layerview = layerview;
-            this.layer = layerview.model;
-            $(layerview.el).delegate(".subtractable", "click.editmode", this.act);
-        },
-        deactivate: function(layerview) {
-            this.layerview = undefined;
-            this.layer = undefined;
-            $(layerview.el).undelegate(".editmode");
-        },
-        act: function(e) {
-            var model = this.layerview.traverseToModel(e.target.id),
-                graph = this.layerview.model.activity.graph;
-            // If the element cannot be subtracted from the graph, we
-            // have nothing to do
-            if (model.type === "arc") {
-                // prede -> arc(model) -> succ
-                var prede = model.predecessors[0],
-                    succ = model.successors[0];
-                prede.next.splice(prede.next.indexOf(succ), 1);
-                prede.save();
-            } else {
-                // node -> arc -> node
-                var predecessor = model.predecessors[0].predecessors[0],
-                    predenext = predecessor.next,
-                    // node -> arc -> node
-                    successor = model.successors[0].successors[0];
-                if (model.predecessors.length !== 1) throw "Not subtractable";
-                if (model.successors.length !== 1) throw "Not subtractable";
-                // XXX: order of the calls is important to always have a valid model
-                // silencing events would be a solution but somehow did
-                // not work, therefore the code duplication for now.
-                if ((successor.payload === "final") && (predenext.length > 1)) {
-                    predenext.splice(predenext.indexOf(model), 1);
-                    predecessor.save();
-                    successor.destroy({silent: true});
-                    model.destroy({silent: true});
+
+    var EditModeChanger = base.View.extend({
+        className: "editmodechanger",
+        tagName: "li",
+        initialize: function() {
+            this.bind("editmode", function(name) {
+                if (name === this.name) {
+                    $(this.el).addClass("highlight");
                 } else {
-                    predenext.splice(predenext.indexOf(model), 1, successor);
-                    predecessor.save();
-                    model.destroy({silent: true});
+                    $(this.el).removeClass("highlight");
                 }
-            }
-            graph.trigger("rebind");
-            if (model.payload === this.layer.activity.get('raked')) {
-                this.layer.activity.set({raked: undefined});
-            }
+            }, this);
+        },
+        render: function() {
+            $(this.el).text(this.name);
+            return this;
         }
+    });
+
+    var SubtractTool = EditModeChanger.extend({
+        className: "subtract",
+        name: "subtract"
     });
 
     var ToolbarView = base.View.extend({
@@ -301,7 +273,7 @@ define([
                                          collection: "decmers"});
             this.append(AddNewNodeTool, {name: "addnewforkjoin",
                                          collection: "forkjoins"});
-            this.append(RemoveTool, {name: "remove"});
+            this.append(SubtractTool);
         }
     });
 
