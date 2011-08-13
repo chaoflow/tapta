@@ -5,10 +5,12 @@ define([
     'vendor/underscore.js',
     './debug',
     './base',
+    './editmodes',
     './graphviews'
 ], function(require) {
     var DEBUG = require('./debug'),
-        base = require('./base');
+        base = require('./base'),
+        editmodes = require('./editmodes');
 
     var Pane = base.View.extend({
         tagName: "div",
@@ -177,6 +179,43 @@ define([
     });
 
 
+    var EditModeChanger = base.View.extend({
+        className: "editmodechanger",
+        tagName: "li",
+        initialize: function() {
+            this.bind("editmode", function(name) {
+                if (name === this.name) {
+                    $(this.el).addClass("highlight");
+                } else {
+                    $(this.el).removeClass("highlight");
+                }
+            }, this);
+        },
+        render: function() {
+            $(this.el).text(this.name);
+            return this;
+        }
+    });
+
+    var ToolbarView = base.View.extend({
+        tagName: "ul",
+        className: "toolbar",
+        initialize: function(props) {
+            // XXX: does not work, as the layer is not yet initialized
+            // panemanager needs to be initialized before initializing children
+            // same in general for parents, needs to be fixed in base.View
+            // props.layerview.editmodes.forEach(function(name) {
+            //     this.append(EditModeChanger, {name: name});
+            // });
+            editmodes.EditModes.prototype.Modes.map(function(Mode) {
+                return Mode.prototype.name;
+            }).forEach(function(name) {
+                this.append(EditModeChanger, {name: name});
+            }, this);
+        }
+    });
+
+
     var gv = require('./graphviews');
 
     var AddNewNodeTool = Tool.extend({
@@ -221,50 +260,6 @@ define([
                 selected: node
             });
             this.layer.activity.save();
-        }
-    });
-
-
-    var EditModeChanger = base.View.extend({
-        className: "editmodechanger",
-        tagName: "li",
-        initialize: function() {
-            this.bind("editmode", function(name) {
-                if (name === this.name) {
-                    $(this.el).addClass("highlight");
-                } else {
-                    $(this.el).removeClass("highlight");
-                }
-            }, this);
-        },
-        render: function() {
-            $(this.el).text(this.name);
-            return this;
-        }
-    });
-
-    var SelectTool = EditModeChanger.extend({
-        className: "select",
-        name: "select"
-    });
-
-    var SubtractTool = EditModeChanger.extend({
-        className: "subtract",
-        name: "subtract"
-    });
-
-    var ToolbarView = base.View.extend({
-        tagName: "ul",
-        className: "toolbar",
-        initialize: function() {
-            this.append(SelectTool);
-            this.append(AddNewNodeTool, {name: "addnewaction",
-                                         collection: "actions"});
-            this.append(AddNewNodeTool, {name: "addnewdecmer",
-                                         collection: "decmers"});
-            this.append(AddNewNodeTool, {name: "addnewforkjoin",
-                                         collection: "forkjoins"});
-            this.append(SubtractTool);
         }
     });
 
