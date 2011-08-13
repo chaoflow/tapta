@@ -42,13 +42,13 @@ define([
      */
     var Subtract = function() { Operation.apply(this, arguments); };
     Subtract.prototype = new Operation();
-    _(Subtract.prototype).extend({
-        name: "subtract",
-        delegations: [
+    Object.defineProperties(Subtract.prototype, {
+        name: {value: "subtract"},
+        delegations: {value: [
             [".activity .arc.subtractable", "click", "subtractArc"],
             [".activity .node.subtractable", "click", "subtractNode"]
-        ],
-        subtractArc: function(event, model) {
+        ]},
+        subtractArc: {value: function(event, model) {
             // XXX: remove graph dependency
             var graph = this.layerview.model.activity.graph;
             // XXX: could be declarative as sanity check
@@ -60,8 +60,8 @@ define([
             prede.save();
             // XXX: get rid of this
             graph.trigger("rebind");
-        },
-        subtractNode: function(event, model) {
+        }},
+        subtractNode: {value: function(event, model) {
             // XXX: remove graph dependency
             var graph = this.layerview.model.activity.graph;
             // XXX: could be declarative as sanity check
@@ -91,7 +91,7 @@ define([
                 this.layer.activity.save();
             }
             graph.trigger("rebind");
-        }
+        }}
     });
 
     /*
