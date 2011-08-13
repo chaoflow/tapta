@@ -73,6 +73,41 @@ define([
         EditMode.prototype
     );
 
+    var AddNode = function() { EditMode.apply(this, arguments); };
+    AddNode.prototype = new EditMode();
+    Object.defineProperties(AddNode.prototype, {
+        name: {value: "addnode"},
+        opnames: {value: []}
+    });
+
+    var AddNewNode = function() { AddNode.apply(this, arguments); };
+    AddNewNode.prototype = new AddNode();
+    Object.defineProperties(AddNewNode.prototype, {
+        name: {value: "addnewnode"},
+        opnames: {value: [ops.Select.prototype.name]}
+    });
+
+    var AddNewAction = function() { AddNewNode.apply(this, arguments); };
+    AddNewAction.prototype = new AddNewNode();
+    Object.defineProperties(AddNewAction.prototype, {
+        name: {value: "addnewaction"},
+        opnames: {value: [ops.AddNewAction.prototype.name]}
+    });
+
+    var AddNewDecMer = function() { AddNewNode.apply(this, arguments); };
+    AddNewDecMer.prototype = new AddNewNode();
+    Object.defineProperties(AddNewDecMer.prototype, {
+        name: {value: "addnewdecmer"},
+        opnames: {value: [ops.AddNewDecMer.prototype.name]}
+    });
+
+    var AddNewForkJoin = function() { AddNewNode.apply(this, arguments); };
+    AddNewForkJoin.prototype = new AddNewNode();
+    Object.defineProperties(AddNewForkJoin.prototype, {
+        name: {value: "addnewforkjoin"},
+        opnames: {value: [ops.AddNewForkJoin.prototype.name]}
+    });
+
     var Select = function() { EditMode.apply(this, arguments); };
     Select.prototype = new EditMode();
     Object.defineProperties(Select.prototype, {
@@ -87,7 +122,12 @@ define([
         opnames: {value: [ops.Subtract.prototype.name]}
     });
 
-    var MODES = [Select, Subtract];
+    // this order is also used for the EditMode toolbar
+    var MODES = [Select,
+                 AddNewAction,
+                 AddNewDecMer,
+                 AddNewForkJoin,
+                 Subtract];
 
     var EditModes = function(layerview) {
         // return, if only used as a prototype

@@ -35,6 +35,31 @@ define([
         Operation.prototype
     );
 
+    var AddNode = function() { Operation.apply(this, arguments); };
+    AddNode.prototype = new Operation();
+    Object.defineProperties(AddNode.prototype, {
+    });
+
+    var AddNewNode = function() { AddNode.apply(this, arguments); };
+    AddNewNode.prototype = new AddNode();
+    Object.defineProperties(AddNewNode.prototype, {
+    });
+
+    var AddNewAction = function() { AddNewNode.apply(this, arguments); };
+    AddNewAction.prototype = new AddNewNode();
+    Object.defineProperties(AddNewAction.prototype, {
+    });
+
+    var AddNewDecMer = function() { AddNewNode.apply(this, arguments); };
+    AddNewDecMer.prototype = new AddNewNode();
+    Object.defineProperties(AddNewDecMer.prototype, {
+    });
+
+    var AddNewForkJoin = function() { AddNewNode.apply(this, arguments); };
+    AddNewForkJoin.prototype = new AddNewNode();
+    Object.defineProperties(AddNewForkJoin.prototype, {
+    });
+
     var Select = function() { Operation.apply(this, arguments); };
     Select.prototype = new Operation();
     Object.defineProperties(Operation.prototype, {
@@ -124,10 +149,21 @@ define([
     };
     Object.defineProperties(Operations.prototype, {
         accumulate: {value: base.accumulate},
-        Ops: {value: [Subtract]}
+        Ops: {value: [
+            AddNewAction,
+            AddNewDecMer,
+            AddNewForkJoin,
+            Select,
+            Subtract
+        ]}
     });
 
     return {
+        AddNode: AddNode,
+        AddNewNode: AddNewNode,
+        AddNewAction: AddNewAction,
+        AddNewDecMer: AddNewDecMer,
+        AddNewForkJoin: AddNewForkJoin,
         Operation: Operation,
         Operations: Operations,
         Select: Select,
