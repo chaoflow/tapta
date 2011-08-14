@@ -62,13 +62,18 @@ define([
         "activate", function() {
             // enable all our ops
             this.ops.forEach(function(op) { op.enabled = true; });
-            // set our ops css classes on the layer view element
-            $(this.layerview.el).addClass("editmode-" + this.name);
+            // set all names in the prototype chain as CSS classes
+            this.accumulate("name").forEach(function(name) {
+                $(this.layerview.el).addClass("editmode-" + name);
+            }, this);
         },
         "deactivate", function() {
             // disable all our ops
             this.ops.forEach(function(op) { op.enabled = false; });
-            $(this.layerview.el).removeClass("editmode-" + this.name);
+            // see activate above
+            this.accumulate("name").forEach(function(name) {
+                $(this.layerview.el).removeClass("editmode-" + name);
+            }, this);
         },
         EditMode.prototype
     );
