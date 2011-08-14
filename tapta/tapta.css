@@ -38,12 +38,11 @@
     opacity: 0.2;
     stroke: green;
 }
-.layer.editmode-remove .subtractable {
+.layer.editmode-subtract .subtractable .symbol {
     stroke: red;
 }
-.layer.editmode-remove .subtractable .ctrl {
-    opacity: 0.2;
-    fill: red;
+.layer.editmode-subtract .subtractable .mimoctrl .symbol{
+    stroke: None;
 }
 .library .libitem{
     cursor: pointer;

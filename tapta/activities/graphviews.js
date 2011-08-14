@@ -27,10 +27,16 @@ define([
         initialize: function() {
             this.predecessors = [];
             this.successors = [];
+            if (this.subtractable) {
+                this.el.setAttribute("class", _.compact([
+                    this.el.getAttribute("class"),
+                    "subtractable"
+                ]));
+            }
+            // XXX: we need addClass/removeClass on base.View
             _.each(this.symbol(), function(sym) {
                 sym.el.setAttribute("class", _.compact([
                     sym.el.getAttribute("class"),
-                    this.subtractable ? "subtractable" : "",
                     "symbol"
                 ]).join(" "));
             }, this);
