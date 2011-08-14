@@ -1,19 +1,21 @@
 define([
     'require'
 ], function(require) {
-    var enable = true,
+    var enabled = true,
         DEBUG = {
-            controller: true && enable,
-            spaceout: true && enable,
-            panes: true && enable,
-            view: {
-                events: true && enable,
-                init: true && enable,
-                render: true && enable,
-                renderempty: false && enable
-            },
+            controller: true && enabled,
+            editmodes: true && enabled,
             model: {
-                events: true && enable
+                events: true && enabled
+            },
+            ops: true && enabled,
+            panes: true && enabled,
+            spaceout: true && enabled,
+            view: {
+                events: true && enabled,
+                init: true && enabled,
+                render: true && enabled,
+                renderempty: false && enabled
             }
         };
 
