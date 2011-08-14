@@ -76,6 +76,47 @@ define([
         return _.tail(list, _.indexOf(list, item)+1);
     };
 
+    // return the objects list of prototypes, closest first
+    var prototypesOf = function(obj) {
+        var proto = Object.getPrototypeOf(obj);
+        return proto ? [proto].concat(prototypesOf(proto)) : [];
+    };
+
+    // accumulate some property over the prototype chain
+    var accumulate = function(name, obj) {
+        if (!name) throw "Need property name!";
+        obj = obj || this;
+        return [obj].concat(prototypesOf(obj)).reduce(function(acc, x) {
+            if (!x.hasOwnProperty(name)) return acc;
+            return acc.concat(x[name] || []);
+        }, []);
+    };
+
+    // create a set off properties that toggle a state
+    // - name of the state
+    // - on, function called to turn on
+    // - off, function called to turn off
+    var defineToggleProperty = function(name, on_name, on, off_name, off, obj) {
+        var _name = "_" + name,
+            props = {};
+        props[name] = {
+            get: function() { return this[_name]; },
+            set: function(val) {
+                if (val === this[_name]) return;
+                if (val) {
+                    this[on_name]();
+                } else {
+                    this[off_name]();
+                }
+                this[_name] = val;
+            }
+        };
+        props[on_name] = {value: on};
+        props[off_name] = {value: off};
+        if (obj) Object.defineProperties(obj, props);
+        return props;
+    };
+
     var View = Backbone.View.extend({
         extraClassNames: [],
         propagateEvents: false,
@@ -95,7 +136,6 @@ define([
             props.id = this.abspath();
             if (props.attrs) this.attrs = _.extend(this.attrs || {},
                                                    props.attrs);
-
             if (DEBUG.view.render) {
                 var realrender = this.render;
                 this.render = function() {
@@ -119,20 +159,18 @@ define([
                 });
             }
 
-            // add name and extraClassNames as additional classes
-            // XXX: maybe should happen during render
-            var findClassNames = function(obj) {
-                var proto = Object.getPrototypeOf(obj);
-                return [obj.className]
-                    .concat(obj.extraClassNames)
-                    .concat(proto ? findClassNames(proto) : []);
-            };
-            var classNames = _(
-                [this.name]
-                    .concat((this.el.getAttribute("class") || "").split(" "))
-                    .concat(props && props.extraClassNames)
-                    .concat(findClassNames(this))
-            ).chain().uniq().compact().value();
+            if (props.extraClassNames) {
+                this.extraClassNames = props.extraClassNames;
+            }
+
+            // XXX: the order in which things are called sucks!!!
+            // maybe give up the concept of constructor vs initialize
+            // and do all in one with proper "super" calls
+            // accumulate name, className and extraClassNames for CSS
+            var classNames = [(this.el.getAttribute("class") || "").split(" ")]
+                    .concat(this.accumulate("name"))
+                    .concat(this.accumulate("className"))
+                    .concat(this.accumulate("extraClassNames"));
 
             // XXX: this does now work with SVG elements
             //_.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
@@ -141,6 +179,7 @@ define([
             if (DEBUG.view.init) console.groupEnd();
         },
         abspath: abspath,
+        accumulate: accumulate,
         location: location,
         append: function(ViewProto, props) {
             var child = this.defchild(ViewProto, props);
@@ -201,47 +240,6 @@ define([
         }
     });
 
-
-    // return the objects list of prototypes, closest first
-    var prototypesOf = function(obj) {
-        var proto = Object.getPrototypeOf(obj);
-        return proto ? [proto].concat(prototypesOf(proto)) : [];
-    };
-
-    // accumulate some property over the prototype chain
-    var accumulate = function(name, obj) {
-        if (!name) throw "Need property name!";
-        obj = obj || this;
-        return [obj].concat(prototypesOf(obj)).reduce(function(acc, x) {
-            if (!x.hasOwnProperty(name)) return acc;
-            return acc.concat(x[name] || []);
-        }, []);
-    };
-
-    // create a set off properties that toggle a state
-    // - name of the state
-    // - on, function called to turn on
-    // - off, function called to turn off
-    var defineToggleProperty = function(name, on_name, on, off_name, off, obj) {
-        var _name = "_" + name,
-            props = {};
-        props[name] = {
-            get: function() { return this[_name]; },
-            set: function(val) {
-                if (val === this[_name]) return;
-                if (val) {
-                    this[on_name]();
-                } else {
-                    this[off_name]();
-                }
-                this[_name] = val;
-            }
-        };
-        props[on_name] = {value: on};
-        props[off_name] = {value: off};
-        if (obj) Object.defineProperties(obj, props);
-        return props;
-    };
 
     return {
         abspath: abspath,
