@@ -119,7 +119,7 @@ define([
     Object.defineProperties(Select.prototype, {
         name: {value: "select"},
         delegations: {value: [
-            [".activity .selectable", "click", "select"]
+            [".graph .selectable", "click", "select"]
         ]},
         select: {value: function(event, model) {
             var node = model.payload;
@@ -140,8 +140,8 @@ define([
     Object.defineProperties(Subtract.prototype, {
         name: {value: "subtract"},
         delegations: {value: [
-            [".activity .arc.subtractable", "click", "subtractArc"],
-            [".activity .node.subtractable", "click", "subtractNode"]
+            [".graph .arc.subtractable", "click", "subtractArc"],
+            [".graph .node.subtractable", "click", "subtractNode"]
         ]},
         subtractArc: {value: function(event, model) {
             // XXX: remove graph dependency
