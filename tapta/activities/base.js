@@ -205,14 +205,14 @@ define([
     // return the objects list of prototypes, closest first
     var prototypesOf = function(obj) {
         var proto = Object.getPrototypeOf(obj);
-        return proto ? [obj].concat(prototypesOf(proto)) : [obj];
+        return proto ? [proto].concat(prototypesOf(proto)) : [];
     };
 
     // accumulate some property over the prototype chain
     var accumulate = function(name, obj) {
         if (!name) throw "Need property name!";
         obj = obj || this;
-        return prototypesOf(obj).reduce(function(acc, x) {
+        return [obj].concat(prototypesOf(obj)).reduce(function(acc, x) {
             return acc.concat(x[name] || []);
         }, []);
     };
