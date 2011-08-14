@@ -27,25 +27,9 @@ define([
         initialize: function() {
             this.predecessors = [];
             this.successors = [];
-            if (this.subtractable) {
-                this.el.setAttribute("class", _.compact([
-                    this.el.getAttribute("class"),
-                    "subtractable"
-                ]));
-            }
-            // XXX: we need addClass/removeClass on base.View
-            _.each(this.symbol(), function(sym) {
-                sym.el.setAttribute("class", _.compact([
-                    sym.el.getAttribute("class"),
-                    "symbol"
-                ]).join(" "));
-            }, this);
-            _.each(this.ctrls(), function(ctrl) {
-                ctrl.el.setAttribute("class", _.compact([
-                    ctrl.el.getAttribute("class"),
-                    "ctrl"
-                ]).join(" "));
-            }, this);
+            if (this.subtractable) this.addClass("subtractable");
+            _.each(this.symbol(), function(sym) { sym.addClass("symbol"); });
+            _.each(this.ctrls(), function(ctrl) { ctrl.addClass("ctrl"); });
         },
         symbol: function() { throw "Not implemented"; }
     });

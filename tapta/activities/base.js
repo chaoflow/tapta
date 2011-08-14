@@ -181,6 +181,11 @@ define([
         abspath: abspath,
         accumulate: accumulate,
         location: location,
+        addClass: function(name) {
+            this.el.setAttribute("class", _.compact([
+                name, this.el.getAttribute("class")
+            ]).join(" "));
+        },
         append: function(ViewProto, props) {
             var child = this.defchild(ViewProto, props);
             if (child.name === undefined) throw "Child needs name";
