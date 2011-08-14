@@ -213,6 +213,7 @@ define([
         if (!name) throw "Need property name!";
         obj = obj || this;
         return [obj].concat(prototypesOf(obj)).reduce(function(acc, x) {
+            if (!x.hasOwnProperty(name)) return acc;
             return acc.concat(x[name] || []);
         }, []);
     };

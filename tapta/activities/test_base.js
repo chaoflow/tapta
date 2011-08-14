@@ -124,13 +124,19 @@ define([
     });
 
     test("accumulate", function() {
-        var A = function(){ this.name = "A"; this.list = [1,1]; };
-        var B = function(){ this.name = "B"; this.list = [2,2]; };
+        var A = function(){};
+        A.prototype.name = "A";
+        A.prototype.list = [1];
+        var B = function(){};
         B.prototype = new A();
-        var C = function(){ this.name = "C"; this.list = [3,3]; };
+        B.prototype.name = "B";
+        B.prototype.list = [2];
+        var C = function(){};
         C.prototype = new B();
+        C.prototype.name = "C";
+        C.prototype.list = [3];
         var c = new C();
         deepEqual(base.accumulate("name", c), ["C", "B", "A"], "acc plain");
-        deepEqual(base.accumulate("list", c), [3, 3, 2, 2, 1, 1], "acc list");
+        deepEqual(base.accumulate("list", c), [3, 2, 1], "acc list");
     });
 });
