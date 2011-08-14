@@ -1,24 +1,28 @@
 define([
     'require',
     'vendor/underscore.js',
-    './base'
+    './base',
+    './debug'
 ], function(require) {
-    var base = require('./base');
+    var DEBUG = require('./debug').ops,
+        base = require('./base');
 
     // an operation that if enabled can be triggered by DOM events
     var Operation = function(layerview) {
         this.layerview = layerview;
+        if (DEBUG && this.layerview) console.log("init op: "+this.name);
     };
     Object.defineProperties(Operation.prototype, {
         el: {get: function() { return this.layerview.el; }},
-        layer: {get: function() { return this.layerview.model; }}
+        layer: {get: function() { return this.layerview.model; }},
+        name: {value: "operation"}
     });
     base.defineToggleProperty(
         "enabled",
         "enable", function() {
             this.delegations.forEach(function(info) {
                 var selector = info[0],
-                    event = [info[1], this.namespace].join("."),
+                    event = [info[1], this.name].join("."),
                     mname = info[2],
                     method = function(obj) {
                         return function(event) {
@@ -31,39 +35,89 @@ define([
                 $(this.el).delegate(selector, event, method);
             }, this);
         },
-        "disable", function() { $(this.el).undelegate("."+this.name); },
+        "disable", function() { $(this.el).undelegate("." + this.name); },
         Operation.prototype
     );
 
     var AddNode = function() { Operation.apply(this, arguments); };
     AddNode.prototype = new Operation();
     Object.defineProperties(AddNode.prototype, {
+        name: {value: "addnode"}
     });
 
     var AddNewNode = function() { AddNode.apply(this, arguments); };
     AddNewNode.prototype = new AddNode();
     Object.defineProperties(AddNewNode.prototype, {
+        delegations: {value: [
+            [".graph .arc", "click", "act"]
+        ]},
+        act: {value: function(event, model) {
+            if (model.type !== "arc") throw "Why did you call me?";
+            var source = model.source,
+                target = model.target;
+            // create node
+            var collection = this.layer[this.collection],
+                node;
+            if (collection === undefined) {
+                node = "forkjoin";
+            } else {
+                node = collection.create();
+            }
+
+            // create new vertex with action as payload
+            var graph = this.layerview.model.activity.graph,
+                // XXX: this triggers already spaceOut and
+                // silent:true seems not to work
+                newvert = new graph.model({payload: node});
+
+            if (target === undefined) {
+                // Open arc of a MIMO, create final node
+                target = new graph.model({payload: "final"});
+                graph.add(target, {silent:true});
+                source.next.splice(model.addnewidx, 0, newvert);
+            } else {
+                // change next of source without triggering an event
+                source.next.splice(source.next.indexOf(target), 1, newvert);
+            }
+            newvert.next.push(target);
+            graph.add(newvert, {silent:true});
+            target.save();
+            newvert.save();
+            source.save();
+            // XXX: this currently triggers rebinding of the graphview
+            graph.trigger("rebind");
+            this.layer.activity.set({
+                selected: node
+            });
+            this.layer.activity.save();
+        }}
     });
 
     var AddNewAction = function() { AddNewNode.apply(this, arguments); };
     AddNewAction.prototype = new AddNewNode();
     Object.defineProperties(AddNewAction.prototype, {
+        name: {value: "addnewaction"},
+        collection: {value: "actions"}
     });
 
     var AddNewDecMer = function() { AddNewNode.apply(this, arguments); };
     AddNewDecMer.prototype = new AddNewNode();
     Object.defineProperties(AddNewDecMer.prototype, {
+        name: {value: "addnewdecmer"},
+        collection: {value: "decmers"}
     });
 
     var AddNewForkJoin = function() { AddNewNode.apply(this, arguments); };
     AddNewForkJoin.prototype = new AddNewNode();
     Object.defineProperties(AddNewForkJoin.prototype, {
+        name: {value: "addnewforkjoin"},
+        collection: {value: "forkjoins"}
     });
 
     var Select = function() { Operation.apply(this, arguments); };
     Select.prototype = new Operation();
-    Object.defineProperties(Operation.prototype, {
-        name: {value: "subtract"},
+    Object.defineProperties(Select.prototype, {
+        name: {value: "select"},
         delegations: {value: [
             [".activity .selectable", "click", "select"]
         ]},
@@ -142,10 +196,15 @@ define([
     // initialize all operations for a layer, by default all are disabled
     var Operations = function(layerview) {
         if (layerview === undefined) return;
+        this.layerview = layerview;
+        if (DEBUG) console.group("init ops: "+this.layerview.abspath());
+        this.list = [];
         this.accumulate("Ops").forEach(function(Op) {
             var op = new Op(layerview);
             this[op.name] = op;
+            this.list.push(op);
         }, this);
+        if (DEBUG) console.groupEnd();
     };
     Object.defineProperties(Operations.prototype, {
         accumulate: {value: base.accumulate},

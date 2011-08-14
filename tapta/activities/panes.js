@@ -61,48 +61,21 @@ define([
         render: function() {
             $(this.el)
                 .html("<h4>Debug info</h4>")
-                .append("Editmode: " + (this.options.panemanager.editmodename));
+                .append("Editmode: " + (this.layerview.editmodename));
+            $(this.el).append("<br>Ops:<ul>");
+            this.layerview.editmodes.ops.list.forEach(function(op) {
+                $(this.el).append([
+                    "<li>",
+                    op.name,
+                    op.enabled ? "true" : "false",
+                    "</li>"
+                ].join(": "));
+            }, this);
             return this;
         }
     });
-
-    // things to be put in panes - APIs are not stable here
-    // especially some mixup/mashup of editmode and tool right now
-
-    var Tool = base.View.extend({
-        tagName: "li",
-        className: "tool",
-        events: {
-            "click": "clicked"
-        },
-        clicked: function() {
-            // XXX: don't pass the full view, but just what is needed
-            this.trigger("editmode", {name: this.name, view: this});
-        },
-        activate: function(layerview) {
-            this.layerview = layerview;
-            this.layer = layerview.model;
-            $(layerview.el).delegate(".arc .ctrl", "click.editmode", this.act);
-        },
-        deactivate: function(layerview) {
-            this.layerview = undefined;
-            this.layer = undefined;
-            $(layerview.el).undelegate(".editmode");
-        },
-        initialize: function() {
-            this.bind("editmode", function(info) {
-                if (info.name === this.name) {
-                    $(this.el).addClass("highlight");
-                } else {
-                    $(this.el).removeClass("highlight");
-                }
-            });
-            _.bindAll(this, "act");
-        },
-        render: function() {
-            $(this.el).text(this.name);
-            return this;
-        }
+    Object.defineProperties(DebugInfo.prototype, {
+        layerview: {get: function() { return this.options.panemanager; }}
     });
 
     var PropertiesView = base.View.extend({
@@ -178,7 +151,6 @@ define([
         selected: { get: function() { return this.activity.get('selected'); } }
     });
 
-
     var EditModeChanger = base.View.extend({
         className: "editmodechanger",
         tagName: "li",
@@ -216,52 +188,55 @@ define([
     });
 
 
-    var gv = require('./graphviews');
 
-    var AddNewNodeTool = Tool.extend({
-        extraClassNames: ['addnode', 'addnewnode'],
-        act: function(e) {
-            var arcmodel = this.layerview.traverseToModel(e.target.id);
-            if (arcmodel.type !== "arc") throw "Why did you call me?";
-            var source = arcmodel.source,
-                target = arcmodel.target;
-            // create node
-            var collection = this.layerview.model[this.options.collection],
-                node;
-            if (collection === undefined) {
-                node = "forkjoin";
-            } else {
-                node = collection.create();
-            }
 
-            // create new vertex with action as payload
-            var graph = this.layerview.model.activity.graph,
-                // XXX: this triggers already spaceOut and
-                // silent:true seems not to work
-                newvert = new graph.model({payload: node});
 
-            if (target === undefined) {
-                // Open arc of a MIMO, create final node
-                target = new graph.model({payload: "final"});
-                graph.add(target, {silent:true});
-                source.next.splice(arcmodel.addnewidx, 0, newvert);
-            } else {
-                // change next of source without triggering an event
-                    source.next.splice(source.next.indexOf(target), 1, newvert);
-            }
-            newvert.next.push(target);
-            graph.add(newvert, {silent:true});
-            target.save();
-            newvert.save();
-            source.save();
-            // XXX: this currently triggers rebinding of the graphview
-            graph.trigger("rebind");
-            this.layer.activity.set({
-                selected: node
+
+
+
+
+
+
+    // things to be put in panes - APIs are not stable here
+    // especially some mixup/mashup of editmode and tool right now
+
+    var Tool = base.View.extend({
+        tagName: "li",
+        className: "tool",
+        events: {
+            "click": "clicked"
+        },
+        clicked: function() {
+            // XXX: don't pass the full view, but just what is needed
+            this.trigger("editmode", {name: this.name, view: this});
+        },
+        activate: function(layerview) {
+            this.layerview = layerview;
+            this.layer = layerview.model;
+            $(layerview.el).delegate(".arc .ctrl", "click.editmode", this.act);
+        },
+        deactivate: function(layerview) {
+            this.layerview = undefined;
+            this.layer = undefined;
+            $(layerview.el).undelegate(".editmode");
+        },
+        initialize: function() {
+            this.bind("editmode", function(info) {
+                if (info.name === this.name) {
+                    $(this.el).addClass("highlight");
+                } else {
+                    $(this.el).removeClass("highlight");
+                }
             });
-            this.layer.activity.save();
+            _.bindAll(this, "act");
+        },
+        render: function() {
+            $(this.el).text(this.name);
+            return this;
         }
     });
+
+    var gv = require('./graphviews');
 
     var LibItemView = Tool.extend({
         className: "libitem",
