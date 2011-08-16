@@ -232,7 +232,8 @@ define([
                 y: lastgeo.y + lastgeo.height
             });
             return _.map(geos, function(geo, idx) {
-                var arc = new Arc(this.model.cid+":open", this.model, undefined, true);
+                var arc = new Arc(this.model.cid+":open", this.model,
+                                  undefined, true);
                 arc.setGeometry({
                     x: geo.x - ourmodelgeo.x,
                     y: geo.y - ourmodelgeo.y,
