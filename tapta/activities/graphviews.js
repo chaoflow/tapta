@@ -284,7 +284,10 @@ define([
     });
     Object.defineProperties(DecMerNodeView.prototype, {
         // more than one outgoing edge: decision, otherwise at most a merge
-        decision: {get: function() { return (this.model.successors.length > 1); }}
+        decision: {get: function() { return (this.model.successors.length > 1); }},
+        selectable: {get: function() {
+            return this.decision;
+        }}
     });
 
     var ForkJoinNodeView = MIMONodeView.extend({
