@@ -125,6 +125,10 @@ define([
             var node = model.payload;
             // ignore nodes, that have non-object payloads (initial, final,...)
             if (node.type === undefined) throw "Why?";
+            // make sure there is change:selected event
+            // reselecting the same element otherwise moves focus
+            this.layer.activity.set({selected: undefined});
+            this.layer.activity.save();
             this.layer.activity.set({selected: node});
             this.layer.activity.save();
         }}
