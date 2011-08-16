@@ -6,10 +6,6 @@ define([
     var DEBUG = require('./debug'),
         base = require('./base');
 
-    var SVGElement = base.View.extend({
-        xmlns: "http://www.w3.org/2000/svg"
-    });
-
     var pan = function() {
         var state = {};
         var mousemove = function(e) {
@@ -55,6 +51,14 @@ define([
     // The whole "which classes are set on an element" is still a bit
     // rough, also check base.View for that
 
+    var SVGElement = base.View.extend({
+        xmlns: "http://www.w3.org/2000/svg"
+    });
+    Object.defineProperties(SVGElement.prototype, {
+        cx: {get: function() { return this.options.cx; }},
+        cy: {get: function() { return this.options.cy; }}
+    });
+
     var SVG = SVGElement.extend({
         attrs: { version: "1.1" },
         events: {
@@ -88,10 +92,11 @@ define([
         attrs: {get: function() {
             var edgelength = this.options.r * Math.sqrt(2);
             return {
-                x: this.options.cx - edgelength / 2,
-                y: this.options.cy - edgelength / 2,
+                x: this.cx - edgelength / 2,
+                y: this.cy - edgelength / 2,
                 width: edgelength,
-                height: edgelength
+                height: edgelength,
+                transform: ["rotate(45", this.cx, this.cy].join(",") + ")"
             };
         }}
     });
