@@ -59,10 +59,14 @@
     stroke: #b5d9ea;
     stroke-width: 2;
 }
-.node.decision {
+.node.decmer .decision.symbol {
     fill: #edf7ff;
     stroke: #b5d9ea;
     stroke-width: 2;
+}
+.node.decmer .merge.symbol{
+    fill: #424242;
+    stroke: None;
 }
 .node.final circle.inner {
     fill: #424242;
@@ -78,10 +82,6 @@
     stroke: None;
 }
 .node.initial {
-    fill: #424242;
-    stroke: None;
-}
-.node.merge {
     fill: #424242;
     stroke: None;
 }
