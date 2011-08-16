@@ -28,6 +28,8 @@ define([
             this.predecessors = [];
             this.successors = [];
             if (this.subtractable) this.addClass("subtractable");
+            // XXX: consider renaming to hasproperties or something
+            if (this.selectable) this.addClass("selectable");
             _.each(this.symbol(), function(sym) { sym.addClass("symbol"); });
             _.each(this.ctrls(), function(ctrl) { ctrl.addClass("ctrl"); });
         },
@@ -119,6 +121,11 @@ define([
         entrancepath: function(srcpoint) { return []; },
         // for drawing arcs, return via points to exit to target point
         exitpath: function(tgtpoint) { return []; }
+    });
+    Object.defineProperties(NodeView.prototype, {
+        selectable: {get: function() {
+            return this.model.payload.attributes !== undefined;
+        }}
     });
 
     var InitialNodeView = NodeView.extend({
