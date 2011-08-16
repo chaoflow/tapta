@@ -223,13 +223,22 @@ define([
             // Before, in between and after them we need to create
             // open arcs (models+views), they are our ctrls.
             // it's all about model geometry
-            var geos = map("succ.geometry", this.model.successors),
-                lastgeo = _.last(geos),
-                ourmodelgeo = this.model.geometry;
+            var geos = this.model.successors.map(function(current, idx, succs) {
+                var previous = succs[idx-1],
+                    geo = {
+                        x: current.x,
+                        y: current.y - (
+                            previous ?
+                                current.y - previous.y - previous.height :
+                                0) / 2
+                    };
+                return geo;
+            });
+            var ourmodelgeo = this.model.geometry;
             // add one fake geo after the last
             geos.push({
                 x: geos[0].x,
-                y: lastgeo.y + lastgeo.height
+                y: ourmodelgeo.y + ourmodelgeo.height
             });
             return _.map(geos, function(geo, idx) {
                 var arc = new Arc(this.model.cid+":open", this.model,
