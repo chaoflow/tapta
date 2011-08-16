@@ -119,7 +119,7 @@ define([
     Object.defineProperties(Select.prototype, {
         name: {value: "select"},
         delegations: {value: [
-            [".graph .selectable", "click", "select"]
+            [".graph .selectable .symbol", "click", "select"]
         ]},
         select: {value: function(event, model) {
             var node = model.payload;
@@ -131,6 +131,18 @@ define([
             this.layer.activity.save();
             this.layer.activity.set({selected: node});
             this.layer.activity.save();
+            if (this.selected) {
+                this.selected.setAttribute(
+                    "class",
+                    _(this.selected.getAttribute("class").split(" "))
+                        .without("selected").join(" ")
+                );
+            }
+            this.selected = event.target;
+            this.selected.setAttribute(
+                "class",
+                [this.selected.getAttribute("class"), "selected"].join(" ")
+            );
         }}
     });
 
