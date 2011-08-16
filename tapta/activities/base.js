@@ -167,15 +167,15 @@ define([
             // maybe give up the concept of constructor vs initialize
             // and do all in one with proper "super" calls
             // accumulate name, className and extraClassNames for CSS
-            var classNames = _([(this.el.getAttribute("class") || "").split(" ")]
-                    .concat(this.accumulate("name"))
+            var classstr = _(
+                [].concat(this.accumulate("name"))
                     .concat(this.accumulate("className"))
-                    .concat(this.accumulate("extraClassNames")))
-                    .chain().compact().uniq().value();
+                    .concat(this.accumulate("extraClassNames"))
+            ).chain().compact().uniq().value().join(" ");
 
-            // XXX: this does now work with SVG elements
+            // XXX: this does not work with SVG elements
             //_.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
-            this.el.setAttribute("class", classNames.join(" "));
+            this.addClass(classstr);
 
             if (DEBUG.view.init) console.groupEnd();
         },
