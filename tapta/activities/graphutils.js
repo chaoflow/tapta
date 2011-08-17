@@ -344,7 +344,9 @@ define([
                     }
                 });
             });
-            if (crucial.width_avail > 0) throw "Unallocated space left!";
+            if (crucial.width_avail > 0) {
+                console.warn("Unallocated space left!", crucial.width_avail);
+            }
             // remove empty paths
             for (var i = paths.length - 1; i >=0; i--) {
                 if (paths[i].length === 0) {
