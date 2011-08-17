@@ -52,7 +52,7 @@ define([
         opnames: {value: []},
         // mode's enabled operations, subset of all operations
         ops: {get: function() {
-            return this.opnames.map(function(name) {
+            return this.accumulate("opnames").map(function(name) {
                 return this._allops[name];
             }, this);
         }}
