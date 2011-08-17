@@ -177,7 +177,7 @@ define([
     var IndexedCollection = Collection.extend({
         _add: function(model, opts) {
             // elements without an idx are appended
-            idx = model.get ? model.get('idx') : model.idx;
+            var idx = model.get ? model.get('idx') : model.idx;
             if (idx === undefined) {
                 idx = this.length;
                 if (model.set) {
