@@ -46,6 +46,10 @@ define([
         return start;
     };
 
+    /*
+     * base and SVG container element
+     */
+
     // XXX:
     // the name is used as a CSS class but feels rather pointless here.
     // The whole "which classes are set on an element" is still a bit
@@ -70,6 +74,10 @@ define([
         tagName: "svg"
     });
 
+    /*
+     * first level elements
+     */
+
     var Circle = SVGElement.extend({
         name: "circle",
         tagName: "circle"
@@ -78,27 +86,6 @@ define([
     var Group = SVGElement.extend({
         name: "group",
         tagName: "g"
-    });
-
-    var Rect = SVGElement.extend({
-        name: "rectangle",
-        tagName: "rect"
-    });
-
-    var Diamond = Rect.extend({
-        name: "diamond"
-    });
-    Object.defineProperties(Diamond.prototype, {
-        attrs: {get: function() {
-            var edgelength = this.options.r * Math.sqrt(2);
-            return {
-                x: this.cx - edgelength / 2,
-                y: this.cy - edgelength / 2,
-                width: edgelength,
-                height: edgelength,
-                transform: ["rotate(45", this.cx, this.cy].join(",") + ")"
-            };
-        }}
     });
 
     // http://www.w3.org/TR/SVG/paths.html#PathData
@@ -120,6 +107,31 @@ define([
             return a ? "m" + map('p.join()', [[-a.dx, -a.dy],
                                               [a.dx, a.dy],
                                               [-a.dx, a.dy]]).join("l") : "";
+        }}
+    });
+
+    var Rect = SVGElement.extend({
+        name: "rectangle",
+        tagName: "rect"
+    });
+
+    /*
+     * derived elements
+     */
+
+    var Diamond = Rect.extend({
+        name: "diamond"
+    });
+    Object.defineProperties(Diamond.prototype, {
+        attrs: {get: function() {
+            var edgelength = this.options.r * Math.sqrt(2);
+            return {
+                x: this.cx - edgelength / 2,
+                y: this.cy - edgelength / 2,
+                width: edgelength,
+                height: edgelength,
+                transform: ["rotate(45", this.cx, this.cy].join(",") + ")"
+            };
         }}
     });
 
