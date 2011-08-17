@@ -149,6 +149,9 @@ define([
 
             Backbone.View.apply(this, arguments);
 
+            this.html = props.html;
+            this.text = props.text;
+
             if (DEBUG.view.events) {
                 this.bind("all", function(event) {
                     // XXX: hack to reduce noise
@@ -218,8 +221,18 @@ define([
             this.children = [];
         },
         render: function() {
-            if ((DEBUG.view.renderempty) && (this.children.length === 0)) {
+            if ((DEBUG.view.renderempty) &&
+                (this.children.length === 0) &&
+                (this.html === undefined) &&
+                (this.text === undefined))
+            {
                 $(this.el).text("empty:"+this.abspath());
+            }
+            if (this.text) {
+                $(this.el).text(this.text);
+            }
+            if (this.html) {
+                $(this.el).append(this.html);
             }
             _.each(this.children, function(child) {
                 $(this.el).append(child.render().el);
