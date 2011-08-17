@@ -131,7 +131,6 @@ define([
             this.save_debounced([info.srcElement]);
         },
         save: function(els) {
-            console.log("huhu");
             var data = foldl(function(acc, el) {
                 $(el).removeClass("unsaved");
                 acc[el.name] = el.value;
