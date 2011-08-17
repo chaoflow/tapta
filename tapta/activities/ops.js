@@ -86,10 +86,8 @@ define([
             source.save();
             // XXX: this currently triggers rebinding of the graphview
             graph.trigger("rebind");
-            this.layer.activity.set({
-                selected: node
-            });
-            this.layer.activity.save();
+            //if (node.selectable) this.layer.activity.set({selected: node});
+            //this.layer.activity.save();
         }}
     });
 
