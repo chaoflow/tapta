@@ -4,7 +4,6 @@ define([
     'vendor/underscore.js',
     './debug',
     './base',
-    './controller',
     './model',
     './panes',
     './editmodes',
@@ -15,9 +14,7 @@ define([
         panes = require('./panes'),
         editmodes = require('./editmodes'),
         ActivityView = require('./view').ActivityView,
-
-        model = require('./model'),
-        Controller = require('./controller');
+        model = require('./model');
 
     var LayersView = base.View.extend({
         initialize: function() {
@@ -25,10 +22,8 @@ define([
             // we reverse the order of our children afterwards
             // NOTE: reverse() reverse the array and returns it: concat()
             _.each(this.model.layers.concat().reverse(), function(layer) {
-                this.append(LayerView, {
-                    model: layer,
-                    name: layer.name
-                });
+                var view = new LayerView({model: layer, name: layer.name});
+                this.append(view);
             }, this);
             this.children.reverse();
         }
@@ -72,13 +67,13 @@ define([
                         return {name: "toolbar",
                                 layerview: this};
                     }
-                },
-                {
-                    ViewProto: panes.LibraryView,
-                    propscallback: function() {
-                        return {name: "actions",
-                                layer: this.model};
-                    }
+                // },
+                // {
+                //     ViewProto: panes.LibraryView,
+                //     propscallback: function() {
+                //         return {name: "actions",
+                //                 layer: this.model};
+                //     }
                 }
             ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],

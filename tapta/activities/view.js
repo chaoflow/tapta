@@ -7,7 +7,6 @@ define([
     'vendor/underscore.js',
     './debug',
     './base',
-    './controller',
     './model',
     './graphviews',
     './settings',
@@ -20,8 +19,7 @@ define([
         SVG = require('./svgviews').SVG,
         GraphView = require('./graphviews').GraphView,
         model = require('./model'),
-        CFG = require('./settings'),
-        Controller = require('./controller');
+        CFG = require('./settings');
 
     // An activity view creates a canvas. Its graph is drawn by a graph view.
     var ActivityView = base.View.extend({
@@ -35,14 +33,16 @@ define([
 
             // an svg drawing area - should ActivityView inherit from
             // SVG or do we have some non-svg activity things to display?
-            this.svg = this.append(SVG);
+            this.svg = new SVG();
+            this.append(this.svg);
 
-            this.graphview = this.svg.append(GraphView, {
+            this.graphview = new GraphView({
                 geometry: {
                     x: 10,
                     y: 10
                 }
             });
+            this.svg.append(this.graphview);
 
             this.bindToModel(this.model);
         },

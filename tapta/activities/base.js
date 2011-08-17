@@ -124,16 +124,15 @@ define([
         // subclasses need to "super"-call, and the upside, that its
         // clearer what is called when.
         constructor: function(props) {
+            if (props === undefined) props = {};
             // these two are used by this.abspath
-            if (props && props.name) this.name = props.name;
-            if (props && props.parent) this.parent = props.parent;
+            if (props.name) this.name = props.name;
             if (DEBUG.view.init) console.group("init:"+this.abspath());
 
             // children by name and in an ordered list
             this.child = {};
             this.children = [];
 
-            props.id = this.abspath();
             if (props.attrs) this.attrs = _.extend(this.attrs || {},
                                                    props.attrs);
             if (DEBUG.view.render) {
@@ -147,10 +146,10 @@ define([
             }
             _.bindAll(this, "render");
 
-            Backbone.View.apply(this, arguments);
-
             this.html = props.html;
             this.text = props.text;
+
+            Backbone.View.apply(this, arguments);
 
             if (DEBUG.view.events) {
                 this.bind("all", function(event) {
@@ -190,29 +189,23 @@ define([
                 name, this.el.getAttribute("class")
             ]).join(" "));
         },
-        append: function(ViewProto, props) {
-            var child = this.defchild(ViewProto, props);
+        adopt: function(child, name) {
+            if (child.parent) throw "Child already has parent";
+            if (name) child.name = name;
             if (child.name === undefined) throw "Child needs name";
-            if (this.child[child.name] !== undefined) throw "Name collision";
-            // XXX: rethink this, do we need default store for named children?
-            // check eg. ActivityView with svg for an alternative
+            if (child.name in this.child) throw "Name collision";
+            child.parent = this;
             this.child[child.name] = child;
+            return child;
+        },
+        append: function(child) {
+            this.adopt(child);
             this.children.push(child);
             return child;
         },
-        defchild: function(ViewProto, props) {
-            props = props || {};
-            // XXX: remove explicit setting of props.parent
-            props.parent = props.parent || this;
-            var child = new ViewProto(props);
-            // XXX: As now also the SVG elements play nice with
-            // delegateEvents, I'm pretty sure we can soon kick the event
-            // propagation. triggerReverse might still be nice to have.
-            if (child.propagateEvents) {
-                child.bind("all", _.bind(function(name, info) {
-                    if (!info.reverse) this.trigger.apply(this, arguments);
-                }, this));
-            }
+        insert: function(idx, child) {
+            this.adopt(child);
+            this.children.splice(idx, 0, child);
             return child;
         },
         removeChildren: function() {
@@ -221,6 +214,10 @@ define([
             this.children = [];
         },
         render: function() {
+            this.el.setAttribute("id", this.abspath());
+            for (var key in this.attrs) {
+                this.el.setAttribute(key, this.attrs[key]);
+            }
             if ((DEBUG.view.renderempty) &&
                 (this.children.length === 0) &&
                 (this.html === undefined) &&

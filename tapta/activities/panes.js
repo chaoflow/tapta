@@ -34,8 +34,8 @@ define([
         append: function(cfg) {
             // create the pane
             var pane = base.View.prototype.append.call(
-                this, Pane, {name: cfg.name,
-                             extraClassNames: cfg.extraClassNames}
+                this, new Pane({name: cfg.name,
+                                extraClassNames: cfg.extraClassNames})
             );
 
             // add its content
@@ -45,7 +45,8 @@ define([
                         ? cfg.propscallback.call(this)
                         : _.clone(cfg.props);
                 props.panemanager = this;
-                pane.append(ViewProto, props);
+                var view = new ViewProto(props);
+                pane.append(view);
             }, this);
 
             return pane;
@@ -161,10 +162,7 @@ define([
                     $(this.el).removeClass("highlight");
                 }
             }, this);
-        },
-        render: function() {
-            $(this.el).text(this.name);
-            return this;
+            this.text = this.name;
         }
     });
 
@@ -181,7 +179,7 @@ define([
             editmodes.EditModes.prototype.Modes.map(function(Mode) {
                 return Mode.prototype.name;
             }).forEach(function(name) {
-                this.append(EditModeChanger, {name: name});
+                this.append(new EditModeChanger({name: name}));
             }, this);
         }
     });
@@ -326,7 +324,7 @@ define([
 
     return {
         DebugInfo: DebugInfo,
-        LibraryView: LibraryView,
+//        LibraryView: LibraryView,
         PaneManager: PaneManager,
         PropertiesView: PropertiesView,
         ToolbarView: ToolbarView

@@ -71,19 +71,41 @@ define([
     // An arcview connects two vertex views
     var ArcView = GraphElement.extend({
         extraClassNames: ["arc"],
-        ctrls: function() {
-            return [
-                this.append(svg.Rect, {
-                    attrs: {
-                        x: this.x,
-                        y: this.y + (this.height - this.cfg.ctrl.height) / 2,
-                        width: this.width,
-                        height: this.cfg.ctrl.height
-                    }
-                })
-            ];
-        },
-        symbol: function() {
+        ctrls: function() { var view = this;  return [
+            this.append(Object.defineProperties(
+                new svg.Rect(), {
+                    attrs: {get: function() { return {
+                        x: view.x,
+                        y: view.y + (view.height - CFG.graphelement.arc.ctrl.height) / 2,
+                        width: view.width,
+                        height: CFG.graphelement.arc.ctrl.height
+                    }; }}
+                }))
+        ]; },
+        symbol: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Path({name: "arrow"}), {
+                    points: {get: function() {
+                        return view.points;
+                    }},
+                    arrowhead: {value: {
+                        dx: CFG.graphelement.arc.adx,
+                        dy: CFG.graphelement.arc.ady
+                    }}
+                }
+            )),
+            this.append(Object.defineProperties(
+                new svg.Path({name: "tail"}), {
+                    points: {get: function() {
+                        return view.points_tail;
+                    }}
+                }
+            ))
+        ]; }
+    });
+    Object.defineProperties(ArcView.prototype, {
+        // XXX: some duplication with next property
+        points: {get: function() {
             var begin = [this.x, this.y + this.height / 2],
                 end = [this.x + this.width, this.y + this.height / 2],
                 // points to leave the source to our entrancepoint
@@ -91,23 +113,15 @@ define([
                 // points to enter the target from our exitpoint
                 tail = this.tgtview ? this.tgtview.entrancepath(end) : [],
                 points = head.concat([begin]).concat([end]);
-            return _.compact([
-                this.append(svg.Path, {
-                    name:"arrow",
-                    points: points,
-                    arrowhead: {
-                        dx: this.cfg.adx,
-                        dy: this.cfg.ady
-                    }
-                }),
-                (tail.length > 0) ? this.append(svg.Path, {
-                    name:"tail",
-                    points: [end].concat(tail)
-                }) : ""
-            ]);
-        }
-    });
-    Object.defineProperties(ArcView.prototype, {
+            return points;
+        }},
+        points_tail: {get: function() {
+            var end = [this.x + this.width, this.y + this.height / 2],
+                // points to enter the target from our exitpoint
+                tail = this.tgtview ? this.tgtview.entrancepath(end) : [],
+                points = [end].concat(tail);
+            return points;
+        }},
         // source and target view
         srcview: {get: function() { return this.options.srcview; }},
         tgtview: {get: function() { return this.options.tgtview; }}
@@ -131,14 +145,16 @@ define([
     var InitialNodeView = NodeView.extend({
         extraClassNames: ["node", "initial"],
         // a filled circle
-        symbol: function() { return [
-            this.append(svg.Circle, {
-                attrs: {
-                    cx: this.cx,
-                    cy: this.cy,
-                    r: this.r
+        symbol: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Circle(), {
+                    attrs: {get: function() { return {
+                        cx: view.cx,
+                        cy: view.cy,
+                        r: view.r
+                    }; }}
                 }
-            })
+            ))
         ]; }
     });
 
@@ -146,23 +162,25 @@ define([
         draggable: true,
         extraClassNames: ["node", "final"],
         // a filled circle surrounded by an empty circle
-        symbol: function() { return [
-            this.append(svg.Circle, {
-                name: "outer",
-                attrs: {
-                    cx: this.cx,
-                    cy: this.cy,
-                    r: this.r
+        symbol: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Circle({name: "outer"}), {
+                    attrs: {get: function() { return {
+                        cx: view.cx,
+                        cy: view.cy,
+                        r: view.r
+                    }; }}
                 }
-            }),
-            this.append(svg.Circle, {
-                name: "inner",
-                attrs: {
-                    cx: this.cx,
-                    cy: this.cy,
-                    r: this.r_inner
+            )),
+            this.append(Object.defineProperties(
+                new svg.Circle({name: "inner"}), {
+                    attrs: {get: function() { return {
+                        cx: view.cx,
+                        cy: view.cy,
+                        r: view.r_inner
+                    }; }}
                 }
-            })
+            ))
         ]; }
     });
     Object.defineProperties(FinalNodeView.prototype, {
@@ -198,30 +216,32 @@ define([
         //     ];
         // },
         // a box with round corners and a label, centered
-        symbol: function() {
-            var label = this.model.payload.get('label');
-            return [
-                this.append(svg.Rect, {
-                    attrs: {
-                        x: this.x,
-                        y: this.y + (this.height - this.cfg.height) / 2,
-                        width: this.width,
-                        height: this.cfg.height,
-                        rx: this.cfg.r,
-                        ry: this.cfg.r
-                    }
-                }),
-                this.append(svg.Text, {
-                    attrs: {
-                        x: this.cx,
-                        y: this.cy
-                    },
+        symbol: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Rect(), {
+                    attrs: {get: function() { return {
+                        x: view.x,
+                        y: view.y + (view.height - view.cfg.height) / 2,
+                        width: view.width,
+                        height: view.cfg.height,
+                        rx: view.cfg.r,
+                        ry: view.cfg.r
+                    }; }}
+                }
+            )),
+            this.append(Object.defineProperties(
+                new svg.Text({
                     // raphael does something like that, but it did not work ootb
-//                    html: label ? "<tspan>"+label+"</tspan>" : ""
-                    text: label || ""
-                })
-            ];
-        }
+                    // html: label ? "<tspan>"+label+"</tspan>" : ""
+                    text: this.model.payload.get('label') || ""
+                }), {
+                    attrs: {get: function() { return {
+                        x: view.cx,
+                        y: view.cy
+                    }; }}
+                }
+            ))
+        ]; }
     });
 
     // DecMer and ForkJoin are MIMOs
@@ -258,12 +278,12 @@ define([
                     width: arc.minwidth / 3
                 });
                 arc.addnewidx = idx;
-                var arcview = this.append(ArcView, {
+                var arcview = this.insert(0, new ArcView({
                     name: "mimoctrl_"+idx,
                     extraClassNames: ["mimoctrl"],
                     model: arc,
                     srcview: this
-                });
+                }));
                 return arcview;
             }, this);
         }
@@ -277,18 +297,19 @@ define([
         // merge, but not a decision. Only decisions are colorful -
         // they need to stand out, as human needs to do something in
         // contrast to forkjoin and pure merge.
-        symbol: function() {
-            return [
-                this.append(svg.Diamond, {
+        symbol: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Diamond({
                     extraClassNames: [
                         this.decision ? "decision" : "merge"
-                    ],
-                    cx: this.cx,
-                    cy: this.cy,
-                    r: this.r
-                })
-            ];
-        },
+                    ]
+                }), {
+                    cx: {get: function() { return view.cx; }},
+                    cy: {get: function() { return view.cy; }},
+                    r: {get: function() { return view.r; }}
+                }
+            ))
+        ]; },
         entrancepath: function(srcpoint) {
             var geo = this.geometry;
             // center
@@ -303,25 +324,23 @@ define([
     Object.defineProperties(DecMerNodeView.prototype, {
         // more than one outgoing edge: decision, otherwise at most a merge
         decision: {get: function() { return (this.model.successors.length > 1); }},
-        selectable: {get: function() {
-            return this.decision;
-        }}
+        selectable: {get: function() { return this.decision; }}
     });
 
     var ForkJoinNodeView = MIMONodeView.extend({
         extraClassNames: ["node", "forkjoin"],
-        symbol: function() {
-            return [
-                this.append(svg.Rect, {
-                    attrs: {
-                        x: this.x,
-                        y: this.y,
-                        width: this.width,
-                        height: this.height
-                    }
-                })
-            ];
-        }
+        symbol: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Rect(), {
+                    attrs: {get: function() { return {
+                        x: view.x,
+                        y: view.y,
+                        width: view.width,
+                        height: view.height
+                    }; }}
+                }
+            ))
+        ]; }
     });
 
     var nodeviews = {
@@ -369,8 +388,9 @@ define([
             // we need that to initialize the arc views
             this.vertexviews = foldl(function(acc, vertex) {
                 var view = this.append(
-                    nodeviews[vertex.type],
-                    {model: vertex, name: "vertex_"+vertex.cid}
+                    new nodeviews[vertex.type](
+                        {model: vertex, name: "vertex_"+vertex.cid}
+                    )
                 );
                 acc[vertex.cid] = view;
                 return acc;
@@ -380,12 +400,12 @@ define([
             this.arcviews = foldl(function(acc, arc) {
                 var srcview = this.vertexviews[arc.source.cid],
                     tgtview = this.vertexviews[arc.target.cid],
-                    arcview = this.append(ArcView, {
+                    arcview = this.insert(0, new ArcView({
                         name: arc.cid,
                         model: arc,
                         srcview: srcview,
                         tgtview: tgtview
-                    });
+                    }));
                 acc[arc.cid] = arcview;
                 // tell the vertex views its predecessors and successors
                 arcview.predecessors.push(srcview);

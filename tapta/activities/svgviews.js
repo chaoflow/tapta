@@ -93,17 +93,17 @@ define([
     var Path = SVGElement.extend({
         tagName: "path",
         render: function() {
-            var path = 'M' + map('p.join()', this.options.points).join('L');
+            var path = 'M' + map('p.join()', this.points).join('L');
             if (this.arrowhead) {
-                path += this.arrowhead;
+                path += this.arrowhead_points;
             }
             this.el.setAttribute("d", path);
             return this;
         }
     });
     Object.defineProperties(Path.prototype, {
-        arrowhead: {get: function() {
-            var a = this.options.arrowhead;
+        arrowhead_points: {get: function() {
+            var a = this.arrowhead;
             return a ? "m" + map('p.join()', [[-a.dx, -a.dy],
                                               [a.dx, a.dy],
                                               [-a.dx, a.dy]]).join("l") : "";
@@ -130,13 +130,15 @@ define([
     Object.defineProperties(Diamond.prototype, {
         // attrs defined are set by base.View
         attrs: {get: function() {
-            var edgelength = this.options.r * Math.sqrt(2);
+            var edgelength = this.r * Math.sqrt(2);
             return {
                 x: this.cx - edgelength / 2,
                 y: this.cy - edgelength / 2,
                 width: edgelength,
                 height: edgelength,
-                transform: ["rotate(45", this.cx, this.cy].join(",") + ")"
+                transform: ["rotate(45",
+                            this.cx,
+                            this.cy].join(",") + ")"
             };
         }}
     });
