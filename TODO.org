@@ -106,18 +106,30 @@ CLOSED: [2011-08-11 Thu 16:40]
 good enough
 *** DONE scrolling: move diagram around within one layer
 CLOSED: [2011-08-12 Fri 08:08]
+*** DONE bottom-layer without rakes
+CLOSED: [2011-08-17 Wed 10:12]
+rake will be merged with select
 *** TODO labels for decisions
+*** TODO linebreak labels
+check svg spec how to achieve that
+*** TODO port action lib to editmode/ops
+*** TODO rake on select
 *** TODO merge path into other, ie. drag final node onto mimo
 dragging of final node does not work on tablets
-*** TODO edges to query source node for label
-**** bind edges to their source node to update label
-**** background: decmers provide their answers to be displayed on outedges
 *** TODO removing must not select
-*** TODO investigate keyup/down events in firefox, propertiesview
 *** TODO json export/import to filesystem
+*** TODO print
+**** 6 layers, one per page, landscape
+**** zoom to fit?
+**** generate pdf or use browser?
 *** TODO top-layer without edges
 ***** how do we place them?
-*** TODO bottom-layer without rakes
+*** TODO action/decision
+required information
+generates information
+aggregate req/gen information
+*** TODO move arcs to the back
+*** TODO show description on mouse over
 ** med prio
 *** DONE fix existing tests
 CLOSED: [2011-06-04 Sat 03:48]
@@ -146,19 +158,18 @@ CLOSED: [2011-07-12 Tue 01:49]
 --> not sure how to do: new ticket
 *** DONE move ctrl area style to css?
 CLOSED: [2011-08-05 Fri 13:26]
-*** TODO print
-**** 6 layers, one per page, landscape
-**** zoom to fit?
-**** generate pdf or use browser?
-*** TODO decmer library tool,
-**** like action lib but on decmers
-**** show only decmers that have a name
+*** DONE draw rake symbol
+CLOSED: [2011-08-17 Wed 10:12]
+rake will be merged with select
 *** TODO menubar undo
 **** either in the save hooks or in the storage
 **** keep git-like storage above localstorage in mind
 ***** would it help?
+*** TODO decmer library tool,
+**** like action lib but on decmers
+**** show only decmers that have a name
 *** TODO drag preview
-*** TODO draw rake symbol
+*** TODO investigate keyup/down events in firefox, propertiesview
 ** low prio and easy or maybe irrelevant
 Theses tasks are meant for newbies to enter the project
 *** TODO move drawing code into raphael plugin: raphael.fn.tapta?
@@ -167,6 +178,10 @@ Theses tasks are meant for newbies to enter the project
 *** TODO tests need to properly cleanup after themselves
 **** properly destroy all elements
 **** localstorage: remove empty keys
+*** TODO edges to query source node for label
+postpone until we know whether we need it
+**** bind edges to their source node to update label
+**** background: decmers provide their answers to be displayed on outedges
 *** TODO collection set parent of their models, in add
 the parent is used to generate the key for the storage. currently in
 several places there is code to differentiate between
