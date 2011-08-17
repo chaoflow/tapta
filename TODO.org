@@ -109,26 +109,44 @@ CLOSED: [2011-08-12 Fri 08:08]
 *** DONE bottom-layer without rakes
 CLOSED: [2011-08-17 Wed 10:12]
 rake will be merged with select
+*** DONE move arcs to the back
+CLOSED: [2011-08-17 Wed 13:50]
+*** DONE removing must not select
+CLOSED: [2011-08-17 Wed 14:01]
+*** DONE what is selected/raked? view vs vertex vs node
+CLOSED: [2011-08-17 Wed 19:25]
+Clicking a lib element changes the edit mode and selects the element.
+Clicking an element in the graph could also change the edit mode, but
+not necessarily.
+
+The next layer displayes the activity/process associated with the selected
+
+selected could be an attribute on the node, and all views bind to
+change:selected on the nodes
+
+the selected state is persistent and specific to the activity being
+displayed.
+--> node is selected and graph handles highlighting all vertices using it
 *** TODO labels for decisions
-*** TODO linebreak labels
-check svg spec how to achieve that
 *** TODO port action lib to editmode/ops
 *** TODO rake on select
 *** TODO merge path into other, ie. drag final node onto mimo
 dragging of final node does not work on tablets
-*** TODO removing must not select
 *** TODO json export/import to filesystem
 *** TODO print
 **** 6 layers, one per page, landscape
 **** zoom to fit?
 **** generate pdf or use browser?
+*** TODO fix CSS classes to match selector priorities
+who receives "selected" class? node or symbol or ...
 *** TODO top-layer without edges
 ***** how do we place them?
-*** TODO action/decision
+*** TODO action/decision information properties
 required information
 generates information
 aggregate req/gen information
-*** TODO move arcs to the back
+*** TODO linebreak labels
+check svg spec how to achieve that
 *** TODO show description on mouse over
 ** med prio
 *** DONE fix existing tests
@@ -165,6 +183,7 @@ rake will be merged with select
 **** either in the save hooks or in the storage
 **** keep git-like storage above localstorage in mind
 ***** would it help?
+*** TODO fix spaceOut
 *** TODO decmer library tool,
 **** like action lib but on decmers
 **** show only decmers that have a name
