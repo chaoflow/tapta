@@ -184,6 +184,7 @@ define([
         abspath: abspath,
         accumulate: accumulate,
         location: location,
+        // XXX: move this to jquery
         addClass: function(name) {
             this.el.setAttribute("class", _.compact([
                 name, this.el.getAttribute("class")
@@ -212,6 +213,12 @@ define([
             _.each(this.children, function(child) { child.remove(); });
             this.child = {};
             this.children = [];
+        },
+        // XXX: move this to jquery
+        removeClass: function(name) {
+            this.el.setAttribute("class", _.compact(
+                _.without(this.el.getAttribute("class").split(" "), name)
+            ).join(" "));
         },
         render: function() {
             this.el.setAttribute("id", this.abspath());
