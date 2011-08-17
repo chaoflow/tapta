@@ -1,3 +1,7 @@
+/* there is no spoon */
+#body .node.selected .symbol {
+    stroke: green;
+}
 /* keep this alphabetically sorted at all costs */
 .arc {
     fill: None;
@@ -54,9 +58,6 @@
     fill: None;
     stroke: None;
 }
-.node .symbol.selected {
-    stroke: green;
-}
 .node.action {
     fill: edf7ff;
     stroke: #b5d9ea;
@@ -66,10 +67,6 @@
     fill: #edf7ff;
     stroke: #b5d9ea;
     stroke-width: 2;
-}
-/* not nice that we need this */
-.node.decmer .decision.symbol.selected {
-    stroke: green;
 }
 .node.decmer .merge.symbol{
     fill: #424242;

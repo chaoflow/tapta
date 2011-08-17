@@ -66,6 +66,9 @@ define([
 
             // next level has to display another activity
             this.model.bind("change:raked", this.rake);
+            this.model.bind("change:selected", function(activity) {
+                this.graphview.selected = activity.get('selected');
+            }, this);
         },
         rake: function() {
             // XXX: rethink whether this should be the layerview or model
@@ -122,6 +125,7 @@ define([
             // );
         }
     });
+
     return {
         ActivityView: ActivityView
     };

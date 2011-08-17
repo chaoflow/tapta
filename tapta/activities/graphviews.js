@@ -355,6 +355,8 @@ define([
         name: "graph",
         initialize: function() {
             this._geometry = this.options.geometry;
+            // list of vertices that are highlighted as selected
+            this._selected = [];
             this.bindToGraph(this.model);
         },
         bindToGraph: function(graph) {
@@ -435,6 +437,22 @@ define([
             set: function(g) {
                 // XXX: do the diffing and trigger event
                 this._geometry = g;
+            }
+        },
+        selected: {
+            // all vertices that carry that node will be highlighted
+            set: function(node) {
+                this._selected.forEach(function(vertex) {
+                    vertex.removeClass("selected");
+                });
+                this._selected = _.values(this.vertexviews).filter(function(vertex) {
+                    if (vertex.model.payload === node) {
+                        vertex.addClass("selected");
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
             }
         }
     });

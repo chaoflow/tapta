@@ -125,22 +125,9 @@ define([
             if (node.type === undefined) throw "Why?";
             // make sure there is change:selected event
             // reselecting the same element otherwise moves focus
-            this.layer.activity.set({selected: undefined});
+            this.layer.activity.unset("selected");
             this.layer.activity.set({selected: node});
-            this.layer.activity.set({raked: node});
             this.layer.activity.save();
-            if (this.selected) {
-                this.selected.setAttribute(
-                    "class",
-                    _(this.selected.getAttribute("class").split(" "))
-                        .without("selected").join(" ")
-                );
-            }
-            this.selected = event.target;
-            this.selected.setAttribute(
-                "class",
-                [this.selected.getAttribute("class"), "selected"].join(" ")
-            );
         }}
     });
 
