@@ -177,25 +177,26 @@ define([
                 this.render();
             }, this));
         },
-        ctrls: function() {
-            var width = this.width / 3,
-                height = this.cfg.height / 3,
-                x = this.x + 2/3 * this.width,
-                y = this.y + (this.height + this.cfg.height) / 2 - height;
-            return [
-                this.append(svg.Rect, {
-                    name: "rake",
-                    attrs: {
-                        x: x,
-                        y: y,
-                        width: width,
-                        height: height,
-                        rx: this.cfg.r,
-                        ry: this.cfg.r
-                    }
-                })
-            ];
-        },
+        // rake happens on select for now
+        // ctrls: function() {
+        //     var width = this.width / 3,
+        //         height = this.cfg.height / 3,
+        //         x = this.x + 2/3 * this.width,
+        //         y = this.y + (this.height + this.cfg.height) / 2 - height;
+        //     return [
+        //         this.append(svg.Rect, {
+        //             name: "rake",
+        //             attrs: {
+        //                 x: x,
+        //                 y: y,
+        //                 width: width,
+        //                 height: height,
+        //                 rx: this.cfg.r,
+        //                 ry: this.cfg.r
+        //             }
+        //         })
+        //     ];
+        // },
         // a box with round corners and a label, centered
         symbol: function() {
             var label = this.model.payload.get('label');

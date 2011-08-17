@@ -128,8 +128,8 @@ define([
             // make sure there is change:selected event
             // reselecting the same element otherwise moves focus
             this.layer.activity.set({selected: undefined});
-            this.layer.activity.save();
             this.layer.activity.set({selected: node});
+            this.layer.activity.set({raked: node});
             this.layer.activity.save();
             if (this.selected) {
                 this.selected.setAttribute(
