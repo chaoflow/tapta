@@ -115,6 +115,11 @@ define([
         tagName: "rect"
     });
 
+    var Text = SVGElement.extend({
+        name: "text",
+        tagName: "text"
+    });
+
     /*
      * derived elements
      */
@@ -123,6 +128,7 @@ define([
         name: "diamond"
     });
     Object.defineProperties(Diamond.prototype, {
+        // attrs defined are set by base.View
         attrs: {get: function() {
             var edgelength = this.options.r * Math.sqrt(2);
             return {
@@ -141,6 +147,7 @@ define([
         Group: Group,
         Path: Path,
         Rect: Rect,
-        SVG: SVG
+        SVG: SVG,
+        Text: Text
     };
 });
