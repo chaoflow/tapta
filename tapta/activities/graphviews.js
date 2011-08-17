@@ -199,9 +199,8 @@ define([
         // a box with round corners and a label, centered
         symbol: function() {
             var label = this.model.payload.get('label');
-            return _.compact([
+            return [
                 this.append(svg.Rect, {
-                    name: "rect",
                     attrs: {
                         x: this.x,
                         y: this.y + (this.height - this.cfg.height) / 2,
@@ -211,8 +210,16 @@ define([
                         ry: this.cfg.r
                     }
                 }),
-                label ? canvas.text(this.cx, this.cy, label) : ""
-            ]);
+                this.append(svg.Text, {
+                    attrs: {
+                        x: this.cx,
+                        y: this.cy
+                    },
+                    // raphael does something like that, but it did not work ootb
+//                    html: label ? "<tspan>"+label+"</tspan>" : ""
+                    text: label || ""
+                })
+            ];
         }
     });
 

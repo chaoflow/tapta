@@ -117,6 +117,12 @@ input {
     outline-color: green;
     width: 100%;
 }
+svg text {
+    fill: black;
+    font: normal normal normal 10px/normal Arial;
+    stroke: None;
+    text-anchor: middle;
+}
 textarea {
     outline-color: green;
     width: 100%
