@@ -112,8 +112,8 @@ define([
                 + 'Description: '
                 + '<textarea class="description" name="description" rows="10">'
                 + '<%= description %>'
-                + '</textarea><br>'
-                + '<div width="100%" class="update">Update</div>'
+                + '</textarea>'
+//                + '<br><div width="100%" class="update">Update</div>'
             , {
                 cid: this.selected.cid,
                 type: this.selected.type,
@@ -121,9 +121,9 @@ define([
                 description: this.selected.get('description') || ''
             }));
             this.$(".label")[0].focus();
-            this.$(".update").click(_.bind(function() {
-                this.save([this.$(".label")[0], this.$(".description")[0]]);
-            }, this));
+            // this.$(".update").click(_.bind(function() {
+            //     this.save([this.$(".label")[0], this.$(".description")[0]]);
+            // }, this));
             return this;
         },
         keydown: function(info) {
