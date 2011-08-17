@@ -32,7 +32,9 @@ define([
             if (this.selectable) this.addClass("selectable");
             _.each(this.symbol(), function(sym) { sym.addClass("symbol"); });
             _.each(this.ctrls(), function(ctrl) { ctrl.addClass("ctrl"); });
+            _.each(this.label(), function(label) { label.addClass("label"); });
         },
+        label: function() { return []; },
         symbol: function() { throw "Not implemented"; }
     });
     Object.defineProperties(GraphElement.prototype, {
@@ -191,9 +193,9 @@ define([
         extraClassNames: ["node", "action"],
         initialize: function() {
             NodeView.prototype.initialize.call(this);
-            this.model.payload.bind("change:label", _.bind(function() {
+            this.model.payload.bind("change:label", function() {
                 this.render();
-            }, this));
+            }, this);
         },
         // rake happens on select for now
         // ctrls: function() {
@@ -228,12 +230,14 @@ define([
                         ry: view.cfg.r
                     }; }}
                 }
-            )),
+            ))
+        ]; },
+        label: function() { var view = this; return [
             this.append(Object.defineProperties(
                 new svg.Text({
                     // raphael does something like that, but it did not work ootb
                     // html: label ? "<tspan>"+label+"</tspan>" : ""
-                    text: this.model.payload.get('label') || ""
+                    text: view.model.payload.get('label') || ""
                 }), {
                     attrs: {get: function() { return {
                         x: view.cx,
