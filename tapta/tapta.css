@@ -1,5 +1,5 @@
 /* there is no spoon */
-#body .node.selected .symbol {
+#body .node.selected rect.symbol {
     stroke: green;
 }
 /* keep this alphabetically sorted at all costs */
