@@ -185,14 +185,33 @@ define([
         r_inner: {get: function() { return this.r - 4; }}
     });
 
-    var ActionNodeView = NodeView.extend({
-        extraClassNames: ["node", "action"],
+    var LabeledNodeView = NodeView.extend({
         initialize: function() {
             NodeView.prototype.initialize.call(this);
             this.model.payload.bind("change:label", function() {
                 this.render();
             }, this);
         },
+        label: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Text(), {
+                    attrs: {get: function() { return {
+                        x: view.cx,
+                        y: view.cy
+                    }; }},
+                    text: {get: function() {
+                        // raphael does something like that,
+                        // but it did not work ootb
+                        // html: label ? "<tspan>"+label+"</tspan>" : ""
+                        return view.model.payload.get('label') || "";
+                    }}
+                }
+            ))
+        ]; }
+    });
+
+    var ActionNodeView = LabeledNodeView.extend({
+        extraClassNames: ["node", "action"],
         // rake happens on select for now
         // ctrls: function() {
         //     var width = this.width / 3,
@@ -227,72 +246,56 @@ define([
                     }; }}
                 }
             ))
-        ]; },
-        label: function() { var view = this; return [
-            this.append(Object.defineProperties(
-                new svg.Text(), {
-                    attrs: {get: function() { return {
-                        x: view.cx,
-                        y: view.cy
-                    }; }},
-                    text: {get: function() {
-                        // raphael does something like that,
-                        // but it did not work ootb
-                        // html: label ? "<tspan>"+label+"</tspan>" : ""
-                        return view.model.payload.get('label') || "";
-                    }}
-                }
-            ))
         ]; }
     });
 
-    // DecMer and ForkJoin are MIMOs
-    var MIMONodeView = NodeView.extend({
-        ctrls: function() {
-            // our models successors are arcs
-            // Before, in between and after them we need to create
-            // open arcs (models+views), they are our ctrls.
-            // it's all about model geometry
-            var geos = this.model.successors.map(function(current, idx, succs) {
-                var previous = succs[idx-1],
-                    geo = {
-                        x: current.x,
-                        y: current.y - (
-                            previous ?
-                                current.y - previous.y - previous.height :
-                                0) / 2
-                    };
-                return geo;
+    // DecMer and ForkJoin use this
+    var mimoCtrls = function() {
+        // our models successors are arcs
+        // Before, in between and after them we need to create
+        // open arcs (models+views), they are our ctrls.
+        // it's all about model geometry
+        var geos = this.model.successors.map(function(current, idx, succs) {
+            var previous = succs[idx-1],
+                geo = {
+                    x: current.x,
+                    y: current.y - (
+                        previous ?
+                            current.y - previous.y - previous.height :
+                            0) / 2
+                };
+            return geo;
+        });
+        var ourmodelgeo = this.model.geometry;
+        // add one fake geo after the last
+        geos.push({
+            x: geos[0].x,
+            y: ourmodelgeo.y + ourmodelgeo.height
+        });
+        return _.map(geos, function(geo, idx) {
+            var arc = new Arc(this.model.cid+":open", this.model,
+                              undefined, true);
+            arc.setGeometry({
+                x: geo.x - ourmodelgeo.x,
+                y: geo.y - ourmodelgeo.y,
+                height: 0,
+                width: arc.minwidth / 3
             });
-            var ourmodelgeo = this.model.geometry;
-            // add one fake geo after the last
-            geos.push({
-                x: geos[0].x,
-                y: ourmodelgeo.y + ourmodelgeo.height
-            });
-            return _.map(geos, function(geo, idx) {
-                var arc = new Arc(this.model.cid+":open", this.model,
-                                  undefined, true);
-                arc.setGeometry({
-                    x: geo.x - ourmodelgeo.x,
-                    y: geo.y - ourmodelgeo.y,
-                    height: 0,
-                    width: arc.minwidth / 3
-                });
-                arc.addnewidx = idx;
-                var arcview = this.insert(0, new ArcView({
-                    name: "mimoctrl_"+idx,
-                    extraClassNames: ["mimoctrl"],
-                    model: arc,
-                    srcview: this
-                }));
-                return arcview;
-            }, this);
-        }
-    });
+            arc.addnewidx = idx;
+            // XXX: these arcs will be marked as "symbols" which I think is bad
+            var arcview = this.insert(0, new ArcView({
+                name: "mimoctrl_"+idx,
+                extraClassNames: ["mimoctrl"],
+                model: arc,
+                srcview: this
+            }));
+            return arcview;
+        }, this);
+    };
 
-    var DecMerNodeView = MIMONodeView.extend({
+    var DecMerNodeView = LabeledNodeView.extend({
         extraClassNames: ["node", "decmer"],
+        ctrls: mimoCtrls,
         // a diamond: colored bigger in case of decision (two outgoing)
         // without color and smaller in case of pure merge (one outgoing)
         // reasoning: a decmer with only one outgoing edge is at most a
@@ -329,8 +332,9 @@ define([
         selectable: {get: function() { return this.decision; }}
     });
 
-    var ForkJoinNodeView = MIMONodeView.extend({
+    var ForkJoinNodeView = NodeView.extend({
         extraClassNames: ["node", "forkjoin"],
+        ctrls: mimoCtrls,
         symbol: function() { var view = this; return [
             this.append(Object.defineProperties(
                 new svg.Rect(), {
