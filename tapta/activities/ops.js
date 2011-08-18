@@ -144,6 +144,10 @@ define([
             [".graph .arc.subtractable", "click", "subtractArc"],
             [".graph .node.subtractable", "click", "subtractNode"]
         ]},
+        enable: {value: function() {
+            Operation.prototype.enable.call(this);
+            if (this.layer.activity) this.layer.activity.unset("selected");
+        }},
         subtractArc: {value: function(event, model) {
             // XXX: remove graph dependency
             var graph = this.layerview.model.activity.graph;
