@@ -117,7 +117,7 @@ define([
     Object.defineProperties(Select.prototype, {
         name: {value: "select"},
         delegations: {value: [
-            [".graph .selectable .symbol", "click", "select"]
+            [".graph .selectable", "click", "select"]
         ]},
         select: {value: function(event, model) {
             var node = model.payload;
