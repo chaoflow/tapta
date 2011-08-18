@@ -29,7 +29,7 @@ define([
                 before = {},
                 diff = {},
                 changed = false;
-            _.each(["x", "y", "width", "height"], function(name) {
+            ["x", "y", "width", "height"].forEach(function(name) {
                 var delta = obj[name] === undefined ? 0 : obj[name] - g[name];
                 before[name] = g[name];
                 diff[name] = delta;
@@ -103,14 +103,14 @@ define([
             this.bind("change:next", function(vertex, next) {
                 var oldnext = vertex.previous('next') || [];
                 // remove arcs for removed targets
-                _.each(_.difference(oldnext, next), function(target) {
+                _.difference(oldnext, next).forEach(function(target) {
                     var arcid = [vertex.cid, idx, target.cid].join(':'),
                         arc = this._arcstorage[arcid];
                     arc.destroy();
                     delete this._arcstorage[arcid];
                 }, this);
                 // add arcs for new vertices
-                _.each(next, function(target, idx) {
+                next.forEach(function(target, idx) {
                     if (oldnext.indexOf(target) !== -1) return;
                     var arcid = [vertex.cid, idx, target.cid].join(':'),
                         arc = new graphutils.Arc(arcid, vertex, target);
@@ -139,7 +139,7 @@ define([
             }, this);
 
             // replace ids with the real objects and generate arcs
-            _.each(vertices, function(vertex) {
+            vertices.forEach(function(vertex) {
                 var attrs = vertex.attributes,
                     payload = attrs['payload'];
                 if (payload && payload.slice(0,3) === "id:") {

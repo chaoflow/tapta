@@ -26,9 +26,9 @@ define([
             if (this.subtractable) this.addClass("subtractable");
             // XXX: consider renaming to hasproperties or something
             if (this.selectable) this.addClass("selectable");
-            _.each(this.symbol(), function(sym) { sym.addClass("symbol"); });
-            _.each(this.ctrls(), function(ctrl) { ctrl.addClass("ctrl"); });
-            _.each(this.label(), function(label) { label.addClass("label"); });
+            this.symbol().forEach(function(sym) { sym.addClass("symbol"); });
+            this.ctrls().forEach(function(ctrl) { ctrl.addClass("ctrl"); });
+            this.label().forEach(function(label) { label.addClass("label"); });
         },
         label: function() { return []; },
         symbol: function() { throw "Not implemented"; }

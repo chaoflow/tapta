@@ -35,7 +35,7 @@ define([
             var list = map ? map(obj) : obj;
             return _.include(list, item);
         });
-        _.each(relevantlists, function(obj) {
+        relevantlists.forEach(function(obj) {
             var list = map ? map(obj) : obj;
             var grouphead = head(list, item);
             var group = _.detect(groups, function(group) {
@@ -176,7 +176,7 @@ define([
             ).chain().compact().uniq().value().join(" ");
 
             // XXX: this does not work with SVG elements
-            //_.each(classes, function(cls) { $(this.el).addClass(cls); }, this);
+            //classes.forEach(function(cls) { $(this.el).addClass(cls); }, this);
             this.addClass(classstr);
 
             if (DEBUG.view.init) console.groupEnd();
@@ -210,7 +210,7 @@ define([
             return child;
         },
         removeChildren: function() {
-            _.each(this.children, function(child) { child.remove(); });
+            this.children.forEach(function(child) { child.remove(); });
             this.child = {};
             this.children = [];
         },
@@ -238,7 +238,7 @@ define([
             if (this.html) {
                 $(this.el).append(this.html);
             }
-            _.each(this.children, function(child) {
+            this.children.forEach(function(child) {
                 $(this.el).append(child.render().el);
             }, this);
             return this;
@@ -256,10 +256,10 @@ define([
         },
         triggerReverse: function(name, info) {
             info.reverse = true;
-            _.each(this.children, function(child) {
+            this.children.forEach(function(child) {
                 child.trigger(name, info);
                 child.triggerReverse(name, info);
-            });
+            }, this);
         }
     });
 

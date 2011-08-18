@@ -42,9 +42,7 @@ define([
         fetch: function() {
             // need to be fetched in reverse order, so actions can
             // look up activities they reference.
-            _.each(this.layers.concat().reverse(), function(layer) {
-                layer.fetch();
-            }, this);
+            this.layers.concat().reverse().forEach(function(layer) { layer.fetch(); });
 
             var toplayer = _.first(this.layers);
             var bottomlayer = _.last(this.layers);

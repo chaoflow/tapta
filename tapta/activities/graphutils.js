@@ -12,12 +12,8 @@ define([
     require('./functional').install();
 
     // join items of a list with columns
-    var colJoin = function(list) {
-        return list.join(':');
-    };
-    var commaJoin = function(list) {
-        return list.join(', ');
-    };
+    var colJoin = function(list) { return list.join(':'); };
+    var commaJoin = function(list) { return list.join(', '); };
 
     // turn a list of items into a list of their ids
     var pluckId = function(list) {
@@ -155,7 +151,7 @@ define([
         var vids = _(arcs).chain().flatten().uniq().value(),
             vertices = map(function(id) { return new VertexProto({id:id}); }, vids),
             cache = foldl("acc,x -> (acc[x.id] = x) && acc", {}, vertices);
-        _.each(arcs, function(arc) {
+        arcs.forEach(function(arc) {
             cache[arc[0]].next.push(cache[arc[1]]);
         });
         return vertices;
@@ -328,7 +324,7 @@ define([
                 throw "Need at least one variable width element";
             }
             var width_needed = path_minwidth(crucial);
-            _.each(crucial, function(elem) {
+            crucial.forEach(function(elem) {
                 var geo = elem.geometry;
                 geo.width = elem.fixedwidth || elem.minwidth + Math.round(
                     (crucial.width_avail - width_needed) / n_varwidth--
@@ -337,7 +333,7 @@ define([
                 width_needed -= geo.width;
                 // remove element from the other paths and subtract
                 // its width from their available widths
-                _.each(paths, function(path, idx) {
+                paths.forEach(function(path, idx) {
                     if (_.include(path, elem)) {
                         path.splice(_.indexOf(path, elem),1);
                         path.width_avail -= geo.width;

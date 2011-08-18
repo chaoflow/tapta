@@ -16,7 +16,7 @@ define([
 
     test("Layer init", function() {
         i = 0;
-        _.each(app.layers, function(layer) {
+        app.layers.forEach(function(layer) {
             var action = layer.actions.create();
             var decmer = layer.decmers.create();
             var activity = layer.activities.create();

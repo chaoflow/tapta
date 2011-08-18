@@ -21,9 +21,8 @@ define([
             // layers need to be initialized in reverse: XXX: why?
             // we reverse the order of our children afterwards
             // NOTE: reverse() reverse the array and returns it: concat()
-            _.each(this.model.layers.concat().reverse(), function(layer) {
-                var view = new LayerView({model: layer, name: layer.name});
-                this.append(view);
+            this.model.layers.concat().reverse().forEach(function(layer) {
+                this.append(new LayerView({model: layer, name: layer.name}));
             }, this);
             this.children.reverse();
         }

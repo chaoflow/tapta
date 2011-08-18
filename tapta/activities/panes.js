@@ -24,7 +24,7 @@ define([
         panescfg: [],
         initialize: function(props) {
             if (props.panescfg !== undefined) this.panescfg = props.panescfg;
-            _.each(this.panescfg, this.append, this);
+            this.panescfg.forEach(this.append, this);
             this.init(props);
         },
         // Backbone uses the constructor which calls initialize
@@ -39,7 +39,7 @@ define([
             );
 
             // add its content
-            _.each(cfg.content, function(cfg) {
+            cfg.content.forEach(function(cfg) {
                 var ViewProto = cfg.ViewProto,
                     props = cfg.propscallback !== undefined
                         ? cfg.propscallback.call(this)
@@ -314,7 +314,7 @@ define([
             this.render();
         },
         init_children: function() {
-            _.each(this.collection.toArray(), function(action) {
+            this.collection.toArray().forEach(function(action) {
                 this.append(LibItemView, {name: action.id,
                                           layer: this.layer,
                                           model: action});
