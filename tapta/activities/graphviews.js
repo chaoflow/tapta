@@ -230,15 +230,17 @@ define([
         ]; },
         label: function() { var view = this; return [
             this.append(Object.defineProperties(
-                new svg.Text({
-                    // raphael does something like that, but it did not work ootb
-                    // html: label ? "<tspan>"+label+"</tspan>" : ""
-                    text: view.model.payload.get('label') || ""
-                }), {
+                new svg.Text(), {
                     attrs: {get: function() { return {
                         x: view.cx,
                         y: view.cy
-                    }; }}
+                    }; }},
+                    text: {get: function() {
+                        // raphael does something like that,
+                        // but it did not work ootb
+                        // html: label ? "<tspan>"+label+"</tspan>" : ""
+                        return view.model.payload.get('label') || "";
+                    }}
                 }
             ))
         ]; }
