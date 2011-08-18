@@ -28,7 +28,9 @@ define([
             if (this.selectable) this.addClass("selectable");
             this.symbol().forEach(function(sym) { sym.addClass("symbol"); });
             this.ctrls().forEach(function(ctrl) { ctrl.addClass("ctrl"); });
-            this.label().forEach(function(label) { label.addClass("label"); });
+            if (this.labelshow) {
+                this.label().forEach(function(label) { label.addClass("label"); });
+            }
         },
         label: function() { return []; },
         symbol: function() { throw "Not implemented"; }
@@ -62,6 +64,8 @@ define([
         r: {get: function() {
             return ((this.width < this.height) ? this.width : this.height) / 2;
         }},
+        labelshow: {value: true},
+        labelyoffset: {value: 0},
         subtractable: {get: function() { return this.model.subtractable; }}
     });
 
@@ -197,7 +201,7 @@ define([
                 new svg.Text(), {
                     attrs: {get: function() { return {
                         x: view.cx,
-                        y: view.cy
+                        y: view.cy + view.labelyoffset
                     }; }},
                     text: {get: function() {
                         // raphael does something like that,
@@ -329,6 +333,7 @@ define([
     Object.defineProperties(DecMerNodeView.prototype, {
         // more than one outgoing edge: decision, otherwise at most a merge
         decision: {get: function() { return (this.model.successors.length > 1); }},
+        labelyoffset: {get: function() { return this.decision ? 0 : this.width; }},
         selectable: {get: function() { return this.decision; }}
     });
 
