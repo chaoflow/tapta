@@ -42,10 +42,13 @@
     opacity: 0.2;
     stroke: green;
 }
-.layer.editmode-subtract .subtractable .symbol {
+.layer.editmode-subtract .graph .subtractable .symbol {
     stroke: red;
+    stroke-opacity: 0.6;
+    stroke-width: 4px;
 }
-.layer.editmode-subtract .subtractable .mimoctrl .symbol{
+/* XXX: bad, mimoctrls should not be symbols */
+.layer.editmode-subtract .graph .subtractable .mimoctrl .symbol{
     stroke: None;
 }
 .library .libitem{
