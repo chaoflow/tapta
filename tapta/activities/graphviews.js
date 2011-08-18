@@ -13,12 +13,8 @@ define([
         Arc = require('./graphutils').Arc,
         svg = require('./svgviews');
 
-    var xToPix = function(x) {
-        return Math.round(CFG.gridsize.x * x / 1000);
-    };
-    var yToPix = function(y) {
-        return Math.round(CFG.gridsize.y * y / 1000);
-    };
+    var xToPix = function(x) { return Math.round(CFG.gridsize.x * x / 1000); };
+    var yToPix = function(y) { return Math.round(CFG.gridsize.y * y / 1000); };
 
     var GraphElement = svg.Group.extend({
         // whether an element can be moved around
