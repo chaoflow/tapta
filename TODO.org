@@ -127,27 +127,39 @@ change:selected on the nodes
 the selected state is persistent and specific to the activity being
 displayed.
 --> node is selected and graph handles highlighting all vertices using it
-*** TODO labels for decisions
-*** TODO port action lib to editmode/ops
-*** TODO rake on select
+*** DONE labels for decisions
+CLOSED: [2011-08-18 Thu 09:00]
+*** DONE port action lib to editmode/ops
+CLOSED: [2011-08-19 Fri 12:04]
+*** DONE test that multiple same nodes are selected
+CLOSED: [2011-08-19 Fri 12:04]
+*** DONE fix CSS classes to match selector priorities
+CLOSED: [2011-08-19 Fri 12:05]
+who receives "selected" class? node or symbol or ...
+*** DONE rake on select
+CLOSED: [2011-08-19 Fri 12:44]
 *** TODO merge path into other, ie. drag final node onto mimo
 dragging of final node does not work on tablets
+*** TODO highlight lib action
 *** TODO json export/import to filesystem
 *** TODO print
 **** 6 layers, one per page, landscape
 **** zoom to fit?
 **** generate pdf or use browser?
-*** TODO fix CSS classes to match selector priorities
-who receives "selected" class? node or symbol or ...
 *** TODO top-layer without edges
 ***** how do we place them?
 *** TODO action/decision information properties
 required information
 generates information
 aggregate req/gen information
-*** TODO linebreak labels
-check svg spec how to achieve that
 *** TODO show description on mouse over
+*** TODO block everything not selectable from receiving focus
+among others unset/set on select would not be needed
+*** TODO query stroke-width of src/tgt for arcs to properly end
+*** TODO linebreak labels
+check svg spec how to achieve that - 1.2 tiny, unsupported, brings
+textArea
+https://secure.wikimedia.org/wikibooks/de/wiki/SVG/_Text_als_Graphik
 ** med prio
 *** DONE fix existing tests
 CLOSED: [2011-06-04 Sat 03:48]
