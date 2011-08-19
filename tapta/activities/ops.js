@@ -127,7 +127,7 @@ define([
     Object.defineProperties(MergePaths.prototype, {
         name: {value: "mergepaths"},
         delegations: {value: [
-            [".graph .mimoctrlarcin", "mouseup", "merge"]
+            [".graph .mimoctrlin", "mouseup", "merge"]
         ]},
         enable: {value: function() {
             Operation.prototype.enable.call(this);
@@ -161,25 +161,17 @@ define([
                     });
                     var arcview = new ArcView({
                         className: "mimoctrlin",
-                        name: "mimoinctrlarc_"+idx,
+                        name: "mimoctrlin_"+idx,
                         model: arc,
                         tgtview: view
                     });
                     // XXX: maybe an arc or GEs could also live
                     // without parents without throwing exceptions
-                    arcview.parent = view;
+                    view.adopt(arcview);
                     mimoctrls.push(arcview);
                     $(this.layerview.activityview.graphview.el).append(
                         arcview.render().el
                     );
-                    // _.each(_.values(arcview.child), function(set) {
-                    //     _.each(set, function(elem) {
-                    //         elem.node.setAttribute(
-                    //             "class",
-                    //             elem.node.getAttribute("class") + " mimoctrl pathmerge"
-                    //         );
-                    //     });
-                    // });
                 }
                 if (view.successors.length > 0) {
                     activatemimos(view.successors.slice(idx)[0], type, idx);
