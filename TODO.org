@@ -138,10 +138,13 @@ CLOSED: [2011-08-19 Fri 12:05]
 who receives "selected" class? node or symbol or ...
 *** DONE rake on select
 CLOSED: [2011-08-19 Fri 12:44]
+*** DONE highlight lib action
+CLOSED: [2011-08-19 Fri 13:28]
+*** DONE json export to filesystem (save)
+CLOSED: [2011-08-19 Fri 14:20]
 *** TODO merge path into other, ie. drag final node onto mimo
 dragging of final node does not work on tablets
-*** TODO highlight lib action
-*** TODO json export/import to filesystem
+*** TODO json import to filesystem (load)
 *** TODO print
 **** 6 layers, one per page, landscape
 **** zoom to fit?
