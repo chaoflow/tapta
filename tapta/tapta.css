@@ -55,6 +55,10 @@
     stroke-opacity: 0.6;
     stroke-width: 4px;
 }
+.layer.editmode-subtract .graph .subtractable.arc .ctrl {
+    fill: red;
+    fill-opacity: 0.2;
+}
 /* XXX: bad, mimoctrls should not be symbols */
 .layer.editmode-subtract .graph .subtractable .mimoctrl .symbol{
     stroke: None;

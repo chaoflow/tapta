@@ -93,6 +93,7 @@ define([
     var Path = SVGElement.extend({
         tagName: "path",
         render: function() {
+            SVGElement.prototype.render.call(this);
             var path = 'M' + map('p.join()', this.points).join('L');
             if (this.arrowhead) {
                 path += this.arrowhead_points;
