@@ -208,7 +208,10 @@ define([
             return mimoctrls;
         }},
         mimoctrls_off: {value: function() {
-            this.mimoctrls.forEach(function(ctrl) { ctrl.remove(); }, this);
+            this.mimoctrls.forEach(function(ctrl) {
+                ctrl.remove();
+                delete ctrl.parent.child[ctrl.name];
+            }, this);
             this.mimoctrls = [];
         }}
     });
