@@ -26,10 +26,10 @@ define([
                     mname = info[2],
                     method = function(obj) {
                         return function(event) {
-                            var model = obj.layerview.traverseToModel(
+                            var view = obj.layerview.traverse(
                                 event.target.id
-                            );
-                            return obj[mname].call(obj, event, model);
+                            )[0];
+                            return obj[mname].call(obj, event, view);
                         };
                     }(this);
                 $(this.el).delegate(selector, event, method);
@@ -42,9 +42,10 @@ define([
     var AddNode = function() { Operation.apply(this, arguments); };
     AddNode.prototype = new Operation();
     Object.defineProperties(AddNode.prototype, {
-        act: {value: function(event, model) {
-            if (model.type !== "arc") throw "Why did you call me?";
-            var source = model.source,
+        act: {value: function(event, view) {
+            if (view.model.type !== "arc") throw "Why did you call me?";
+            var model = view.model,
+                source = model.source,
                 target = model.target,
                 node = this.getNode();
 
@@ -122,8 +123,8 @@ define([
         delegations: {value: [
             [".graph .selectable", "click", "select"]
         ]},
-        select: {value: function(event, model) {
-            var node = model.payload;
+        select: {value: function(event, view) {
+            var node = view.model.payload;
             // ignore nodes, that have non-object payloads (initial, final,...)
             if (node.type === undefined) throw "Why?";
             // make sure there is change:selected event
@@ -151,7 +152,8 @@ define([
             Operation.prototype.enable.call(this);
             if (this.layer.activity) this.layer.activity.unset("selected");
         }},
-        subtractArc: {value: function(event, model) {
+        subtractArc: {value: function(event, view) {
+            var model = view.model;
             // XXX: remove graph dependency
             var graph = this.layerview.model.activity.graph;
             // XXX: could be declarative as sanity check
@@ -164,7 +166,8 @@ define([
             // XXX: get rid of this
             graph.trigger("rebind");
         }},
-        subtractNode: {value: function(event, model) {
+        subtractNode: {value: function(event, view) {
+            var model = view.model;
             // XXX: remove graph dependency
             var graph = this.layerview.model.activity.graph;
             // XXX: could be declarative as sanity check
