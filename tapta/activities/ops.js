@@ -8,13 +8,15 @@ define([
         base = require('./base');
 
     // an operation that if enabled can be triggered by DOM events
-    var Operation = function(layerview) {
-        this.layerview = layerview;
-        if (DEBUG && this.layerview) console.log("init op: "+this.name);
+    var Operation = function(ops) {
+        // all operations
+        this.ops = ops;
+        if (DEBUG && this.ops) console.log("init op: "+this.name);
     };
     Object.defineProperties(Operation.prototype, {
         el: {get: function() { return this.layerview.el; }},
         layer: {get: function() { return this.layerview.model; }},
+        layerview: {get: function() { return this.ops.layerview; }},
         name: {value: "operation"}
     });
     base.defineToggleProperty(
@@ -211,7 +213,7 @@ define([
         if (DEBUG) console.group("init ops: "+this.layerview.abspath());
         this.list = [];
         this.accumulate("Ops").forEach(function(Op) {
-            var op = new Op(layerview);
+            var op = new Op(this);
             this[op.name] = op;
             this.list.push(op);
         }, this);
