@@ -3,7 +3,6 @@ define([
 ], function(require) {
     var enabled = true,
         DEBUG = {
-            controller: true && enabled,
             editmodes: true && enabled,
             model: {
                 events: true && enabled
