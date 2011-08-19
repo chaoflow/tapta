@@ -50,14 +50,6 @@
     opacity: 0.2;
     stroke: green;
 }
-.layer.editmode-pathmerge .arc.pathmerge.ctrl {
-    opacity: 0.2;
-    fill: green;
-}
-.layer.editmode-pathmerge .arc.pathmerge.mimoctrl {
-    opacity: 0.2;
-    stroke: green;
-}
 .layer.editmode-subtract .graph .subtractable .symbol {
     stroke: red;
     stroke-opacity: 0.6;
@@ -79,6 +71,14 @@
 .mimoctrl {
     fill: None;
     stroke: None;
+}
+.mimoctrlin.arc .symbol {
+    opacity: 0.2;
+    stroke: green;
+}
+.mimoctrlin.arc .ctrl {
+    opacity: 0.2;
+    fill: green;
 }
 .node.action {
     fill: edf7ff;

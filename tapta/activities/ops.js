@@ -2,10 +2,14 @@ define([
     'require',
     'vendor/underscore.js',
     './base',
+    './graphutils',
+    './graphviews',
     './debug'
 ], function(require) {
     var DEBUG = require('./debug').ops,
-        base = require('./base');
+        base = require('./base'),
+        Arc = require('./graphutils').Arc,
+        ArcView = require('./graphviews').ArcView;
 
     // an operation that if enabled can be triggered by DOM events
     var Operation = function(ops) {
@@ -118,6 +122,146 @@ define([
         collection: {value: "forkjoins"}
     });
 
+    var MergePaths = function() { Operation.apply(this, arguments); };
+    MergePaths.prototype = new Operation();
+    Object.defineProperties(MergePaths.prototype, {
+        name: {value: "mergepaths"},
+        delegations: {value: [
+            [".graph .mimoctrlarcin", "mouseup", "merge"]
+        ]},
+        enable: {value: function() {
+            Operation.prototype.enable.call(this);
+            this.mimoctrls_on();
+        }},
+        disable: {value: function() {
+            Operation.prototype.disable.call(this);
+            this.mimoctrls_off();
+        }},
+        merge: {value: function(event, arcview) {
+            var finmodel = this.draggedview.model,
+                b4final = finmodel.predecessors[0].predecessors[0],
+                mimo = arcview.tgtview.model;
+            b4final.next.splice(b4final.next.indexOf(finmodel), 1, mimo);
+            b4final.save();
+            finmodel.destroy();
+            this.enabled = false;
+        }},
+        mimoctrls_on: {value: function() {
+            var mimoctrls = this.mimoctrls = [];
+            // idx = 0 / -1
+            var activatemimos = _.bind(function(view, type, idx) {
+                if (view.model.type === type) {
+                    var arc = new Arc({target: view.model});
+                    // relative to view.geometry
+                    arc.setGeometry({
+                        x: - arc.minwidth / 3,
+                        y: -1 * idx * view.model.geometry.height,
+                        height: 0,
+                        width: arc.minwidth / 3
+                    });
+                    var arcview = new ArcView({
+                        className: "mimoctrlin",
+                        name: "mimoinctrlarc_"+idx,
+                        model: arc,
+                        tgtview: view
+                    });
+                    // XXX: maybe an arc or GEs could also live
+                    // without parents without throwing exceptions
+                    arcview.parent = view;
+                    mimoctrls.push(arcview);
+                    $(this.layerview.activityview.graphview.el).append(
+                        arcview.render().el
+                    );
+                    // _.each(_.values(arcview.child), function(set) {
+                    //     _.each(set, function(elem) {
+                    //         elem.node.setAttribute(
+                    //             "class",
+                    //             elem.node.getAttribute("class") + " mimoctrl pathmerge"
+                    //         );
+                    //     });
+                    // });
+                }
+                if (view.successors.length > 0) {
+                    activatemimos(view.successors.slice(idx)[0], type, idx);
+                }
+            }, this);
+            var mimos = _.bind(function(view, above, below) {
+                if (!(above || below)) return;
+                // XXX: for now only one predecessor
+                if (view.predecessors.length === 0) return;
+                var prede = view.predecessors[0],
+                    predetype = prede.model.type,
+                    viewidx = prede.successors.indexOf(view);
+                if (viewidx === -1) throw "Broken graph";
+                // predecessor is a mimo
+                if ((predetype === "decmer") || (predetype === "forkjoin")) {
+                    // not the first
+                    if (above && (viewidx > 0)) {
+                        above = false;
+                        activatemimos(prede.successors[viewidx-1],
+                                      predetype,
+                                      -1);
+                    }
+                    // not the last
+                    if (below && (viewidx !== prede.successors.length - 1)) {
+                        below = false;
+                        activatemimos(prede.successors[viewidx+1],
+                                      predetype,
+                                      0);
+                    }
+                }
+                mimos(prede, above, below);
+            }, this);
+            mimos(this.draggedview, true, true);
+            return mimoctrls;
+        }},
+        mimoctrls_off: {value: function() {
+            this.mimoctrls.forEach(function(ctrl) { ctrl.remove(); }, this);
+            this.mimoctrls = [];
+        }}
+    });
+
+    var DragFinal = function() { Operation.apply(this, arguments); };
+    DragFinal.prototype = new Operation();
+    Object.defineProperties(DragFinal.prototype, {
+        name: {value: "dragfinal"},
+        delegations: {value: [
+            [".graph .node.final", "mousedown", "dndstart"]
+        ]},
+        dndmove: {value: function(event) {
+            var dx = event.pageX - this.x0,
+                dy = event.pageY - this.y0;
+            this.draggedview.el.setAttribute(
+                "transform", "translate("+dx+","+dy+")"
+            );
+            this.ops.mergepaths.enabled = true;
+        }},
+        dndstart: {value: function(event, view) {
+            this.draggedview = view;
+            this.ops.mergepaths.draggedview = view;
+            // register for move event to move around the final node
+            // (and its incoming edge)
+            $(document).bind("mousemove.dragfinal",
+                             _.bind(this.dndmove, this));
+
+            // register for mouseup to stop dragging
+            // the actual drop is handled by MergePaths
+            $(document).bind("mouseup.dragfinal",
+                             _.bind(this.dndstop, this));
+
+            this.x0 = event.pageX;
+            this.y0 = event.pageY;
+        }},
+        dndstop: {value: function(event) {
+            this.draggedview.el.setAttribute(
+                "transform", "translate(0,0)"
+            );
+            delete this.draggedview;
+            this.ops.mergepaths.enabled = false;
+            $(document).unbind(".dragfinal");
+        }}
+    });
+
     var Select = function() { Operation.apply(this, arguments); };
     Select.prototype = new Operation();
     Object.defineProperties(Select.prototype, {
@@ -226,6 +370,8 @@ define([
             AddNewAction,
             AddNewDecMer,
             AddNewForkJoin,
+            DragFinal,
+            MergePaths,
             Select,
             Subtract
         ]}
@@ -238,6 +384,8 @@ define([
         AddNewAction: AddNewAction,
         AddNewDecMer: AddNewDecMer,
         AddNewForkJoin: AddNewForkJoin,
+        DragFinal: DragFinal,
+        MergePaths: MergePaths,
         Operation: Operation,
         Operations: Operations,
         Select: Select,

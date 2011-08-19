@@ -124,7 +124,10 @@ define([
     Select.prototype = new EditMode();
     Object.defineProperties(Select.prototype, {
         name: {value: "select"},
-        opnames: {value: [ops.Select.prototype.name]}
+        opnames: {value: [
+            ops.Select.prototype.name,
+            ops.DragFinal.prototype.name
+        ]}
     });
 
     var Subtract = function() { EditMode.apply(this, arguments); };
