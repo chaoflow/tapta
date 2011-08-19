@@ -74,7 +74,7 @@ define([
                 selected.get('activity') ||
                     selected.set({activity: layer.next.activities.create(
                         {}, {layer: layer.next}
-                    )}).save().get("selected")
+                    )}).save().get("activity")
             );
             if (layer.next.activity !== activity) {
                 layer.next.activity = activity;
