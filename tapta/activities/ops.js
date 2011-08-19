@@ -147,6 +147,13 @@ define([
             this.enabled = false;
         }},
         mimoctrls_on: {value: function() {
+            /*
+             * XXX: this is probably the wrong approach as its getting messy
+             *
+             * maybe correct:
+             * 1. identify neighboring (sub)paths
+             * 2. enable mimoctrls from (sub)path towards our path
+             */
             var mimoctrls = this.mimoctrls = [];
             // idx = 0 / -1
             var activatemimos = _.bind(function(view, type, idx) {
