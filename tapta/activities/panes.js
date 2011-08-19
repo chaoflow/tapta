@@ -208,6 +208,9 @@ define([
 
     var LibraryView = EditModeChanger.extend({
         collectionname: "actions",
+        events: {
+            "click li": "select"
+        },
         name: editmodes.AddLibAction.prototype.name,
         tagName: "ul",
         initialize: function(props) {
@@ -217,6 +220,13 @@ define([
             this.init_children();
             this.collection.bind("add", this.handle_add);
             this.collection.bind("refresh", this.handle_refresh);
+            this.bind("editmode", function(name) {
+                if (name === this.name) {
+                    $(this.selected).addClass("highlight");
+                } else {
+                    $(this.selected).removeClass("highlight");
+                }
+            }, this);
         },
         handle_add: function(model) {
             var view = this.append(new LibItemView({
@@ -239,6 +249,11 @@ define([
                     model: model
                 }));
             }, this);
+        },
+        select: function(event) {
+            $(this.selected).removeClass("highlight");
+            this.selected = event.target;
+            $(this.selected).addClass("highlight");
         }
     });
     Object.defineProperties(LibraryView.prototype, {

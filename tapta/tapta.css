@@ -15,6 +15,25 @@
 .destroyall {
     cursor: pointer;
 }
+/* XXX: harmonize these editmodechangers */
+.editmodechanger {
+    cursor: pointer;
+    border: solid 2px;
+    border-color: white;
+    border-radius: 2px;
+}
+.editmodechanger.highlight {
+    border-color: black;
+}
+.editmodechanger li {
+    cursor: pointer;
+    border: solid 2px;
+    border-color: white;
+    border-radius: 2px;
+}
+.editmodechanger li.highlight {
+    border-color: black;
+}
 .layer {
     height: 550px;
     margin: 2px;
@@ -102,15 +121,6 @@
 }
 .tool {
     cursor: pointer;
-}
-.editmodechanger {
-    cursor: pointer;
-    border: solid 2px;
-    border-color: white;
-    border-radius: 2px;
-}
-.editmodechanger.highlight {
-    border-color: black;
 }
 /* scratchpad below here, should be replaced with proper classes */
 input {
