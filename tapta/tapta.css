@@ -12,9 +12,6 @@
     fill: None;
     stroke: None;
 }
-.destroyall {
-    cursor: pointer;
-}
 /* XXX: harmonize these editmodechangers */
 .editmodechanger {
     cursor: pointer;
@@ -75,6 +72,9 @@
 }
 .library .libitem.highlight {
     color: green;
+}
+.menubar div {
+    cursor: pointer;
 }
 .mimoctrl {
     fill: None;
