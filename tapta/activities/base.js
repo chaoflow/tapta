@@ -243,16 +243,20 @@ define([
             }, this);
             return this;
         },
-        traverseToModel: function(path) {
+        traverse: function(path) {
             var ourpath = this.abspath();
             if (path.substr(0, ourpath.length) !== ourpath) {
                 throw "head of path does not match";
             }
-            var rest = _.compact(path.substr(ourpath.length).split('/'));
-            // last view with a model
-            return scanl("acc.child[x]", this, rest).filter(function(x) {
+            var relpath = path.substr(ourpath.length),
+                relpath_ = _.compact(relpath.split('/'));
+            var views = scanl("acc.child[x]", this, relpath_).filter(function(x) {
                 return (x.model !== undefined);
-            }).pop().model;
+            });
+            // last view with a model
+            var view = views.pop();
+            // XXX: add rest to result as [1]
+            return [view];
         },
         triggerReverse: function(name, info) {
             info.reverse = true;
