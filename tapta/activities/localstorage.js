@@ -276,6 +276,7 @@ define([
         } else {
             options.error("Record not found");
         }
+        return model;
     };
 
     return {

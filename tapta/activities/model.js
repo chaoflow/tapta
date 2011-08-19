@@ -122,7 +122,7 @@ define([
         model: DecMer
     });
 
-    // An activity has a graph and remembers the raked and selected nodes
+    // An activity has a graph and remembers the selected node
     var Activity = Model.extend({
         initialize: function(attrs, opts) {
             this.layer = opts.layer || this.collection.parent;
@@ -133,7 +133,7 @@ define([
         },
         toJSON: function() {
             var attributes = _.clone(this.attributes);
-            _(["raked", "selected"]).each(function(key){
+            _(["selected"]).each(function(key){
                 attributes[key] = attributes[key] && attributes[key].id;
             }, this);
             return attributes;
@@ -145,7 +145,7 @@ define([
         parse: function(response) {
             var layer = this.parent;
             var activities = _.map(response, function(attrs) {
-                _(["raked", "selected"]).each(function(key){
+                _(["selected"]).each(function(key){
                     attrs[key] = attrs[key] && layer.nodelib.get(attrs[key]);
                 }, this);
                 return new Activity(attrs, {layer: layer});

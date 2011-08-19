@@ -191,8 +191,8 @@ define([
                 predecessor.save();
                 model.destroy({silent: true});
             }
-            if (model.payload === this.layer.activity.get('raked')) {
-                this.layer.activity.set({raked: undefined});
+            if (model.payload === this.layer.activity.get('selected')) {
+                this.layer.activity.unset("selected");
                 this.layer.activity.save();
             }
             graph.trigger("rebind");

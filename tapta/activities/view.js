@@ -50,6 +50,7 @@ define([
             this.model = model;
 
             this.graphview.bindToGraph(model && this.model.graph);
+            this.rake();
 
             if (model === undefined) return;
 
@@ -65,64 +66,27 @@ define([
             graph.bind("remove", redrawGraph);
 
             // next level has to display another activity
-            this.model.bind("change:raked", this.rake);
             this.model.bind("change:selected", function(activity) {
                 this.graphview.selected = activity.get('selected');
+                this.rake();
             }, this);
         },
         rake: function() {
             // XXX: rethink whether this should be the layerview or model
             // tell the next layer whether and which activity to display
             var layer = this.layerview.model;
-            if (layer.next) {
-                var raked = this.model && this.model.get('raked');
-                var activity = raked && raked.get('activity');
-                if (layer.next.activity !== activity) {
-                    layer.next.activity = activity;
-                    layer.next.trigger("change:activity");
-                }
+            if (!layer.next) return;
+            var selected = this.model && this.model.get('selected');
+            var activity = selected && (
+                selected.get('activity') ||
+                    selected.set({activity: layer.next.activities.create(
+                        {}, {layer: layer.next}
+                    )}).save().get("selected")
+            );
+            if (layer.next.activity !== activity) {
+                layer.next.activity = activity;
+                layer.next.trigger("change:activity");
             }
-        },
-        // render: function() {
-        //     // XXX: normally handled by base.View
-        //     this.svg.render();
-
-        //     //this.graphview.render();
-        //     // var graph = $(this.canvas.canvas).children().detach();
-        //     // $(this.canvas.canvas).append("<g></g>");
-        //     // $(this.canvas.canvas).children(0).append(graph);
-
-        //     // tell next layer whether and which activity to display
-        //     this.rake();
-
-        //     return this;
-        // },
-        renderPan: function() {
-            if (this.pan) this.pan.remove();
-            // this.pan = this.canvas.rect(0, 0,
-            //                             this.canvaswidth,
-            //                             this.canvasheight);
-            // this.pan.drag(
-            //     // dndmove
-            //     function(dx, dy) {
-            //         // var ogeo = this.original_geometry;
-            //         // this.graphview.geometry = Object.create(ogeo, {
-            //         //     x: {value: 
-            //         // });
-            //         this.graphview.
-            //     },
-            //     // dndstart
-            //     function() {
-            //         // remember initial geometry
-            //         this.original_geo = this.graphview.geometry;
-            //     },
-            //     // dndstop
-            //     function() {
-            //         delete this.original_geometry;
-            //         this.renderPan();
-            //     },
-            //     this
-            // );
         }
     });
 
