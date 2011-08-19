@@ -75,9 +75,8 @@ define([
             this.graphview.selected = selected;
             var activity = selected && (
                 selected.get('activity') ||
-                    selected.set({activity: layer.next.activities.create(
-                        {}, {layer: layer.next}
-                    )}).save().get("activity")
+                    selected.set({activity: layer.next.activities.create()})
+                    .save().get("activity")
             );
             if (layer.next.activity !== activity) {
                 layer.next.activity = activity;
