@@ -62,6 +62,9 @@ define([
             graph.bind("remove", redrawGraph);
 
             this.model.bind("change:selected", this.select, this);
+
+            // XXX: do not suppress add event in ops.AddNode, catch
+            // here and select the node if it is selectable.
         },
         select: function() {
             // XXX: rethink whether this should be the layerview or model

@@ -70,8 +70,6 @@ define([
             source.save();
             // XXX: this currently triggers rebinding of the graphview
             graph.trigger("rebind");
-            //if (node.selectable) this.layer.activity.set({selected: node});
-            //this.layer.activity.save();
         }},
         delegations: {value: [
             [".graph .arc", "click", "act"]
