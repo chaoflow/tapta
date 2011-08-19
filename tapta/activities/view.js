@@ -24,11 +24,7 @@ define([
     // An activity view creates a canvas. Its graph is drawn by a graph view.
     var ActivityView = base.View.extend({
         initialize: function() {
-            _.bindAll(this,
-                      'bindToModel',
-                      'rake',
-                      'render'
-                     );
+            _.bindAll(this, 'bindToModel');
             this.layerview = this.options.layerview;
 
             // an svg drawing area - should ActivityView inherit from
@@ -50,7 +46,7 @@ define([
             this.model = model;
 
             this.graphview.bindToGraph(model && this.model.graph);
-            this.rake();
+            this.select();
 
             if (model === undefined) return;
 
@@ -65,18 +61,15 @@ define([
             // node was removed
             graph.bind("remove", redrawGraph);
 
-            // next level has to display another activity
-            this.model.bind("change:selected", function(activity) {
-                this.graphview.selected = activity.get('selected');
-                this.rake();
-            }, this);
+            this.model.bind("change:selected", this.select, this);
         },
-        rake: function() {
+        select: function() {
             // XXX: rethink whether this should be the layerview or model
             // tell the next layer whether and which activity to display
             var layer = this.layerview.model;
             if (!layer.next) return;
             var selected = this.model && this.model.get('selected');
+            this.graphview.selected = selected;
             var activity = selected && (
                 selected.get('activity') ||
                     selected.set({activity: layer.next.activities.create(
