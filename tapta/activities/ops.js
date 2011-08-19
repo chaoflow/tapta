@@ -42,27 +42,11 @@ define([
     var AddNode = function() { Operation.apply(this, arguments); };
     AddNode.prototype = new Operation();
     Object.defineProperties(AddNode.prototype, {
-        name: {value: "addnode"}
-    });
-
-    var AddNewNode = function() { AddNode.apply(this, arguments); };
-    AddNewNode.prototype = new AddNode();
-    Object.defineProperties(AddNewNode.prototype, {
-        delegations: {value: [
-            [".graph .arc", "click", "act"]
-        ]},
         act: {value: function(event, model) {
             if (model.type !== "arc") throw "Why did you call me?";
             var source = model.source,
-                target = model.target;
-            // create node
-            var collection = this.layer[this.collection],
-                node;
-            if (collection === undefined) {
-                node = "forkjoin";
-            } else {
-                node = collection.create();
-            }
+                target = model.target,
+                node = this.getNode();
 
             // create new vertex with action as payload
             var graph = this.layerview.model.activity.graph,
@@ -88,6 +72,27 @@ define([
             graph.trigger("rebind");
             //if (node.selectable) this.layer.activity.set({selected: node});
             //this.layer.activity.save();
+        }},
+        delegations: {value: [
+            [".graph .arc", "click", "act"]
+        ]},
+        getNode: {value: function() { throw "Not implemented"; }},
+        name: {value: "addnode"}
+    });
+
+    var AddLibAction = function() { AddNode.apply(this, arguments); };
+    AddLibAction.prototype = new AddNode();
+    Object.defineProperties(AddLibAction.prototype, {
+        name: {value: "addlibaction"},
+        getNode: {value: function() { return this.layer.activity.get("selected"); }}
+    });
+
+    var AddNewNode = function() { AddNode.apply(this, arguments); };
+    AddNewNode.prototype = new AddNode();
+    Object.defineProperties(AddNewNode.prototype, {
+        getNode: {value: function() {
+            var collection = this.layer[this.collection];
+            return collection ? collection.create() : "forkjoin";
         }}
     });
 
@@ -214,6 +219,7 @@ define([
     Object.defineProperties(Operations.prototype, {
         accumulate: {value: base.accumulate},
         Ops: {value: [
+            AddLibAction,
             AddNewAction,
             AddNewDecMer,
             AddNewForkJoin,
@@ -224,6 +230,7 @@ define([
 
     return {
         AddNode: AddNode,
+        AddLibAction: AddLibAction,
         AddNewNode: AddNewNode,
         AddNewAction: AddNewAction,
         AddNewDecMer: AddNewDecMer,

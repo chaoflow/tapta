@@ -5,8 +5,7 @@ define([
     'vendor/underscore.js',
     './debug',
     './base',
-    './editmodes',
-    './graphviews'
+    './editmodes'
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base'),
@@ -162,8 +161,10 @@ define([
                     $(this.el).removeClass("highlight");
                 }
             }, this);
-            this.text = this.name;
         }
+    });
+    Object.defineProperties(EditModeChanger.prototype, {
+        text: { get: function() { return this.name; }}
     });
 
     var ToolbarView = base.View.extend({
@@ -179,133 +180,50 @@ define([
             editmodes.EditModes.prototype.Modes.map(function(Mode) {
                 return Mode.prototype.name;
             }).forEach(function(name) {
+                if (name === "addlibaction") return;
                 this.append(new EditModeChanger({name: name}));
             }, this);
         }
     });
 
-
-
-
-
-
-
-
-
-
-
-    // things to be put in panes - APIs are not stable here
-    // especially some mixup/mashup of editmode and tool right now
-
-    var Tool = base.View.extend({
+    var LibItemView = base.View.extend({
         tagName: "li",
-        className: "tool",
         events: {
-            "click": "clicked"
-        },
-        clicked: function() {
-            // XXX: don't pass the full view, but just what is needed
-            this.trigger("editmode", {name: this.name, view: this});
-        },
-        activate: function(layerview) {
-            this.layerview = layerview;
-            this.layer = layerview.model;
-            $(layerview.el).delegate(".arc .ctrl", "click.editmode", this.act);
-        },
-        deactivate: function(layerview) {
-            this.layerview = undefined;
-            this.layer = undefined;
-            $(layerview.el).undelegate(".editmode");
-        },
-        initialize: function() {
-            this.bind("editmode", function(info) {
-                if (info.name === this.name) {
-                    $(this.el).addClass("highlight");
-                } else {
-                    $(this.el).removeClass("highlight");
-                }
-            });
-            _.bindAll(this, "act");
-        },
-        render: function() {
-            $(this.el).text(this.name);
-            return this;
-        }
-    });
-
-    var gv = require('./graphviews');
-
-    var LibItemView = Tool.extend({
-        className: "libitem",
-        extraClassNames: ["addnode", "addlibnode"],
-        act: function(info) {
-            if (info.view instanceof gv.ArcView) {
-                var source = info.view.srcview.model,
-                    target = info.view.tgtview && info.view.tgtview.model,
-                    node = this.model;
-
-                // XXX: code just copied from AddNewNodeTooh
-                // needs to be merged
-
-                // create new vertex with action as payload
-                var graph = this.layerview.model.activity.graph,
-                    // XXX: this triggers already spaceOut and
-                    // silent:true seems not to work
-                    newvert = new graph.model({payload: node});
-
-                if (target === undefined) {
-                    // Open arc of a MIMO, create final node
-                    target = new graph.model({payload: "final"});
-                    graph.add(target, {silent:true});
-                    source.next.splice(info.view.addnewidx, 0, newvert);
-                } else {
-                    // change next of source without triggering an event
-                    source.next.splice(source.next.indexOf(target), 1, newvert);
-                }
-                newvert.next.push(target);
-                graph.add(newvert, {silent:true});
-                target.save();
-                newvert.save();
-                source.save();
-                // XXX: this currently triggers rebinding of the graphview
-                graph.trigger("rebind");
-            }
-        },
-        clicked: function() {
-            // XXX: hackish - or maybe not - we are and editmode tool
-            // and want to select the action for the propertiesview
-            Tool.prototype.clicked.call(this);
-            this.layer.activity.set({
-                selected: this.model
-            });
-            this.layer.activity.save();
+            "click": "setAddLibActionNode"
         },
         initialize: function(props) {
-            Tool.prototype.initialize.call(this, props);
             this.layer = props.layer;
             this.model.bind("change:label", this.render);
         },
-        render: function() {
-            $(this.el).text(this.model.get('label') || "unnamed");
-            return this;
+        setAddLibActionNode: function() {
+            this.layer.activity.set({selected: this.model});
+            this.layer.activity.save();
         }
     });
+    Object.defineProperties(LibItemView.prototype, {
+        text: { get: function() {
+            return this.model.get('label') || "unnamed";
+        } }
+    });
 
-    var LibraryView = base.View.extend({
+    var LibraryView = EditModeChanger.extend({
+        collectionname: "actions",
+        name: editmodes.AddLibAction.prototype.name,
         tagName: "ul",
-        className: "library",
         initialize: function(props) {
             this.layer = props.layer;
-            this.collection = this.layer[this.name];
+            this.collection = this.layer[this.collectionname];
             _.bindAll(this, "handle_add", "handle_refresh");
             this.init_children();
             this.collection.bind("add", this.handle_add);
             this.collection.bind("refresh", this.handle_refresh);
         },
         handle_add: function(model) {
-            var view = this.append(LibItemView, {name: model.id,
-                                                 layer: this.layer,
-                                                 model: model});
+            var view = this.append(new LibItemView({
+                name: model.id,
+                layer: this.layer,
+                model: model
+            }));
             $(this.el).append(view.render().el);
         },
         handle_refresh: function() {
@@ -314,17 +232,22 @@ define([
             this.render();
         },
         init_children: function() {
-            this.collection.toArray().forEach(function(action) {
-                this.append(LibItemView, {name: action.id,
-                                          layer: this.layer,
-                                          model: action});
+            this.collection.toArray().forEach(function(model) {
+                this.append(new LibItemView({
+                    name: model.id,
+                    layer: this.layer,
+                    model: model
+                }));
             }, this);
         }
+    });
+    Object.defineProperties(LibraryView.prototype, {
+        text: {value: ""}
     });
 
     return {
         DebugInfo: DebugInfo,
-//        LibraryView: LibraryView,
+        LibraryView: LibraryView,
         PaneManager: PaneManager,
         PropertiesView: PropertiesView,
         ToolbarView: ToolbarView

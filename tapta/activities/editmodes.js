@@ -22,11 +22,11 @@ define([
     Object.defineProperties(ChangeEditMode.prototype, {
         name: {value: "changeeditmode"},
         delegations: {value: [
-            [".toolbar .editmodechanger", "click", "change"]
+            [".editmodechanger", "click", "change"]
         ]},
         change: {value: function(event) {
             // the last element of the id is the mode name
-            var name = event.target.id.split('/').slice(-1)[0];
+            var name = event.currentTarget.id.split('/').slice(-1)[0];
             this.layerview.editmodename = name;
         }}
     });
@@ -85,6 +85,13 @@ define([
         opnames: {value: []}
     });
 
+    var AddLibAction = function() { AddNode.apply(this, arguments); };
+    AddLibAction.prototype = new AddNode();
+    Object.defineProperties(AddLibAction.prototype, {
+        name: {value: "addlibaction"},
+        opnames: {value: [ops.AddLibAction.prototype.name]}
+    });
+
     var AddNewNode = function() { AddNode.apply(this, arguments); };
     AddNewNode.prototype = new AddNode();
     Object.defineProperties(AddNewNode.prototype, {
@@ -132,7 +139,9 @@ define([
                  AddNewAction,
                  AddNewDecMer,
                  AddNewForkJoin,
-                 Subtract];
+                 Subtract,
+                 AddLibAction
+                ];
 
     var EditModes = function(layerview) {
         // return, if only used as a prototype
@@ -182,6 +191,7 @@ define([
     });
 
     return {
+        AddLibAction: AddLibAction,
         EditModes: EditModes
     };
 });

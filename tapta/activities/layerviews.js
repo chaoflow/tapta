@@ -66,13 +66,12 @@ define([
                         return {name: "toolbar",
                                 layerview: this};
                     }
-                // },
-                // {
-                //     ViewProto: panes.LibraryView,
-                //     propscallback: function() {
-                //         return {name: "actions",
-                //                 layer: this.model};
-                //     }
+                },
+                {
+                    ViewProto: panes.LibraryView,
+                    propscallback: function() {
+                        return {layer: this.model};
+                    }
                 }
             ], extraClassNames: ["cell", "width-2", "position-10"]}
         ],

@@ -103,13 +103,13 @@
 .tool {
     cursor: pointer;
 }
-.toolbar .editmodechanger {
+.editmodechanger {
     cursor: pointer;
     border: solid 2px;
     border-color: white;
     border-radius: 2px;
 }
-.toolbar .editmodechanger.highlight {
+.editmodechanger.highlight {
     border-color: black;
 }
 /* scratchpad below here, should be replaced with proper classes */
