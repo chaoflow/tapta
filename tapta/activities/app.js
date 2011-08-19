@@ -12,14 +12,21 @@ define([
 
     var AppView = panes.PaneManager.extend({
         panescfg: [
-            {name: "bottom", content: [
+            // XXX: the concept of center does not make sense for rows
+            {name: "top", content: [
                 {
                     ViewProto: base.View.extend({
-                        className: "destroyall",
-                        extraClassNames: ["cell", "position-10", "width-2"],
-                        render: function() { $(this.el).text("DESTROY ALL"); return this; }
-                    }),
-                    props: {name: "destroyall"}
+                        extraClassNames: ["cell", "position-5", "width-1"],
+                        name: "save",
+                        text: "SAVE"
+                    })
+                },
+                {
+                    ViewProto: base.View.extend({
+                        extraClassNames: ["cell", "position-6", "width-1"],
+                        name: "destroyall",
+                        text: "DESTROY ALL"
+                    })
                 }
             ], extraClassNames: ["row"]},
             {name: "center", content: [
@@ -32,12 +39,21 @@ define([
                  }
             ]}
         ],
-        events: {"click .destroyall": "destroyall"},
+        events: {
+            "click .destroyall": "destroyall",
+            "click .save": "save"
+        },
         destroyall: function() {
             localStorage.clear();
             console.log("Content of localstorage destroyed");
             this.model.fetch();
             this.render();
+        },
+        save: function() {
+            var content = JSON.stringify(localStorage),
+                uriContent = "data:application/octet-stream,"
+                    + encodeURIComponent(content);
+            window.open(uriContent, 'taptastorage');
         }
     });
 

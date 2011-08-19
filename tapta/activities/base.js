@@ -146,8 +146,8 @@ define([
             }
             _.bindAll(this, "render");
 
-            this.html = props.html;
-            this.text = props.text;
+            if (props.html) this.html = props.html;
+            if (props.text) this.text = props.text;
 
             Backbone.View.apply(this, arguments);
 
