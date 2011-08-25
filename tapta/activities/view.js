@@ -69,11 +69,14 @@ define([
         },
         select: function() {
             // XXX: rethink whether this should be the layerview or model
-            // tell the next layer whether and which activity to display
             var layer = this.layerview.model;
             if (!layer.next) return;
             var selected = this.model && this.model.get('selected');
+
+            // tell the graphview who is selected
             this.graphview.selected = selected;
+
+            // tell the next layer whether and which activity to display
             var activity = selected && (
                 selected.get('activity') ||
                     selected.set({activity: layer.next.activities.create()})
