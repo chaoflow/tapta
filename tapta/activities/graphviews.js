@@ -170,7 +170,8 @@ define([
                     attrs: {get: function() { return {
                         cx: view.cx,
                         cy: view.cy,
-                        r: view.r
+                        // XXX: -2 to account for stroke-width
+                        r: view.r - 2
                     }; }}
                 }
             )),
@@ -179,7 +180,8 @@ define([
                     attrs: {get: function() { return {
                         cx: view.cx,
                         cy: view.cy,
-                        r: view.r_inner
+                        // XXX: -1 to account for stroke-width
+                        r: view.r_inner - 1
                     }; }}
                 }
             ))
@@ -241,7 +243,8 @@ define([
             this.append(Object.defineProperties(
                 new svg.Rect(), {
                     attrs: {get: function() { return {
-                        x: view.x,
+                        // XXX: hack for stroke-width
+                        x: view.x + 2,
                         y: view.y + (view.height - view.cfg.height) / 2,
                         width: view.width,
                         height: view.cfg.height,
@@ -315,7 +318,8 @@ define([
                 }), {
                     cx: {get: function() { return view.cx; }},
                     cy: {get: function() { return view.cy; }},
-                    r: {get: function() { return view.r; }}
+                    // XXX: -2 hack for stroke-width
+                    r: {get: function() { return view.r -2; }}
                 }
             ))
         ]; },
