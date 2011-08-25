@@ -42,13 +42,13 @@ define([
 
             this.bindToModel(this.model);
         },
-        bindToModel: function(model) {
-            this.model = model;
+        bindToModel: function(activity) {
+            this.model = activity;
 
-            this.graphview.bindToGraph(model && this.model.graph);
+            this.graphview.bindToGraph(activity && activity.graph);
             this.select();
 
-            if (model === undefined) return;
+            if (activity === undefined) return;
 
             // XXX: for now we just rebind if the graph changes
             var graph = this.model.graph;
