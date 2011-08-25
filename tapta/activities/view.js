@@ -55,6 +55,7 @@ define([
             var redrawGraph = _.bind(function() {
                 this.graphview.bindToGraph(graph);
                 this.graphview.render();
+                this.select();
             }, this);
             // new node was added
             graph.bind("rebind", redrawGraph);
