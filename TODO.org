@@ -169,6 +169,16 @@ among others unset/set on select would not be needed
 check svg spec how to achieve that - 1.2 tiny, unsupported, brings
 textArea
 https://secure.wikimedia.org/wikibooks/de/wiki/SVG/_Text_als_Graphik
+*** TODO chrome/jquery eats mouseup if text is selected when starting to drag
+svg element, dblclick, text outside svg is selected
+dragndrop know stays after mouseup
+
+either chrome should not dragndrop the selected area
+
+or there should not be selection, anyway not outside svg when
+dblclicking svg
+
+or hear about the chrome dnd and abort tapta dnd
 ** med prio
 *** DONE fix existing tests
 CLOSED: [2011-06-04 Sat 03:48]
