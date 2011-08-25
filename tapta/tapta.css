@@ -3,6 +3,11 @@
     stroke: green;
 }
 /* keep this alphabetically sorted at all costs */
+.addlibaction {
+    /* XXX: would be nice to use full available area, not fixed px */
+    height: 400px;
+    overflow: scroll;
+}
 .arc {
     fill: None;
     stroke: #424242;
@@ -62,12 +67,6 @@
 /* XXX: bad, mimoctrls should not be symbols */
 .layer.editmode-subtract .graph .subtractable .mimoctrl .symbol{
     stroke: None;
-}
-.library .libitem{
-    cursor: pointer;
-}
-.library .libitem.highlight {
-    color: green;
 }
 .menubar div {
     cursor: pointer;
