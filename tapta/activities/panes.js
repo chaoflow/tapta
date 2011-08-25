@@ -216,10 +216,9 @@ define([
         initialize: function(props) {
             this.layer = props.layer;
             this.collection = this.layer[this.collectionname];
-            _.bindAll(this, "handle_add", "handle_refresh");
             this.init_children();
-            this.collection.bind("add", this.handle_add);
-            this.collection.bind("refresh", this.handle_refresh);
+            this.collection.bind("add", this.handle_add, this);
+            this.collection.bind("reset", this.handle_reset, this);
             this.bind("editmode", function(name) {
                 if (name === this.name) {
                     $(this.selected).addClass("highlight");
@@ -236,7 +235,7 @@ define([
             }));
             $(this.el).append(view.render().el);
         },
-        handle_refresh: function() {
+        handle_reset: function() {
             this.removeChildren();
             this.init_children();
             this.render();
