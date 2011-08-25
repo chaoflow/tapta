@@ -87,8 +87,8 @@ define([
         initialize: function(props) {
             this.layer = props.layer;
             this.bindToActivity();
-            _.bindAll(this, "bindToActivity");
-            this.layer.bind("change:activity", this.bindToActivity);
+            this.layer.bind("change:activity", this.bindToActivity, this);
+            this.layer.bind("change:activity", this.render, this);
         },
         bindToActivity: function() {
             if (this.layer.activity === this.activity) return;
