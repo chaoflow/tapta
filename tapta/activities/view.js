@@ -16,7 +16,7 @@ define([
     var DEBUG = require('./debug'),
         base = require('./base'),
         panes = require('./panes'),
-        SVG = require('./svgviews').SVG,
+        svg = require('./svgviews'),
         GraphView = require('./graphviews').GraphView,
         model = require('./model'),
         CFG = require('./settings');
@@ -29,26 +29,53 @@ define([
 
             // an svg drawing area - should ActivityView inherit from
             // SVG or do we have some non-svg activity things to display?
-            this.svg = new SVG();
+            this.svg = new svg.SVG();
             this.append(this.svg);
 
-            this.graphview = new GraphView({
-                geometry: {
-                    x: 10,
-                    y: 10
+            // construct the layer label
+            var activityview = this,
+                layer = this.layerview.model;
+            this.layerlabel = Object.defineProperties(
+                new svg.Text({
+                    name: "layerlabel"
+                }), {
+                    attrs: {get: function() { return {
+                        x: 5,
+                        y: 16
+                    }; }},
+                    text: {get: function() {
+                        var action = activityview.model &&
+                                activityview.model.action;
+                        return layer.label + ": " + (
+                            action ? (action.get("label") || "unnamed") : ""
+                        );
+                    }}
                 }
-            });
+            );
+            this.svg.append(this.layerlabel);
+
+            this.graphview = new GraphView({geometry: {x: 10, y: 20}});
             this.svg.append(this.graphview);
 
             this.bindToModel(this.model);
         },
         bindToModel: function(activity) {
+            // unbind layerlabel from old activities action
+            if (this.model && this.model.action) {
+                this.model.action.unbind(this.layerlabel.render);
+            }
+
             this.model = activity;
 
             this.graphview.bindToGraph(activity && activity.graph);
             this.select();
 
             if (activity === undefined) return;
+
+            var action = activity.action;
+            if (action) {
+                action.bind("change:label", this.layerlabel.render, this);
+            }
 
             // XXX: for now we just rebind if the graph changes
             var graph = this.model.graph;
@@ -77,11 +104,15 @@ define([
             this.graphview.selected = selected;
 
             // tell the next layer whether and which activity to display
-            var activity = selected && (
-                selected.get('activity') ||
-                    selected.set({activity: layer.next.activities.create()})
-                    .save().get("activity")
-            );
+            var activity;
+            if (selected) {
+                activity = selected.get('activity');
+                if (activity === undefined) {
+                    activity = layer.next.activities.create();
+                    selected.set({activity: activity}).save();
+                    activity.action = selected;
+                }
+            }
             if (layer.next.activity !== activity) {
                 layer.next.activity = activity;
                 layer.next.trigger("change:activity");

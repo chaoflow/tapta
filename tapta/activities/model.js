@@ -30,6 +30,7 @@ define([
             var i;
             for (i = 0; i < 6; i++) {
                 var layer = this.defchild(Layer, {}, {name: "layer"+i});
+                layer.label = "Layer " + (i+1);
                 layer.prev = prev;
                 if (prev) {
                     prev.next = layer;
@@ -105,11 +106,15 @@ define([
             var parent = this.parent;
             var model = this.model;
             resp = _.map(resp, function(data) {
-                var actid = data['activity'];
+                var actid = data['activity'],
+                    action, activity;
                 if (actid) {
-                    data['activity'] = parent.next.activities.get(actid);
+                    activity = parent.next.activities.get(actid);
+                    data['activity'] = activity;
                 }
-                return new model(data);
+                action = new model(data);
+                if (activity) activity.action = action;
+                return action;
             });
             return resp;
         }

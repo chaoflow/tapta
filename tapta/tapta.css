@@ -68,6 +68,10 @@
 .layer.editmode-subtract .graph .subtractable .mimoctrl .symbol{
     stroke: None;
 }
+.layerlabel {
+    font: normal normal normal 16px/normal Arial;
+    text-anchor: start;
+}
 .menubar div {
     cursor: pointer;
 }
