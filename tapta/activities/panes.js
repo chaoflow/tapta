@@ -99,8 +99,7 @@ define([
         },
         render: function() {
             $(this.el).text("");
-            if (this.activity === undefined) return this;
-            if (this.activity.get('selected') === undefined) return this;
+            if (this.selected === undefined) return this;
             $(this.el).html(_.template(
                 'Node: <%= type %>, <%= cid %><br>'
                 + 'Label: '
@@ -147,7 +146,9 @@ define([
         }
     });
     Object.defineProperties(PropertiesView.prototype, {
-        selected: { get: function() { return this.activity.get('selected'); } }
+        selected: {get: function() {
+            return this.activity && this.activity.get('selected');
+        }}
     });
 
     var EditModeChanger = base.View.extend({
