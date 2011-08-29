@@ -112,12 +112,22 @@ define([
                 + '<textarea class="description" name="description" rows="5">'
                 + '<%= description %>'
                 + '</textarea>'
+                + 'Requires (one per line):'
+                + '<textarea class="requires" name="requires" rows="5">'
+                + '<%= requires %>'
+                + '</textarea>'
+                + 'Provides (one per line):'
+                + '<textarea class="provides" name="provides" rows="5">'
+                + '<%= provides %>'
+                + '</textarea>'
 //                + '<br><div width="100%" class="update">Update</div>'
             , {
                 cid: this.selected.cid,
                 type: this.selected.type,
                 label: this.selected.get('label') || '',
-                description: this.selected.get('description') || ''
+                description: this.selected.get('description') || '',
+                requires: this.selected.get('requires') || '',
+                provides: this.selected.get('provides') || ''
             }));
             this.$(".label")[0].focus();
             // this.$(".update").click(_.bind(function() {
