@@ -194,6 +194,12 @@ define([
                 return Mode.prototype.name;
             }).forEach(function(name) {
                 if (name === "addlibaction") return;
+                // skip certain modes for top layer
+                if (props.layerview.model.prev === undefined) {
+                    if ((name !== "select") &&
+                        (name !== "addnewaction") &&
+                        (name !== "subtract")) return;
+                }
                 this.append(new EditModeChanger({name: name}));
             }, this);
         }
