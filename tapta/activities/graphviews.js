@@ -198,8 +198,8 @@ define([
             this.append(Object.defineProperties(
                 new svg.MultiText(), {
                     x: {get: function() { return view.cx + view.labelxoffset; }},
-                    // XXX hack: +4 = something like half the font-size
-                    y: {get: function() { return view.cy + view.labelyoffset + 4; }},
+                    // XXX hack: +2 to properly center label
+                    y: {get: function() { return view.cy + view.labelyoffset + 2; }},
                     text: {get: function() {
                         // raphael does something like that,
                         // but it did not work ootb
