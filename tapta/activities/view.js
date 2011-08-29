@@ -107,7 +107,7 @@ define([
 
             // tell the next layer whether and which activity to display
             var activity;
-            if (selected) {
+            if (selected && (selected.type === "action")) {
                 activity = selected.get('activity');
                 if (activity === undefined) {
                     activity = layer.next.activities.create();
