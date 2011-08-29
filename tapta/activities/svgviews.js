@@ -121,6 +121,28 @@ define([
         tagName: "text"
     });
 
+    var MultiText = Group.extend({
+        name: "multitext",
+        render: function() {
+            // reset
+            $(this.el).text("");
+            this.removeChildren();
+
+            // render text elements - one per line
+            var lines = this.text.split("\n"),
+                // XXX: font-size dependent
+                y0 = this.y - (lines.length - 1) * 5;
+            lines.forEach(function(line, idx) {
+                var t = this.append(new Text({name: "text"+idx}));
+                t.text = line;
+                // XXX: font-size dependent
+                t.attrs = {x: this.x, y: y0 + 10*idx};
+                $(this.el).append(t.render().el);
+            }, this);
+            return this;
+        }
+    });
+
     /*
      * derived elements
      */
@@ -148,6 +170,7 @@ define([
         Circle: Circle,
         Diamond: Diamond,
         Group: Group,
+        MultiText: MultiText,
         Path: Path,
         Rect: Rect,
         SVG: SVG,

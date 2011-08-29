@@ -28,9 +28,7 @@ define([
             if (this.selectable) this.addClass("selectable");
             this.symbol().forEach(function(sym) { sym.addClass("symbol"); });
             this.ctrls().forEach(function(ctrl) { ctrl.addClass("ctrl"); });
-            if (this.labelshow) {
-                this.label().forEach(function(label) { label.addClass("label"); });
-            }
+            this.label().forEach(function(label) { label.addClass("label"); });
         },
         label: function() { return []; },
         symbol: function() { throw "Not implemented"; }
@@ -64,8 +62,6 @@ define([
         r: {get: function() {
             return ((this.width < this.height) ? this.width : this.height) / 2;
         }},
-        labelshow: {value: true},
-        labelyoffset: {value: 0},
         subtractable: {get: function() { return this.model.subtractable; }}
     });
 
@@ -200,11 +196,10 @@ define([
         },
         label: function() { var view = this; return [
             this.append(Object.defineProperties(
-                new svg.Text(), {
-                    attrs: {get: function() { return {
-                        x: view.cx,
-                        y: view.cy + view.labelyoffset
-                    }; }},
+                new svg.MultiText(), {
+                    x: {get: function() { return view.cx + view.labelxoffset; }},
+                    // XXX hack: +4 = something like half the font-size
+                    y: {get: function() { return view.cy + view.labelyoffset + 4; }},
                     text: {get: function() {
                         // raphael does something like that,
                         // but it did not work ootb
@@ -214,6 +209,10 @@ define([
                 }
             ))
         ]; }
+    });
+    Object.defineProperties(LabeledNodeView.prototype, {
+        labelxoffset: {value: 0},
+        labelyoffset: {value: 0}
     });
 
     var ActionNodeView = LabeledNodeView.extend({
@@ -254,6 +253,10 @@ define([
                 }
             ))
         ]; }
+    });
+    Object.defineProperties(ActionNodeView.prototype, {
+        // XXX: hack to center despite of hack for stroke-width
+        labelxoffset: {value: 2}
     });
 
     // DecMer and ForkJoin use this
