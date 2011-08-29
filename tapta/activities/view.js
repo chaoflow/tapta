@@ -11,6 +11,7 @@ define([
     './graphviews',
     './settings',
     './svgviews',
+    './l10n',
     './panes'
 ], function(require) {
     var DEBUG = require('./debug'),
@@ -19,6 +20,7 @@ define([
         svg = require('./svgviews'),
         GraphView = require('./graphviews').GraphView,
         model = require('./model'),
+        l10n = require('./l10n'),
         CFG = require('./settings');
 
     // An activity view creates a canvas. Its graph is drawn by a graph view.
@@ -46,7 +48,7 @@ define([
                     text: {get: function() {
                         var action = activityview.model &&
                                 activityview.model.action;
-                        return layer.label + ": " + (
+                        return l10n(layer.name) + ": " + (
                             action ? (action.get("label") || "unnamed") : ""
                         );
                     }}

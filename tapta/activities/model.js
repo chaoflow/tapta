@@ -30,7 +30,6 @@ define([
             var i;
             for (i = 0; i < 6; i++) {
                 var layer = this.defchild(Layer, {}, {name: "layer"+i});
-                layer.label = "Layer " + (i+1);
                 layer.prev = prev;
                 if (prev) {
                     prev.next = layer;

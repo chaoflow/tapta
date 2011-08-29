@@ -5,10 +5,12 @@ define([
     'vendor/underscore.js',
     './debug',
     './base',
+    './l10n',
     './editmodes'
 ], function(require) {
     var DEBUG = require('./debug'),
         base = require('./base'),
+        l10n = require('./l10n'),
         editmodes = require('./editmodes');
 
     var Pane = base.View.extend({
@@ -175,7 +177,7 @@ define([
         }
     });
     Object.defineProperties(EditModeChanger.prototype, {
-        text: { get: function() { return this.name; }}
+        text: { get: function() { return l10n(this.name); }}
     });
 
     var ToolbarView = base.View.extend({
