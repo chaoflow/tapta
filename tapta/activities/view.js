@@ -49,7 +49,8 @@ define([
                         var action = activityview.model &&
                                 activityview.model.action;
                         return l10n(layer.name) + ": " + (
-                            action ? (action.get("label") || "unnamed") : ""
+                            action ? (action.get("label") || "unnamed")
+                                .replace(/\n/gm, " ") : ""
                         );
                     }}
                 }
