@@ -109,7 +109,7 @@ define([
                 + ' class="label"'
                 + ' /><br>'
                 + 'Description: '
-                + '<textarea class="description" name="description" rows="10">'
+                + '<textarea class="description" name="description" rows="5">'
                 + '<%= description %>'
                 + '</textarea>'
 //                + '<br><div width="100%" class="update">Update</div>'
