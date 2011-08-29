@@ -89,26 +89,24 @@ define([
     var Action = Node.extend({
         type: "action",
         toJSON: function() {
-            var attributes = _.clone(this.attributes);
-            _(['act']).each(function(key){
-                var tmp = this.attributes[key];
-                if(tmp !== undefined){
-                    attributes[key] = tmp.id;
+            var attrs = _.clone(this.attributes);
+            _(['activity']).each(function(key){
+                if (attrs[key] !== undefined){
+                    attrs[key] = attrs[key].id;
                 }
             }, this);
-            return attributes;
+            return attrs;
         }
     });
     var Actions = Collection.extend({
         model: Action,
         parse: function(resp) {
-            var parent = this.parent;
+            var layer = this.parent;
             var model = this.model;
             resp = _.map(resp, function(data) {
-                var actid = data['activity'],
-                    action, activity;
-                if (actid) {
-                    activity = parent.next.activities.get(actid);
+                var action, activity;
+                if (data['activity'] !== undefined) {
+                    activity = layer.next.activities.get(data['activity']);
                     data['activity'] = activity;
                 }
                 action = new model(data);
