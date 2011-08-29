@@ -1,0 +1,20 @@
+@page {
+    size: landscape;
+}
+#body .layer .activity {
+    border: None;
+}
+#body .layer .pane.center {
+    margin-left: 0;
+    position: initial;
+    width: 100%;
+}
+#body .layer .pane.left {
+    display: None;
+}
+#body .layer .pane.right {
+    display: None;
+}
+#body .menubar {
+    display: None;
+}
