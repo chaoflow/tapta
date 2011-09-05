@@ -149,36 +149,29 @@ dragging of final node does not work on tablets
 CLOSED: [2011-08-19 Fri 18:37]
 make ctrl area of arc visible
 support subtract of arc
-*** TODO fix mimoctrlins - see comment in merge paths
-*** TODO json import to filesystem (load)
-*** TODO print
+*** DONE print
+CLOSED: [2011-09-05 Mon 15:20]
 **** 6 layers, one per page, landscape
 **** zoom to fit?
 **** generate pdf or use browser?
-*** TODO top-layer without edges
-***** how do we place them?
-*** TODO action/decision information properties
+*** DONE action/decision information properties
+CLOSED: [2011-09-05 Mon 15:20]
 required information
 generates information
-aggregate req/gen information
-*** TODO show description on mouse over
-*** TODO block everything not selectable from receiving focus
-among others unset/set on select would not be needed
-*** TODO query stroke-width of src/tgt for arcs to properly end
-*** TODO linebreak labels
+*** DONE linebreak labels
+CLOSED: [2011-09-05 Mon 15:35]
 check svg spec how to achieve that - 1.2 tiny, unsupported, brings
 textArea
 https://secure.wikimedia.org/wikibooks/de/wiki/SVG/_Text_als_Graphik
-*** TODO chrome/jquery eats mouseup if text is selected when starting to drag
-svg element, dblclick, text outside svg is selected
-dragndrop know stays after mouseup
-
-either chrome should not dragndrop the selected area
-
-or there should not be selection, anyway not outside svg when
-dblclicking svg
-
-or hear about the chrome dnd and abort tapta dnd
+*** TODO decision in lib
+with labels for outgoing edges - line-based textarea
+*** TODO save/load - server component
+*** TODO json export/import to/from filesystem
+*** TODO top-layer without edges, initial/final
+***** how do we place them? free
+*** TODO aggregate req/gen information
+*** TODO show summary on mouse over
+*** TODO fix mimoctrlins - see comment in merge paths
 ** med prio
 *** DONE fix existing tests
 CLOSED: [2011-06-04 Sat 03:48]
@@ -210,17 +203,27 @@ CLOSED: [2011-08-05 Fri 13:26]
 *** DONE draw rake symbol
 CLOSED: [2011-08-17 Wed 10:12]
 rake will be merged with select
+*** TODO block everything not selectable from receiving focus
+among others unset/set on select would not be needed
+*** TODO chrome/jquery eats mouseup if text is selected when starting to drag
+svg element, dblclick, text outside svg is selected
+dragndrop know stays after mouseup
+
+either chrome should not dragndrop the selected area
+
+or there should not be selection, anyway not outside svg when
+dblclicking svg
+
+or hear about the chrome dnd and abort tapta dnd
 *** TODO menubar undo
 **** either in the save hooks or in the storage
 **** keep git-like storage above localstorage in mind
 ***** would it help?
 *** TODO fix spaceOut
-*** TODO decmer library tool,
-**** like action lib but on decmers
-**** show only decmers that have a name
 *** TODO drag preview
 *** TODO investigate keyup/down events in firefox, propertiesview
-** low prio and easy or maybe irrelevant
+*** TODO query stroke-width of src/tgt for arcs to properly end
+* low prio and easy or maybe irrelevant
 Theses tasks are meant for newbies to enter the project
 *** TODO move drawing code into raphael plugin: raphael.fn.tapta?
 *** TODO test coverage for view code?
