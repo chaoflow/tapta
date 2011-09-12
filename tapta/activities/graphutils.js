@@ -303,18 +303,27 @@ define([
             return _.extend(p.slice(), {width_avail: maxminwidth});
         }, paths);
         while (paths.length > 0) {
+            DEBUG.spaceout && console.group("crucial path");
+            // XXX: deep copy would be needed here
+            DEBUG.spaceout && console.log("all paths:", paths.slice());
             // The crucial path ultimately defines the size of its elements.
             // the first path with only one element is crucial
             // If there is no such path, the longest path is crucial
             crucial = _.detect(paths, function(path) { return (path.length === 1); });
             if (crucial === undefined) {
                 crucial = foldl1(function(acc, p) { return acc < p ? p : acc; }, paths);
+                DEBUG.spaceout && console.log("longest path is crucial");
+            } else {
+                DEBUG.spaceout && console.log("single-element path is crucial");
             }
             cidx = _.indexOf(paths, crucial);
             if (cidx == -1) throw "Deep shit!";
             if (crucial.length === 0) throw "Crucial path is empty";
             // remove crucial path from paths
             paths.splice(cidx, 1);
+            DEBUG.spaceout && console.log("crucial:", crucial);
+            DEBUG.spaceout && console.log("crucial idx:", cidx);
+            DEBUG.spaceout && console.log("remaining:", paths.slice());
 
             // distribute space among variable width elements
             var n_varwidth = _.compact(_.map(crucial, function(elem) {
@@ -324,13 +333,20 @@ define([
                 throw "Need at least one variable width element";
             }
             var width_needed = path_minwidth(crucial);
+            DEBUG.spaceout && console.log("n_varwidth:", n_varwidth);
+            DEBUG.spaceout && console.log("width_needed:", width_needed);
+            DEBUG.spaceout && console.log("width_avail:", crucial.width_avail);
+            DEBUG.spaceout && console.groupEnd();
             crucial.forEach(function(elem) {
                 var geo = elem.geometry;
                 geo.width = elem.fixedwidth || elem.minwidth + Math.round(
                     (crucial.width_avail - width_needed) / n_varwidth--
                 );
+                DEBUG.spaceout && console.log("subtract:", geo.width);
                 crucial.width_avail -= geo.width;
-                width_needed -= geo.width;
+                width_needed -= elem.minwidth;
+                DEBUG.spaceout && console.log("width_needed:", width_needed);
+                DEBUG.spaceout && console.log("width_avail:", crucial.width_avail);
                 // remove element from the other paths and subtract
                 // its width from their available widths
                 paths.forEach(function(path, idx) {
@@ -340,13 +356,13 @@ define([
                     }
                 });
             });
-            if (crucial.width_avail > 0) {
+            if (crucial.width_avail !== 0) {
                 console.warn("Unallocated space left!", crucial.width_avail);
             }
             // remove empty paths
             for (var i = paths.length - 1; i >=0; i--) {
                 if (paths[i].length === 0) {
-                    if (paths[i].width_avail > 0) throw "Unallocated space left";
+                    if (paths[i].width_avail !== 0) throw "Unallocated space left";
                     paths.splice(i,1);
                 }
             }
@@ -431,9 +447,13 @@ define([
         // calculate element widths
         calcWidth(paths);
         // calc height
+        DEBUG.spaceout && console.group("height");
         while (calcHeight(sources, vpad)) true;
+        DEBUG.spaceout && console.groupEnd();
         // determine positions
+        DEBUG.spaceout && console.group("position");
         var rval = calcXY(sources, vpad);
+        DEBUG.spaceout && console.groupEnd();
 
         DEBUG.spaceout && console.groupEnd();
         return rval;
