@@ -129,6 +129,16 @@ define([
                 requires: this.selected.get('requires') || '',
                 provides: this.selected.get('provides') || ''
             }));
+            if (this.selected.type === "decmer") {
+                $(this.el).append(_.template(
+                    'Outgoing Labels:'
+                    + '<textarea class="outgoinglabels" name="outgoinglabels" rows="5">'
+                    + '<%= outgoinglabels %>'
+                    + '</textarea>'
+                , {
+                    outgoinglabels: this.selected.get('outgoinglabels') || ''
+                }));
+            }
             this.$(".label")[0].focus();
             // this.$(".update").click(_.bind(function() {
             //     this.save([this.$(".label")[0], this.$(".description")[0]]);
