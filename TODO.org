@@ -179,6 +179,10 @@ or hide pure merges from the lib
 **** TODO investigate couchdb
 *** TODO json export/import to/from filesystem
 *** TODO show summary on mouse over
+use a formlib for that, maybe backbone serves well enough as a formlib
+alternatives:
+http://kansojs.org/
+http://akdubya.github.com/dustjs/
 *** TODO fix mimoctrlins - see comment in merge paths
 ** med prio
 *** DONE fix existing tests
