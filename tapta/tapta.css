@@ -17,6 +17,9 @@
     fill: None;
     stroke: None;
 }
+.arc.mimoctrl .label {
+    fill: None;
+}
 /* XXX: harmonize these editmodechangers */
 .editmodechanger {
     cursor: pointer;
@@ -35,6 +38,12 @@
 }
 .editmodechanger li.highlight {
     border-color: black;
+}
+.label {
+    fill: black;
+    font: normal normal normal 10px/normal Arial;
+    stroke: None;
+    text-anchor: middle;
 }
 .layer {
     height: 550px;
@@ -133,12 +142,6 @@
 input {
     outline-color: green;
     width: 100%;
-}
-svg text {
-    fill: black;
-    font: normal normal normal 10px/normal Arial;
-    stroke: None;
-    text-anchor: middle;
 }
 textarea {
     outline-color: green;

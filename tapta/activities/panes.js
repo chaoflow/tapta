@@ -136,6 +136,7 @@ define([
                     + '<%= outgoinglabels %>'
                     + '</textarea>'
                 , {
+                    // XXX: form library!!!! extractors/renderer!!!
                     outgoinglabels: this.selected.get('outgoinglabels') || ''
                 }));
             }

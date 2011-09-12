@@ -80,6 +80,20 @@ define([
                     }; }}
                 }))
         ]; },
+        label: function() { var view = this; return [
+            this.append(Object.defineProperties(
+                new svg.Text({name: "label"}), {
+                    attrs: {get: function() { return {
+                        x: view.x + 15,
+                        y: view.y + view.height / 2 - 5
+                    }; }},
+                    text: {get: function() {
+                        return view.srcview
+                            ? view.srcview.outgoinglabel(view)
+                            : '';
+                    }}
+                }))
+        ]; },
         symbol: function() { var view = this; return [
             this.append(Object.defineProperties(
                 new svg.Path({name: "arrow"}), {
@@ -132,7 +146,8 @@ define([
         // for drawing arcs, return via points to enter from source point
         entrancepath: function(srcpoint) { return []; },
         // for drawing arcs, return via points to exit to target point
-        exitpath: function(tgtpoint) { return []; }
+        exitpath: function(tgtpoint) { return []; },
+        outgoinglabel: function(arcview) { return ''; }
     });
     Object.defineProperties(NodeView.prototype, {
         selectable: {get: function() {
@@ -335,6 +350,13 @@ define([
             var geo = this.geometry;
             // center
             return [[geo.x + geo.width / 2, geo.y + geo.height / 2]];
+        },
+        outgoinglabel: function(arcview) {
+            var labels = (this.model.payload.get('outgoinglabels') || '')
+                    .split("\n"),
+                idx = this.successors.indexOf(arcview);
+            if (labels.length === 0) return '';
+            return labels[idx];
         }
     });
     Object.defineProperties(DecMerNodeView.prototype, {
