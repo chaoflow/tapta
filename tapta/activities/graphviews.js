@@ -92,7 +92,7 @@ define([
             this.append(Object.defineProperties(
                 new svg.Text({name: "label"}), {
                     attrs: {get: function() { return {
-                        x: view.x + 15,
+                        x: view.x + 3,
                         y: view.y + view.height / 2 - 5
                     }; }},
                     text: {get: function() {

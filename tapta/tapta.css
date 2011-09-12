@@ -17,6 +17,9 @@
     fill: None;
     stroke: None;
 }
+.arc .label {
+    text-anchor: start;
+}
 .arc.mimoctrl .label {
     fill: None;
 }
