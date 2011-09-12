@@ -167,7 +167,8 @@ https://secure.wikimedia.org/wikibooks/de/wiki/SVG/_Text_als_Graphik
 CLOSED: [2011-09-12 Mon 22:03]
 with labels for outgoing edges - line-based textarea
 basic support is there
-*** TODO decision: labels for outgoing edges
+*** DONE decision: labels for outgoing edges
+CLOSED: [2011-09-13 Tue 00:53]
 line-based textarea
 *** TODO remove merges from decision lib
 either a merge is not a decision, i.e. payload just: "merge"
