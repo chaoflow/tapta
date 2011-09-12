@@ -309,6 +309,7 @@ define([
             // The crucial path ultimately defines the size of its elements.
             // the first path with only one element is crucial
             // If there is no such path, the longest path is crucial
+            // XXX: path with only one varwidth element is crucial
             crucial = _.detect(paths, function(path) { return (path.length === 1); });
             if (crucial === undefined) {
                 crucial = foldl1(function(acc, p) { return acc < p ? p : acc; }, paths);
