@@ -192,6 +192,7 @@ define([
                 return Mode.prototype.name;
             }).forEach(function(name) {
                 if (name === "addlibaction") return;
+                if (name === "addlibdecision") return;
                 // skip certain modes for top layer
                 if (props.layerview.model.prev === undefined) {
                     if ((name !== "select") &&
@@ -224,11 +225,10 @@ define([
     });
 
     var LibraryView = EditModeChanger.extend({
-        collectionname: "actions",
         events: {
             "click li": "select"
         },
-        name: editmodes.AddLibAction.prototype.name,
+        name: "addlibnode",
         tagName: "ul",
         initialize: function(props) {
             this.layer = props.layer;
@@ -276,8 +276,21 @@ define([
         text: {value: ""}
     });
 
+    var ActionLib = LibraryView.extend({
+        collectionname: "actions",
+        name: editmodes.AddLibAction.prototype.name
+    });
+
+    var DecisionLib = LibraryView.extend({
+        collectionname: "decmers",
+        name: editmodes.AddLibDecision.prototype.name
+    });
+
+
     return {
+        ActionLib: ActionLib,
         DebugInfo: DebugInfo,
+        DecisionLib: DecisionLib,
         LibraryView: LibraryView,
         PaneManager: PaneManager,
         PropertiesView: PropertiesView,

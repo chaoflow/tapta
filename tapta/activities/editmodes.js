@@ -92,6 +92,13 @@ define([
         opnames: {value: [ops.AddLibAction.prototype.name]}
     });
 
+    var AddLibDecision = function() { AddNode.apply(this, arguments); };
+    AddLibDecision.prototype = new AddNode();
+    Object.defineProperties(AddLibDecision.prototype, {
+        name: {value: "addlibdecision"},
+        opnames: {value: [ops.AddLibDecision.prototype.name]}
+    });
+
     var AddNewNode = function() { AddNode.apply(this, arguments); };
     AddNewNode.prototype = new AddNode();
     Object.defineProperties(AddNewNode.prototype, {
@@ -143,7 +150,8 @@ define([
                  AddNewDecMer,
                  AddNewForkJoin,
                  Subtract,
-                 AddLibAction
+                 AddLibAction,
+                 AddLibDecision
                 ];
 
     var EditModes = function(layerview) {
@@ -195,6 +203,7 @@ define([
 
     return {
         AddLibAction: AddLibAction,
+        AddLibDecision: AddLibDecision,
         EditModes: EditModes
     };
 });

@@ -92,6 +92,13 @@ define([
         getNode: {value: function() { return this.layer.activity.get("selected"); }}
     });
 
+    var AddLibDecision = function() { AddNode.apply(this, arguments); };
+    AddLibDecision.prototype = new AddNode();
+    Object.defineProperties(AddLibDecision.prototype, {
+        name: {value: "addlibdecision"},
+        getNode: {value: function() { return this.layer.activity.get("selected"); }}
+    });
+
     var AddNewNode = function() { AddNode.apply(this, arguments); };
     AddNewNode.prototype = new AddNode();
     Object.defineProperties(AddNewNode.prototype, {
@@ -369,6 +376,7 @@ define([
         accumulate: {value: base.accumulate},
         Ops: {value: [
             AddLibAction,
+            AddLibDecision,
             AddNewAction,
             AddNewDecMer,
             AddNewForkJoin,
@@ -382,6 +390,7 @@ define([
     return {
         AddNode: AddNode,
         AddLibAction: AddLibAction,
+        AddLibDecision: AddLibAction,
         AddNewNode: AddNewNode,
         AddNewAction: AddNewAction,
         AddNewDecMer: AddNewDecMer,

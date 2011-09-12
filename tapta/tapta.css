@@ -3,9 +3,9 @@
     stroke: green;
 }
 /* keep this alphabetically sorted at all costs */
-.addlibaction {
+.addlibnode {
     /* XXX: would be nice to use full available area, not fixed px */
-    height: 400px;
+    height: 190px;
     overflow: auto;
 }
 .arc {

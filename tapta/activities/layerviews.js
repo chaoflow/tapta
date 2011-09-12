@@ -68,7 +68,13 @@ define([
                     }
                 },
                 {
-                    ViewProto: panes.LibraryView,
+                    ViewProto: panes.ActionLib,
+                    propscallback: function() {
+                        return {layer: this.model};
+                    }
+                },
+                {
+                    ViewProto: panes.DecisionLib,
                     propscallback: function() {
                         return {layer: this.model};
                     }
