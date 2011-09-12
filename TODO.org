@@ -175,6 +175,17 @@ either a merge is not a decision, i.e. payload just: "merge"
 or hide pure merges from the lib
 *** TODO top-layer without edges, initial/final
 ***** how do we place them? free
+*** TODO find suitable formlib
+**** models need to have defined fields
+if a field does not exist on the model -> undefined, if a field is not
+defined -> exception
+**** views need to be defined declaratively
+***** where to fetch data from
+***** conditions to rerender
+***** how to render a field
+eg .join() use as body for a textarea
+***** how to extract data from the form to the model
+**** it feels like panescfg and layercfg could be merged with that
 *** TODO aggregate req/gen information
 *** TODO save/load - server component
 **** TODO investigate couchdb
