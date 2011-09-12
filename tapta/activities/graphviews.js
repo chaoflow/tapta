@@ -69,6 +69,14 @@ define([
     // An arcview connects two vertex views
     var ArcView = GraphElement.extend({
         extraClassNames: ["arc"],
+        initialize: function() {
+            GraphElement.prototype.initialize.call(this);
+            if (this.srcview && (this.srcview.model.type === "decmer")) {
+                this.srcview.model.payload.bind("change:outgoinglabels", function() {
+                    this.render();
+                }, this);
+            }
+        },
         ctrls: function() { var view = this;  return [
             this.append(Object.defineProperties(
                 new svg.Rect(), {
