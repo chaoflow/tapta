@@ -112,6 +112,8 @@ define([
                 + '<textarea class="description" name="description" rows="5">'
                 + '<%= description %>'
                 + '</textarea>'
+                + '<ul class="linklist">'
+                + '</ul>'
                 + 'Requires (one per line):'
                 + '<textarea class="requires" name="requires" rows="5">'
                 + '<%= requires %>'
@@ -144,7 +146,14 @@ define([
             // this.$(".update").click(_.bind(function() {
             //     this.save([this.$(".label")[0], this.$(".description")[0]]);
             // }, this));
+            this.find_links_in_description();
             return this;
+        },
+        find_links_in_description: function() {
+            var urls = this.$(".description").val().match(/https?:\/\/\S+/g);
+            this.$(".linklist").html(urls ? urls.map(function(url) {
+                return '<li><a href="'+url+'">'+url+'</a></li>';
+            }).join('') : '');
         },
         keydown: function(info) {
             this.unsaved(info.srcElement);
@@ -156,6 +165,7 @@ define([
                 acc[el.name] = el.value;
                 return acc;
             }, {}, els);
+            this.find_links_in_description();
             this.selected.set(data);
             this.selected.save();
         },

@@ -84,6 +84,11 @@
     font: normal normal normal 16px/normal Arial;
     text-anchor: start;
 }
+.linklist {
+    list-style: None;
+    padding: 0px 0px 0px 10px;
+    margin: 0px 0px 6px 0px;
+}
 .menubar div {
     cursor: pointer;
 }
