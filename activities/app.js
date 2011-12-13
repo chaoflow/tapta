@@ -14,13 +14,13 @@ define([
         panescfg: [
             // XXX: the concept of center does not make sense for rows
             {name: "top", content: [
-                {
-                    ViewProto: base.View.extend({
-                        extraClassNames: ["cell", "position-4", "width-1"],
-                        name: "save",
-                        text: "SAVE"
-                    })
-                },
+                // {
+                //     ViewProto: base.View.extend({
+                //         extraClassNames: ["cell", "position-4", "width-1"],
+                //         name: "save",
+                //         text: "SAVE"
+                //     })
+                // },
                 // {
                 //     ViewProto: base.View.extend({
                 //         extraClassNames: ["cell", "position-5", "width-1"],
@@ -30,7 +30,7 @@ define([
                 // },
                 {
                     ViewProto: base.View.extend({
-                        extraClassNames: ["cell", "position-7", "width-1"],
+                        extraClassNames: ["cell", "position-9", "width-1"],
                         name: "destroyall",
                         text: "DESTROY ALL"
                     })
@@ -47,9 +47,9 @@ define([
             ]}
         ],
         events: {
-            "click .destroyall": "destroyall",
-            "click .load": "load",
-            "click .save": "save"
+            "click .destroyall": "destroyall"
+            //"click .load": "load",
+            //"click .save": "save"
         },
         destroyall: function() {
             localStorage.clear();
