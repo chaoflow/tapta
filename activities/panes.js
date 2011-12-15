@@ -152,7 +152,9 @@ define([
         find_links_in_description: function() {
             var urls = this.$(".description").val().match(/https?:\/\/\S+/g);
             this.$(".linklist").html(urls ? urls.map(function(url) {
-                return '<li><a href="'+url+'">'+url+'</a></li>';
+                return '<li><a href="' + url + '">' +
+                    url.split('/').filter(function(el) { return el; }).pop() +
+                    '</a></li>';
             }).join('') : '');
         },
         keydown: function(info) {
